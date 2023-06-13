@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en-US">	
+	<head>
+		<title>Canvas</title>
+	</head>
+
+	<body>
+		<!-- <h1>Canvas</h1> -->
+		
+		<canvas id="canvas" style="border:10px solid"></canvas>
+		
+		<script src="/socket.io/socket.io.js"></script>
+		
+		<script>
+			const FPS_RATE = 60; // times per second
+			
+			const NUM_TILES_X = 16;
+			const NUM_TILES_Y = 12;
+			const SIDE_PANEL_TILES = 10;
+			const IMAGE_SCALE_FACTOR = 64;
+			
+			const canvas = document.getElementById("canvas");
+			const ctx = canvas.getContext("2d");
+			
+			const canvas_width = (NUM_TILES_X + SIDE_PANEL_TILES) * IMAGE_SCALE_FACTOR;
+			const canvas_height = NUM_TILES_Y * IMAGE_SCALE_FACTOR;
+			
+			let socket;
+			let interval;
+		
+			let isUpdating = false;
+			
+			window.addEventListener('load', () => {
+				if(socket) {
+					socket.disconnect(true);
+				}
+				
+				socket = io({query: {key: "xyz"}});
+				
+				socket.on("connect", (err) => {
+					startUpdateInterval();
+				});
+				
+				socket.on("disconnect", (err) => {
+					clearInterval(interval);
+					socket.disconnect(true);
+				});
+				
+				
+			});
+			
+			document.onkeydown = function(key) { reactKey(key); }
+			
+			canvas.width = canvas_width;
+			canvas.height = canvas_height;
+			
+			canvas.addEventListener('mousedown', function(e) {
+				reactClick(canvas, e)
+			})
+			
+			
+			canvas.addEventListener("contextmenu", function (e){
+				e.preventDefault();
+			}, false);
+			
+
+			async function reactKey(evt) {
+				await socket.emitWithAck("on_key", evt.keyCode);
+			}
+			
+			async function reactClick(canvas, event) {
+				event.preventDefault()
+			
+				const rect = canvas.getBoundingClientRect();
+				const x = event.clientX - rect.left - 10;
+				const y = event.clientY - rect.top - 10;
+				
+				switch (event.button) {
+					case 0:
+					  // left mouse button
+					  console.log("LEFT: x: " + x + " y: " + y);
+					  break;
+					case 1:
+					  // middle mouse button
+					  console.log("MIDDLE: x: " + x + " y: " + y);
+					  break;
+					default:
+					  // 2 === right mouse button
+					  console.log("RIGHT: x: " + x + " y: " + y);
+				}
+				
+				await socket.emitWithAck("on_click", event.button, x, y, IMAGE_SCALE_FACTOR);
+			}
+			
+			async function updateCanvas() {
+				if(isUpdating) {
+					return;
+				}
+				
+				isUpdating = true;
+				
+				const start = Date.now();
+				
+				let R = await socket.emitWithAck("get_data", IMAGE_SCALE_FACTOR);
+				
+				const end = Date.now();
+				const start2 = Date.now();
+				
+				let data = new Uint8ClampedArray(R.imageData.data);
+				let imageData = new ImageData(data, canvas_width, canvas_height)
+				ctx.putImageData(imageData, 0, 0);
+				isUpdating = false;
+				
+				const end2 = Date.now();
+				console.log(`Execution time: ${end - start} ms ${end2 - start2} ms`);
+			}
+			
+			function startUpdateInterval() {
+				timer = setInterval(updateCanvas, 1 / (FPS_RATE * 1000));
+			}
+		</script>
+	</body>
+</html>

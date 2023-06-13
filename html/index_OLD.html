@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en-US">	
+	<head>
+		<title>Canvas</title>
+	</head>
+
+	<body>
+		<h1>Canvas</h1>
+		
+		<canvas id="canvas" width="512" height="512" style="border:1px solid"></canvas>
+		
+		<script src="/socket.io/socket.io.js"></script>
+		
+		<script>
+			let socket;
+		
+			const canvas = document.getElementById("canvas");
+			
+			const ctx = canvas.getContext("2d");
+			
+			let x = 0;
+			let y = 0;
+			
+			let stepSize = 16;
+			
+			window.addEventListener('load', () => {
+				draw(x, y)
+			});
+			
+			document.onkeydown = function(key) { reactKey(key); }
+
+			function reactKey(evt) {
+				if(evt.keyCode == 37) { // Left
+					x -= stepSize;
+					draw(x, y);
+				}
+				else if(evt.keyCode == 38) { // Up
+					y -= stepSize;
+					draw(x, y);
+				}
+				else if(evt.keyCode == 39) { // Right
+					x += stepSize;
+					draw(x, y);
+				}
+				else if(evt.keyCode == 40) { // Down
+					y += stepSize;
+					draw(x, y);
+				}
+			}
+
+			function draw(x, y) {
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.beginPath();
+			
+				ctx.fillStyle = "green";
+				ctx.fillRect(x, y, 128, 128);
+			}
+		</script>
+	</body>
+</html>

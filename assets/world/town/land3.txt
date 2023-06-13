@@ -1,0 +1,9 @@
+2,0
+0,0,floor,red
+1,0,floor,red
+0,1,floor,red
+1,1,floor,red
+2,2,floor,green
+3,2,floor,green
+2,3,floor,green
+3,3,floor,green
