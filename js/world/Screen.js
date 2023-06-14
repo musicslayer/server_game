@@ -6,6 +6,7 @@ const COMMA = ",";
 const CRLF = "\r\n";
 
 class Screen {
+    // TODO Screens should be able to allow/disallow exiting from each of the four directions.
     x;
     y;
     tiles = [];

@@ -4,6 +4,7 @@ const ImageCatalog = require("../image/ImageCatalog.js");
 const Entity = require("./Entity.js");
 const Inventory = require("../client/Inventory.js");
 const Projectile = require("./Projectile.js");
+const Server = require("../server/Server.js");
 
 class Player extends Entity {
     health = 70;
@@ -15,27 +16,13 @@ class Player extends Entity {
     level = 1;
     experience = 0;
 
+    isInvincible = false;
+
+    hasInventory = true;
+    isTangible = true;
+
     inventory = new Inventory();
     
-    action() {
-        let projectile = new Projectile(this, this.direction, 8, false);
-        projectile.spawn(this.world, this.map, this.screen, this.x, this.y);
-    }
-
-    doTakeDamage(entity, damage) {
-        this.health -= damage;
-        // TODO Check if the entity has died and despawn/show death screen.
-        // TODO In PvP, "entity" should gain experience.
-    }
-
-    teleportHome() {
-        this.teleport(this.world, this.world.gameMaps[0], this.world.gameMaps[0].screens[0], 0, 0);
-    }
-
-    experienceBoost() {
-        this.addExperience(10);
-    }
-
     doAddExperience(experience) {
         this.experience += experience;
 
@@ -53,6 +40,13 @@ class Player extends Entity {
         this.mana = Math.min(this.mana + mana, this.maxMana);
     }
 
+    doMakeInvincible(invincibleSeconds) {
+        this.isInvincible = true;
+        Server.scheduleTaskForSeconds(invincibleSeconds, () => {
+            this.isInvincible = false;
+        });
+    }
+
     doInteract() {
         console.log("Another Player!");
     }
@@ -65,12 +59,17 @@ class Player extends Entity {
         this.inventory.removeFromInventory(entity);
     }
 
-    shiftInventorySlotForward() {
-        inventory.shiftInventorySlotForward();
+    doTakeDamage(entity, damage) {
+        if(!this.isInvincible) {
+            this.health -= damage;
+        }
+        // TODO Check if the entity has died and despawn/show death screen.
+        // TODO In PvP, "entity" should gain experience.
     }
 
-    shiftInventorySlotBackward() {
-        inventory.shiftInventorySlotBackward();
+    doAction() {
+        let projectile = new Projectile(this, this.direction, 8, false);
+        projectile.spawn(this.world, this.map, this.screen, this.x, this.y);
     }
 
     getImages() {
@@ -82,6 +81,15 @@ class Player extends Entity {
             y: this.y,
             image: ImageCatalog.IMAGE_CATALOG.getImageTableByName("player").getImageByName("mage")
         });
+
+        // Add any status effect images.
+        if(this.isInvincible) {
+            images.push({
+                x: this.x,
+                y: this.y,
+                image: ImageCatalog.IMAGE_CATALOG.getImageTableByName("status").getImageByName("invincible")
+            });
+        }
 
         // Add on health bar.
         images.push({
@@ -189,16 +197,22 @@ class Player extends Entity {
         return image;
     }
 
-
-
     //onLeftClick(slot) {
     //    // TODO Allow player to change order of items, display info about item?
     //}
 
+    shiftInventorySlotBackward() {
+        this.inventory.shiftInventorySlotBackward();
+    }
+
+    shiftInventorySlotForward() {
+        this.inventory.shiftInventorySlotForward();
+    }
+
     consumeFromInventory(slot) {
         // Consume 1 item in this inventory slot.
         let itemData = this.inventory.itemDataArray[slot];
-        if(itemData) {
+        if(itemData && itemData.item) {
             itemData.item.consume(this);
         }
     }

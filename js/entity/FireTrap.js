@@ -23,8 +23,10 @@ class FireTrap extends Entity {
 
     doInteract(entity) {
         // Do some damage to the other entity, and then this entity will despawn.
-        entity.doTakeDamage(this, this.damage);
-        this.doDespawn();
+        if(entity.isTangible) {
+            entity.doTakeDamage(this, this.damage);
+            this.doDespawn();
+        }
     }
 }
 

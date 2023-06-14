@@ -1,4 +1,5 @@
 class Server {
+    // TODO All state changes must be done through this class. We need to enforce this somehow.
     static TICK_RATE = 60; // times per second
 
     static preTaskQueue = [];
@@ -7,7 +8,14 @@ class Server {
 
     static refreshQueue = [];
 
-    static tickInterval = setInterval(() => { Server.processTasks(); Server.processRefresh(); }, 1 / (Server.TICK_RATE * 1000));
+    static currentTick = 0;
+    static scheduledTaskMap = new Map(); // tickNumber => task
+
+    static tickInterval = setInterval(() => {
+        Server.processTasks();
+        Server.processRefresh();
+        Server.currentTick++;
+    }, 1 / (Server.TICK_RATE * 1000));
 
     static addTask(fcn) {
         Server.taskQueue.push(fcn);
@@ -17,10 +25,18 @@ class Server {
         Server.refreshQueue.push(fcn);
     }
 
+    static scheduleTaskForSeconds(seconds, fcn) {
+        let tick = Server.currentTick + seconds * Server.TICK_RATE;
+        let tasks = Server.scheduledTaskMap.get(tick);
+        if(tasks === undefined) {
+            tasks = [];
+        }
+        tasks.push(fcn);
+        Server.scheduledTaskMap.set(tick, tasks);
+    }
+
     static processTasks() {
         // Store the queues here. Anything added at this point won't be executed until the next tick.
-        //console.log("PRE=" + Server.preTaskQueue.length + "|TASK=" + Server.taskQueue.length + "|POST=" + Server.postTaskQueue.length);
-
         let preTaskQueue = Server.preTaskQueue;
         Server.preTaskQueue = [];
 
@@ -35,6 +51,14 @@ class Server {
             fcn();
         }
 
+        let tasks = Server.scheduledTaskMap.get(Server.currentTick);
+        if(tasks !== undefined) {
+            for(let task of tasks) {
+                task();
+            }
+        }
+        Server.scheduledTaskMap.delete(Server.currentTick);
+
         while(taskQueue.length > 0) {
             let fcn = taskQueue.shift();
             fcn();
@@ -48,8 +72,6 @@ class Server {
 
     static processRefresh() {
         // Refresh tasks are recurring, so do not empty the array.
-        //console.log("REFRESH=" + Server.refreshQueue.length);
-
         for(let fcn of Server.refreshQueue) {
             fcn();
         }

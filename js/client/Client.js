@@ -47,21 +47,38 @@ class Client {
     }
 
     onKeyPress(key) {
-        let input = this.keyboard.processKey(key);
+        let input = this.keyboard.processKeyPress(key);
+
+        // Inventory
+        if(input === "inventory_previous") {
+            this.player.shiftInventorySlotBackward();
+        }
+        else if(input === "inventory_next") {
+            this.player.shiftInventorySlotForward();
+        }
+        else if(input === "inventory_use") {
+            this.player.consumeFromInventory(this.player.inventory.currentSlot);
+        }
 
         // Player Action
-        if(input === "action") {
+        else if(input === "action") {
             this.player.action();
         }
 
         // Player Teleport Home
         else if(input === "teleport_home") {
-            this.player.teleportHome();
+            this.player.teleport(this.world, this.world.gameMaps[0], this.world.gameMaps[0].screens[0], 0, 0);
         }
 
-        // Player Experience Boost
-        else if(input === "experience_boost") {
-            this.player.experienceBoost();
+        // Player Boosts
+        else if(input === "boost_experience") {
+            this.player.addExperience(10);
+        }
+        else if(input === "boost_health") {
+            this.player.addHealth(10);
+        }
+        else if(input === "boost_mana") {
+            this.player.addMana(10);
         }
 
         // Move Position
@@ -101,10 +118,49 @@ class Client {
         }
     }
 
+    onControllerPress(button) {
+        let input = this.controller.processButtonPress(key);
+
+        // Inventory
+        if(input === "inventory_previous") {
+            this.player.shiftInventorySlotBackward();
+        }
+        else if(input === "inventory_next") {
+            this.player.shiftInventorySlotForward();
+        }
+        else if(input === "inventory_use") {
+            this.player.consumeFromInventory(this.player.inventory.currentSlot);
+        }
+
+        // Player Action
+        else if(input === "action") {
+            this.player.action();
+        }
+
+        // Player Teleport Home
+        else if(input === "teleport_home") {
+            this.player.teleport(this.world, this.world.gameMaps[0], this.world.gameMaps[0].screens[0], 0, 0);
+        }
+
+        // Move Position
+        else if(input === "move_up") {
+            this.player.moveUp();
+        }
+        else if(input === "move_down") {
+            this.player.moveDown();
+        }
+        else if(input === "move_left") {
+            this.player.moveLeft();
+        }
+        else if(input === "move_right") {
+            this.player.moveRight();
+        }
+    }
+
     drawClient(imageScaleFactor) {
         let canvas = createCanvas((this.numTilesX + this.sidePanelTiles) * imageScaleFactor, this.numTilesY * imageScaleFactor);
         let ctx = canvas.getContext("2d");
-        ctx.beginPath();
+        //ctx.beginPath();
 
         //ctx.strokeStyle = "red";
 
@@ -122,6 +178,8 @@ class Client {
 
     drawScreen(ctx, imageScaleFactor) {
         // Only draw the screen where the player is located at.
+        ctx.beginPath();
+
         let images = this.player.screen.getScreenImages();
 
         while(images.length > 0) {
@@ -131,9 +189,13 @@ class Client {
 
         ctx.fillRect(this.numTilesX * imageScaleFactor, 0, imageScaleFactor, this.numTilesY * imageScaleFactor);
         ctx.fillRect((this.numTilesX + 1) * imageScaleFactor, 6 * imageScaleFactor, 9 * imageScaleFactor, imageScaleFactor);
+
+        ctx.stroke();
     }
 
     drawScreenGrid(ctx, imageScaleFactor) {
+        ctx.beginPath();
+
         for(let x = 0; x < this.numTilesX + 1; x++) {
             ctx.moveTo(x * imageScaleFactor, 0);
             ctx.lineTo(x * imageScaleFactor, this.numTilesY * imageScaleFactor);
@@ -143,22 +205,19 @@ class Client {
             ctx.moveTo(0, y * imageScaleFactor);
             ctx.lineTo(this.numTilesX * imageScaleFactor, y * imageScaleFactor);
         }
+
+        ctx.stroke();
     }
 
     drawInventory(ctx, imageScaleFactor) {
         this.drawInventoryGrid(ctx, imageScaleFactor);
-
-        let originX = 17;
-        let originY = 7;
-
-        let images = this.player.inventory.getInventoryImages();
-        while(images.length > 0) {
-            let imageData = images.shift();
-            ctx.drawImage(imageData.image, (originX + imageData.x) * imageScaleFactor, (originY + imageData.y) * imageScaleFactor, imageScaleFactor, imageScaleFactor);
-        }
+        this.drawInventoryItems(ctx, imageScaleFactor);
+        this.drawInventoryCursor(ctx, imageScaleFactor);
     }
 
     drawInventoryGrid(ctx, imageScaleFactor) {
+        ctx.beginPath();
+
         for(let x = this.numTilesX + 1; x < this.numTilesX + this.sidePanelTiles + 1; x++) {
             ctx.moveTo(x * imageScaleFactor, 7 * imageScaleFactor);
             ctx.lineTo(x * imageScaleFactor, this.numTilesY * imageScaleFactor);
@@ -168,6 +227,54 @@ class Client {
             ctx.moveTo((this.numTilesX + 1) * imageScaleFactor, y * imageScaleFactor);
             ctx.lineTo((this.numTilesX + this.sidePanelTiles) * imageScaleFactor, y * imageScaleFactor);
         }
+
+        ctx.stroke();
+    }
+
+    drawInventoryItems(ctx, imageScaleFactor) {
+        ctx.beginPath();
+        
+        let originX = 17;
+        let originY = 7;
+
+        let images = this.player.inventory.getInventoryImages();
+        while(images.length > 0) {
+            let imageData = images.shift();
+            ctx.drawImage(imageData.image, (originX + imageData.x) * imageScaleFactor, (originY + imageData.y) * imageScaleFactor, imageScaleFactor, imageScaleFactor);
+        }
+
+        ctx.stroke();
+    }
+
+    drawInventoryCursor(ctx, imageScaleFactor) {
+        let currentSlot = this.player.inventory.currentSlot;
+        if(currentSlot !== undefined) {
+            let xy = this.slot2XY(currentSlot, imageScaleFactor);
+
+            ctx.beginPath();
+            
+            ctx.lineWidth = "3";
+            ctx.strokeStyle = "red";
+
+            ctx.rect(xy[0], xy[1], imageScaleFactor, imageScaleFactor);
+            ctx.stroke();
+
+            ctx.lineWidth = "1";
+            ctx.strokeStyle = "black";
+        }
+    }
+
+    slot2XY(slot, imageScaleFactor) {
+        let originX = 17;
+        let originY = 7;
+
+        let nx = slot % 9;
+        let ny = Math.floor(slot / 9);
+
+        let x = (originX + nx) * imageScaleFactor;
+        let y = (originY + ny) * imageScaleFactor;
+
+        return [x, y];
     }
 
     isScreen(x, y, imageScaleFactor) {
@@ -177,7 +284,7 @@ class Client {
             // Return normalized x, y
             nScreen = [Math.floor(x / imageScaleFactor), Math.floor(y / imageScaleFactor)];
 
-            console.log("GRID: x: " + nScreen[0] + " y: " + nScreen[1]);
+            //console.log("GRID: x: " + nScreen[0] + " y: " + nScreen[1]);
         }
 
         return nScreen;
@@ -195,7 +302,7 @@ class Client {
             let ny = Math.floor((y / imageScaleFactor) - originY);
             slot = ny * 9 + nx;
 
-            console.log("Inventory: " + slot);
+            //console.log("Inventory: " + slot);
         }
 
         return slot;

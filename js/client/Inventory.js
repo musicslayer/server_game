@@ -9,12 +9,29 @@ class Inventory {
     itemDataArray = []; // {item, id, count}
 
     addToInventory(entity) {
+        // TODO If inventory is full, do not pick up item.
+        // TODO Should there be a key to pick up item?
+
         // See if this item is already in the inventory and there is room in the stack to add it. Otherwise create a new stack.
+        let index = 0;
+
         for(let itemData of this.itemDataArray) {
+            // TODO We should only use the undefined slot if the item doesn't already exist anywhere in the inventory.
+            if(itemData === undefined) {
+                this.itemDataArray[index] = {
+                    item: entity,
+                    id: entity.id,
+                    count: 1
+                }
+                return;
+            }
+
             if(itemData.id === entity.id && itemData.count < this.maxStackSize) {
                 itemData.count++;
                 return;
             }
+
+            index++;
         }
 
         this.itemDataArray.push({
@@ -32,7 +49,10 @@ class Inventory {
             if(itemData.id === entity.id) {
                 itemData.count--;
                 if(itemData.count === 0) {
-                    this.itemDataArray.splice(index, 1);
+                    // Remove this item without shifting anything else.
+                    //this.itemDataArray.splice(index, 1);
+
+                    this.itemDataArray[index] = undefined;
                 }
                 
                 return;
@@ -42,21 +62,21 @@ class Inventory {
         }
     }
 
+    shiftInventorySlotBackward() {
+        if(this.currentSlot === undefined || this.currentSlot === 0) {
+            this.currentSlot = this.maxSlots - 1;
+        }
+        else {
+            this.currentSlot--;
+        }
+    }
+
     shiftInventorySlotForward() {
-        if(!this.currentSlot) {
+        if(this.currentSlot === undefined || this.currentSlot === this.maxSlots - 1) {
             this.currentSlot = 0;
         }
         else {
             this.currentSlot++;
-        }
-    }
-
-    shiftInventorySlotBackward() {
-        if(!this.currentSlot) {
-            this.currentSlot = this.maxSlots;
-        }
-        else {
-            this.currentSlot--;
         }
     }
 
@@ -72,22 +92,24 @@ class Inventory {
             let x = xSlots.shift();
             let y = ySlots.shift();
 
-            let itemImages = itemData.item.getImages();
-            for(let itemImage of itemImages) {
-                images.push({
-                    x: x,
-                    y: y,
-                    image: itemImage.image
-                });
-            }
+            let itemImages = itemData?.item?.getImages();
+            if(itemImages) {
+                for(let itemImage of itemImages) {
+                    images.push({
+                        x: x,
+                        y: y,
+                        image: itemImage.image
+                    });
+                }
 
-            // For cosmetic reasons, only add the count if it is > 1
-            if(itemData.count > 1) {
-                images.push({
-                    x: x,
-                    y: y,
-                    image: this.getCountImage(itemData.count)
-                });
+                // For cosmetic reasons, only add the count if it is > 1
+                if(itemData.count > 1) {
+                    images.push({
+                        x: x,
+                        y: y,
+                        image: this.getCountImage(itemData.count)
+                    });
+                }
             }
         }
 

@@ -1,13 +1,13 @@
 const Entity = require("./Entity.js");
 const ImageCatalog = require("../image/ImageCatalog.js");
 
-class ManaPotion extends Entity {
-    manaReward;
+class InvinciblePotion extends Entity {
+    invincibleSeconds;
 
     constructor() {
         super();
-        this.id = "mana_potion";
-        this.manaReward = 40;
+        this.id = "invincible_potion";
+        this.invincibleSeconds = 10;
     }
 
     getImages() {
@@ -16,7 +16,7 @@ class ManaPotion extends Entity {
         images.push({
             x: this.x,
             y: this.y,
-            image: ImageCatalog.IMAGE_CATALOG.getImageTableByName("item").getImageByName("potion_mana")
+            image: ImageCatalog.IMAGE_CATALOG.getImageTableByName("item").getImageByName("potion_invincible")
         });
 
         return images;
@@ -31,10 +31,10 @@ class ManaPotion extends Entity {
     }
 
     doConsume(entity) {
-        // The item will be eliminated from the inventory and restore the player's health.
-        entity.addMana(this.manaReward);
+        // The item will be eliminated from the inventory and make the player invincible.
+        entity.makeInvincible(this.invincibleSeconds);
         entity.removeFromInventory(this);
     }
 }
 
-module.exports = ManaPotion;
+module.exports = InvinciblePotion;

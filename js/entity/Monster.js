@@ -8,6 +8,9 @@ class Monster extends Entity {
     maxHealth = 100;
     experienceReward = 20;
 
+    isTangible = true;
+    blocksMovement = true;
+
     doTakeDamage(entity, damage) {
         this.health -= damage;
         if(this.health <= 0) {

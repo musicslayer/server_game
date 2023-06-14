@@ -18,6 +18,10 @@ class Entity {
     x;
     y;
 
+    hasInventory = false;
+    isTangible = false;
+    blocksMovement = false;
+
     // To avoid awkward edge cases, just make every entity start facing to the right.
     direction = "right";
 
@@ -40,9 +44,21 @@ class Entity {
         });
     }
 
+    makeInvincible(invincibleSeconds) {
+        Server.addTask(() => {
+            this.doMakeInvincible(invincibleSeconds);
+        });
+    }
+
     checkCollision() {
         Server.addTask(() => {
             this.doCheckCollision();
+        });
+    }
+
+    checkMovement() {
+        Server.addTask(() => {
+            this.doCheckMovement();
         });
     }
 
@@ -178,6 +194,10 @@ class Entity {
         // By default, do nothing.
     }
 
+    doMakeInvincible(invincibleSeconds) {
+        // By default, do nothing.
+    }
+
     doCheckCollision() {
         // Call this after any movement to see if this entity is overlapping another on the same screen.
         let entities = this.screen.entities;
@@ -190,19 +210,35 @@ class Entity {
         }
     }
 
-    doConsume(entity) {
-        // By default, do nothing.
+    doCheckMovement() {
+        // Call this after any movement to see if this entity is overlapping another on the same screen.
+        let x = this.x;
+        let y = this.y;
+        if(this.direction === "up") {
+            y--;
+        }
+        else if(this.direction === "down") {
+            y++;
+        }
+        else if(this.direction === "left") {
+            x--;
+        }
+        else if(this.direction === "right") {
+            x++;
+        }
+
+        let entities = this.screen.entities;
+        for(let entity of entities) {
+            if(this !== entity && x === entity.x && y === entity.y && entity.blocksMovement) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
-
-    doSpawn(world, map, screen, x, y) {
-        this.world = world;
-        this.map = map;
-        this.screen = screen;
-        this.x = x;
-        this.y = y;
-
-        this.screen.addEntity(this);
+    doConsume(entity) {
+        // By default, do nothing.
     }
 
     doDespawn() {
@@ -213,7 +249,15 @@ class Entity {
         // By default, do nothing.
     }
 
+    doSpawn(world, map, screen, x, y) {
+        this.world = world;
+        this.map = map;
+        this.screen = screen;
+        this.x = x;
+        this.y = y;
 
+        this.screen.addEntity(this);
+    }
 
     doTakeDamage(entity, damage) {
         // By default, do nothing.
@@ -243,6 +287,10 @@ class Entity {
     // Also, if you move onto another entity, the two entities interact with each other.
     doMoveLeft() {
         this.direction = "left";
+        if(!this.doCheckMovement()) {
+            return;
+        }
+
         this.x--;
         if(this.x < 0) {
             this.x = this.numTilesX - 1;
@@ -254,6 +302,10 @@ class Entity {
 
     doMoveUp() {
         this.direction = "up";
+        if(!this.doCheckMovement()) {
+            return;
+        }
+
         this.y--;
         if(this.y < 0) {
             this.y = this.numTilesY - 1;
@@ -265,6 +317,10 @@ class Entity {
 
     doMoveRight() {
         this.direction = "right";
+        if(!this.doCheckMovement()) {
+            return;
+        }
+
         this.x++;
         if(this.x > this.numTilesX - 1) {
             this.x = 0;
@@ -276,6 +332,10 @@ class Entity {
 
     doMoveDown() {
         this.direction = "down";
+        if(!this.doCheckMovement()) {
+            return;
+        }
+        
         this.y++;
         if(this.y > this.numTilesY - 1) {
             this.y = 0;

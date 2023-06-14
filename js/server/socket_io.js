@@ -13,8 +13,13 @@ function createSocketIOServer(server, client) {
 				callback();
 			});
 
-			socket.on("on_key", (key, callback) => {
+			socket.on("on_key_press", (key, callback) => {
 				client.onKeyPress(key);
+				callback();
+			});
+
+			socket.on("on_controller_press", (button, callback) => {
+				client.onControllerPress(button);
 				callback();
 			});
 

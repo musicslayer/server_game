@@ -3,7 +3,6 @@ const ImageCatalog = require("../image/ImageCatalog.js");
 
 class HealthPotion extends Entity {
     healthReward;
-    isInventory;
 
     constructor() {
         super();
@@ -25,23 +24,18 @@ class HealthPotion extends Entity {
 
     doInteract(entity) {
         // The item will be collected.
-        entity.addToInventory(this);
-        this.isInventory = true;
-        this.doDespawn();
+        if(entity.hasInventory) {
+            entity.addToInventory(this);
+            this.doDespawn();
+        }
     }
 
     doConsume(entity) {
         // The item will be eliminated from the inventory and restore the player's health.
+        // TODO Potions cannot be used if the player has full health/mana/invincibility.
+        // TODO Cool down.
         entity.addHealth(this.healthReward);
         entity.removeFromInventory(this);
-    }
-
-    doOnLeftClick() {
-        // TODO - Allow someone to move something two another inventory slot.
-    }
-
-    doOnRightClick() {
-
     }
 }
 

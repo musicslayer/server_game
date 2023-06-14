@@ -45,11 +45,19 @@
 					clearInterval(interval);
 					socket.disconnect(true);
 				});
-				
-				
 			});
 			
-			document.onkeydown = function(key) { reactKey(key); }
+			window.addEventListener("gamepadconnected", (e) => {
+			  console.log(
+				"Gamepad connected at index %d: %s. %d buttons, %d axes.",
+				e.gamepad.index,
+				e.gamepad.id,
+				e.gamepad.buttons.length,
+				e.gamepad.axes.length
+			  );
+			});
+			
+			document.onkeydown = function(key) { reactKeyPress(key); }
 			
 			canvas.width = canvas_width;
 			canvas.height = canvas_height;
@@ -58,14 +66,44 @@
 				reactClick(canvas, e)
 			})
 			
-			
 			canvas.addEventListener("contextmenu", function (e){
 				e.preventDefault();
 			}, false);
 			
+			// TODO What if multiple keys/buttons are pressed?
+			
+			async function checkControllerPress() {
+				const gamepads = navigator.getGamepads();
+				if (!gamepads) {
+					return;
+				}
 
-			async function reactKey(evt) {
-				await socket.emitWithAck("on_key", evt.keyCode);
+				for(let gp of gamepads) {
+					if(!gp) {
+						return;
+					}
+					
+					for(let i = 0; i < gp.buttons.length; i++) {
+						if(buttonPressed(gp.buttons[i])) {
+							console.log("Button: " + i);
+						}
+					}
+				}
+			}
+			
+			function buttonPressed(b) {
+				if (typeof b === "object") {
+					return b.pressed;
+				}
+				return b === 1.0;
+			}
+			
+			async function reactControllerPress(evt) {
+				await socket.emitWithAck("on_controller_press", evt.keyCode);
+			}
+
+			async function reactKeyPress(evt) {
+				await socket.emitWithAck("on_key_press", evt.keyCode);
 			}
 			
 			async function reactClick(canvas, event) {
@@ -74,20 +112,6 @@
 				const rect = canvas.getBoundingClientRect();
 				const x = event.clientX - rect.left - 10;
 				const y = event.clientY - rect.top - 10;
-				
-				switch (event.button) {
-					case 0:
-					  // left mouse button
-					  console.log("LEFT: x: " + x + " y: " + y);
-					  break;
-					case 1:
-					  // middle mouse button
-					  console.log("MIDDLE: x: " + x + " y: " + y);
-					  break;
-					default:
-					  // 2 === right mouse button
-					  console.log("RIGHT: x: " + x + " y: " + y);
-				}
 				
 				await socket.emitWithAck("on_click", event.button, x, y, IMAGE_SCALE_FACTOR);
 			}
@@ -99,24 +123,27 @@
 				
 				isUpdating = true;
 				
-				const start = Date.now();
+				//const start = Date.now();
 				
 				let R = await socket.emitWithAck("get_data", IMAGE_SCALE_FACTOR);
 				
-				const end = Date.now();
-				const start2 = Date.now();
+				//const end = Date.now();
+				//const start2 = Date.now();
 				
 				let data = new Uint8ClampedArray(R.imageData.data);
 				let imageData = new ImageData(data, canvas_width, canvas_height)
 				ctx.putImageData(imageData, 0, 0);
 				isUpdating = false;
 				
-				const end2 = Date.now();
-				console.log(`Execution time: ${end - start} ms ${end2 - start2} ms`);
+				//const end2 = Date.now();
+				//console.log(`Execution time: ${end - start} ms ${end2 - start2} ms`);
 			}
 			
 			function startUpdateInterval() {
-				timer = setInterval(updateCanvas, 1 / (FPS_RATE * 1000));
+				timer = setInterval(() => {
+					checkControllerPress();
+					updateCanvas();
+				}, 1 / (FPS_RATE * 1000));
 			}
 		</script>
 	</body>

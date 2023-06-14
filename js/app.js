@@ -23,7 +23,6 @@ async function init() {
     //const httpsServer = https.createHTTPSServer();
     const io = socket_io.createSocketIOServer(httpServer, client);
 
-    console.log(world);
-    console.log("World loaded.");
+    console.log("Server initialized successfully.");
 }
 init();

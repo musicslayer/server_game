@@ -1,53 +1,25 @@
-const Server = require("../server/Server.js");
+class Controller {
+    // TODO Analog sticks?
+    _a = 0;
+    _b = 1;
+    _x = 2;
+    _y = 3;
 
-class Keyboard {
-    _spacebar = 32;
+    _l1 = 4;
+    _r1 = 5;
+    _l2 = 6;
+    _r2 = 7;
 
-    _leftarrow = 37;
-    _uparrow = 38;
-    _rightarrow = 39;
-    _downarrow = 40;
+    _start = 8; // NAME?
+    _select = 9; // NAME?
 
-    _0 = 48;
-    _1 = 49;
-    _2 = 50;
-    _3 = 51;
-    _4 = 52;
-    _5 = 53;
-    _6 = 54;
-    _7 = 55;
-    _8 = 56;
-    _9 = 57;
+    _leftstick = 10;
+    _rightstick = 11;
 
-    _a = 65;
-    _b = 66;
-    _c = 67;
-    _d = 68;
-    _e = 69;
-    _f = 70;
-    _g = 71;
-    _h = 72;
-    _i = 73;
-    _j = 74;
-    _k = 75;
-    _l = 76;
-    _m = 77;
-    _n = 78;
-    _o = 79;
-    _p = 80;
-    _q = 81;
-    _r = 82;
-    _s = 83;
-    _t = 84;
-    _u = 85;
-    _v = 86;
-    _w = 87;
-    _x = 88;
-    _y = 89;
-    _z = 90;
-
-    _equals = 187;
-    _dash = 189;
+    _up = 12;
+    _down = 13;
+    _left = 14;
+    _right = 15;
 
 
     flagInventoryPrevious;
@@ -147,7 +119,7 @@ class Keyboard {
         this.flagMapUp = false;
     }
 
-    processKeyPress(key) {
+    processButtonPress(button) {
         let input;
 
         // Inventory
@@ -244,4 +216,4 @@ class Keyboard {
     }
 }
 
-module.exports = Keyboard;
+module.exports = Controller;
