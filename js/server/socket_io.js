@@ -5,21 +5,23 @@ function createSocketIOServer(server, client) {
 		let type = "";
 
 		if(socket.handshake.query.key) {
-			// Respond to key press
+			// Respond to key presses
+			// Note: Multiple keys/controller buttons may be pressed at once, 
+			// but mouse clicks are discrete events and are only processed one button at a time.
 			type = type + "Key;";
 
 			socket.on("on_click", (button, x, y, imageScaleFactor, callback) => {
-				client.onClick(button, x, y, imageScaleFactor);
+				client.onClick([button], x, y, imageScaleFactor);
 				callback();
 			});
 
-			socket.on("on_key_press", (key, callback) => {
-				client.onKeyPress(key);
+			socket.on("on_key_press", (keys, callback) => {
+				client.onKeyPress(keys);
 				callback();
 			});
 
-			socket.on("on_controller_press", (button, callback) => {
-				client.onControllerPress(button);
+			socket.on("on_controller_press", (buttons, callback) => {
+				client.onControllerPress(buttons);
 				callback();
 			});
 

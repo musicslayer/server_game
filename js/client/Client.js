@@ -1,17 +1,20 @@
-const { createCanvas, ImageData } = require("canvas")
+const { createCanvas } = require("canvas")
 
 const Keyboard = require("../input/Keyboard.js");
 const Mouse = require("../input/Mouse.js");
+const Controller = require("../input/Controller.js");
 
 class Client {
-    numTilesX = 16;
-    numTilesY = 12;
+    maxNumTilesX = 16;
+    maxNumTilesY = 12;
     sidePanelTiles = 10;
 
     world;
     player;
+
     keyboard;
     mouse;
+    controller;
 
     isGrid = true;
 
@@ -20,145 +23,150 @@ class Client {
         this.player = player;
         this.keyboard = new Keyboard();
         this.mouse = new Mouse();
+        this.controller = new Controller();
+    }
+
+    getNumTilesX() {
+        return Math.min(this.maxNumTilesX, this.player.screen.numTilesX);
+    }
+
+    getNumTilesY() {
+        return Math.min(this.maxNumTilesY, this.player.screen.numTilesY);
     }
 
     onClick(button, x, y, imageScaleFactor) {
-        let input = this.mouse.processClick(button);
+        let inputs = this.mouse.processClick(button);
 
         let nScreen = this.isScreen(x, y, imageScaleFactor);
         let slot = this.isInventory(x, y, imageScaleFactor);
 
         if(nScreen !== undefined) {
             // TODO What happens when you click on the screen (display info? use skill?)
+            // TODO Allow player to change order of items, display info about item?
 
             // For now, left clicking on the screen is a teleport.
-            if(input === "left") {
+            if(inputs.includes("left")) {
                 this.player.teleport(this.player.world, this.player.map, this.player.screen, nScreen[0], nScreen[1]);
             }
         }
         else if(slot !== undefined) {
-            if(input === "left") {
-                //this.player.inventory.onLeftClick(slot);
-            }
-            else if(input === "right") {
+            if(inputs.includes("left")) {
                 this.player.consumeFromInventory(slot);
+            }
+            else if(inputs.includes("right")) {
+                this.player.dropFromInventory(slot, 1);
             }
         }
     }
 
-    onKeyPress(key) {
-        let input = this.keyboard.processKeyPress(key);
+    onKeyPress(keys) {
+        let inputs = this.keyboard.processKeyPress(keys);
 
-        // Inventory
-        if(input === "inventory_previous") {
+        // Inventory (only one will be executed)
+        if(inputs.includes("inventory_previous")) {
             this.player.shiftInventorySlotBackward();
         }
-        else if(input === "inventory_next") {
+        else if(inputs.includes("inventory_next")) {
             this.player.shiftInventorySlotForward();
         }
-        else if(input === "inventory_use") {
-            this.player.consumeFromInventory(this.player.inventory.currentSlot);
+        else if(inputs.includes("inventory_use")) {
+            this.player.consumeFromInventoryCurrentSlot();
         }
 
         // Player Action
-        else if(input === "action") {
+        if(inputs.includes("action")) {
             this.player.action();
         }
 
-        // Player Teleport Home
-        else if(input === "teleport_home") {
+        // **** Player Teleport Home
+        if(inputs.includes("teleport_home")) {
             this.player.teleport(this.world, this.world.gameMaps[0], this.world.gameMaps[0].screens[0], 0, 0);
         }
 
-        // Player Boosts
-        else if(input === "boost_experience") {
+        // **** Player Boosts
+        if(inputs.includes("boost_experience")) {
             this.player.addExperience(10);
         }
-        else if(input === "boost_health") {
+        if(inputs.includes("boost_health")) {
             this.player.addHealth(10);
         }
-        else if(input === "boost_mana") {
+        if(inputs.includes("boost_mana")) {
             this.player.addMana(10);
         }
 
-        // Move Position
-        else if(input === "move_up") {
+        // Move Position (only one will be executed)
+        if(inputs.includes("move_up")) {
             this.player.moveUp();
         }
-        else if(input === "move_down") {
+        else if(inputs.includes("move_down")) {
             this.player.moveDown();
         }
-        else if(input === "move_left") {
+        else if(inputs.includes("move_left")) {
             this.player.moveLeft();
         }
-        else if(input === "move_right") {
+        else if(inputs.includes("move_right")) {
             this.player.moveRight();
         }
 
-        // Move Screens
-        else if(input === "screen_up") {
+        // **** Move Screens (only one will be executed)
+        if(inputs.includes("screen_up")) {
             this.player.screenUp();
         }
-        else if(input === "screen_down") {
+        else if(inputs.includes("screen_down")) {
             this.player.screenDown();
         }
-        else if(input === "screen_left") {
+        else if(inputs.includes("screen_left")) {
             this.player.screenLeft();
         }
-        else if(input === "screen_right") {
+        else if(inputs.includes("screen_right")) {
             this.player.screenRight();
         }
 
-        // Move Maps
-        else if(input === "map_up") {
+        // **** Move Maps (only one will be executed)
+        if(inputs.includes("map_up")) {
             this.player.mapUp();
         }
-        else if(input === "map_down") {
+        else if(inputs.includes("map_down")) {
             this.player.mapDown();
         }
     }
 
-    onControllerPress(button) {
-        let input = this.controller.processButtonPress(key);
+    onControllerPress(buttons) {
+        let inputs = this.controller.processButtonPress(buttons);
 
-        // Inventory
-        if(input === "inventory_previous") {
+        // Inventory (only one will be executed)
+        if(inputs.includes("inventory_previous")) {
             this.player.shiftInventorySlotBackward();
         }
-        else if(input === "inventory_next") {
+        else if(inputs.includes("inventory_next")) {
             this.player.shiftInventorySlotForward();
         }
-        else if(input === "inventory_use") {
-            this.player.consumeFromInventory(this.player.inventory.currentSlot);
+        else if(inputs.includes("inventory_use")) {
+            this.player.consumeFromInventoryCurrentSlot();
         }
 
         // Player Action
-        else if(input === "action") {
+        if(inputs.includes("action")) {
             this.player.action();
         }
 
-        // Player Teleport Home
-        else if(input === "teleport_home") {
-            this.player.teleport(this.world, this.world.gameMaps[0], this.world.gameMaps[0].screens[0], 0, 0);
-        }
-
-        // Move Position
-        else if(input === "move_up") {
+        // Move Position (only one will be executed)
+        if(inputs.includes("move_up")) {
             this.player.moveUp();
         }
-        else if(input === "move_down") {
+        else if(inputs.includes("move_down")) {
             this.player.moveDown();
         }
-        else if(input === "move_left") {
+        else if(inputs.includes("move_left")) {
             this.player.moveLeft();
         }
-        else if(input === "move_right") {
+        else if(inputs.includes("move_right")) {
             this.player.moveRight();
         }
     }
 
     drawClient(imageScaleFactor) {
-        let canvas = createCanvas((this.numTilesX + this.sidePanelTiles) * imageScaleFactor, this.numTilesY * imageScaleFactor);
+        let canvas = createCanvas((this.getNumTilesX() + this.sidePanelTiles) * imageScaleFactor, this.getNumTilesY() * imageScaleFactor);
         let ctx = canvas.getContext("2d");
         //ctx.beginPath();
 
@@ -187,8 +195,8 @@ class Client {
             ctx.drawImage(imageData.image, imageData.x * imageScaleFactor, imageData.y * imageScaleFactor, imageScaleFactor, imageScaleFactor);
         }
 
-        ctx.fillRect(this.numTilesX * imageScaleFactor, 0, imageScaleFactor, this.numTilesY * imageScaleFactor);
-        ctx.fillRect((this.numTilesX + 1) * imageScaleFactor, 6 * imageScaleFactor, 9 * imageScaleFactor, imageScaleFactor);
+        ctx.fillRect(this.getNumTilesX() * imageScaleFactor, 0, imageScaleFactor, this.getNumTilesY() * imageScaleFactor);
+        ctx.fillRect((this.getNumTilesX() + 1) * imageScaleFactor, 6 * imageScaleFactor, 9 * imageScaleFactor, imageScaleFactor);
 
         ctx.stroke();
     }
@@ -196,14 +204,14 @@ class Client {
     drawScreenGrid(ctx, imageScaleFactor) {
         ctx.beginPath();
 
-        for(let x = 0; x < this.numTilesX + 1; x++) {
+        for(let x = 0; x < this.getNumTilesX() + 1; x++) {
             ctx.moveTo(x * imageScaleFactor, 0);
-            ctx.lineTo(x * imageScaleFactor, this.numTilesY * imageScaleFactor);
+            ctx.lineTo(x * imageScaleFactor, this.getNumTilesY() * imageScaleFactor);
         }
 
-        for(let y = 0; y < this.numTilesY + 1; y++) {
+        for(let y = 0; y < this.getNumTilesY() + 1; y++) {
             ctx.moveTo(0, y * imageScaleFactor);
-            ctx.lineTo(this.numTilesX * imageScaleFactor, y * imageScaleFactor);
+            ctx.lineTo(this.getNumTilesX() * imageScaleFactor, y * imageScaleFactor);
         }
 
         ctx.stroke();
@@ -218,14 +226,14 @@ class Client {
     drawInventoryGrid(ctx, imageScaleFactor) {
         ctx.beginPath();
 
-        for(let x = this.numTilesX + 1; x < this.numTilesX + this.sidePanelTiles + 1; x++) {
+        for(let x = this.getNumTilesX() + 1; x < this.getNumTilesX() + this.sidePanelTiles + 1; x++) {
             ctx.moveTo(x * imageScaleFactor, 7 * imageScaleFactor);
-            ctx.lineTo(x * imageScaleFactor, this.numTilesY * imageScaleFactor);
+            ctx.lineTo(x * imageScaleFactor, this.getNumTilesY() * imageScaleFactor);
         }
 
-        for(let y = 7; y < this.numTilesY + 1; y++) {
-            ctx.moveTo((this.numTilesX + 1) * imageScaleFactor, y * imageScaleFactor);
-            ctx.lineTo((this.numTilesX + this.sidePanelTiles) * imageScaleFactor, y * imageScaleFactor);
+        for(let y = 7; y < this.getNumTilesY() + 1; y++) {
+            ctx.moveTo((this.getNumTilesX() + 1) * imageScaleFactor, y * imageScaleFactor);
+            ctx.lineTo((this.getNumTilesX() + this.sidePanelTiles) * imageScaleFactor, y * imageScaleFactor);
         }
 
         ctx.stroke();
@@ -280,8 +288,8 @@ class Client {
     isScreen(x, y, imageScaleFactor) {
         let nScreen;
 
-        if(x >= 0 && x < this.numTilesX * imageScaleFactor && y >= 0 && y < this.numTilesY * imageScaleFactor) {
-            // Return normalized x, y
+        if(x >= 0 && x < this.getNumTilesX() * imageScaleFactor && y >= 0 && y < this.getNumTilesY() * imageScaleFactor) {
+            // Return normalized x,y
             nScreen = [Math.floor(x / imageScaleFactor), Math.floor(y / imageScaleFactor)];
 
             //console.log("GRID: x: " + nScreen[0] + " y: " + nScreen[1]);

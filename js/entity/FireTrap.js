@@ -2,19 +2,16 @@ const Entity = require("./Entity.js");
 const ImageCatalog = require("../image/ImageCatalog.js");
 
 class FireTrap extends Entity {
-    damage;
-
-    constructor() {
-        super();
-        this.damage = 40;
-    }
+    id = "fire_trap";
+    
+    damage = 40;
 
     getImages() {
         let images = [];
 
         images.push({
-            x: this.x,
-            y: this.y,
+            x: this.x + this.animationShiftX,
+            y: this.y + this.animationShiftY,
             image: ImageCatalog.IMAGE_CATALOG.getImageTableByName("trap").getImageByName("fire")
         });
 

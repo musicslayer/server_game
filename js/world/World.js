@@ -3,8 +3,6 @@ const fs = require("fs");
 const GameMap = require("./GameMap.js");
 
 class World {
-    static WORLD;
-
     gameMaps = [];
     gameMapMap = new Map();
 
@@ -13,11 +11,10 @@ class World {
 
         let mapFolders = fs.readdirSync(worldFolder);
         for(const mapFolder of mapFolders) {
-            let map = GameMap.loadMapFromFolder(worldFolder + mapFolder + "/");
+            let map = GameMap.loadMapFromFolder(worldFolder + mapFolder + "/", world);
             world.addMap(mapFolder, map);
         }
 
-        World.WORLD = world;
         return world;
     }
 
@@ -26,12 +23,12 @@ class World {
         this.gameMapMap.set(name, map);
     }
 
-    getMapAbove(map) {
+    getMapUp(map) {
         let idx = this.gameMaps.indexOf(map);
         return this.getMapByPosition(idx + 1);
     }
 
-    getMapBelow(map) {
+    getMapDown(map) {
         let idx = this.gameMaps.indexOf(map);
         return this.getMapByPosition(idx - 1);
     }

@@ -2,20 +2,18 @@ const Entity = require("./Entity.js");
 const ImageCatalog = require("../image/ImageCatalog.js");
 
 class ManaPotion extends Entity {
-    manaReward;
+    id = "mana_potion";
+    maxStackNumber = 1;
+    maxStackSize = 20;
 
-    constructor() {
-        super();
-        this.id = "mana_potion";
-        this.manaReward = 40;
-    }
+    manaReward = 40;
 
     getImages() {
         let images = [];
 
         images.push({
-            x: this.x,
-            y: this.y,
+            x: this.x + this.animationShiftX,
+            y: this.y + this.animationShiftY,
             image: ImageCatalog.IMAGE_CATALOG.getImageTableByName("item").getImageByName("potion_mana")
         });
 
@@ -24,16 +22,20 @@ class ManaPotion extends Entity {
 
     doInteract(entity) {
         // The item will be collected.
-        if(entity.hasInventory) {
-            entity.addToInventory(this);
-            this.doDespawn();
+        if(entity.inventory) {
+            let success = entity.doAddToInventory(this);
+            if(success) {
+                this.doDespawn();
+            }
         }
     }
 
+    canConsume(entity) {
+        return entity.mana < entity.maxMana;
+    }
+
     doConsume(entity) {
-        // The item will be eliminated from the inventory and restore the player's health.
         entity.addMana(this.manaReward);
-        entity.removeFromInventory(this);
     }
 }
 

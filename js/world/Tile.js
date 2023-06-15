@@ -3,12 +3,11 @@ const ImageCatalog = require("../image/ImageCatalog.js");
 class Tile {
     x;
     y;
+
     imageTableNameArray;
     imageNameArray;
 
-    constructor(x, y, imageTableNameArray, imageNameArray) {
-        this.x = x;
-        this.y = y;
+    constructor(imageTableNameArray, imageNameArray) {
         this.imageTableNameArray = imageTableNameArray;
         this.imageNameArray = imageNameArray;
     }

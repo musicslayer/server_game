@@ -13,6 +13,7 @@
 		
 		<script>
 			const FPS_RATE = 60; // times per second
+			//const FPS_RATE = 1; // times per second
 			
 			const NUM_TILES_X = 16;
 			const NUM_TILES_Y = 12;
@@ -29,6 +30,9 @@
 			let interval;
 		
 			let isUpdating = false;
+			
+			let isKeyPressed = {};
+			//let isButtonPressed = {};
 			
 			window.addEventListener('load', () => {
 				if(socket) {
@@ -47,31 +51,75 @@
 				});
 			});
 			
+			/*
 			window.addEventListener("gamepadconnected", (e) => {
-			  console.log(
-				"Gamepad connected at index %d: %s. %d buttons, %d axes.",
-				e.gamepad.index,
-				e.gamepad.id,
-				e.gamepad.buttons.length,
-				e.gamepad.axes.length
-			  );
+				console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
+					e.gamepad.index,
+					e.gamepad.id,
+					e.gamepad.buttons.length,
+					e.gamepad.axes.length
+				);
 			});
-			
-			document.onkeydown = function(key) { reactKeyPress(key); }
+			*/
 			
 			canvas.width = canvas_width;
 			canvas.height = canvas_height;
 			
 			canvas.addEventListener('mousedown', function(e) {
-				reactClick(canvas, e)
+				//console.log("MOUSE: " + e.button);
+				reactButtonClick(canvas, e)
 			})
 			
 			canvas.addEventListener("contextmenu", function (e){
 				e.preventDefault();
 			}, false);
 			
-			// TODO What if multiple keys/buttons are pressed?
 			
+			
+			
+			
+			document.onkeydown = (evt) => { 
+				isKeyPressed[evt.keyCode] = true;
+			}
+			
+			document.onkeyup = (evt) => {
+				isKeyPressed[evt.keyCode] = false;
+			}
+			
+			async function checkKeyPress() {
+				let keys = [];
+				for(let key in isKeyPressed) {
+					if(isKeyPressed[key]) {
+						keys.push(Number(key));
+					}
+				}
+				reactKeyPress(keys);
+			}
+			
+			async function checkControllerPress() {
+				const gamepads = navigator.getGamepads();
+				if (!gamepads) {
+					return;
+				}
+
+				for(let gp of gamepads) {
+					if(!gp) {
+						continue;
+					}
+					
+					let buttons = [];
+					
+					for(let i = 0; i < gp.buttons.length; i++) {
+						if(controllerButtonPressed(gp.buttons[i])) {
+							buttons.push(i);
+						}
+					}
+					
+					reactControllerPress(buttons);
+				}
+			}
+			
+			/*
 			async function checkControllerPress() {
 				const gamepads = navigator.getGamepads();
 				if (!gamepads) {
@@ -84,29 +132,31 @@
 					}
 					
 					for(let i = 0; i < gp.buttons.length; i++) {
-						if(buttonPressed(gp.buttons[i])) {
-							console.log("Button: " + i);
+						if(controllerButtonPressed(gp.buttons[i])) {
+							reactControllerPress(i);
 						}
 					}
 				}
 			}
+			*/
 			
-			function buttonPressed(b) {
-				if (typeof b === "object") {
+			function controllerButtonPressed(b) {
+				if(typeof b === "object") {
 					return b.pressed;
 				}
 				return b === 1.0;
 			}
 			
-			async function reactControllerPress(evt) {
-				await socket.emitWithAck("on_controller_press", evt.keyCode);
+			async function reactControllerPress(buttons) {
+				await socket.emitWithAck("on_controller_press", buttons);
 			}
 
-			async function reactKeyPress(evt) {
-				await socket.emitWithAck("on_key_press", evt.keyCode);
+			async function reactKeyPress(keys) {
+				//console.log("KEYS: " + keys);
+				await socket.emitWithAck("on_key_press", keys);
 			}
 			
-			async function reactClick(canvas, event) {
+			async function reactButtonClick(canvas, event) {
 				event.preventDefault()
 			
 				const rect = canvas.getBoundingClientRect();
@@ -141,9 +191,10 @@
 			
 			function startUpdateInterval() {
 				timer = setInterval(() => {
+					checkKeyPress();
 					checkControllerPress();
 					updateCanvas();
-				}, 1 / (FPS_RATE * 1000));
+				}, 1000 / FPS_RATE);
 			}
 		</script>
 	</body>

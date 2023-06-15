@@ -1,2 +1,1 @@
-1,0
-2,2,floor,red,item,heart
+2,2|floor,red,item,heart|

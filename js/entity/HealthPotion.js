@@ -2,20 +2,18 @@ const Entity = require("./Entity.js");
 const ImageCatalog = require("../image/ImageCatalog.js");
 
 class HealthPotion extends Entity {
-    healthReward;
-
-    constructor() {
-        super();
-        this.id = "health_potion";
-        this.healthReward = 40;
-    }
+    id = "health_potion";
+    maxStackNumber = 1;
+    maxStackSize = 20;
+    
+    healthReward = 40;
 
     getImages() {
         let images = [];
 
         images.push({
-            x: this.x,
-            y: this.y,
+            x: this.x + this.animationShiftX,
+            y: this.y + this.animationShiftY,
             image: ImageCatalog.IMAGE_CATALOG.getImageTableByName("item").getImageByName("potion_health")
         });
 
@@ -24,18 +22,20 @@ class HealthPotion extends Entity {
 
     doInteract(entity) {
         // The item will be collected.
-        if(entity.hasInventory) {
-            entity.addToInventory(this);
-            this.doDespawn();
+        if(entity.inventory) {
+            let success = entity.doAddToInventory(this);
+            if(success) {
+                this.doDespawn();
+            }
         }
     }
 
+    canConsume(entity) {
+        return entity.health < entity.maxHealth;
+    }
+
     doConsume(entity) {
-        // The item will be eliminated from the inventory and restore the player's health.
-        // TODO Potions cannot be used if the player has full health/mana/invincibility.
-        // TODO Cool down.
         entity.addHealth(this.healthReward);
-        entity.removeFromInventory(this);
     }
 }
 

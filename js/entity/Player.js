@@ -2,26 +2,43 @@ const { createCanvas, Image } = require("canvas")
 
 const ImageCatalog = require("../image/ImageCatalog.js");
 const Entity = require("./Entity.js");
-const Inventory = require("../client/Inventory.js");
+const Inventory = require("./Inventory.js");
 const Projectile = require("./Projectile.js");
 const Server = require("../server/Server.js");
 
 class Player extends Entity {
     health = 70;
     maxHealth = 100;
+    healthRegen = 3; // per second
 
     mana = 20;
     maxMana = 100;
+    manaRegen = 1; // per second
 
     level = 1;
     experience = 0;
 
     isInvincible = false;
-
-    hasInventory = true;
     isTangible = true;
 
+    actionTime = .2;
+    movementTime = .2;
+
     inventory = new Inventory();
+
+    constructor() {
+        super();
+        this.id = "player";
+
+        // Register regen tasks.
+        Server.addRefresh(() => {
+            this.doAddHealth(this.healthRegen)
+        })
+
+        Server.addRefresh(() => {
+            this.doAddMana(this.manaRegen)
+        })
+    }
     
     doAddExperience(experience) {
         this.experience += experience;
@@ -48,16 +65,12 @@ class Player extends Entity {
     }
 
     doInteract() {
-        console.log("Another Player!");
+        //console.log("Another Player!");
     }
 
-    addToInventory(entity) {
-        this.inventory.addToInventory(entity);
-    }
 
-    removeFromInventory(entity) {
-        this.inventory.removeFromInventory(entity);
-    }
+
+    
 
     doTakeDamage(entity, damage) {
         if(!this.isInvincible) {
@@ -68,8 +81,27 @@ class Player extends Entity {
     }
 
     doAction() {
+        let x = this.x;
+        let y = this.y;
+
+        // If the player is moving, fire the projectile ahead of the motion.
+        if(this.isMoving) {
+            if(this.direction === "up") {
+                y--;
+            }
+            else if(this.direction === "down") {
+                y++;
+            }
+            else if(this.direction === "left") {
+                x--;
+            }
+            else if(this.direction === "right") {
+                x++;
+            }
+        }
+
         let projectile = new Projectile(this, this.direction, 8, false);
-        projectile.spawn(this.world, this.map, this.screen, this.x, this.y);
+        projectile.spawn(this.world, this.map, this.screen, x, y);
     }
 
     getImages() {
@@ -77,45 +109,45 @@ class Player extends Entity {
         let images = [];
 
         images.push({
-            x: this.x,
-            y: this.y,
+            x: this.x + this.animationShiftX,
+            y: this.y + this.animationShiftY,
             image: ImageCatalog.IMAGE_CATALOG.getImageTableByName("player").getImageByName("mage")
         });
 
         // Add any status effect images.
         if(this.isInvincible) {
             images.push({
-                x: this.x,
-                y: this.y,
+                x: this.x + this.animationShiftX,
+                y: this.y + this.animationShiftY,
                 image: ImageCatalog.IMAGE_CATALOG.getImageTableByName("status").getImageByName("invincible")
             });
         }
 
         // Add on health bar.
         images.push({
-            x: this.x,
-            y: this.y,
+            x: this.x + this.animationShiftX,
+            y: this.y + this.animationShiftY,
             image: this.getHealthBarImage()
         });
 
         // Add on mana bar.
         images.push({
-            x: this.x,
-            y: this.y,
+            x: this.x + this.animationShiftX,
+            y: this.y + this.animationShiftY,
             image: this.getManaBarImage()
         });
 
         // Add on experience bar.
         images.push({
-            x: this.x,
-            y: this.y,
+            x: this.x + this.animationShiftX,
+            y: this.y + this.animationShiftY,
             image: this.getExperienceBarImage()
         });
 
         // Add on the level.
         images.push({
-            x: this.x,
-            y: this.y,
+            x: this.x + this.animationShiftX,
+            y: this.y + this.animationShiftY,
             image: this.getLevelImage()
         });
 
@@ -195,26 +227,6 @@ class Player extends Entity {
         image.src = buffer;
 
         return image;
-    }
-
-    //onLeftClick(slot) {
-    //    // TODO Allow player to change order of items, display info about item?
-    //}
-
-    shiftInventorySlotBackward() {
-        this.inventory.shiftInventorySlotBackward();
-    }
-
-    shiftInventorySlotForward() {
-        this.inventory.shiftInventorySlotForward();
-    }
-
-    consumeFromInventory(slot) {
-        // Consume 1 item in this inventory slot.
-        let itemData = this.inventory.itemDataArray[slot];
-        if(itemData && itemData.item) {
-            itemData.item.consume(this);
-        }
     }
 }
 

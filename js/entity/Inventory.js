@@ -1,64 +1,61 @@
 const { createCanvas, Image } = require("canvas")
 
 class Inventory {
-    // TODO For now, just say each max stack is 20 for every item.
-    maxStackSize = 20;
     maxSlots = 45;
 
     currentSlot;
     itemDataArray = []; // {item, id, count}
 
-    addToInventory(entity) {
-        // TODO If inventory is full, do not pick up item.
-        // TODO Should there be a key to pick up item?
-
-        // See if this item is already in the inventory and there is room in the stack to add it. Otherwise create a new stack.
-        let index = 0;
-
-        for(let itemData of this.itemDataArray) {
-            // TODO We should only use the undefined slot if the item doesn't already exist anywhere in the inventory.
-            if(itemData === undefined) {
-                this.itemDataArray[index] = {
-                    item: entity,
-                    id: entity.id,
-                    count: 1
-                }
-                return;
-            }
-
-            if(itemData.id === entity.id && itemData.count < this.maxStackSize) {
-                itemData.count++;
-                return;
-            }
-
-            index++;
+    constructor() {
+        // Prefill inventory to make logic easier.
+        for(let index = 0; index < this.maxSlots; index++) {
+            this.itemDataArray[index] = undefined;
         }
-
-        this.itemDataArray.push({
-            item: entity,
-            id: entity.id,
-            count: 1
-        });
     }
 
-    removeFromInventory(entity) {
-        // Note that this only removes the item. The caller is responsible for calling "consume" and actually using the item.
-        let index = 0;
+    addToInventory(entity) {
+        // See if this item is already in the inventory and there is room in the stack to add it. Otherwise create a new stack.
+        let numStacks = 0;
 
-        for(let itemData of this.itemDataArray) {
-            if(itemData.id === entity.id) {
-                itemData.count--;
-                if(itemData.count === 0) {
-                    // Remove this item without shifting anything else.
-                    //this.itemDataArray.splice(index, 1);
-
-                    this.itemDataArray[index] = undefined;
+        for(let index = 0; index < this.maxSlots; index++) {
+            let itemData = this.itemDataArray[index];
+            if(itemData && itemData.id === entity.id) {
+                if(itemData.count < itemData.item.maxStackSize) {
+                    itemData.count++;
+                    return true;
                 }
-                
-                return;
+                else {
+                    numStacks++;
+                }
             }
+        }
 
-            index++;
+        // Item is not in inventory. If we can create another stack, look for the first empty slot.
+        if(numStacks < entity.maxStackNumber) {
+            for(let index = 0; index < this.maxSlots; index++) {
+                let itemData = this.itemDataArray[index];
+                if(itemData === undefined) {
+                    this.itemDataArray[index] = {
+                        item: entity,
+                        id: entity.id,
+                        count: 1
+                    }
+                    return true;
+                }
+            }
+        }
+
+        // Inventory is full. Do not pick up item.
+        return false;
+    }
+
+    removeFromInventorySlot(slot, number) {
+        let itemData = this.itemDataArray[slot];
+        if(itemData) {
+            itemData.count -= number;
+            if(itemData.count === 0) {
+                this.itemDataArray[slot] = undefined;
+            }
         }
     }
 

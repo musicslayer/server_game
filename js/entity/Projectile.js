@@ -11,10 +11,13 @@ class Projectile extends Entity {
     isMulti;
 
     isCollision;
-    isDone;
+
+    movementTime = 0.05;
 
     constructor(owner, direction, range, isMulti) {
         super();
+        this.id = "projectile";
+
         this.owner = owner;
         this.direction = direction;
         this.range = range;
@@ -36,6 +39,14 @@ class Projectile extends Entity {
     }
 
     moveProjectile() {
+        // Do this immediately so that projectiles can hit things overlapping the owner.
+        this.doCheckCollision();
+
+        if(!this.isNextStepAllowed() || (this.isCollision && !this.isMulti)) {
+            this.despawn();
+            return;
+        }
+
         if(this.direction === "left") {
             this.moveLeft();
         }
@@ -55,11 +66,7 @@ class Projectile extends Entity {
         this.x--;
         this.range--;
 
-        this.doCheckCollision();
-
-        this.isDone = this.isDone || this.range <= 0 || this.x < 0 || (this.isCollision && !this.isMulti);
-
-        if(this.isDone) {
+        if(this.range <= 0) {
             this.despawn();
         }
         else {
@@ -71,11 +78,7 @@ class Projectile extends Entity {
         this.y--;
         this.range--;
 
-        this.doCheckCollision();
-
-        this.isDone = this.isDone || this.range <= 0 || this.y < 0 || (this.isCollision && !this.isMulti);
-
-        if(this.isDone) {
+        if(this.range <= 0) {
             this.despawn();
         }
         else {
@@ -87,11 +90,7 @@ class Projectile extends Entity {
         this.x++;
         this.range--;
 
-        this.doCheckCollision();
-
-        this.isDone = this.isDone || this.range <= 0 || this.x > this.numTilesX - 1 || (this.isCollision && !this.isMulti);
-
-        if(this.isDone) {
+        if(this.range <= 0) {
             this.despawn();
         }
         else {
@@ -103,11 +102,7 @@ class Projectile extends Entity {
         this.y++;
         this.range--;
 
-        this.doCheckCollision();
-
-        this.isDone = this.isDone || this.range <= 0 || this.y > this.numTilesY - 1 || (this.isCollision && !this.isMulti);
-
-        if(this.isDone) {
+        if(this.range <= 0) {
             this.despawn();
         }
         else {
@@ -115,12 +110,51 @@ class Projectile extends Entity {
         }
     }
 
+    isNextStepAllowed() {
+        // By default, check screen edges and if any entities in the direction block action movement.
+        // Projectiles can never cross screen edges even if the next screen exists.
+        let x = this.x;
+        let y = this.y;
+        let isScreen;
+        let isEdge;
+
+        if(this.direction === "up") {
+            isEdge = y == 0;
+            y--;
+        }
+        else if(this.direction === "down") {
+            isEdge = y == 11;
+            y++;
+        }
+        else if(this.direction === "left") {
+            isEdge = x == 0;
+            x--;
+        }
+        else if(this.direction === "right") {
+            isEdge = x == 15;
+            x++;
+        }
+
+        if(isEdge) {
+            return false;
+        }
+
+        let entities = this.screen.entities;
+        for(let entity of entities) {
+            if(this !== entity && x === entity.x && y === entity.y && entity.blocksAction) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     getImages() {
         let images = [];
 
         images.push({
-            x: this.x,
-            y: this.y,
+            x: this.x + this.animationShiftX,
+            y: this.y + this.animationShiftY,
             image: ImageCatalog.IMAGE_CATALOG.getImageTableByName("magic").getImageByName("orb")
         });
 

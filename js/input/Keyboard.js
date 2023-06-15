@@ -1,5 +1,3 @@
-const Server = require("../server/Server.js");
-
 class Keyboard {
     _spacebar = 32;
 
@@ -49,198 +47,42 @@ class Keyboard {
     _equals = 187;
     _dash = 189;
 
-
-    flagInventoryPrevious;
-    flagInventoryNext;
-    flagInventoryUse;
-
-    flagAction;
-    flagTeleportHome;
-
-    flagExperienceBoost;
-    flagHealthBoost;
-    flagManaBoost;
-
-    flagMoveDown;
-    flagMoveUp;
-    flagMoveLeft;
-    flagMoveRight;
-
-    flagScreenDown;
-    flagScreenUp;
-    flagScreenLeft;
-    flagScreenRight;
-
-    flagMapDown;
-    flagMapUp;
-
-    inputInventoryPrevious;
-    inputInventoryNext;
-    inputInventoryUse;
-
-    inputAction;
-    inputTeleportHome;
-
-    inputExperienceBoost;
-    inputHealthBoost;
-    inputManaBoost;
-
-    inputMoveDown;
-    inputMoveUp;
-    inputMoveLeft;
-    inputMoveRight;
-
-    inputScreenDown;
-    inputScreenUp;
-    inputScreenLeft;
-    inputScreenRight;
-
-    inputMapDown;
-    inputMapUp;
+    inputMap = new Map();
 
     constructor() {
-        this.inputInventoryPrevious = this._f;
-        this.inputInventoryNext = this._g;
-        this.inputInventoryUse = this._h;
+        this.inputMap.set(this._f, "inventory_previous");
+        this.inputMap.set(this._g, "inventory_next");
+        this.inputMap.set(this._h, "inventory_use");
 
-        this.inputAction = this._spacebar;
-        this.inputTeleportHome = this._t;
+        this.inputMap.set(this._spacebar, "action");
+        this.inputMap.set(this._t, "teleport_home");
 
-        this.inputExperienceBoost = this._e;
-        this.inputHealthBoost = this._r;
-        this.inputManaBoost = this._y;
+        this.inputMap.set(this._e, "boost_experience");
+        this.inputMap.set(this._r, "boost_health");
+        this.inputMap.set(this._y, "boost_mana");
 
-        this.inputMoveDown = this._downarrow;
-        this.inputMoveUp = this._uparrow;
-        this.inputMoveLeft = this._leftarrow;
-        this.inputMoveRight = this._rightarrow;
+        this.inputMap.set(this._uparrow, "move_up");
+        this.inputMap.set(this._downarrow, "move_down");
+        this.inputMap.set(this._leftarrow, "move_left");
+        this.inputMap.set(this._rightarrow, "move_right");
 
-        this.inputScreenDown = this._s;
-        this.inputScreenUp = this._w;
-        this.inputScreenLeft = this._a;
-        this.inputScreenRight = this._d;
+        this.inputMap.set(this._w, "screen_up");
+        this.inputMap.set(this._s, "screen_down");
+        this.inputMap.set(this._a, "screen_left");
+        this.inputMap.set(this._d, "screen_right");
 
-        this.inputMapUp = this._i;
-        this.inputMapDown = this._k;
-
-        Server.addRefresh(() => { this.resetFlags() });
+        this.inputMap.set(this._i, "map_up");
+        this.inputMap.set(this._k, "map_down");
     }
 
-    resetFlags() {
-        this.flagInventoryPrevious = false;
-        this.flagInventoryNext = false;
-        this.flagInventoryUse = false;
-        this.flagAction = false;
-        this.flagTeleportHome = false;
-        this.flagExperienceBoost = false;
-        this.flagHealthBoost = false;
-        this.flagManaBoost = false;
-        this.flagMoveDown = false;
-        this.flagMoveUp = false;
-        this.flagMoveLeft = false;
-        this.flagMoveRight = false;
-        this.flagScreenDown = false;
-        this.flagScreenUp = false;
-        this.flagScreenLeft = false;
-        this.flagScreenRight = false;
-        this.flagMapDown = false;
-        this.flagMapUp = false;
-    }
+    processKeyPress(keys) {
+        let inputs = [];
 
-    processKeyPress(key) {
-        let input;
-
-        // Inventory
-        if(key === this.inputInventoryPrevious && !this.flagInventoryPrevious) {
-            this.flagInventoryPrevious = true;
-            input = "inventory_previous";
+        for(let key of keys) {
+            inputs.push(this.inputMap.get(key));
         }
 
-        else if(key === this.inputInventoryNext && !this.flagInventoryNext) {
-            this.flagInventoryNext = true;
-            input = "inventory_next";
-        }
-
-        else if(key === this.inputInventoryUse && !this.flagInventoryUse) {
-            this.flagInventoryUse = true;
-            input = "inventory_use";
-        }
-
-        // Player Action
-        else if(key === this.inputAction && !this.flagAction) {
-            this.flagAction = true;
-            input = "action";
-        }
-
-        // Player Teleport Home
-        else if(key === this.inputTeleportHome && !this.flagTeleportHome) {
-            this.flagTeleportHome = true;
-            input = "teleport_home";
-        }
-
-        // Player Boosts
-        else if(key === this.inputExperienceBoost && !this.flagExperienceBoost) {
-            this.flagExperienceBoost = true;
-            input = "boost_experience";
-        }
-
-        else if(key === this.inputHealthBoost && !this.flagHealthBoost) {
-            this.flagHealthBoost = true;
-            input = "boost_health";
-        }
-
-        else if(key === this.inputManaBoost && !this.flagManaBoost) {
-            this.flagManaBoost = true;
-            input = "boost_mana";
-        }
-
-        // Move Position
-        else if(key === this.inputMoveUp && !this.flagMoveUp) {
-            this.flagMoveUp = true;
-            input = "move_up";
-        }
-        else if(key === this.inputMoveDown && !this.flagMoveDown) {
-            this.flagMoveDown = true;
-            input = "move_down";
-        }
-        else if(key === this.inputMoveLeft && !this.flagMoveLeft) {
-            this.flagMoveLeft = true;
-            input = "move_left";
-        }
-        else if(key === this.inputMoveRight && !this.flagMoveRight) {
-            this.flagMoveRight = true;
-            input = "move_right";
-        }
-
-        // Move Screens
-        else if(key === this.inputScreenUp && !this.flagScreenUp) {
-            this.flagScreenUp = true;
-            input = "screen_up";
-        }
-        else if(key === this.inputScreenDown && !this.flagScreenDown) {
-            this.flagScreenDown = true;
-            input = "screen_down";
-        }
-        else if(key === this.inputScreenLeft && !this.flagScreenLeft) {
-            this.flagScreenLeft = true;
-            input = "screen_left";
-        }
-        else if(key === this.inputScreenRight && !this.flagScreenRight) {
-            this.flagScreenRight = true;
-            input = "screen_right";
-        }
-
-        // Move Maps
-        else if(key === this.inputMapUp && !this.flagMapUp) {
-            this.flagMapUp = true;
-            input = "map_up";
-        }
-        else if(key === this.inputMapDown && !this.flagMapDown) {
-            this.flagMapDown = true;
-            input = "map_down";
-        }
-
-        return input;
+        return inputs;
     }
 }
 

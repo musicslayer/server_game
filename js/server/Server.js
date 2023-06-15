@@ -1,29 +1,35 @@
 class Server {
     // TODO All state changes must be done through this class. We need to enforce this somehow.
+
+    // These variables affect server performance.
     static TICK_RATE = 60; // times per second
+    static ANIMATION_FRAMES = 60; // frames per 1 tile of movement
 
-    static preTaskQueue = [];
+    static refreshQueue = []; // Tasks that occur every second (not every tick).
     static taskQueue = [];
-    static postTaskQueue = [];
 
-    static refreshQueue = [];
+    static scheduledTaskMap = new Map(); 
 
     static currentTick = 0;
-    static scheduledTaskMap = new Map(); // tickNumber => task
 
     static tickInterval = setInterval(() => {
+        if(Server.currentTick % Server.TICK_RATE === 0) {
+            Server.processRefresh();
+        }
+
         Server.processTasks();
-        Server.processRefresh();
         Server.currentTick++;
-    }, 1 / (Server.TICK_RATE * 1000));
+    }, 1000 / Server.TICK_RATE);
+
+    static addRefresh(fcn) {
+        Server.refreshQueue.push(fcn);
+    }
 
     static addTask(fcn) {
         Server.taskQueue.push(fcn);
     }
 
-    static addRefresh(fcn) {
-        Server.refreshQueue.push(fcn);
-    }
+
 
     static scheduleTaskForSeconds(seconds, fcn) {
         let tick = Server.currentTick + seconds * Server.TICK_RATE;
@@ -35,21 +41,17 @@ class Server {
         Server.scheduledTaskMap.set(tick, tasks);
     }
 
-    static processTasks() {
-        // Store the queues here. Anything added at this point won't be executed until the next tick.
-        let preTaskQueue = Server.preTaskQueue;
-        Server.preTaskQueue = [];
-
-        let taskQueue = Server.taskQueue;
-        Server.taskQueue = [];
-
-        let postTaskQueue = Server.postTaskQueue;
-        Server.postTaskQueue = [];
-
-        while(preTaskQueue.length > 0) {
-            let fcn = preTaskQueue.shift();
+    static processRefresh() {
+        // Refresh tasks are recurring, so do not empty the array.
+        for(let fcn of Server.refreshQueue) {
             fcn();
         }
+    }
+
+    static processTasks() {
+        // Store the queue here. Anything added at this point won't be executed until the next tick.
+        let taskQueue = Server.taskQueue;
+        Server.taskQueue = [];
 
         let tasks = Server.scheduledTaskMap.get(Server.currentTick);
         if(tasks !== undefined) {
@@ -61,18 +63,6 @@ class Server {
 
         while(taskQueue.length > 0) {
             let fcn = taskQueue.shift();
-            fcn();
-        }
-
-        while(postTaskQueue.length > 0) {
-            let fcn = postTaskQueue.shift();
-            fcn();
-        }
-    }
-
-    static processRefresh() {
-        // Refresh tasks are recurring, so do not empty the array.
-        for(let fcn of Server.refreshQueue) {
             fcn();
         }
     }

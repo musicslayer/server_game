@@ -11,7 +11,13 @@ class Monster extends Entity {
     isTangible = true;
     blocksMovement = true;
 
+    constructor() {
+        super();
+        this.id = "monster";
+    }
+
     doTakeDamage(entity, damage) {
+        this.id = "monster";
         this.health -= damage;
         if(this.health <= 0) {
             this.doDespawn();
@@ -20,15 +26,15 @@ class Monster extends Entity {
     }
 
     doInteract(entity) {
-        console.log("Outta my way!");
+        //console.log("Outta my way!");
     }
 
     getImages() {
         let images = [];
 
         images.push({
-            x: this.x,
-            y: this.y,
+            x: this.x + this.animationShiftX,
+            y: this.y + this.animationShiftY,
             image: ImageCatalog.IMAGE_CATALOG.getImageTableByName("creature").getImageByName("monster")
         });
 
@@ -50,8 +56,8 @@ class Monster extends Entity {
         healthBarImage.src = buffer;
         
         images.push({
-            x: this.x,
-            y: this.y,
+            x: this.x + this.animationShiftX,
+            y: this.y + this.animationShiftY,
             image: healthBarImage
         });
 

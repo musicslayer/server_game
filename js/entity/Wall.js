@@ -4,13 +4,19 @@ const ImageCatalog = require("../image/ImageCatalog.js");
 class Wall extends Entity {
     isTangible = true;
     blocksMovement = true;
+    blocksAction = true;
+
+    constructor() {
+        super();
+        this.id = "wall";
+    }
 
     getImages() {
         let images = [];
 
         images.push({
-            x: this.x,
-            y: this.y,
+            x: this.x + this.animationShiftX,
+            y: this.y + this.animationShiftY,
             image: ImageCatalog.IMAGE_CATALOG.getImageTableByName("wall").getImageByName("wall")
         });
 
