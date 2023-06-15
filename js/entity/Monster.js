@@ -25,10 +25,6 @@ class Monster extends Entity {
         }
     }
 
-    doInteract(entity) {
-        //console.log("Outta my way!");
-    }
-
     getImages() {
         let images = [];
 

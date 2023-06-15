@@ -32,7 +32,6 @@
 			let isUpdating = false;
 			
 			let isKeyPressed = {};
-			//let isButtonPressed = {};
 			
 			window.addEventListener('load', () => {
 				if(socket) {
@@ -53,7 +52,7 @@
 			
 			/*
 			window.addEventListener("gamepadconnected", (e) => {
-				console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
+				/onsole.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
 					e.gamepad.index,
 					e.gamepad.id,
 					e.gamepad.buttons.length,
@@ -65,14 +64,68 @@
 			canvas.width = canvas_width;
 			canvas.height = canvas_height;
 			
-			canvas.addEventListener('mousedown', function(e) {
-				//console.log("MOUSE: " + e.button);
-				reactButtonClick(canvas, e)
-			})
 			
 			canvas.addEventListener("contextmenu", function (e){
 				e.preventDefault();
 			}, false);
+			
+			
+			const manClickDeltaSpace = 10;
+			const manClickDeltaTime = 100;
+			let deltaSpace;
+			let startX;
+			let startY;
+			let startT;
+			
+			let downButton;
+
+			canvas.addEventListener('mousedown', function (e) {
+				e.preventDefault()
+				
+				if(downButton === undefined) {
+					downButton = e.button;
+					const rect = canvas.getBoundingClientRect();
+					startX = e.clientX - rect.left - 10;
+					startY = e.clientY - rect.top - 10;
+					startT = Date.now();
+					deltaSpace = 0;
+				}
+			});
+			
+			canvas.addEventListener('mousemove', function (e) {
+				if(downButton !== undefined) {
+					deltaSpace++;
+				}
+			});
+			
+			canvas.addEventListener('mouseleave', function (e) {
+				// Reset without allowing any action.
+				downButton = undefined;
+			});
+
+			canvas.addEventListener('mouseup', function (e) {
+				if(downButton !== e.button) {
+					return;
+				}
+				
+				downButton = undefined;
+				
+				let endT = Date.now();
+				let deltaTime = endT - startT;
+			
+				const rect = canvas.getBoundingClientRect();
+				let endX = e.clientX - rect.left - 10;
+				let endY = e.clientY - rect.top - 10;
+
+				if (deltaSpace < manClickDeltaSpace && deltaTime < manClickDeltaTime) {
+					// Click
+					reactButtonClick(e.button, startX, startY)
+				}
+				else {
+					// Drag
+					reactButtonDrag(e.button, startX, startY, endX, endY)
+				}
+			});
 			
 			
 			
@@ -93,7 +146,10 @@
 						keys.push(Number(key));
 					}
 				}
-				reactKeyPress(keys);
+				
+				if(keys.length !== 0) {
+					reactKeyPress(keys);
+				}
 			}
 			
 			async function checkControllerPress() {
@@ -115,30 +171,11 @@
 						}
 					}
 					
-					reactControllerPress(buttons);
-				}
-			}
-			
-			/*
-			async function checkControllerPress() {
-				const gamepads = navigator.getGamepads();
-				if (!gamepads) {
-					return;
-				}
-
-				for(let gp of gamepads) {
-					if(!gp) {
-						return;
-					}
-					
-					for(let i = 0; i < gp.buttons.length; i++) {
-						if(controllerButtonPressed(gp.buttons[i])) {
-							reactControllerPress(i);
-						}
+					if(buttons.length !== 0) {
+						reactControllerPress(buttons);
 					}
 				}
 			}
-			*/
 			
 			function controllerButtonPressed(b) {
 				if(typeof b === "object") {
@@ -147,23 +184,48 @@
 				return b === 1.0;
 			}
 			
+			let deadzone = 0.2;
+			
+			async function checkControllerSticks() {
+				const gamepads = navigator.getGamepads();
+				if (!gamepads) {
+					return;
+				}
+
+				for(let gp of gamepads) {
+					if(!gp) {
+						continue;
+					}
+					
+					let axes = gp.axes;
+					for(let axis of axes) {
+						// If any one axis is outside the deadzone, send the server all of the axes.
+						if(Math.abs(axis) > deadzone) {
+							reactControllerSticks(axes);
+							return;
+						}
+					}
+				}
+			}
+			
 			async function reactControllerPress(buttons) {
 				await socket.emitWithAck("on_controller_press", buttons);
 			}
+			
+			async function reactControllerSticks(axes) {
+				await socket.emitWithAck("on_controller_sticks", axes);
+			}
 
 			async function reactKeyPress(keys) {
-				//console.log("KEYS: " + keys);
 				await socket.emitWithAck("on_key_press", keys);
 			}
 			
-			async function reactButtonClick(canvas, event) {
-				event.preventDefault()
+			async function reactButtonClick(button, x, y) {
+				await socket.emitWithAck("on_mouse_click", button, x, y, IMAGE_SCALE_FACTOR);
+			}
 			
-				const rect = canvas.getBoundingClientRect();
-				const x = event.clientX - rect.left - 10;
-				const y = event.clientY - rect.top - 10;
-				
-				await socket.emitWithAck("on_click", event.button, x, y, IMAGE_SCALE_FACTOR);
+			async function reactButtonDrag(button, x1, y1, x2, y2) {
+				await socket.emitWithAck("on_mouse_drag", button, x1, y1, x2, y2, IMAGE_SCALE_FACTOR);
 			}
 			
 			async function updateCanvas() {
@@ -175,7 +237,7 @@
 				
 				//const start = Date.now();
 				
-				let R = await socket.emitWithAck("get_data", IMAGE_SCALE_FACTOR);
+				let R = await socket.emitWithAck("get_image_data", IMAGE_SCALE_FACTOR);
 				
 				//const end = Date.now();
 				//const start2 = Date.now();
@@ -186,13 +248,14 @@
 				isUpdating = false;
 				
 				//const end2 = Date.now();
-				//console.log(`Execution time: ${end - start} ms ${end2 - start2} ms`);
+				///onsole.log(`Execution time: ${end - start} ms ${end2 - start2} ms`);
 			}
 			
 			function startUpdateInterval() {
 				timer = setInterval(() => {
 					checkKeyPress();
 					checkControllerPress();
+					checkControllerSticks();
 					updateCanvas();
 				}, 1000 / FPS_RATE);
 			}

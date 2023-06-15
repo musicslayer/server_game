@@ -63,13 +63,6 @@ class Player extends Entity {
             this.isInvincible = false;
         });
     }
-
-    doInteract() {
-        //console.log("Another Player!");
-    }
-
-
-
     
 
     doTakeDamage(entity, damage) {

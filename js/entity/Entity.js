@@ -701,6 +701,20 @@ class Entity {
         }
     }
 
+    swapInventorySlots(slot1, slot2) {
+        if(this.canInventory) {
+            this.canInventory = false;
+
+            Server.scheduleTaskForSeconds(this.inventoryTime, () => {
+                this.canInventory = true;
+            });
+
+            Server.addTask(() => {
+                this.doSwapInventorySlots(slot1, slot2);
+            });
+        }
+    }
+
 
 
     doShiftInventorySlotBackward() {
@@ -755,6 +769,13 @@ class Entity {
                 item.spawn(this.world, this.map, this.screen, this.x, this.y);
                 this.inventory.removeFromInventorySlot(slot, number);
             }
+        }
+    }
+
+    doSwapInventorySlots(slot1, slot2) {
+        // Switch 2 inventory slots.
+        if(this.inventory) {
+            this.inventory.swapInventorySlots(slot1, slot2);
         }
     }
 

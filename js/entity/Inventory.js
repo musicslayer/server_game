@@ -77,6 +77,14 @@ class Inventory {
         }
     }
 
+    swapInventorySlots(slot1, slot2) {
+        let itemData1 = this.itemDataArray[slot1];
+        let itemData2 = this.itemDataArray[slot2];
+
+        this.itemDataArray[slot1] = itemData2;
+        this.itemDataArray[slot2] = itemData1;
+    }
+
     getInventoryImages() {
         // Returns an array of all the images that should be drawn on this screen.
         let images = [];

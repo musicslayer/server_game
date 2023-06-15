@@ -21,6 +21,7 @@ class Client {
     constructor(world, player) {
         this.world = world;
         this.player = player;
+
         this.keyboard = new Keyboard();
         this.mouse = new Mouse();
         this.controller = new Controller();
@@ -55,6 +56,20 @@ class Client {
             }
             else if(inputs.includes("right")) {
                 this.player.dropFromInventory(slot, 1);
+            }
+        }
+    }
+
+    onDrag(button, x1, y1, x2, y2, imageScaleFactor) {
+        // A left click drag can switch items in the inventory.
+        let inputs = this.mouse.processClick(button);
+
+        let slot1 = this.isInventory(x1, y1, imageScaleFactor);
+        let slot2 = this.isInventory(x2, y2, imageScaleFactor);
+
+        if(slot1 !== undefined && slot2 !== undefined && slot1 !== slot2) {
+            if(inputs.includes("left")) {
+                this.player.swapInventorySlots(slot1, slot2);
             }
         }
     }
@@ -162,6 +177,22 @@ class Client {
         }
         else if(inputs.includes("move_right")) {
             this.player.moveRight();
+        }
+    }
+
+    onControllerSticks(axes) {
+        // axes is [leftStickX, leftStickY, rightStickX, rightStickY]
+        let deadzone = 0.2;
+        let speedFactor = 10;
+
+        // Move Position (only one will be executed)
+        if(Math.abs(axes[0]) > deadzone || Math.abs(axes[1]) > deadzone) {
+            this.player.x += axes[0] / speedFactor;
+            this.player.y += axes[1] / speedFactor;
+        }
+        else if(Math.abs(axes[2]) > deadzone || Math.abs(axes[3]) > deadzone) {
+            this.player.x += axes[2] / speedFactor;
+            this.player.y += axes[3] / speedFactor;
         }
     }
 
@@ -291,8 +322,6 @@ class Client {
         if(x >= 0 && x < this.getNumTilesX() * imageScaleFactor && y >= 0 && y < this.getNumTilesY() * imageScaleFactor) {
             // Return normalized x,y
             nScreen = [Math.floor(x / imageScaleFactor), Math.floor(y / imageScaleFactor)];
-
-            //console.log("GRID: x: " + nScreen[0] + " y: " + nScreen[1]);
         }
 
         return nScreen;
@@ -309,8 +338,6 @@ class Client {
             let nx = Math.floor((x / imageScaleFactor) - originX);
             let ny = Math.floor((y / imageScaleFactor) - originY);
             slot = ny * 9 + nx;
-
-            //console.log("Inventory: " + slot);
         }
 
         return slot;
