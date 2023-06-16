@@ -2,6 +2,7 @@ const { createCanvas, Image } = require("canvas")
 
 const ImageCatalog = require("../image/ImageCatalog.js");
 const Entity = require("./Entity.js");
+const EntitySpawner = require("./EntitySpawner.js");
 
 class Monster extends Entity {
     health = 70;
@@ -17,12 +18,17 @@ class Monster extends Entity {
     }
 
     doTakeDamage(entity, damage) {
-        this.id = "monster";
-        this.health -= damage;
-        if(this.health <= 0) {
-            this.doDespawn();
+        this.health = Math.max(this.health - damage, 0);
+
+        if(this.health === 0) {
             this.getRootEntity(entity).doAddExperience(this.experienceReward);
+            this.doSpawnLoot(this.world, this.map, this.screen, this.x, this.y);
+            this.doDespawn();
         }
+    }
+
+    doSpawnLoot(world, map, screen, x, y) {
+        EntitySpawner.spawn("gold", world, map, screen, x, y, 100);
     }
 
     getImages() {

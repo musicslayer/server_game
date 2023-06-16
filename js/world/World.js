@@ -23,6 +23,10 @@ class World {
         this.gameMapMap.set(name, map);
     }
 
+    getMap(name) {
+        return this.gameMapMap.get(name);
+    }
+
     getMapUp(map) {
         let idx = this.gameMaps.indexOf(map);
         return this.getMapByPosition(idx + 1);

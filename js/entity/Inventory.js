@@ -6,11 +6,21 @@ class Inventory {
     currentSlot;
     itemDataArray = []; // {item, id, count}
 
+    isActive = true;
+
     constructor() {
         // Prefill inventory to make logic easier.
         for(let index = 0; index < this.maxSlots; index++) {
             this.itemDataArray[index] = undefined;
         }
+    }
+
+    turnOn() {
+        this.isActive = true;
+    }
+
+    turnOff() {
+        this.isActive = false;
     }
 
     addToInventory(entity) {

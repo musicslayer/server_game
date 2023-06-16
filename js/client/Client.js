@@ -9,7 +9,6 @@ class Client {
     maxNumTilesY = 12;
     sidePanelTiles = 10;
 
-    world;
     player;
 
     keyboard;
@@ -18,8 +17,7 @@ class Client {
 
     isGrid = true;
 
-    constructor(world, player) {
-        this.world = world;
+    constructor(player) {
         this.player = player;
 
         this.keyboard = new Keyboard();
@@ -36,40 +34,42 @@ class Client {
     }
 
     onClick(button, x, y, imageScaleFactor) {
+        // TODO display info about item?
+        // Left clicking on the screen is a teleport and right clicking on an inventory slot uses an item.
         let inputs = this.mouse.processClick(button);
+        
+        if(inputs.includes("left")) {
+            let nScreen = this.isScreen(x, y, imageScaleFactor);
 
-        let nScreen = this.isScreen(x, y, imageScaleFactor);
-        let slot = this.isInventory(x, y, imageScaleFactor);
-
-        if(nScreen !== undefined) {
-            // TODO What happens when you click on the screen (display info? use skill?)
-            // TODO Allow player to change order of items, display info about item?
-
-            // For now, left clicking on the screen is a teleport.
-            if(inputs.includes("left")) {
-                this.player.teleport(this.player.world, this.player.map, this.player.screen, nScreen[0], nScreen[1]);
+            if(nScreen !== undefined) {
+                this.player.teleportScreen(this.player.screen, nScreen[0], nScreen[1]);
             }
         }
-        else if(slot !== undefined) {
-            if(inputs.includes("left")) {
+        else if(inputs.includes("right")) {
+            let slot = this.isInventory(x, y, imageScaleFactor);
+
+            if(slot !== undefined) {
                 this.player.consumeFromInventory(slot);
-            }
-            else if(inputs.includes("right")) {
-                this.player.dropFromInventory(slot, 1);
             }
         }
     }
 
     onDrag(button, x1, y1, x2, y2, imageScaleFactor) {
-        // A left click drag can switch items in the inventory.
+        // A left click drag can switch inventory slots or drop an entire slot, depending on where the drag motion ends.
         let inputs = this.mouse.processClick(button);
 
-        let slot1 = this.isInventory(x1, y1, imageScaleFactor);
-        let slot2 = this.isInventory(x2, y2, imageScaleFactor);
+        if(inputs.includes("left")) {
+            let slot1 = this.isInventory(x1, y1, imageScaleFactor);
+            let slot2 = this.isInventory(x2, y2, imageScaleFactor);
+            let nScreen2 = this.isScreen(x2, y2, imageScaleFactor);
 
-        if(slot1 !== undefined && slot2 !== undefined && slot1 !== slot2) {
-            if(inputs.includes("left")) {
+            if(slot1 !== undefined && slot2 !== undefined && slot1 !== slot2) {
+                // Swap two inventory slots (even if one or both of them are empty)
                 this.player.swapInventorySlots(slot1, slot2);
+            }
+            else if(slot1 !== undefined && nScreen2 !== undefined) {
+                // Drop entire stack on the player's current location.
+                this.player.dropFromInventory(slot1, -1);
             }
         }
     }
@@ -95,7 +95,7 @@ class Client {
 
         // **** Player Teleport Home
         if(inputs.includes("teleport_home")) {
-            this.player.teleport(this.world, this.world.gameMaps[0], this.world.gameMaps[0].screens[0], 0, 0);
+            this.player.teleportHome();
         }
 
         // **** Player Boosts
@@ -204,6 +204,7 @@ class Client {
         //ctx.strokeStyle = "red";
 
         this.drawScreen(ctx, imageScaleFactor);
+        this.drawPurse(ctx, imageScaleFactor);
         this.drawInventory(ctx, imageScaleFactor);
 
         if(this.isGrid) {
@@ -243,6 +244,21 @@ class Client {
         for(let y = 0; y < this.getNumTilesY() + 1; y++) {
             ctx.moveTo(0, y * imageScaleFactor);
             ctx.lineTo(this.getNumTilesX() * imageScaleFactor, y * imageScaleFactor);
+        }
+
+        ctx.stroke();
+    }
+
+    drawPurse(ctx, imageScaleFactor) {
+        ctx.beginPath();
+        
+        let originX = 17;
+        let originY = 0;
+
+        let images = this.player.purse.getPurseImages();
+        while(images.length > 0) {
+            let imageData = images.shift();
+            ctx.drawImage(imageData.image, (originX + imageData.x) * imageScaleFactor, (originY + imageData.y) * imageScaleFactor, imageScaleFactor, imageScaleFactor);
         }
 
         ctx.stroke();
@@ -320,7 +336,7 @@ class Client {
         let nScreen;
 
         if(x >= 0 && x < this.getNumTilesX() * imageScaleFactor && y >= 0 && y < this.getNumTilesY() * imageScaleFactor) {
-            // Return normalized x,y
+            // Return normalized (tile) x,y
             nScreen = [Math.floor(x / imageScaleFactor), Math.floor(y / imageScaleFactor)];
         }
 

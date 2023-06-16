@@ -1,6 +1,6 @@
 const fs = require("fs");
 
-const EntityCloner = require("../entity/EntityCloner.js");
+const EntitySpawner = require("../entity/EntitySpawner.js");
 const Tile = require("./Tile.js");
 
 const COMMA = ",";
@@ -56,9 +56,7 @@ class Screen {
             if(entityPart[0]) {
                 while(entityPart.length > 0) {
                     let id = entityPart.shift();
-                    let entity = EntityCloner.clone(id);
-                    
-                    entity.spawn(map.world, map, screen, x, y);
+                    EntitySpawner.spawn(id, map.world, map, screen, x, y);
                 }
             }
         }
@@ -66,8 +64,9 @@ class Screen {
         return screen;
     }
 
-    static createVoidScreen(screenX, screenY) {
+    static createVoidScreen(map, screenX, screenY) {
         let screen = new Screen();
+        screen.map = map;
         screen.x = screenX;
         screen.y = screenY;
 

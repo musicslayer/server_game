@@ -52,6 +52,10 @@ class GameMap {
         this.screenPosMap.set(key, screen);
     }
 
+    getScreen(name) {
+        return this.screenMap.get(name);
+    }
+
     isScreenUp(screen) {
         return this.isScreenByPosition(screen.x, screen.y - 1);
     }
@@ -96,7 +100,7 @@ class GameMap {
 
         // If this screen does not exist, return a dynamically generated "void" screen.
         if(!screen) {
-            screen = Screen.createVoidScreen(screenX, screenY);
+            screen = Screen.createVoidScreen(this, screenX, screenY);
         }
         
         return screen;

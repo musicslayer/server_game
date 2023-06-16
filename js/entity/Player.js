@@ -2,11 +2,14 @@ const { createCanvas, Image } = require("canvas")
 
 const ImageCatalog = require("../image/ImageCatalog.js");
 const Entity = require("./Entity.js");
+const EntitySpawner = require("./EntitySpawner.js");
+const Purse = require("./Purse.js");
 const Inventory = require("./Inventory.js");
-const Projectile = require("./Projectile.js");
 const Server = require("../server/Server.js");
 
 class Player extends Entity {
+    isPlayer = true;
+
     health = 70;
     maxHealth = 100;
     healthRegen = 3; // per second
@@ -18,6 +21,7 @@ class Player extends Entity {
     level = 1;
     experience = 0;
 
+    isDead = false;
     isInvincible = false;
     isTangible = true;
 
@@ -25,6 +29,7 @@ class Player extends Entity {
     movementTime = .2;
 
     inventory = new Inventory();
+    purse = new Purse();
 
     constructor() {
         super();
@@ -32,11 +37,15 @@ class Player extends Entity {
 
         // Register regen tasks.
         Server.addRefresh(() => {
-            this.doAddHealth(this.healthRegen)
+            if(!this.isDead) {
+                this.doAddHealth(this.healthRegen)
+            }
         })
 
         Server.addRefresh(() => {
-            this.doAddMana(this.manaRegen)
+            if(!this.isDead) {
+                this.doAddMana(this.manaRegen)
+            }
         })
     }
     
@@ -63,14 +72,55 @@ class Player extends Entity {
             this.isInvincible = false;
         });
     }
+
+    doFullRestore() {
+        this.health = this.maxHealth;
+        this.mana = this.maxMana;
+    }
+
+    kill() {
+        // The player cannot use their actions, inventory, or purse in this state.
+        // Also teleport them to a special death plane.
+        this.health = 0;
+        this.mana = 0;
+
+        this.isDead = true;
+        this.isInvincible = false;
+
+        this.inventory.turnOff();
+        this.purse.turnOff();
+
+        // ??? If the player is in a dungeon, could we just teleport them to the entrance instead?
+        this.teleportDeath();
+    }
+
+    revive() {
+        // Restore the player to normal.
+        this.health = this.maxHealth;
+        this.mana = this.maxMana;
+
+        this.isDead = false;
+        this.inventory.turnOn();
+        this.purse.turnOn();
+    }
     
 
     doTakeDamage(entity, damage) {
-        if(!this.isInvincible) {
-            this.health -= damage;
+        if(!this.isInvincible && !this.isDead) {
+            this.health = Math.max(this.health - damage, 0);
+            if(this.health === 0) {
+                // Only spawn loot if another player did the final damage.
+                if(entity.isPlayer) {
+                    this.doSpawnLoot(this.world, this.map, this.screen, this.x, this.y);
+                }
+                this.kill();
+            }
         }
-        // TODO Check if the entity has died and despawn/show death screen.
-        // TODO In PvP, "entity" should gain experience.
+    }
+
+    doSpawnLoot(world, map, screen, x, y) {
+        // When a player dies, a pvp token is spawned as loot.
+        EntitySpawner.spawn("pvp_token", world, map, screen, x, y);
     }
 
     doAction() {
@@ -92,9 +142,8 @@ class Player extends Entity {
                 x++;
             }
         }
-
-        let projectile = new Projectile(this, this.direction, 8, false);
-        projectile.spawn(this.world, this.map, this.screen, x, y);
+        
+        EntitySpawner.spawn("projectile", this.world, this.map, this.screen, x, y, this, this.direction, 8, false);
     }
 
     getImages() {
@@ -108,7 +157,7 @@ class Player extends Entity {
         });
 
         // Add any status effect images.
-        if(this.isInvincible) {
+        if(this.isInvincible || this.isDead) {
             images.push({
                 x: this.x + this.animationShiftX,
                 y: this.y + this.animationShiftY,
