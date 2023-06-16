@@ -1,17 +1,17 @@
 class EntitySpawner {
-    static spawnStack(id, number, world, map, screen, x, y, ...args) {
+    static spawnStack(id, number, screen, x, y, ...args) {
         if(id === "item_stack" || number === 0) {
             return;
         }
 
         let entity = EntitySpawner.clone(id, ...args);
-        let entityStack = EntitySpawner.spawn("item_stack", world, map, screen, x, y, entity, number);
+        let entityStack = EntitySpawner.spawn("item_stack", screen, x, y, entity, number);
         return entityStack;
     }
 
-    static spawn(id, world, map, screen, x, y, ...args) {
+    static spawn(id, screen, x, y, ...args) {
         let entity = EntitySpawner.clone(id, ...args);
-        entity.spawn(world, map, screen, x, y);
+        entity.spawn(screen, x, y);
         return entity;
     }
 

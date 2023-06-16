@@ -111,16 +111,16 @@ class Player extends Entity {
             if(this.health === 0) {
                 // Only spawn loot if another player did the final damage.
                 if(entity.isPlayer) {
-                    this.doSpawnLoot(this.world, this.map, this.screen, this.x, this.y);
+                    this.doSpawnLoot(this.screen, this.x, this.y);
                 }
                 this.kill();
             }
         }
     }
 
-    doSpawnLoot(world, map, screen, x, y) {
+    doSpawnLoot(screen, x, y) {
         // When a player dies, a pvp token is spawned as loot.
-        EntitySpawner.spawn("pvp_token", world, map, screen, x, y);
+        EntitySpawner.spawn("pvp_token", screen, x, y);
     }
 
     doAction() {
@@ -143,7 +143,7 @@ class Player extends Entity {
             }
         }
         
-        EntitySpawner.spawn("projectile", this.world, this.map, this.screen, x, y, this, this.direction, 8, false);
+        EntitySpawner.spawn("projectile", this.screen, x, y, this, this.direction, 8, false);
     }
 
     getImages() {

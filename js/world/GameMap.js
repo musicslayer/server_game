@@ -1,6 +1,7 @@
 const fs = require("fs");
 
 const Screen = require("./Screen.js");
+const VoidScreen = require("./VoidScreen.js");
 
 const COMMA = ",";
 const CRLF = "\r\n";
@@ -13,9 +14,8 @@ class GameMap {
     screenMap = new Map();
     screenPosMap = new Map();
 
-    static loadMapFromFolder(mapFolder, world) {
+    static loadMapFromFolder(mapFolder) {
         let map = new GameMap();
-        map.world = world;
 
         let screenData = fs.readFileSync(mapFolder + "_map.txt", "ascii");
         let lines = screenData.split(CRLF);
@@ -33,12 +33,17 @@ class GameMap {
             // Second part is the screen
             let screenName = parts[1];
 
-            let screen = Screen.loadScreenFromFile(mapFolder + screenName + ".txt", map);
+            let screen = Screen.loadScreenFromFile(mapFolder + screenName + ".txt");
             
+            screen.attachMap(map);
             map.addScreen(screenName, screen, x, y);
         }
 
         return map;
+    }
+
+    attachWorld(world) {
+        this.world = world;
     }
 
     addScreen(name, screen, x, y) {
@@ -100,10 +105,19 @@ class GameMap {
 
         // If this screen does not exist, return a dynamically generated "void" screen.
         if(!screen) {
-            screen = Screen.createVoidScreen(this, screenX, screenY);
+            screen = VoidScreen.createVoidScreen(screenX, screenY);
+            screen.attachMap(this);
         }
         
         return screen;
+    }
+
+    getMapUp() {
+        return this.world?.getMapUp(this);
+    }
+
+    getMapDown() {
+        return this.world?.getMapDown(this);
     }
 }
 

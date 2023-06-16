@@ -1,6 +1,8 @@
 const EntitySpawner = require("./EntitySpawner.js");
 const ImageCatalog = require("../image/ImageCatalog.js");
 const Server = require("../server/Server.js");
+const DeathScreen = require("../world/DeathScreen.js");
+const DeathMap = require("../world/DeathMap.js");
 
 class Entity {
     // e.g. The entity that spawned a projectile is the owner.
@@ -9,15 +11,11 @@ class Entity {
     // Each subclass should have a unique ID.
     id;
 
-    world;
-    map;
     screen;
     x;
     y;
 
     // Certain entities (i.e. players) can teleport home, so store the desired location here.
-    homeWorld;
-    homeMap;
     homeScreen;
     homeX;
     homeY;
@@ -135,15 +133,15 @@ class Entity {
         });
     }
 
-    respawn(world, map, screen, x, y) {
+    respawn(screen, x, y) {
         Server.addTask(() => {
-            this.doRespawn(world, map, screen, x, y);
+            this.doRespawn(screen, x, y);
         });
     }
 
-    spawn(world, map, screen, x, y) {
+    spawn(screen, x, y) {
         Server.addTask(() => {
-            this.doSpawn(world, map, screen, x, y);
+            this.doSpawn(screen, x, y);
         });
     }
 
@@ -176,7 +174,7 @@ class Entity {
         }
     }
 
-    teleport(world, map, screen, x, y) {
+    teleport(screen, x, y) {
         if(this.canOtherAction) {
             this.canOtherAction = false;
 
@@ -185,35 +183,7 @@ class Entity {
             });
 
             Server.addTask(() => {
-                this.doTeleport(world, map, screen, x, y);
-            });
-        }
-    }
-
-    teleportMap(map, screen, x, y) {
-        if(this.canOtherAction) {
-            this.canOtherAction = false;
-
-            Server.scheduleTaskForSeconds(this.otherTime, () => {
-                this.canOtherAction = true;
-            });
-
-            Server.addTask(() => {
-                this.doTeleportMap(map, screen, x, y);
-            });
-        }
-    }
-
-    teleportScreen(screen, x, y) {
-        if(this.canOtherAction) {
-            this.canOtherAction = false;
-
-            Server.scheduleTaskForSeconds(this.otherTime, () => {
-                this.canOtherAction = true;
-            });
-
-            Server.addTask(() => {
-                this.doTeleportScreen(screen, x, y);
+                this.doTeleport(screen, x, y);
             });
         }
     }
@@ -468,22 +438,22 @@ class Entity {
 
         if(this.direction === "up") {
             isEdge = y == 0;
-            isScreen = this.map.isScreenUp(this.screen);
+            isScreen = this.screen.isScreenUp();
             y--;
         }
         else if(this.direction === "down") {
             isEdge = y == 11;
-            isScreen = this.map.isScreenDown(this.screen);
+            isScreen = this.screen.isScreenDown();
             y++;
         }
         else if(this.direction === "left") {
             isEdge = x == 0;
-            isScreen = this.map.isScreenLeft(this.screen);
+            isScreen = this.screen.isScreenLeft();
             x--;
         }
         else if(this.direction === "right") {
             isEdge = x == 15;
-            isScreen = this.map.isScreenRight(this.screen);
+            isScreen = this.screen.isScreenRight();
             x++;
         }
 
@@ -518,9 +488,7 @@ class Entity {
         // By default, do nothing.
     }
 
-    doRespawn(world, map, screen, x, y) {
-        this.world = world;
-        this.map = map;
+    doRespawn(screen, x, y) {
         this.screen = screen;
         this.x = x;
         this.y = y;
@@ -528,16 +496,12 @@ class Entity {
         screen.addEntity(this);
     }
 
-    doSpawn(world, map, screen, x, y) {
+    doSpawn(screen, x, y) {
         // By default, the home location is where an entity is first spawned. This can be changed later.
-        this.homeWorld = world;
-        this.homeMap = map;
         this.homeScreen = screen;
         this.homeX = x;
         this.homeY = y;
 
-        this.world = world;
-        this.map = map;
         this.screen = screen;
         this.x = x;
         this.y = y;
@@ -545,7 +509,7 @@ class Entity {
         screen.addEntity(this);
     }
 
-    doSpawnLoot(world, map, screen, x, y) {
+    doSpawnLoot(screen, x, y) {
         // By default, do nothing.
         // Typically, loot will be spawned under a dying entity, but this is not strictly required.
         // For example, killing a set of enemies can cause a key to appear in a fixed location.
@@ -564,33 +528,24 @@ class Entity {
         // By default, do nothing.
     }
 
-    doTeleport(world, map, screen, x, y) {
+    doTeleport(screen, x, y) {
         // Move to an arbitrary point in the world. Do not check collision.
         // This does not have to be called if the entity stays on the same screen (i.e. only x and y change).
         this.doDespawn();
-        this.doRespawn(world, map, screen, x, y);
-    }
-
-    doTeleportMap(map, screen, x, y) {
-        this.doTeleport(map.world, map, screen, x, y);
-    }
-
-    doTeleportScreen(screen, x, y) {
-        this.doTeleport(screen.map.world, screen.map, screen, x, y);
+        this.doRespawn(screen, x, y);
     }
 
     doTeleportHome() {
         // Teleport the entity to its home location.
-        this.doTeleport(this.homeWorld, this.homeMap, this.homeScreen, this.homeX, this.homeY);
+        this.doTeleport(this.homeScreen, this.homeX, this.homeY);
     }
 
     doTeleportDeath() {
-        // TODO Should this be an instance?
         // Teleport the entity to the death plane.
-        let deathWorld = this.world;
-        let deathMap = deathWorld.getMap("_death")
-        let deathScreen = deathMap.getScreen("death_plane")
-        this.doTeleport(deathWorld, deathMap, deathScreen, 7, 11);
+        let deathMap = DeathMap.createDeathMap();
+        let deathScreen = DeathScreen.createDeathScreen(0, 0);
+        deathScreen.attachMap(deathMap);
+        this.doTeleport(deathScreen, 7, 11);
     }
 
 
@@ -659,57 +614,57 @@ class Entity {
 
 
     isScreenLeft() {
-        return this.map.isScreenLeft(this.screen);
+        return this.screen.isScreenLeft();
     }
 
     isScreenUp() {
-        return this.map.isScreenUp(this.screen);
+        return this.screen.isScreenUp();
     }
 
     isScreenRight() {
-        return this.map.isScreenRight(this.screen);
+        return this.screen.isScreenRight();
     }
 
     isScreenDown() {
-        return this.map.isScreenDown(this.screen);
+        return this.screen.isScreenDown();
     }
 
     doScreenLeft() {
-        let newScreen = this.map.getScreenLeft(this.screen);
-        this.doTeleportScreen(newScreen, this.x, this.y);
+        let newScreen = this.screen.getScreenLeft();
+        this.doTeleport(newScreen, this.x, this.y);
     }
 
     doScreenUp() {
-        let newScreen = this.map.getScreenUp(this.screen);
-        this.doTeleportScreen(newScreen, this.x, this.y);
+        let newScreen = this.screen.getScreenUp();
+        this.doTeleport(newScreen, this.x, this.y);
     }
 
     doScreenRight() {
-        let newScreen = this.map.getScreenRight(this.screen);
-        this.doTeleportScreen(newScreen, this.x, this.y);
+        let newScreen = this.screen.getScreenRight();
+        this.doTeleport(newScreen, this.x, this.y);
     }
 
     doScreenDown() {
-        let newScreen = this.map.getScreenDown(this.screen);
-        this.doTeleportScreen(newScreen, this.x, this.y);
+        let newScreen = this.screen.getScreenDown();
+        this.doTeleport(newScreen, this.x, this.y);
     }
 
 
 
 
     doMapUp() {
-        let newMap = this.world.getMapUp(this.map);
+        let newMap = this.screen.getMapUp();
         if(newMap) {
             let newScreen = newMap.getScreenByPosition(this.screen.x, this.screen.y);
-            this.doTeleportScreen(newScreen, this.x, this.y);
+            this.doTeleport(newScreen, this.x, this.y);
         }
     }
 
     doMapDown() {
-        let newMap = this.world.getMapDown(this.map);
+        let newMap = this.screen.getMapDown();
         if(newMap) {
             let newScreen = newMap.getScreenByPosition(this.screen.x, this.screen.y);
-            this.doTeleportScreen(newScreen, this.x, this.y);
+            this.doTeleport(newScreen, this.x, this.y);
         }
     }
 
@@ -932,7 +887,7 @@ class Entity {
                     number = itemData.count;
                 }
 
-                EntitySpawner.spawnStack(itemData.item.id, number, this.world, this.map, this.screen, this.x, this.y);
+                EntitySpawner.spawnStack(itemData.item.id, number, this.screen, this.x, this.y);
                 this.inventory.removeFromInventorySlot(slot, number);
             }
         }

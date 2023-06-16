@@ -8,21 +8,16 @@ class Client {
     maxNumTilesX = 16;
     maxNumTilesY = 12;
     sidePanelTiles = 10;
+    isGrid = true;
+
+    keyboard = new Keyboard();
+    mouse = new Mouse();
+    controller = new Controller();
 
     player;
 
-    keyboard;
-    mouse;
-    controller;
-
-    isGrid = true;
-
     constructor(player) {
         this.player = player;
-
-        this.keyboard = new Keyboard();
-        this.mouse = new Mouse();
-        this.controller = new Controller();
     }
 
     getNumTilesX() {
@@ -42,7 +37,7 @@ class Client {
             let nScreen = this.isScreen(x, y, imageScaleFactor);
 
             if(nScreen !== undefined) {
-                this.player.teleportScreen(this.player.screen, nScreen[0], nScreen[1]);
+                this.player.teleport(this.player.screen, nScreen[0], nScreen[1]);
             }
         }
         else if(inputs.includes("right")) {

@@ -19,9 +19,8 @@ class Screen {
     tiles = [];
     entities = [];
 
-    static loadScreenFromFile(screenFile, map) {
+    static loadScreenFromFile(screenFile) {
         let screen = new Screen();
-        screen.map = map;
 
         let tileData = fs.readFileSync(screenFile, "ascii");
         let lines = tileData.split(CRLF);
@@ -56,7 +55,7 @@ class Screen {
             if(entityPart[0]) {
                 while(entityPart.length > 0) {
                     let id = entityPart.shift();
-                    EntitySpawner.spawn(id, map.world, map, screen, x, y);
+                    EntitySpawner.spawn(id, screen, x, y);
                 }
             }
         }
@@ -64,20 +63,8 @@ class Screen {
         return screen;
     }
 
-    static createVoidScreen(map, screenX, screenY) {
-        let screen = new Screen();
-        screen.map = map;
-        screen.x = screenX;
-        screen.y = screenY;
-
-        // Place void tiles.
-        for(let x = 0; x < 16; x++) {
-            for(let y = 0; y < 12; y++) {
-                screen.addTile(new Tile(["_base"], ["void"]), x, y);
-            }
-        }
-
-        return screen;
+    attachMap(map) {
+        this.map = map;
     }
 
     addTile(tile, x, y) {
@@ -95,6 +82,46 @@ class Screen {
         if (index > -1) {
             this.entities.splice(index, 1);
         }
+    }
+
+    isScreenUp() {
+        return this.map.isScreenUp(this);
+    }
+
+    isScreenDown() {
+        return this.map.isScreenDown(this);
+    }
+
+    isScreenLeft() {
+        return this.map.isScreenLeft(this);
+    }
+
+    isScreenRight() {
+        return this.map.isScreenRight(this);
+    }
+
+    getScreenUp() {
+        return this.map.getScreenUp(this);
+    }
+
+    getScreenDown() {
+        return this.map.getScreenDown(this);
+    }
+
+    getScreenLeft() {
+        return this.map.getScreenLeft(this);
+    }
+
+    getScreenRight() {
+        return this.map.getScreenRight(this);
+    }
+
+    getMapUp() {
+        return this.map.getMapUp();
+    }
+
+    getMapDown() {
+        return this.map.getMapDown();
     }
 
     getScreenImages() {

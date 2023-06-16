@@ -11,7 +11,13 @@ class World {
 
         let mapFolders = fs.readdirSync(worldFolder);
         for(const mapFolder of mapFolders) {
-            let map = GameMap.loadMapFromFolder(worldFolder + mapFolder + "/", world);
+            if(mapFolder === "_dynamic") {
+                continue;
+            }
+
+            let map = GameMap.loadMapFromFolder(worldFolder + mapFolder + "/");
+            
+            map.attachWorld(world);
             world.addMap(mapFolder, map);
         }
 
