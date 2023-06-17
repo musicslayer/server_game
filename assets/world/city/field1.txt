@@ -1,15 +1,5 @@
 0,0|floor,red,item,star|
-2,2||wall
-10,10||fire_trap
-11,10||death_trap
-4,5||monster
-5,5||monster
 0,6||health_potion
 0,7||health_potion
 0,8||health_potion
-0,9||mana_potion
-0,10||mana_potion
-0,11||mana_potion
-5,11||invincible_potion
-6,11||invincible_potion
-7,11||invincible_potion
+10,10||fire_trap

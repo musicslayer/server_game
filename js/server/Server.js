@@ -4,6 +4,7 @@ class Server {
     // These variables affect server performance.
     static TICK_RATE = 60; // times per second
     static ANIMATION_FRAMES = 60; // frames per 1 tile of movement
+    static MAX_ENTITY_COUNT = 10; // This keeps track of spawns/despawns, but not entities in the inventory.
 
     static refreshQueue = []; // Tasks that occur every second (not every tick).
     static taskQueue = [];
@@ -11,6 +12,7 @@ class Server {
     static scheduledTaskMap = new Map(); 
 
     static currentTick = 0;
+    static currentEntityCount = 0;
 
     static tickInterval = setInterval(() => {
         if(Server.currentTick % Server.TICK_RATE === 0) {
@@ -65,6 +67,23 @@ class Server {
             let fcn = taskQueue.shift();
             fcn();
         }
+    }
+
+    static registerSpawn(number) {
+        if(!Server.canSpawn(1)) {
+            // LOG/THROW SERVER ERROR?
+            console.log("Too many entities!");
+        }
+
+        Server.currentEntityCount += number;
+    }
+
+    static registerDespawn(number) {
+        Server.currentEntityCount -= number;
+    }
+
+    static canSpawn(number) {
+        return Server.currentEntityCount + number <= Server.MAX_ENTITY_COUNT;
     }
 }
 

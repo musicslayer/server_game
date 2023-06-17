@@ -7,6 +7,8 @@ class ItemStack extends Entity {
     item;
     stackSize;
 
+    isItemStack = true;
+
     constructor(item, stackSize) {
         super();
         this.item = item;
@@ -28,21 +30,9 @@ class ItemStack extends Entity {
     }
 
     doInteract(entity) {
-        // The item will be collected as many times as possible from the stack.
+        // The item will be collected.
         if(entity.inventory) {
-            while(this.stackSize > 0) {
-                let success = entity.doAddToInventory(this.item);
-                if(success) {
-                    this.stackSize--;
-                }
-                else {
-                    break;
-                }
-            }
-
-            if(this.stackSize === 0) {
-                this.doDespawn();
-            }
+            entity.doAddToInventory(this);
         }
     }
 

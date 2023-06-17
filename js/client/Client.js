@@ -1,5 +1,7 @@
-const { createCanvas } = require("canvas")
+const { createCanvas, Image } = require("canvas")
 
+const Server = require("../server/Server.js");
+const ImageCatalog = require("../image/ImageCatalog.js");
 const Keyboard = require("../input/Keyboard.js");
 const Mouse = require("../input/Mouse.js");
 const Controller = require("../input/Controller.js");
@@ -200,6 +202,7 @@ class Client {
 
         this.drawScreen(ctx, imageScaleFactor);
         this.drawPurse(ctx, imageScaleFactor);
+        this.drawEntityCount(ctx, imageScaleFactor);
         this.drawInventory(ctx, imageScaleFactor);
 
         if(this.isGrid) {
@@ -257,6 +260,49 @@ class Client {
         }
 
         ctx.stroke();
+    }
+
+    drawEntityCount(ctx, imageScaleFactor) {
+        ctx.beginPath();
+        
+        let originX = 17;
+        let originY = 1;
+
+        let images = [];
+        
+        images.push({
+            x: 0,
+            y: 0,
+            image: ImageCatalog.IMAGE_CATALOG.getImageTableByName("letter").getImageByName("upperE")
+        });
+
+        images.push({
+            x: 1,
+            y: 0,
+            image: this.getEntityCountImage()
+        });
+
+        while(images.length > 0) {
+            let imageData = images.shift();
+            ctx.drawImage(imageData.image, (originX + imageData.x) * imageScaleFactor, (originY + imageData.y) * imageScaleFactor, imageScaleFactor, imageScaleFactor);
+        }
+
+        ctx.stroke();
+    }
+
+    getEntityCountImage() {
+        let canvas = createCanvas(128, 128);
+        let ctx = canvas.getContext("2d");
+
+        ctx.font = "30px Arial";
+        ctx.fillText("" + Server.currentEntityCount, 0, 70);
+
+        const buffer = canvas.toBuffer("image/png");
+
+        let image = new Image();
+        image.src = buffer;
+
+        return image;
     }
 
     drawInventory(ctx, imageScaleFactor) {

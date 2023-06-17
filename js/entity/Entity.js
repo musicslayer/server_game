@@ -133,12 +133,6 @@ class Entity {
         });
     }
 
-    respawn(screen, x, y) {
-        Server.addTask(() => {
-            this.doRespawn(screen, x, y);
-        });
-    }
-
     spawn(screen, x, y) {
         Server.addTask(() => {
             this.doSpawn(screen, x, y);
@@ -482,18 +476,11 @@ class Entity {
 
     doDespawn() {
         this.screen.removeEntity(this);
+        Server.registerDespawn(1);
     }
 
     doInteract(entity) {
         // By default, do nothing.
-    }
-
-    doRespawn(screen, x, y) {
-        this.screen = screen;
-        this.x = x;
-        this.y = y;
-
-        screen.addEntity(this);
     }
 
     doSpawn(screen, x, y) {
@@ -507,6 +494,8 @@ class Entity {
         this.y = y;
 
         screen.addEntity(this);
+
+        Server.registerSpawn(1);
     }
 
     doSpawnLoot(screen, x, y) {
@@ -529,10 +518,15 @@ class Entity {
     }
 
     doTeleport(screen, x, y) {
-        // Move to an arbitrary point in the world. Do not check collision.
+        // Move to an arbitrary point in the world. Do not check collision or call spawn/respawn.
         // This does not have to be called if the entity stays on the same screen (i.e. only x and y change).
-        this.doDespawn();
-        this.doRespawn(screen, x, y);
+        this.screen.removeEntity(this);
+
+        this.screen = screen;
+        this.x = x;
+        this.y = y;
+
+        screen.addEntity(this);
     }
 
     doTeleportHome() {
@@ -847,10 +841,31 @@ class Entity {
     }
 
     doAddToInventory(entity) {
+        // Do not call despawn, since 
         if(this.inventory && this.inventory.isActive) {
-            return this.inventory.addToInventory(entity);
+            if(entity.isItemStack) {
+                while(entity.stackSize > 0) {
+                    let success = this.inventory.addToInventory(entity.item);
+                    if(success) {
+                        entity.stackSize--;
+                    }
+                    else {
+                        break;
+                    }
+                }
+    
+                if(entity.stackSize === 0) {
+                    entity.doDespawn(); //???
+                }
+            }
+            else {
+                // Single item
+                let success = this.inventory.addToInventory(entity);
+                if(success) {
+                    entity.doDespawn(); //???
+                }
+            }
         }
-        return false;
     }
 
     doConsumeFromInventoryCurrentSlot() {
@@ -887,7 +902,7 @@ class Entity {
                     number = itemData.count;
                 }
 
-                EntitySpawner.spawnStack(itemData.item.id, number, this.screen, this.x, this.y);
+                EntitySpawner.spawnStack(itemData.item.id, number, this.screen, this.x, this.y); //???
                 this.inventory.removeFromInventorySlot(slot, number);
             }
         }

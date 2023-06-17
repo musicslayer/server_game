@@ -1,6 +1,7 @@
 class EntitySpawner {
     static spawnStack(id, number, screen, x, y, ...args) {
         if(id === "item_stack" || number === 0) {
+            // LOG SERVER ERROR?
             return;
         }
 

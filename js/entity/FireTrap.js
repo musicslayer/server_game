@@ -4,7 +4,7 @@ const ImageCatalog = require("../image/ImageCatalog.js");
 class FireTrap extends Entity {
     id = "fire_trap";
     
-    damage = 200;
+    damage = 40;
 
     getImages() {
         let images = [];

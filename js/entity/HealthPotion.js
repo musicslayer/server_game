@@ -23,10 +23,7 @@ class HealthPotion extends Entity {
     doInteract(entity) {
         // The item will be collected.
         if(entity.inventory) {
-            let success = entity.doAddToInventory(this);
-            if(success) {
-                this.doDespawn();
-            }
+            entity.doAddToInventory(this);
         }
     }
 
