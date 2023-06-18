@@ -17,17 +17,14 @@ class Purse {
     }
 
     addToPurse(gold) {
-        if(this.canAdd(gold)) {
-            this.goldTotal += gold;
-            return true;
-        }
-        else {
-            return false;
-        }
+        let N = Math.min(gold.stackSize, this.maxGoldTotel - this.goldTotal);
+
+        gold.stackSize -= N;
+        this.goldTotal += N;
     }
 
-    removeFromPurse(gold) {
-        this.goldTotal -= gold;
+    removeFromPurse(goldAmount) {
+        this.goldTotal -= goldAmount;
     }
 
     canAdd(gold) {

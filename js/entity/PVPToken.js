@@ -6,7 +6,7 @@ class PVPToken extends Entity {
     maxStackNumber = 1;
     maxStackSize = 10000;
 
-    getImages() {
+    getEntityImages() {
         let images = [];
 
         images.push({

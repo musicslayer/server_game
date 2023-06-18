@@ -4,7 +4,7 @@ const ImageCatalog = require("../image/ImageCatalog.js");
 class RevivePortal extends Entity {
     id = "revive_portal";
 
-    getImages() {
+    getEntityImages() {
         let images = [];
 
         images.push({

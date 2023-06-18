@@ -4,7 +4,7 @@ const ImageCatalog = require("../image/ImageCatalog.js");
 class Teleporter extends Entity {
     id = "teleporter";
 
-    getImages() {
+    getEntityImages() {
         let images = [];
 
         images.push({

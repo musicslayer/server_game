@@ -8,6 +8,7 @@ const Inventory = require("./Inventory.js");
 const Server = require("../server/Server.js");
 
 class Player extends Entity {
+    id = "player";
     isPlayer = true;
 
     health = 70;
@@ -33,7 +34,6 @@ class Player extends Entity {
 
     constructor() {
         super();
-        this.id = "player";
 
         // Register regen tasks.
         Server.addRefresh(() => {
@@ -87,9 +87,6 @@ class Player extends Entity {
         this.isDead = true;
         this.isInvincible = false;
 
-        this.inventory.turnOff();
-        this.purse.turnOff();
-
         // ??? If the player is in a dungeon, could we just teleport them to the entrance instead?
         this.teleportDeath();
     }
@@ -100,8 +97,6 @@ class Player extends Entity {
         this.mana = this.maxMana;
 
         this.isDead = false;
-        this.inventory.turnOn();
-        this.purse.turnOn();
     }
     
 
@@ -120,7 +115,7 @@ class Player extends Entity {
 
     doSpawnLoot(screen, x, y) {
         // When a player dies, a pvp token is spawned as loot.
-        EntitySpawner.spawn("pvp_token", screen, x, y);
+        EntitySpawner.spawn("pvp_token", 1, screen, x, y);
     }
 
     doAction() {
@@ -143,10 +138,10 @@ class Player extends Entity {
             }
         }
         
-        EntitySpawner.spawn("projectile", this.screen, x, y, this, this.direction, 8, false);
+        EntitySpawner.spawn("projectile", 1, this.screen, x, y, this, this.direction, 8, false);
     }
 
-    getImages() {
+    getEntityImages() {
         // For now, just use the "player/mage" image.
         let images = [];
 

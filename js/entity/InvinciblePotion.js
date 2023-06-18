@@ -8,7 +8,7 @@ class InvinciblePotion extends Entity {
     
     invincibleSeconds = 10;
 
-    getImages() {
+    getEntityImages() {
         let images = [];
 
         images.push({

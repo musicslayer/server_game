@@ -1,17 +1,20 @@
 const { createCanvas, Image } = require("canvas")
 
+const EntitySpawner = require("./EntitySpawner.js");
+const Server = require("../server/Server.js");
+
 class Inventory {
     maxSlots = 45;
 
     currentSlot;
-    itemDataArray = []; // {item, id, count}
+    itemArray = [];
 
     isActive = true;
 
     constructor() {
         // Prefill inventory to make logic easier.
         for(let index = 0; index < this.maxSlots; index++) {
-            this.itemDataArray[index] = undefined;
+            this.itemArray[index] = undefined;
         }
     }
 
@@ -23,48 +26,47 @@ class Inventory {
         this.isActive = false;
     }
 
+    // Return value is whether the ENTIRE entity was added to the inventory (i.e. if we need to despawn it)
     addToInventory(entity) {
-        // See if this item is already in the inventory and there is room in the stack to add it. Otherwise create a new stack.
         let numStacks = 0;
 
-        for(let index = 0; index < this.maxSlots; index++) {
-            let itemData = this.itemDataArray[index];
-            if(itemData && itemData.id === entity.id) {
-                if(itemData.count < itemData.item.maxStackSize) {
-                    itemData.count++;
-                    return true;
-                }
-                else {
-                    numStacks++;
-                }
+        // See if this item is already in the inventory and there is room in the stack to add it.
+        for(let index = 0; index < this.maxSlots && entity.stackSize > 0; index++) {
+            let item = this.itemArray[index];
+            if(item && item.id === entity.id) {
+                // Item is already in the inventory. Add as much of the entity's stack as we can to this stack.
+                numStacks++;
+
+                let N = Math.min(entity.stackSize, item.maxStackSize - item.stackSize);
+
+                entity.stackSize -= N;
+                item.stackSize += N;
             }
         }
 
-        // Item is not in inventory. If we can create another stack, look for the first empty slot.
-        if(numStacks < entity.maxStackNumber) {
-            for(let index = 0; index < this.maxSlots; index++) {
-                let itemData = this.itemDataArray[index];
-                if(itemData === undefined) {
-                    this.itemDataArray[index] = {
-                        item: entity,
-                        id: entity.id,
-                        count: 1
-                    }
-                    return true;
-                }
+        // There is no more room in existing stacks, so now we try to create new stacks.
+        for(let index = 0; index < this.maxSlots && entity.stackSize > 0 && numStacks < entity.maxStackNumber; index++) {
+            if(this.itemArray[index] === undefined) {
+                numStacks++;
+
+                let item = EntitySpawner.cloneInstance(entity, 0);
+                this.itemArray[index] = item;
+
+                let N = Math.min(entity.maxStackSize, entity.stackSize);
+
+                entity.stackSize -= N;
+                item.stackSize += N;
             }
         }
-
-        // Inventory is full. Do not pick up item.
-        return false;
     }
 
     removeFromInventorySlot(slot, number) {
-        let itemData = this.itemDataArray[slot];
-        if(itemData) {
-            itemData.count -= number;
-            if(itemData.count === 0) {
-                this.itemDataArray[slot] = undefined;
+        let item = this.itemArray[slot];
+        if(item) {
+            item.stackSize -= number;
+            if(item.stackSize === 0) {
+                this.itemArray[slot] = undefined;
+                EntitySpawner.destroyInstance(item);
             }
         }
     }
@@ -88,11 +90,11 @@ class Inventory {
     }
 
     swapInventorySlots(slot1, slot2) {
-        let itemData1 = this.itemDataArray[slot1];
-        let itemData2 = this.itemDataArray[slot2];
+        let item1 = this.itemArray[slot1];
+        let item2 = this.itemArray[slot2];
 
-        this.itemDataArray[slot1] = itemData2;
-        this.itemDataArray[slot2] = itemData1;
+        this.itemArray[slot1] = item2;
+        this.itemArray[slot2] = item1;
     }
 
     getInventoryImages() {
@@ -103,11 +105,11 @@ class Inventory {
         let xSlots = [0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8];
         let ySlots = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4];
 
-        for(let itemData of this.itemDataArray) {
+        for(let item of this.itemArray) {
             let x = xSlots.shift();
             let y = ySlots.shift();
 
-            let itemImages = itemData?.item?.getImages();
+            let itemImages = item?.getImages();
             if(itemImages) {
                 for(let itemImage of itemImages) {
                     images.push({
@@ -117,12 +119,12 @@ class Inventory {
                     });
                 }
 
-                // For cosmetic reasons, only add the count if it is > 1
-                if(itemData.count > 1) {
+                // For cosmetic reasons, only add the stackSize if it is > 1
+                if(item.stackSize > 1) {
                     images.push({
                         x: x,
                         y: y,
-                        image: this.getCountImage(itemData.count)
+                        image: this.getCountImage(item.stackSize)
                     });
                 }
             }
@@ -131,12 +133,12 @@ class Inventory {
         return images;
     }
 
-    getCountImage(count) {
+    getCountImage(stackSize) {
         let canvas = createCanvas(128, 128);
         let ctx = canvas.getContext("2d");
 
         ctx.font = "30px Arial";
-        ctx.fillText("" + count, 0, 20);
+        ctx.fillText("" + stackSize, 0, 20);
 
         const buffer = canvas.toBuffer("image/png");
 

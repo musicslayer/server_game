@@ -31,6 +31,7 @@ class Client {
     }
 
     onClick(button, x, y, imageScaleFactor) {
+        // TODO Write a "isPurse" function.
         // TODO display info about item?
         // Left clicking on the screen is a teleport and right clicking on an inventory slot uses an item.
         let inputs = this.mouse.processClick(button);
@@ -46,7 +47,10 @@ class Client {
             let slot = this.isInventory(x, y, imageScaleFactor);
 
             if(slot !== undefined) {
-                this.player.consumeFromInventory(slot);
+                //this.player.consumeFromInventory(slot);
+
+                // For now, drop from purse
+                this.player.doDropFromPurse(100);
             }
         }
     }
@@ -295,7 +299,7 @@ class Client {
         let ctx = canvas.getContext("2d");
 
         ctx.font = "30px Arial";
-        ctx.fillText("" + Server.currentEntityCount, 0, 70);
+        ctx.fillText("(" + Server.currentWorldEntityCount + ", " + Server.currentInstanceEntityCount + ", " + Server.currentInventoryEntityCount + ")", 0, 70);
 
         const buffer = canvas.toBuffer("image/png");
 

@@ -1,6 +1,8 @@
 const Screen = require("./Screen.js");
 
 class VoidScreen extends Screen {
+    isDynamic = true;
+    
     static createVoidScreen(screenX, screenY) {
         let voidScreen = VoidScreen.fromScreen(Screen.loadScreenFromFile("assets/world/_dynamic/void.txt"));
         voidScreen.x = screenX;

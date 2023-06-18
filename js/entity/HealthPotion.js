@@ -3,12 +3,11 @@ const ImageCatalog = require("../image/ImageCatalog.js");
 
 class HealthPotion extends Entity {
     id = "health_potion";
-    maxStackNumber = 1;
     maxStackSize = 20;
     
     healthReward = 40;
 
-    getImages() {
+    getEntityImages() {
         let images = [];
 
         images.push({

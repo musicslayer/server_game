@@ -6,7 +6,7 @@ class FireTrap extends Entity {
     
     damage = 40;
 
-    getImages() {
+    getEntityImages() {
         let images = [];
 
         images.push({

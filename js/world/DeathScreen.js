@@ -1,6 +1,8 @@
 const Screen = require("./Screen.js");
 
 class DeathScreen extends Screen {
+    isDynamic = true;
+
     static createDeathScreen(screenX, screenY) {
         let deathScreen = DeathScreen.fromScreen(Screen.loadScreenFromFile("assets/world/_dynamic/death.txt"));
         deathScreen.x = screenX;

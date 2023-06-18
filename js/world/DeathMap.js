@@ -2,6 +2,8 @@ const DeathScreen = require("./DeathScreen.js");
 const GameMap = require("./GameMap.js");
 
 class DeathMap extends GameMap {
+    isDynamic = true;
+    
     static createDeathMap() {
         return new DeathMap();
     }

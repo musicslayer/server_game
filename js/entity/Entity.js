@@ -1,3 +1,5 @@
+const { createCanvas, Image } = require("canvas")
+
 const EntitySpawner = require("./EntitySpawner.js");
 const ImageCatalog = require("../image/ImageCatalog.js");
 const Server = require("../server/Server.js");
@@ -57,6 +59,11 @@ class Entity {
 
     // To avoid awkward edge cases, just make every entity start facing to the right.
     direction = "right";
+
+    // By default, entities don't form into stacks of themselves.
+    maxStackNumber = 1;
+    maxStackSize = 1;
+    stackSize = 1;
 
     // All of the main actions an entity can take are added onto the server queue.
     addExperience(experience) {
@@ -476,7 +483,9 @@ class Entity {
 
     doDespawn() {
         this.screen.removeEntity(this);
-        Server.registerDespawn(1);
+        EntitySpawner.destroyInstance(this);
+
+        // TODO If this entity has an inventory, we must register all of those entities as being lost as well.
     }
 
     doInteract(entity) {
@@ -494,8 +503,6 @@ class Entity {
         this.y = y;
 
         screen.addEntity(this);
-
-        Server.registerSpawn(1);
     }
 
     doSpawnLoot(screen, x, y) {
@@ -519,14 +526,25 @@ class Entity {
 
     doTeleport(screen, x, y) {
         // Move to an arbitrary point in the world. Do not check collision or call spawn/respawn.
-        // This does not have to be called if the entity stays on the same screen (i.e. only x and y change).
-        this.screen.removeEntity(this);
-
-        this.screen = screen;
         this.x = x;
         this.y = y;
 
-        screen.addEntity(this);
+        // Lock/unlock inventory based on if the screen is dynamic.
+        if(screen.isDynamic) {
+            this?.inventory.turnOff();
+            this?.purse.turnOff();
+        }
+        else {
+            this?.inventory.turnOn();
+            this?.purse.turnOn();
+        }
+
+        // If the entity stays on the same screen, skip this to avoid triggering "screen.checkDestruction()".
+        if(this.screen !== screen) {
+            this.screen.removeEntity(this);
+            this.screen = screen;
+            screen.addEntity(this);
+        }
     }
 
     doTeleportHome() {
@@ -707,7 +725,7 @@ class Entity {
         }
     }
 
-    removeFromPurse(gold) {
+    dropFromPurse(gold) {
         if(this.canPurse) {
             this.canPurse = false;
 
@@ -716,7 +734,7 @@ class Entity {
             });
 
             Server.addTask(() => {
-                this.doRemoveFromPurse(gold);
+                this.doDropFromPurse(gold);
             });
         }
     }
@@ -806,26 +824,25 @@ class Entity {
         }
     }
 
-
     doAddToPurse(gold) {
         if(this.purse && this.purse.isActive) {
-            return this.purse.addToPurse(gold);
+            this.purse.addToPurse(gold);
+            if(gold.stackSize === 0) {
+                gold.doDespawn();
+            }
         }
-        return false;
     }
 
-    doRemoveFromPurse(gold) {
+    doDropFromPurse(goldAmount) {
         if(this.purse && this.purse.isActive) {
-            return this.purse.removeFromPurse(gold);
-        }
-        return false;
-    }
+            // A negative value or a value too large means to drop all the gold.
+            if(goldAmount < 0 || goldAmount > this.purse.goldTotal) {
+                goldAmount = this.purse.goldTotal;
+            }
 
-    doAddToInventory(entity) {
-        if(this.inventory && this.inventory.isActive) {
-            return this.inventory.addToInventory(entity);
+            EntitySpawner.spawn("gold", goldAmount, this.screen, this.x, this.y);
+            this.purse.removeFromPurse(goldAmount);
         }
-        return false;
     }
 
     doShiftInventorySlotBackward() {
@@ -841,29 +858,10 @@ class Entity {
     }
 
     doAddToInventory(entity) {
-        // Do not call despawn, since 
         if(this.inventory && this.inventory.isActive) {
-            if(entity.isItemStack) {
-                while(entity.stackSize > 0) {
-                    let success = this.inventory.addToInventory(entity.item);
-                    if(success) {
-                        entity.stackSize--;
-                    }
-                    else {
-                        break;
-                    }
-                }
-    
-                if(entity.stackSize === 0) {
-                    entity.doDespawn(); //???
-                }
-            }
-            else {
-                // Single item
-                let success = this.inventory.addToInventory(entity);
-                if(success) {
-                    entity.doDespawn(); //???
-                }
+            this.inventory.addToInventory(entity);
+            if(entity.stackSize === 0) {
+                entity.doDespawn();
             }
         }
     }
@@ -877,32 +875,32 @@ class Entity {
     doConsumeFromInventory(slot) {
         // Consume 1 item in this inventory slot.
         if(this.inventory && this.inventory.isActive) {
-            let itemData = this.inventory.itemDataArray[slot];
-            if(itemData && itemData.item.canConsume(this)) {
-                itemData.item.consume(this);
+            let item = this.inventory.itemArray[slot];
+            if(item && item.canConsume(this)) {
+                item.consume(this);
                 this.inventory.removeFromInventorySlot(slot, 1);
             }
         }
     }
 
-    doDropFromInventoryCurrentSlot(number) {
-        // Drop item without consuming it.
+    doDropFromInventoryCurrentSlot() {
+        // Drop all items in the current slot without consuming them.
         if(this.inventory && this.inventory.isActive) {
-            this.inventory.dropFromInventory(slot, number);
+            this.doDropFromInventory(this.inventory.currentSlot, -1);
         }
     }
 
     doDropFromInventory(slot, number) {
         // Drop a number of items from a stack without consuming them.
         if(this.inventory && this.inventory.isActive) {
-            let itemData = this.inventory.itemDataArray[slot];
-            if(itemData) {
+            let item = this.inventory.itemArray[slot];
+            if(item) {
                 // A negative value or a value too large means to drop the entire stack.
-                if(number < 0 || number > itemData.count) {
-                    number = itemData.count;
+                if(number < 0 || number > item.stackSize) {
+                    number = item.stackSize;
                 }
 
-                EntitySpawner.spawnStack(itemData.item.id, number, this.screen, this.x, this.y); //???
+                EntitySpawner.spawn(item.id, number, this.screen, this.x, this.y);
                 this.inventory.removeFromInventorySlot(slot, number);
             }
         }
@@ -926,13 +924,46 @@ class Entity {
 
     getImages() {
         // By default, use a generic picture.
+        let images = this.getEntityImages();
+
+        // Don't bother drawing a "1".
+        if(this.stackSize > 1) {
+            images.push({
+                x: this.x + this.animationShiftX,
+                y: this.y + this.animationShiftY,
+                image: this.getEntityCountImage()
+            });
+        }
+
+        return images;
+    }
+
+    getEntityImages() {
+        // By default, use a generic picture.
         let images = [];
+
         images.push({
             x: this.x + this.animationShiftX,
             y: this.y + this.animationShiftY,
             image: ImageCatalog.IMAGE_CATALOG.getImageTableByName("_base").getImageByName("unknown")
         });
+
         return images;
+    }
+
+    getEntityCountImage() {
+        let canvas = createCanvas(128, 128);
+        let ctx = canvas.getContext("2d");
+
+        ctx.font = "30px Arial";
+        ctx.fillText("" + this.stackSize, 0, 20);
+
+        const buffer = canvas.toBuffer("image/png");
+
+        let image = new Image();
+        image.src = buffer;
+
+        return image;
     }
 
     getRootEntity(entity) {
@@ -943,6 +974,11 @@ class Entity {
         }
 
         return rootEntity;
+    }
+
+    clone(number) {
+        // By default, just create another instance.
+        return EntitySpawner.createInstance(this.id, number);
     }
 }
 

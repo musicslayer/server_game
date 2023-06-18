@@ -8,7 +8,7 @@ class ManaPotion extends Entity {
 
     manaReward = 40;
 
-    getImages() {
+    getEntityImages() {
         let images = [];
 
         images.push({

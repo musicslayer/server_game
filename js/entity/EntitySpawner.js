@@ -1,25 +1,19 @@
+const Server = require("../server/Server.js");
+
 class EntitySpawner {
-    static spawnStack(id, number, screen, x, y, ...args) {
-        if(id === "item_stack" || number === 0) {
-            // LOG SERVER ERROR?
+    static spawn(id, number, screen, x, y, ...args) {
+        if(number === 0) {
             return;
         }
 
-        let entity = EntitySpawner.clone(id, ...args);
-        let entityStack = EntitySpawner.spawn("item_stack", screen, x, y, entity, number);
-        return entityStack;
-    }
-
-    static spawn(id, screen, x, y, ...args) {
-        let entity = EntitySpawner.clone(id, ...args);
+        let entity = EntitySpawner.createInstance(id, number, ...args);
         entity.spawn(screen, x, y);
         return entity;
     }
 
-    static clone(id, ...args) {
+    static createInstance(id, number, ...args) {
         // These requires cannot be placed at the top of the file because it creates a circular dependency loop.
         const Player = require("./Player.js");
-        const ItemStack = require("./ItemStack.js");
         const Gold = require("./Gold.js");
         const PVPToken = require("./PVPToken.js");
         const Wall = require("./Wall.js");
@@ -34,38 +28,64 @@ class EntitySpawner {
         const RevivePortal = require("./RevivePortal.js");
         const UnknownEntity = require("./UnknownEntity.js");
 
+        Server.registerInstanceCreation(1);
+
+        let entity;
+
         switch(id) {
             case "player":
-                return new Player(...args);
-            case "item_stack":
-                return new ItemStack(...args);
+                entity = new Player(...args);
+                break;
             case "gold":
-                return new Gold(...args);
+                entity = new Gold(...args);
+                break;
             case "pvp_token":
-                return new PVPToken(...args);
+                entity = new PVPToken(...args);
+                break;
             case "fire_trap":
-                return new FireTrap(...args);
+                entity = new FireTrap(...args);
+                break;
             case "death_trap":
-                return new DeathTrap(...args);
+                entity = new DeathTrap(...args);
+                break;
             case "health_potion":
-                return new HealthPotion(...args);
+                entity = new HealthPotion(...args);
+                break;
             case "invincible_potion":
-                return new InvinciblePotion(...args);
+                entity = new InvinciblePotion(...args);
+                break;
             case "mana_potion":
-                return new ManaPotion(...args);
+                entity = new ManaPotion(...args);
+                break;
             case "monster":
-                return new Monster(...args);
+                entity = new Monster(...args);
+                break;
             case "projectile":
-                return new Projectile(...args);
+                entity = new Projectile(...args);
+                break;
             case "wall":
-                return new Wall(...args);
+                entity = new Wall(...args);
+                break;
             case "teleporter":
-                return new Teleporter(...args);
+                entity = new Teleporter(...args);
+                break;
             case "revive_portal":
-                return new RevivePortal(...args);
+                entity = new RevivePortal(...args);
+                break;
             default:
-                return new UnknownEntity(...args);
+                entity = new UnknownEntity(...args);
         }
+
+        entity.stackSize = number;
+        return entity;
+    }
+
+    static cloneInstance(entity, number) {
+        return entity.clone(number);
+    }
+
+    static destroyInstance(entity) {
+        Server.registerInstanceDestruction(1);
     }
 }
 

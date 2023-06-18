@@ -25,7 +25,7 @@ class Screen {
         let tileData = fs.readFileSync(screenFile, "ascii");
         let lines = tileData.split(CRLF);
 
-        // Each line represents a tile within this screen.
+        // Each line represents a square within this screen.
         while(lines.length > 0) {
             let line = lines.shift();
             let parts = line.split(PIPE);
@@ -55,7 +55,8 @@ class Screen {
             if(entityPart[0]) {
                 while(entityPart.length > 0) {
                     let id = entityPart.shift();
-                    EntitySpawner.spawn(id, screen, x, y);
+                    let stackSize = Number(entityPart.shift());
+                    EntitySpawner.spawn(id, stackSize, screen, x, y);
                 }
             }
         }
@@ -81,6 +82,10 @@ class Screen {
         const index = this.entities.indexOf(entity);
         if (index > -1) {
             this.entities.splice(index, 1);
+
+            if(entity.isPlayer) {
+                this.checkDestruction();
+            }
         }
     }
 
@@ -139,6 +144,29 @@ class Screen {
         }
 
         return images;
+    }
+
+    checkDestruction() {
+        // For dynamic screens, register all entity destructions on this screen after all players leave.
+        if(this.isDynamic && !this.isPlayerPresent()) {
+            this.screenClear();
+        }
+    }
+
+    isPlayerPresent() {
+        // This is called after a player has already left this screen so they are not included in the check.
+        for(let entity of this.entities) {
+            if(entity.isPlayer) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    screenClear() {
+        for(let entity of this.entities) {
+            EntitySpawner.destroyInstance(entity);
+        }
     }
 }
 

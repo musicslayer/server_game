@@ -4,7 +4,7 @@ const ImageCatalog = require("../image/ImageCatalog.js");
 class DeathTrap extends Entity {
     id = "death_trap";
 
-    getImages() {
+    getEntityImages() {
         let images = [];
 
         images.push({

@@ -5,17 +5,14 @@ const Entity = require("./Entity.js");
 const EntitySpawner = require("./EntitySpawner.js");
 
 class Monster extends Entity {
+    id = "monster";
+
     health = 70;
     maxHealth = 100;
     experienceReward = 20;
 
     isTangible = true;
     blocksMovement = true;
-
-    constructor() {
-        super();
-        this.id = "monster";
-    }
 
     doTakeDamage(entity, damage) {
         this.health = Math.max(this.health - damage, 0);
@@ -28,10 +25,10 @@ class Monster extends Entity {
     }
 
     doSpawnLoot(screen, x, y) {
-        EntitySpawner.spawn("gold", screen, x, y, 100);
+        EntitySpawner.spawn("gold", 100, screen, x, y);
     }
 
-    getImages() {
+    getEntityImages() {
         let images = [];
 
         images.push({

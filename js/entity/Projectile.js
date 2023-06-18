@@ -3,25 +3,24 @@ const ImageCatalog = require("../image/ImageCatalog.js");
 const Server = require("../server/Server.js");
 
 class Projectile extends Entity {
-    owner;
+    id = "projectile";
 
+    owner;
     direction;
     range;
-    damage;
     isMulti;
 
     isCollision;
 
+    damage = 40;
     movementTime = 0.05;
 
     constructor(owner, direction, range, isMulti) {
         super();
-        this.id = "projectile";
 
         this.owner = owner;
         this.direction = direction;
         this.range = range;
-        this.damage = 40;
         this.isMulti = isMulti;
     }
 
@@ -149,7 +148,7 @@ class Projectile extends Entity {
         return true;
     }
 
-    getImages() {
+    getEntityImages() {
         let images = [];
 
         images.push({

@@ -11,7 +11,7 @@ class Wall extends Entity {
         this.id = "wall";
     }
 
-    getImages() {
+    getEntityImages() {
         let images = [];
 
         images.push({
