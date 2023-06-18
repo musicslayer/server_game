@@ -1,6 +1,7 @@
 const fs = require("fs");
 
 const EntitySpawner = require("../entity/EntitySpawner.js");
+const Server = require("../server/Server.js");
 const Tile = require("./Tile.js");
 
 const COMMA = ",";
@@ -16,12 +17,12 @@ class Screen {
     numTilesX = 16;
     numTilesY = 12;
 
+    playerCount = 0;
+
     tiles = [];
     entities = [];
 
-    static loadScreenFromFile(screenFile) {
-        let screen = new Screen();
-
+    loadScreenFromFile(screenFile) {
         let tileData = fs.readFileSync(screenFile, "ascii");
         let lines = tileData.split(CRLF);
 
@@ -47,7 +48,7 @@ class Screen {
                 }
 
                 let tile = new Tile(imageTableIdxArray, imageIdxArray);
-                screen.addTile(tile, x, y);
+                this.addTile(tile, x, y);
             }
 
             // Third part is the entities
@@ -56,12 +57,11 @@ class Screen {
                 while(entityPart.length > 0) {
                     let id = entityPart.shift();
                     let stackSize = Number(entityPart.shift());
-                    EntitySpawner.spawn(id, stackSize, screen, x, y);
+                    EntitySpawner.spawn(id, stackSize, this, x, y);
                 }
             }
         }
 
-        return screen;
     }
 
     attachMap(map) {
@@ -76,6 +76,17 @@ class Screen {
 
     addEntity(entity) {
         this.entities.push(entity);
+
+        if(entity.isPlayer) {
+            this.playerCount++;
+        }
+
+        if(this.isDynamic) {
+            Server.registerInstanceEntity(1);
+        }
+        else {
+            Server.registerWorldEntity(1);
+        }
     }
 
     removeEntity(entity) {
@@ -84,7 +95,19 @@ class Screen {
             this.entities.splice(index, 1);
 
             if(entity.isPlayer) {
-                this.checkDestruction();
+                this.playerCount--;
+            }
+
+            if(this.isDynamic) {
+                Server.deregisterInstanceEntity(1);
+
+                // If there are no more players in an instance screen, then the entire screen should be deregistered.
+                if(this.playerCount === 0) {
+                    Server.deregisterInstanceEntity(this.entities.length);
+                }
+            }
+            else {
+                Server.deregisterWorldEntity(1);
             }
         }
     }
@@ -144,29 +167,6 @@ class Screen {
         }
 
         return images;
-    }
-
-    checkDestruction() {
-        // For dynamic screens, register all entity destructions on this screen after all players leave.
-        if(this.isDynamic && !this.isPlayerPresent()) {
-            this.screenClear();
-        }
-    }
-
-    isPlayerPresent() {
-        // This is called after a player has already left this screen so they are not included in the check.
-        for(let entity of this.entities) {
-            if(entity.isPlayer) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    screenClear() {
-        for(let entity of this.entities) {
-            EntitySpawner.destroyInstance(entity);
-        }
     }
 }
 

@@ -483,9 +483,10 @@ class Entity {
 
     doDespawn() {
         this.screen.removeEntity(this);
-        EntitySpawner.destroyInstance(this);
 
-        // TODO If this entity has an inventory, we must register all of those entities as being lost as well.
+        if(this.inventory) {
+            Server.deregisterInventoryEntity(this.inventory.itemArray.length);
+        }
     }
 
     doInteract(entity) {
@@ -529,18 +530,18 @@ class Entity {
         this.x = x;
         this.y = y;
 
-        // Lock/unlock inventory based on if the screen is dynamic.
-        if(screen.isDynamic) {
-            this?.inventory.turnOff();
-            this?.purse.turnOff();
-        }
-        else {
-            this?.inventory.turnOn();
-            this?.purse.turnOn();
-        }
-
-        // If the entity stays on the same screen, skip this to avoid triggering "screen.checkDestruction()".
         if(this.screen !== screen) {
+            // Lock/unlock inventory based on if the screen is dynamic.
+            if(screen.isDynamic) {
+                this?.inventory.turnOff();
+                this?.purse.turnOff();
+            }
+            else {
+                this?.inventory.turnOn();
+                this?.purse.turnOn();
+            }
+
+            // If the entity stays on the same screen, skip this to avoid triggering "screen.checkDestruction()".
             this.screen.removeEntity(this);
             this.screen = screen;
             screen.addEntity(this);

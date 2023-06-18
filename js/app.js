@@ -14,7 +14,9 @@ const EntitySpawner = require("./entity/EntitySpawner.js");
 async function init() {
     await ImageCatalog.loadImageCatalogFromFolder("assets/image/");
 
-    let world = await World.loadWorldFromFolder("assets/world/");
+    let world = new World();
+    world.loadWorldFromFolder("assets/world/");
+
     let player = EntitySpawner.spawn("player", 1, world.gameMaps[0].screens[0], 0, 0);
     const client = new Client(player);
 

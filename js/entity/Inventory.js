@@ -51,6 +51,7 @@ class Inventory {
 
                 let item = EntitySpawner.cloneInstance(entity, 0);
                 this.itemArray[index] = item;
+                Server.registerInventoryEntity(1);
 
                 let N = Math.min(entity.maxStackSize, entity.stackSize);
 
@@ -66,7 +67,7 @@ class Inventory {
             item.stackSize -= number;
             if(item.stackSize === 0) {
                 this.itemArray[slot] = undefined;
-                EntitySpawner.destroyInstance(item);
+                Server.deregisterInventoryEntity(1);
             }
         }
     }

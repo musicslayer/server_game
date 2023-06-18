@@ -27,14 +27,6 @@ class Purse {
         this.goldTotal -= goldAmount;
     }
 
-    canAdd(gold) {
-        return this.goldTotal + gold <= this.maxGoldTotel;
-    }
-
-    canSpend(gold) {
-        return this.goldTotal >= gold;
-    }
-
     getPurseImages() {
         // Returns an array of all the images that should be drawn on this screen.
         let images = [];

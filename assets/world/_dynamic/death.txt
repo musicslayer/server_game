@@ -8,4 +8,4 @@
 10,0|letter,upperA|
 11,0|letter,upperN|
 12,0|letter,upperE|
-7,3||revive_portal
+7,3||revive_portal,1

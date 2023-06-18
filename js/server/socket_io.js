@@ -36,7 +36,7 @@ function createSocketIOServer(server, client) {
 			});
 
 			// Send the client the image data needed to draw the game.
-			socket.on("get_image_data", async (imageScaleFactor, callback) => {
+			socket.on("get_image_data", (imageScaleFactor, callback) => {
 				let imageData = client.drawClient(imageScaleFactor);
 				callback({imageData: imageData});
 			});

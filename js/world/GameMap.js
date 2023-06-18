@@ -14,9 +14,7 @@ class GameMap {
     screenMap = new Map();
     screenPosMap = new Map();
 
-    static loadMapFromFolder(mapFolder) {
-        let map = new GameMap();
-
+    loadMapFromFolder(mapFolder) {
         let screenData = fs.readFileSync(mapFolder + "_map.txt", "ascii");
         let lines = screenData.split(CRLF);
 
@@ -33,13 +31,12 @@ class GameMap {
             // Second part is the screen
             let screenName = parts[1];
 
-            let screen = Screen.loadScreenFromFile(mapFolder + screenName + ".txt");
+            let screen = new Screen();
+            screen.loadScreenFromFile(mapFolder + screenName + ".txt");
             
-            screen.attachMap(map);
-            map.addScreen(screenName, screen, x, y);
+            screen.attachMap(this);
+            this.addScreen(screenName, screen, x, y);
         }
-
-        return map;
     }
 
     attachWorld(world) {

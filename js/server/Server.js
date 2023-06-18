@@ -72,6 +72,10 @@ class Server {
         }
     }
 
+    static getTotalEntityCount() {
+        return Server.currentWorldEntityCount + Server.currentInstanceEntityCount + Server.currentInventoryEntityCount;
+    }
+
     static registerWorldEntity(number) {
         if(Server.getTotalEntityCount() + number > Server.MAX_ENTITY_COUNT) {
             // LOG/THROW SERVER ERROR?
@@ -109,10 +113,6 @@ class Server {
 
     static deregisterInventoryEntity(number) {
         Server.currentInventoryEntityCount -= number;
-    }
-
-    static getTotalEntityCount() {
-        return Server.currentWorldEntityCount + Server.currentInstanceEntityCount + Server.currentInventoryEntityCount;
     }
 }
 

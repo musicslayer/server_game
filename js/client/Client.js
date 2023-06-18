@@ -31,9 +31,11 @@ class Client {
     }
 
     onClick(button, x, y, imageScaleFactor) {
-        // TODO Write a "isPurse" function.
         // TODO display info about item?
-        // Left clicking on the screen is a teleport and right clicking on an inventory slot uses an item.
+
+        // Left clicking on the screen is a teleport
+        // Right clicking on an inventory slot uses an item.
+        // Right clicking on the purse drops up to 100 gold.
         let inputs = this.mouse.processClick(button);
         
         if(inputs.includes("left")) {
@@ -45,11 +47,12 @@ class Client {
         }
         else if(inputs.includes("right")) {
             let slot = this.isInventory(x, y, imageScaleFactor);
+            let isPurse = this.isPurse(x, y, imageScaleFactor);
 
             if(slot !== undefined) {
-                //this.player.consumeFromInventory(slot);
-
-                // For now, drop from purse
+                this.player.consumeFromInventory(slot);
+            }
+            else if(isPurse) {
                 this.player.doDropFromPurse(100);
             }
         }
@@ -391,10 +394,12 @@ class Client {
     isInventory(x, y, imageScaleFactor) {
         let originX = 17;
         let originY = 7;
+        let inventoryWidth = 9;
+        let inventoryHeight = 5;
 
         let slot;
 
-        if(x >= originX * imageScaleFactor && x < (originX + 9) * imageScaleFactor && y >= originY  * imageScaleFactor && y < (originY + 5) * imageScaleFactor) {
+        if(x >= originX * imageScaleFactor && x < (originX + inventoryWidth) * imageScaleFactor && y >= originY  * imageScaleFactor && y < (originY + inventoryHeight) * imageScaleFactor) {
             // Return inventory slot
             let nx = Math.floor((x / imageScaleFactor) - originX);
             let ny = Math.floor((y / imageScaleFactor) - originY);
@@ -402,6 +407,15 @@ class Client {
         }
 
         return slot;
+    }
+
+    isPurse(x, y, imageScaleFactor) {
+        let originX = 17;
+        let originY = 0;
+        let inventoryWidth = 1;
+        let inventoryHeight = 1;
+
+        return x >= originX * imageScaleFactor && x < (originX + inventoryWidth) * imageScaleFactor && y >= originY  * imageScaleFactor && y < (originY + inventoryHeight) * imageScaleFactor;
     }
 }
 

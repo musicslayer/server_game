@@ -4,22 +4,12 @@ class DeathScreen extends Screen {
     isDynamic = true;
 
     static createDeathScreen(screenX, screenY) {
-        let deathScreen = DeathScreen.fromScreen(Screen.loadScreenFromFile("assets/world/_dynamic/death.txt"));
+        let deathScreen = new DeathScreen();
+        deathScreen.loadScreenFromFile("assets/world/_dynamic/death.txt");
+
         deathScreen.x = screenX;
         deathScreen.y = screenY;
 
-        return deathScreen;
-    }
-
-    static fromScreen(screen) {
-        let deathScreen = new DeathScreen();
-        deathScreen.map = screen.map;
-        deathScreen.x = screen.x;
-        deathScreen.y = screen.y;
-        deathScreen.numTilesX = screen.numTilesX;
-        deathScreen.numTilesY = screen.numTilesY;
-        deathScreen.tiles = screen.tiles;
-        deathScreen.entities = screen.entities;
         return deathScreen;
     }
 

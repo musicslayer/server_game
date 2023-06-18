@@ -1,5 +1,3 @@
-const Server = require("../server/Server.js");
-
 class EntitySpawner {
     static spawn(id, number, screen, x, y, ...args) {
         if(number === 0) {
@@ -27,8 +25,6 @@ class EntitySpawner {
         const Teleporter = require("./Teleporter.js");
         const RevivePortal = require("./RevivePortal.js");
         const UnknownEntity = require("./UnknownEntity.js");
-
-        Server.registerInstanceCreation(1);
 
         let entity;
 
@@ -82,10 +78,6 @@ class EntitySpawner {
 
     static cloneInstance(entity, number) {
         return entity.clone(number);
-    }
-
-    static destroyInstance(entity) {
-        Server.registerInstanceDestruction(1);
     }
 }
 
