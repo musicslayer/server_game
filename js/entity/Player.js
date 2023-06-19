@@ -98,6 +98,13 @@ class Player extends Entity {
 
         this.isDead = false;
     }
+
+    doTeleportHome() {
+        // Teleport the entity to its home location only if it is alive.
+        if(!this.isDead) {
+            this.doTeleport(this.homeScreen, this.homeX, this.homeY);
+        }
+    }
     
 
     doTakeDamage(entity, damage) {
@@ -115,7 +122,7 @@ class Player extends Entity {
 
     doSpawnLoot(screen, x, y) {
         // When a player dies, a pvp token is spawned as loot.
-        EntitySpawner.spawn("pvp_token", 1, screen, x, y);
+        EntitySpawner.spawnTimed("pvp_token", 1, screen, x, y);
     }
 
     doAction() {

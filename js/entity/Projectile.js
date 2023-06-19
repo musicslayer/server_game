@@ -114,7 +114,6 @@ class Projectile extends Entity {
         // Projectiles can never cross screen edges even if the next screen exists.
         let x = this.x;
         let y = this.y;
-        let isScreen;
         let isEdge;
 
         if(this.direction === "up") {
@@ -138,7 +137,7 @@ class Projectile extends Entity {
             return false;
         }
 
-        let entities = this.screen.entities;
+        let entities = this.screen.otherEntities.concat(this.screen.playerEntities);
         for(let entity of entities) {
             if(this !== entity && x === entity.x && y === entity.y && entity.blocksAction) {
                 return false;

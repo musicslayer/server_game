@@ -1,10 +1,12 @@
-class Server {
-    // TODO All state changes must be done through this class. We need to enforce this somehow.
+//const NanoTimer = require("../util/NanoTimerZ.js");
+const { Worker } = require("worker_threads");
 
+class Server {
     // These variables affect server performance.
     static TICK_RATE = 60; // times per second
     static ANIMATION_FRAMES = 60; // frames per 1 tile of movement
     static MAX_ENTITY_COUNT = 100000000;
+    static LOOT_TIME = 300; // (5 minutes) seconds that spawned loot will remain in the world before despawning
 
     static refreshQueue = []; // Tasks that occur every second (not every tick).
     static taskQueue = [];
@@ -17,14 +19,57 @@ class Server {
 
     static currentTick = 0;
 
-    static tickInterval = setInterval(() => {
+    static I = Server.init();
+
+    /*
+    static tickInterval = new NanoTimer().setInterval(() => {
         if(Server.currentTick % Server.TICK_RATE === 0) {
             Server.processRefresh();
         }
-
         Server.processTasks();
         Server.currentTick++;
-    }, 1000 / Server.TICK_RATE);
+
+    //}, "16.666666666m");
+    }, "100m");
+    */
+
+    /*
+    static date1 = Date.now();
+    static tickInterval = new NanoTimer().setInterval(() => {
+        //console.log(Date.now() - Server.date1);
+        let date2 = Date.now();
+
+        if(Server.currentTick % Server.TICK_RATE === 0) {
+            Server.processRefresh();
+        }
+        Server.processTasks();
+        Server.currentTick++;
+
+        let date3 = Date.now();
+
+        console.log(Server.currentTick + ": " + (date2 - Server.date1) + ": " + (date3 - date2));
+        Server.date1 = date2;
+
+    //}, "16.666666666m");
+    }, "100m");
+    */
+
+    /*
+    static date1 = Date.now();
+    static tickInterval = new NanoTimer().setInterval(() => {
+        let date2 = Date.now();
+
+        console.log(Server.currentTick + ": " + (date2 - Server.date1));
+        Server.date1 = date2;
+
+        if(Server.currentTick % Server.TICK_RATE === 0) {
+            Server.processRefresh();
+        }
+        Server.processTasks();
+        Server.currentTick++;
+
+    }, "16.666666666m");
+    */
 
     static addRefresh(fcn) {
         Server.refreshQueue.push(fcn);
@@ -33,8 +78,6 @@ class Server {
     static addTask(fcn) {
         Server.taskQueue.push(fcn);
     }
-
-
 
     static scheduleTaskForSeconds(seconds, fcn) {
         let tick = Server.currentTick + seconds * Server.TICK_RATE;
@@ -114,6 +157,49 @@ class Server {
     static deregisterInventoryEntity(number) {
         Server.currentInventoryEntityCount -= number;
     }
+
+    static init() {
+        workerFunc();
+    };
+}
+
+async function workerFunc() {
+    return new Promise(async (resolve, reject) => {
+        let T = process.hrtime();
+
+        const worker = new Worker("./worker_task.js", {
+            workerData: {
+                //interval: 16666666,
+                interval: 33333333,
+            }
+        });
+        worker.on("message", () => {
+            let hrtimeDeltaArray = process.hrtime(T);
+            hrtimeDelta = (hrtimeDeltaArray[0] * 1000000000) + hrtimeDeltaArray[1];
+
+            //if(hrtimeDelta > 18000000) {
+            if(hrtimeDelta > 35000000) {
+                console.log(hrtimeDelta);
+            }
+
+            T = process.hrtime();
+            
+            if(Server.currentTick % Server.TICK_RATE === 0) {
+                Server.processRefresh();
+            }
+            Server.processTasks();
+            Server.currentTick++;
+            
+        })
+        worker.on("exit", () => {
+            resolve();
+        });
+        worker.on("error", (err) => {
+            console.error(err);
+            console.error(err.stack);
+            resolve();
+        });
+    });
 }
 
 module.exports = Server;

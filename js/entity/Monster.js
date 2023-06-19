@@ -25,7 +25,7 @@ class Monster extends Entity {
     }
 
     doSpawnLoot(screen, x, y) {
-        EntitySpawner.spawn("gold", 100, screen, x, y);
+        EntitySpawner.spawnTimed("gold", 100, screen, x, y);
     }
 
     getEntityImages() {

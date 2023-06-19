@@ -6,10 +6,12 @@ const ImageCatalog = require("./image/ImageCatalog.js");
 const World = require("./world/World.js");
 const EntitySpawner = require("./entity/EntitySpawner.js");
 
-// TODO When drawing a screen, players/monsters should be above items
-// TODO Should loot be timed so the server doesn't get overloaded?
 // TODO Animated sprites?
-// TODO Clicking to teleport is sometimes slow/laggy (Overall lag?)
+// TODO All state changes must be done through the Server class. We need to enforce this somehow.
+
+// TODO Switch server from intervals to promises.
+// --- Clicking to teleport is sometimes slow/laggy (Overall lag?)
+// --- LOOT Time isn't exact  1min -> 1:20      5min -> 
 
 async function init() {
     await ImageCatalog.loadImageCatalogFromFolder("assets/image/");

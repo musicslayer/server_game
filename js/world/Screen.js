@@ -17,10 +17,9 @@ class Screen {
     numTilesX = 16;
     numTilesY = 12;
 
-    playerCount = 0;
-
     tiles = [];
-    entities = [];
+    playerEntities = [];
+    otherEntities = [];
 
     loadScreenFromFile(screenFile) {
         let tileData = fs.readFileSync(screenFile, "ascii");
@@ -75,10 +74,11 @@ class Screen {
     }
 
     addEntity(entity) {
-        this.entities.push(entity);
-
         if(entity.isPlayer) {
-            this.playerCount++;
+            this.playerEntities.push(entity);
+        }
+        else {
+            this.otherEntities.push(entity);
         }
 
         if(this.isDynamic) {
@@ -90,25 +90,29 @@ class Screen {
     }
 
     removeEntity(entity) {
-        const index = this.entities.indexOf(entity);
-        if (index > -1) {
-            this.entities.splice(index, 1);
-
-            if(entity.isPlayer) {
-                this.playerCount--;
+        if(entity.isPlayer) {
+            const index = this.playerEntities.indexOf(entity);
+            if(index > -1) {
+                this.playerEntities.splice(index, 1);
             }
-
-            if(this.isDynamic) {
-                Server.deregisterInstanceEntity(1);
-
-                // If there are no more players in an instance screen, then the entire screen should be deregistered.
-                if(this.playerCount === 0) {
-                    Server.deregisterInstanceEntity(this.entities.length);
-                }
+        }
+        else {
+            const index = this.otherEntities.indexOf(entity);
+            if(index > -1) {
+                this.otherEntities.splice(index, 1);
             }
-            else {
-                Server.deregisterWorldEntity(1);
+        }
+
+        if(this.isDynamic) {
+            Server.deregisterInstanceEntity(1);
+
+            // If there are no more players in an instance screen, then the entire screen should be deregistered.
+            if(this.playerEntities.length === 0) {
+                Server.deregisterInstanceEntity(this.otherEntities.length);
             }
+        }
+        else {
+            Server.deregisterWorldEntity(1);
         }
     }
 
@@ -161,8 +165,13 @@ class Screen {
             images = images.concat(tile.getImages());
         }
 
-        // Next get all of the images for entities that are currently on this screen.
-        for(const entity of this.entities) {
+        // Next get all of the non-player images.
+        for(const entity of this.otherEntities) {
+            images = images.concat(entity.getImages());
+        }
+
+        // Finally get all of the player images (so that players are always drawn on top).
+        for(const entity of this.playerEntities) {
             images = images.concat(entity.getImages());
         }
 

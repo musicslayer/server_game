@@ -421,7 +421,7 @@ class Entity {
 
     doCheckCollision() {
         // Call this after any movement to see if this entity is overlapping another on the same screen.
-        let entities = this.screen.entities.slice();
+        let entities = this.screen.otherEntities.concat(this.screen.playerEntities);
         for(let entity of entities) {
             if(this !== entity && this.x === entity.x && this.y === entity.y) {
                 this.doInteract(entity);
@@ -462,7 +462,8 @@ class Entity {
             return false;
         }
 
-        let entities = this.screen.entities;
+        // TODO Should these sorts of methods be in the screen class?
+        let entities = this.screen.otherEntities.concat(this.screen.playerEntities);
         for(let entity of entities) {
             if(this !== entity && x === entity.x && y === entity.y && entity.blocksMovement) {
                 return false;

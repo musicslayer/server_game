@@ -1,4 +1,22 @@
+const Server = require("../server/Server.js");
+
 class EntitySpawner {
+    static spawnTimed(id, number, screen, x, y, ...args) {
+        // Spawn entity that will be despawned after a certain number of seconds.
+        if(number === 0) {
+            return;
+        }
+
+        let entity = EntitySpawner.createInstance(id, number, ...args);
+
+        entity.spawn(screen, x, y);
+        Server.scheduleTaskForSeconds(Server.LOOT_TIME, () => {
+            entity.doDespawn();
+        })
+
+        return entity;
+    }
+
     static spawn(id, number, screen, x, y, ...args) {
         if(number === 0) {
             return;
