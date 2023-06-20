@@ -13,7 +13,13 @@ class Client {
         this.player = player;
     }
 
-    onClick(button, x, y, imageScaleFactor) {
+    // location vs. info:
+    // undefined => []
+    // "screen" => [x, y] (normalized)
+    // "inventory" => [slot]
+    // "purse" => []
+
+    onClick(button, location, info) {
         // TODO display info about item?
 
         // Left clicking on the screen is a teleport
@@ -22,41 +28,32 @@ class Client {
         let inputs = this.mouse.processClick(button);
         
         if(inputs.includes("left")) {
-            let nScreen = this.isScreen(x, y, imageScaleFactor);
-
-            if(nScreen !== undefined) {
-                this.player.teleport(this.player.screen, nScreen[0], nScreen[1]);
+            if(location === "screen") {
+                this.player.teleport(this.player.screen, info[0], info[1]);
             }
         }
         else if(inputs.includes("right")) {
-            let slot = this.isInventory(x, y, imageScaleFactor);
-            let isPurse = this.isPurse(x, y, imageScaleFactor);
-
-            if(slot !== undefined) {
-                this.player.consumeFromInventory(slot);
+            if(location === "inventory") {
+                this.player.consumeFromInventory(info[0]);
             }
-            else if(isPurse) {
+            else if(location === "purse") {
                 this.player.doDropFromPurse(100);
             }
         }
     }
 
-    onDrag(button, x1, y1, x2, y2, imageScaleFactor) {
+    onDrag(button, location1, info1, location2, info2) {
         // A left click drag can switch inventory slots or drop an entire slot, depending on where the drag motion ends.
         let inputs = this.mouse.processClick(button);
 
         if(inputs.includes("left")) {
-            let slot1 = this.isInventory(x1, y1, imageScaleFactor);
-            let slot2 = this.isInventory(x2, y2, imageScaleFactor);
-            let nScreen2 = this.isScreen(x2, y2, imageScaleFactor);
-
-            if(slot1 !== undefined && slot2 !== undefined && slot1 !== slot2) {
+            if(location1 === "inventory" && location2 === "inventory" && info1[0] !== info2[0]) {
                 // Swap two inventory slots (even if one or both of them are empty)
-                this.player.swapInventorySlots(slot1, slot2);
+                this.player.swapInventorySlots(info1[0], info2[0]);
             }
-            else if(slot1 !== undefined && nScreen2 !== undefined) {
+            else if(location1 === "inventory" && location2 === "screen") {
                 // Drop entire stack on the player's current location.
-                this.player.dropFromInventory(slot1, -1);
+                this.player.dropFromInventory(info1[0], -1);
             }
         }
     }
@@ -188,6 +185,8 @@ class Client {
         let tiles = [];
         let otherEntities = [];
         let playerEntities = [];
+        let inventory = {};
+        let purse = {};
 
         let screen = this.player.screen;
 
@@ -196,33 +195,75 @@ class Client {
             tiles.push({
                 x: tile.x,
                 y: tile.y,
-                imageTableNameArray: tile.imageTableNameArray,
-                imageNameArray: tile.imageNameArray
+                imageFolderArray: tile.imageFolderArray,
+                imageFileArray: tile.imageFileArray
             });
         }
 
         // Non-players.
         for(const entity of screen.otherEntities) {
             otherEntities.push({
+                stackSize: entity.stackSize,
+                id: entity.id,
                 x: entity.x,
                 y: entity.y,
-                id: entity.id
+                animationShiftX: entity.animationShiftX,
+                animationShiftY: entity.animationShiftY,
+                healthFraction: entity.health / entity.maxHealth,
+                manaFraction: entity.mana / entity.maxMana,
+                experienceFraction: entity.experience / 100,
+                level: entity.level
             });
         }
 
         // Players
         for(const entity of screen.playerEntities) {
+            let statusArray = [];
+            if(entity.isDead) {
+                statusArray.push("dead");
+            }
+            if(entity.isInvincible) {
+                statusArray.push("invincible");
+            }
+
             playerEntities.push({
+                id: entity.id,
+                stackSize: entity.stackSize,
                 x: entity.x,
                 y: entity.y,
-                id: entity.id
+                animationShiftX: entity.animationShiftX,
+                animationShiftY: entity.animationShiftY,
+                healthFraction: entity.health / entity.maxHealth,
+                manaFraction: entity.mana / entity.maxMana,
+                experienceFraction: entity.experience / 100,
+                level: entity.level,
+                statusArray: statusArray
             });
         }
+
+        // Inventory
+        inventory.itemArray = [];
+        for(const item of this.player.inventory.itemArray) {
+            if(item) {
+                inventory.itemArray.push({
+                    id: item.id,
+                    stackSize: item.stackSize
+                });
+            }
+            else {
+                inventory.itemArray.push(undefined);
+            }
+        }
+
+        // Purse
+        purse.goldTotal = this.player.purse.goldTotal;
 
         let clientData = {
             tiles: tiles,
             otherEntities: otherEntities,
-            playerEntities: playerEntities
+            playerEntities: playerEntities,
+            inventory: inventory,
+            purse: purse
         };
 
         return clientData;

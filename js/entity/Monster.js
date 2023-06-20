@@ -1,6 +1,3 @@
-//const { createCanvas, Image } = require("canvas")
-
-//const ImageCatalog = require("../image/ImageCatalog.js");
 const Entity = require("./Entity.js");
 const EntitySpawner = require("./EntitySpawner.js");
 

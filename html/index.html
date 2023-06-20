@@ -8,30 +8,29 @@
 		<!-- <h1>Canvas</h1> -->
 		
 		<canvas id="canvas" style="border:10px solid"></canvas>
-	
+		<script type="text/javascript" src="jszip.min.js"></script>
 		
 		<script src="/socket.io/socket.io.js"></script>
 		<script type="module" src="ImageCatalog.js"></script>
-		<script type="module" src="ImageTable.js"></script>
+		
 		
 		<script type="module">
-			//window.ImageCatalog = ImageCatalog;
-			import { fetchImages } from "./fetchImages.js";
 			import { ImageCatalog } from "./ImageCatalog.js";
 			
 			const FPS_RATE = 60; // times per second
-			//const FPS_RATE = 1; // times per second
-			
 			const NUM_TILES_X = 16;
 			const NUM_TILES_Y = 12;
 			const SIDE_PANEL_TILES = 10;
 			const IMAGE_SCALE_FACTOR = 64;
+			
+			let imageCatalog;
 			
 			const canvas = document.getElementById("canvas");
 			const ctx = canvas.getContext("2d");
 			
 			const canvas_width = (NUM_TILES_X + SIDE_PANEL_TILES) * IMAGE_SCALE_FACTOR;
 			const canvas_height = NUM_TILES_Y * IMAGE_SCALE_FACTOR;
+			const canvas_showGrid = true;
 			
 			let socket;
 			let interval;
@@ -41,29 +40,10 @@
 			let isKeyPressed = {};
 			
 			window.addEventListener('load', async () => {
-				//await ImageCatalog.loadImageCatalogFromFolder("assets/image/");
+				imageCatalog = new ImageCatalog();
+				await imageCatalog.createImageCatalog();
 				
-				//let imageURL = fetchImages();
-				let response = await fetch("http://localhost/images");
-				//let text = await response.text();
-				let blob = await response.blob();
-				const imageURL = URL.createObjectURL(blob);
 				
-				console.log("Image Load Start!");
-				
-				let image = new Image;
-				image.onload = () => {
-					console.log("Image Load Finish!");
-					console.log(image);
-					ctx.drawImage(image, 128, 128, 128, 128);
-				};
-				image.src = imageURL;
-				
-				//ctx.drawImage(image, 0, 0, 128, 128);
-				
-				//let data = new Uint8ClampedArray(R.imageData.data);
-				//let imageData = new ImageData(data, canvas_width, canvas_height)
-				//ctx.putImageData(imageData, 0, 0);
 			
 				if(socket) {
 					socket.disconnect(true);
@@ -80,17 +60,6 @@
 					socket.disconnect(true);
 				});
 			});
-			
-			/*
-			window.addEventListener("gamepadconnected", (e) => {
-				/onsole.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
-					e.gamepad.index,
-					e.gamepad.id,
-					e.gamepad.buttons.length,
-					e.gamepad.axes.length
-				);
-			});
-			*/
 			
 			canvas.width = canvas_width;
 			canvas.height = canvas_height;
@@ -147,14 +116,58 @@
 				const rect = canvas.getBoundingClientRect();
 				let endX = e.clientX - rect.left - 10;
 				let endY = e.clientY - rect.top - 10;
+				
+				
+				
+				let var_isScreen1 = isScreen(startX, startY);
+				let var_isInventory1 = isInventory(startX, startY);
+				let var_isPurse1 = isPurse(startX, startY);
+				
+				let location1;
+				let info1 = [];
+				
+				if(var_isScreen1 !== undefined) {
+					location1 = "screen";
+					info1.push(var_isScreen1[0]);
+					info1.push(var_isScreen1[1]);
+				}
+				else if(var_isInventory1 !== undefined) {
+					location1 = "inventory";
+					info1.push(var_isInventory1);
+				}
+				else if(var_isPurse1 !== undefined) {
+					location1 = "purse";
+				}
+				
+				
+				
+				let var_isScreen2 = isScreen(endX, endY);
+				let var_isInventory2 = isInventory(endX, endY);
+				let var_isPurse2 = isPurse(endX, endY);
+				
+				let location2;
+				let info2 = [];
+				
+				if(var_isScreen2 !== undefined) {
+					location2 = "screen";
+					info2.push(var_isScreen2[0]);
+					info2.push(var_isScreen2[1]);
+				}
+				else if(var_isInventory2 !== undefined) {
+					location2 = "inventory";
+					info2.push(var_isInventory2);
+				}
+				else if(var_isPurse2 !== undefined) {
+					location2 = "purse";
+				}
 
 				if (deltaSpace < manClickDeltaSpace && deltaTime < manClickDeltaTime) {
 					// Click
-					reactButtonClick(e.button, startX, startY)
+					reactButtonClick(e.button, location1, info1)
 				}
 				else {
 					// Drag
-					reactButtonDrag(e.button, startX, startY, endX, endY)
+					reactButtonDrag(e.button, location1, info1, location2, info2)
 				}
 			});
 			
@@ -259,6 +272,66 @@
 				await socket.emitWithAck("on_mouse_drag", button, x1, y1, x2, y2, IMAGE_SCALE_FACTOR);
 			}
 			
+		    function isScreen(x, y) {
+				let nScreen;
+
+				if(x >= 0 && x < NUM_TILES_X * IMAGE_SCALE_FACTOR && y >= 0 && y < NUM_TILES_Y * IMAGE_SCALE_FACTOR) {
+					// Return normalized (tile) x,y
+					nScreen = [Math.floor(x / IMAGE_SCALE_FACTOR), Math.floor(y / IMAGE_SCALE_FACTOR)];
+				}
+
+				return nScreen;
+			}
+
+			function isInventory(x, y) {
+				let originX = 17;
+				let originY = 7;
+				let inventoryWidth = 9;
+				let inventoryHeight = 5;
+
+				let slot;
+
+				if(x >= originX * IMAGE_SCALE_FACTOR && x < (originX + inventoryWidth) * IMAGE_SCALE_FACTOR && y >= originY  * IMAGE_SCALE_FACTOR && y < (originY + inventoryHeight) * IMAGE_SCALE_FACTOR) {
+					// Return inventory slot
+					let nx = Math.floor((x / IMAGE_SCALE_FACTOR) - originX);
+					let ny = Math.floor((y / IMAGE_SCALE_FACTOR) - originY);
+					slot = ny * 9 + nx;
+				}
+
+				return slot;
+			}
+
+			function isPurse(x, y) {
+				let originX = 17;
+				let originY = 0;
+				let inventoryWidth = 1;
+				let inventoryHeight = 1;
+
+				return x >= originX * IMAGE_SCALE_FACTOR && x < (originX + inventoryWidth) * IMAGE_SCALE_FACTOR && y >= originY  * IMAGE_SCALE_FACTOR && y < (originY + inventoryHeight) * IMAGE_SCALE_FACTOR;
+			}
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			function startUpdateInterval() {
+				let timer = setInterval(() => {
+					checkKeyPress();
+					checkControllerPress();
+					checkControllerSticks();
+					updateClient();
+				}, 1000 / FPS_RATE);
+			}
+			
 			async function updateClient() {
 				if(isUpdating) {
 					return;
@@ -268,65 +341,277 @@
 				
 				let R = await socket.emitWithAck("get_client_data");
 				
-				//let data = new Uint8ClampedArray(R.imageData.data);
-				//let imageData = new ImageData(data, canvas_width, canvas_height)
-				//ctx.putImageData(imageData, 0, 0);
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				
-				drawScreen(R.tiles, R.otherEntities, R.playerEntities);
+				if(canvas_showGrid) {
+					drawScreenGrid();
+				}
+				drawScreen(R.tiles, R.otherEntities, R.playerEntities, R.inventory, R.purse);
 				
 				isUpdating = false;
 			}
 			
-			function drawScreen(tiles, otherEntities, playerEntities) {
+			function drawScreen(tiles, otherEntities, playerEntities, inventory, purse) {
 				// Only draw the screen where the player is located at.
 				ctx.beginPath();
 
+				// Tiles
 				while(tiles.length > 0) {
 					let tile = tiles.shift();
-					let imageTableNameArray = tile.imageTableNameArray;
-					while(imageTableNameArray.length > 0) {
-						let imageTableName = imageTableNameArray.shift();
-						let imageName = imageNameArray.shift();
+					
+					while(tile.imageFolderArray.length > 0) {
+						let imageFolderArray = tile.imageFolderArray.shift();
+						let imageFileArray = tile.imageFileArray.shift();
+						let image = imageCatalog.getImage(imageFolderArray, imageFileArray);
 						
-						ImageCatalog.IMAGE_CATALOG.getImageTableByName(imageTableName).getImageByName(imageName)
-						
-						ctx.drawImage(imageData.image, tile.x * IMAGE_SCALE_FACTOR, tile.y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+						ctx.drawImage(image, tile.x * IMAGE_SCALE_FACTOR, tile.y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					}
+				}
+				
+				// Non-players
+				while(otherEntities.length > 0) {
+					let otherEntity = otherEntities.shift();
+					let image = imageCatalog.getImageByID(otherEntity.id);
+					
+					let x = otherEntity.x + otherEntity.animationShiftX;
+					let y = otherEntity.y + otherEntity.animationShiftY;
+					
+					ctx.drawImage(image, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					
+					if(otherEntity.stackSize > 1) {
+						ctx.drawImage(getEntityCountImage(otherEntity.stackSize), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					}
+					
+					if(isValid(otherEntity.healthFraction)) {
+						ctx.drawImage(getHealthBarImage(otherEntity.healthFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					}
+					
+					if(isValid(otherEntity.manaFraction)) {
+						ctx.drawImage(getManaBarImage(otherEntity.manaFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					}
+					
+					if(isValid(otherEntity.experienceFraction)) {
+						ctx.drawImage(getExperienceBarImage(otherEntity.experienceFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					}
+					
+					if(isValid(otherEntity.level)) {
+						ctx.drawImage(getLevelImage(otherEntity.level), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					}
+				}
+				
+				// Players
+				while(playerEntities.length > 0) {
+					let playerEntity = playerEntities.shift();
+					let image = imageCatalog.getImageByID(playerEntity.id);
+					
+					let x = playerEntity.x + playerEntity.animationShiftX;
+					let y = playerEntity.y + playerEntity.animationShiftY;
+					
+					ctx.drawImage(image, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					
+					if(playerEntity.stackSize > 1) {
+						ctx.drawImage(getEntityCountImage(playerEntity.stackSize), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					}
+					
+					if(isValid(playerEntity.healthFraction)) {
+						ctx.drawImage(getHealthBarImage(playerEntity.healthFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					}
+					
+					if(isValid(playerEntity.manaFraction)) {
+						ctx.drawImage(getManaBarImage(playerEntity.manaFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					}
+					
+					if(isValid(playerEntity.experienceFraction)) {
+						ctx.drawImage(getExperienceBarImage(playerEntity.experienceFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					}
+					
+					if(isValid(playerEntity.level)) {
+						ctx.drawImage(getLevelImage(playerEntity.level), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					}
+					
+					if(playerEntity.statusArray) {
+						if(playerEntity.statusArray.includes("dead") || playerEntity.statusArray.includes("invincible")) {
+							let haloImage = imageCatalog.getImage("status", "invincible");
+							ctx.drawImage(haloImage, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+						}
 					}
 				}
 
-				while(images.length > 0) {
-					let imageData = images.shift();
-					ctx.drawImage(imageData.image, imageData.x * imageScaleFactor, imageData.y * imageScaleFactor, imageScaleFactor, imageScaleFactor);
+				// Screen Dividers
+				ctx.fillRect(NUM_TILES_X * IMAGE_SCALE_FACTOR, 0, IMAGE_SCALE_FACTOR, NUM_TILES_Y * IMAGE_SCALE_FACTOR);
+				ctx.fillRect((NUM_TILES_X + 1) * IMAGE_SCALE_FACTOR, 6 * IMAGE_SCALE_FACTOR, 9 * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+				
+				// Inventory
+				let originInventoryX = 17;
+				let originInventoryY = 7;
+				let inventoryImages = getInventoryImages(inventory.itemArray);
+				while(inventoryImages.length > 0) {
+					let inventoryImage = inventoryImages.shift();
+					ctx.drawImage(inventoryImage.image, (originInventoryX + inventoryImage.x) * IMAGE_SCALE_FACTOR, (originInventoryY + inventoryImage.y) * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 				}
-
-				ctx.fillRect(this.getNumTilesX() * imageScaleFactor, 0, imageScaleFactor, this.getNumTilesY() * imageScaleFactor);
-				ctx.fillRect((this.getNumTilesX() + 1) * imageScaleFactor, 6 * imageScaleFactor, 9 * imageScaleFactor, imageScaleFactor);
+				
+				// Purse
+				let originPurseX = 17;
+				let originPurseY = 0;
+				let purseImage = imageCatalog.getImage("item", "gold");
+				ctx.drawImage(purseImage, originPurseX * IMAGE_SCALE_FACTOR, originPurseY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+				ctx.drawImage(getGoldTotalImage(purse.goldTotal), (originPurseX + 1) * IMAGE_SCALE_FACTOR, originPurseY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 
 				ctx.stroke();
 			}
 			
-			function getTileImages(tiles) {
+			function isValid(n) {
+				return n !== undefined && n !== NaN && n !== null;
+			}
+			
+			function drawScreenGrid() {
+				ctx.beginPath();
+
+				for(let x = 0; x < NUM_TILES_X + 1; x++) {
+					ctx.moveTo(x * IMAGE_SCALE_FACTOR, 0);
+					ctx.lineTo(x * IMAGE_SCALE_FACTOR, NUM_TILES_Y * IMAGE_SCALE_FACTOR);
+				}
+
+				for(let y = 0; y < NUM_TILES_Y + 1; y++) {
+					ctx.moveTo(0, y * IMAGE_SCALE_FACTOR);
+					ctx.lineTo(NUM_TILES_X * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR);
+				}
+
+				ctx.stroke();
+			}
+			
+			function getEntityCountImage(stackSize) {
+				let canvasTemp = document.createElement('canvas');
+				canvasTemp.width = 128;
+				canvasTemp.height = 128;
+				
+				let ctxTemp = canvasTemp.getContext("2d");
+				ctxTemp.font = "30px Arial";
+				ctxTemp.fillText("" + stackSize, 0, 20);
+
+				let image = new Image();
+				image.src = canvasTemp.toDataURL("image/png");
+
+				return image;
+			}
+			
+			function getHealthBarImage(healthFraction) {
+				let canvasTemp = document.createElement('canvas');
+				canvasTemp.width = 128;
+				canvasTemp.height = 128;
+				
+				let ctxTemp = canvasTemp.getContext("2d");
+				ctxTemp.fillStyle = "#222222";
+				ctxTemp.fillRect(20, 0, 88, 20);
+				ctxTemp.fillStyle = "#ff0000";
+				ctxTemp.fillRect(20, 0, 88 * healthFraction, 20);
+
+				let image = new Image();
+				image.src = canvasTemp.toDataURL("image/png");
+
+				return image;
+			}
+			
+			function getManaBarImage(manaFraction) {
+				let canvasTemp = document.createElement('canvas');
+				canvasTemp.width = 128;
+				canvasTemp.height = 128;
+				
+				let ctxTemp = canvasTemp.getContext("2d");
+				ctxTemp.fillStyle = "#222222";
+				ctxTemp.fillRect(20, 20, 88, 20);
+				ctxTemp.fillStyle = "#0000ff";
+				ctxTemp.fillRect(20, 20, 88 * manaFraction, 20);
+
+				let image = new Image();
+				image.src = canvasTemp.toDataURL("image/png");
+
+				return image;
+			}
+			
+			function getExperienceBarImage(experienceFraction) {
+				let canvasTemp = document.createElement('canvas');
+				canvasTemp.width = 128;
+				canvasTemp.height = 128;
+				
+				let ctxTemp = canvasTemp.getContext("2d");
+				ctxTemp.fillStyle = "#222222";
+				ctxTemp.fillRect(20, 40, 88, 20);
+				ctxTemp.fillStyle = "#00ff00";
+				ctxTemp.fillRect(20, 40, 88 * experienceFraction, 20);
+
+				let image = new Image();
+				image.src = canvasTemp.toDataURL("image/png");
+
+				return image;
+			}
+			
+			function getLevelImage(level) {
+				let canvasTemp = document.createElement('canvas');
+				canvasTemp.width = 128;
+				canvasTemp.height = 128;
+				
+				let ctxTemp = canvasTemp.getContext("2d");
+				ctxTemp.font = "30px Arial";
+				ctxTemp.fillText("Level: " + level, 20, 80);
+
+				let image = new Image();
+				image.src = canvasTemp.toDataURL("image/png");
+
+				return image;
+			}
+			
+			function getGoldTotalImage(goldTotal) {
+				let canvasTemp = document.createElement('canvas');
+				canvasTemp.width = 128;
+				canvasTemp.height = 128;
+
+				let ctxTemp = canvasTemp.getContext("2d");
+				ctxTemp.font = "30px Arial";
+				ctxTemp.fillText("Gold: " + goldTotal, 0, 70);
+
+				let image = new Image();
+				image.src = canvasTemp.toDataURL("image/png");
+
+				return image;
+			}
+			
+			function getInventoryImages(itemArray) {
+				// Returns an array of all the images that should be drawn on this screen.
 				let images = [];
 
-				for(let i = 0; i < this.imageTableNameArray.length; i++) {
-					images.push({
-						x: this.x,
-						y: this.y,
-						image: ImageCatalog.IMAGE_CATALOG.getImageTableByName(this.imageTableNameArray[i]).getImageByName(this.imageNameArray[i])
-					});
+				// Manually specify inventory slots.
+				let xSlots = [0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8];
+				let ySlots = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4];
+
+				for(let item of itemArray) {
+					let x = xSlots.shift();
+					let y = ySlots.shift();
+					
+					if(item) {
+						let itemImage = imageCatalog.getImageByID(item.id);
+						//for(let itemImage of itemImages) {
+							images.push({
+								x: x,
+								y: y,
+								image: itemImage
+							});
+						//}
+
+						// For cosmetic reasons, only add the stackSize if it is > 1
+						if(item.stackSize > 1) {
+							images.push({
+								x: x,
+								y: y,
+								image: getEntityCountImage(item.stackSize)
+							});
+						}
+					}
 				}
 
 				return images;
 			}
-			
-			function startUpdateInterval() {
-				let timer = setInterval(() => {
-					checkKeyPress();
-					checkControllerPress();
-					checkControllerSticks();
-					//updateClient();
-				}, 1000 / FPS_RATE);
-			}
+
 		</script>
 	</body>
 </html>

@@ -1,5 +1,3 @@
-const { createCanvas, Image } = require("canvas")
-
 const EntitySpawner = require("./EntitySpawner.js");
 const Server = require("../server/Server.js");
 
@@ -96,57 +94,6 @@ class Inventory {
 
         this.itemArray[slot1] = item2;
         this.itemArray[slot2] = item1;
-    }
-
-    getInventoryImages() {
-        // Returns an array of all the images that should be drawn on this screen.
-        let images = [];
-
-        // Manually specify inventory slots.
-        let xSlots = [0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8];
-        let ySlots = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4];
-
-        for(let item of this.itemArray) {
-            let x = xSlots.shift();
-            let y = ySlots.shift();
-
-            let itemImages = item?.getImages();
-            if(itemImages) {
-                for(let itemImage of itemImages) {
-                    images.push({
-                        x: x,
-                        y: y,
-                        image: itemImage.image
-                    });
-                }
-
-                // For cosmetic reasons, only add the stackSize if it is > 1
-                if(item.stackSize > 1) {
-                    images.push({
-                        x: x,
-                        y: y,
-                        image: this.getCountImage(item.stackSize)
-                    });
-                }
-            }
-        }
-
-        return images;
-    }
-
-    getCountImage(stackSize) {
-        let canvas = createCanvas(128, 128);
-        let ctx = canvas.getContext("2d");
-
-        ctx.font = "30px Arial";
-        ctx.fillText("" + stackSize, 0, 20);
-
-        const buffer = canvas.toBuffer("image/png");
-
-        let image = new Image();
-        image.src = buffer;
-
-        return image;
     }
 }
 

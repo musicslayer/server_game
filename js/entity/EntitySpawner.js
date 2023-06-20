@@ -1,5 +1,6 @@
 const Server = require("../server/Server.js");
 
+// TODO Alphabetize
 class EntitySpawner {
     static spawnTimed(id, number, screen, x, y, ...args) {
         // Spawn entity that will be despawned after a certain number of seconds.

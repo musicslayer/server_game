@@ -1,7 +1,4 @@
-//const { createCanvas, Image } = require("canvas")
-
 const EntitySpawner = require("./EntitySpawner.js");
-//const ImageCatalog = require("../image/ImageCatalog.js");
 const Server = require("../server/Server.js");
 const DeathScreen = require("../world/DeathScreen.js");
 const DeathMap = require("../world/DeathMap.js");
@@ -914,60 +911,6 @@ class Entity {
             this.inventory.swapInventorySlots(slot1, slot2);
         }
     }
-
-
-
-
-
-
-
-
-
-    /*
-    getImages() {
-        // By default, use a generic picture.
-        let images = this.getEntityImages();
-
-        // Don't bother drawing a "1".
-        if(this.stackSize > 1) {
-            images.push({
-                x: this.x + this.animationShiftX,
-                y: this.y + this.animationShiftY,
-                image: this.getEntityCountImage()
-            });
-        }
-
-        return images;
-    }
-
-    getEntityImages() {
-        // By default, use a generic picture.
-        let images = [];
-
-        images.push({
-            x: this.x + this.animationShiftX,
-            y: this.y + this.animationShiftY,
-            image: ImageCatalog.IMAGE_CATALOG.getImageTableByName("_base").getImageByName("unknown")
-        });
-
-        return images;
-    }
-
-    getEntityCountImage() {
-        let canvas = createCanvas(128, 128);
-        let ctx = canvas.getContext("2d");
-
-        ctx.font = "30px Arial";
-        ctx.fillText("" + this.stackSize, 0, 20);
-
-        const buffer = canvas.toBuffer("image/png");
-
-        let image = new Image();
-        image.src = buffer;
-
-        return image;
-    }
-    */
 
     getRootEntity(entity) {
         let rootEntity = entity;

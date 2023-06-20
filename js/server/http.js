@@ -5,8 +5,7 @@ const url = require("url");
 const FAVICON_FILE = "favicon.ico";
 const HTML_HOME = "html/index.html";
 const HTML_IMAGE_CATALOG = "html/ImageCatalog.js";
-const HTML_IMAGE_TABLE = "html/ImageTable.js";
-const HTML_FETCH = "html/fetchImages.js";
+const HTML_JSZIP = "html/jszip.min.js";
 
 const SERVER_PORT = 80;
 const SERVER_REQUEST_TIMEOUT = 30000; // milliseconds
@@ -26,7 +25,7 @@ function createHTTPServer() {
 
 			// Special case for favicon. Use exact match.
 			if(req.url === "/favicon.ico") {
-				console.log("HTTP Favicon");
+				//console.log("HTTP Favicon");
 
 				serveFavicon(res);
 				return;
@@ -34,6 +33,7 @@ function createHTTPServer() {
 
 			// Serve pages.
 			const pathname = url.parse(req.url, true).pathname;
+			console.log("HTTP Serve Pathname " + pathname);
 
 			switch(pathname) {
 				case "/": {
@@ -46,14 +46,9 @@ function createHTTPServer() {
 					serveJS(res, HTML_IMAGE_CATALOG);
 					break;
 				}
-				case "/ImageTable.js": {
-					pageName = "ImageTable";
-					serveJS(res, HTML_IMAGE_TABLE);
-					break;
-				}
-				case "/fetchImages.js": {
-					pageName = "Fetch";
-					serveJS(res, HTML_FETCH);
+				case "/jszip.min.js": {
+					pageName = "JSZip";
+					serveJS(res, HTML_JSZIP);
 					break;
 				}
 				case "/images": {
@@ -71,7 +66,7 @@ function createHTTPServer() {
 			console.log("HTTP Serve Page Success " + pageName);
 		}
 		catch(err) {
-			console.log("HTTP Serve Page Failure " + err + pageName);
+			console.log("HTTP Serve Page Failure " + pageName + "\n" + err);
 
 			serveError(res, 400, "Error processing request.");
 		}
@@ -124,20 +119,17 @@ function serveJS(res, htmlFile) {
 }
 
 async function serveImages(res) {
-	const { loadImage } = require("canvas")
-	let file = "assets/image/creature/monster.png";
-
+	let file = "assets/image.zip";
 	let fileText = fs.readFileSync(file);
-	let image = await loadImage(file);
-	let image2 = await loadImage(fileText);
 
 	if(!res.isEnded) {
 		res.isEnded = true;
 		res.statusCode = 200;
 		res.setHeader("Content-Type", "image/png");
-		//fs.createReadStream(file).pipe(res);
-		res.write(fileText);
-		res.end();
+		//res.write(fileText);
+		//res.end();
+
+		fs.createReadStream(file).pipe(res);
 	}
 }
 
