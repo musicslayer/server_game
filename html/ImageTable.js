@@ -1,5 +1,5 @@
-const { loadImage } = require("canvas")
-const fs = require("fs");
+//const { loadImage } = require("canvas")
+//const fs = require("fs");
 
 class ImageTable {
     imageMap = new Map();
@@ -25,4 +25,5 @@ class ImageTable {
     }
 }
 
-module.exports = ImageTable;
+//module.exports = ImageTable;
+export { ImageTable };

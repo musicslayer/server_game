@@ -8,17 +8,10 @@
 		<!-- <h1>Canvas</h1> -->
 		
 		<canvas id="canvas" style="border:10px solid"></canvas>
-	
 		
 		<script src="/socket.io/socket.io.js"></script>
-		<script type="module" src="ImageCatalog.js"></script>
-		<script type="module" src="ImageTable.js"></script>
 		
-		<script type="module">
-			//window.ImageCatalog = ImageCatalog;
-			import { fetchImages } from "./fetchImages.js";
-			import { ImageCatalog } from "./ImageCatalog.js";
-			
+		<script>
 			const FPS_RATE = 60; // times per second
 			//const FPS_RATE = 1; // times per second
 			
@@ -40,31 +33,7 @@
 			
 			let isKeyPressed = {};
 			
-			window.addEventListener('load', async () => {
-				//await ImageCatalog.loadImageCatalogFromFolder("assets/image/");
-				
-				//let imageURL = fetchImages();
-				let response = await fetch("http://localhost/images");
-				//let text = await response.text();
-				let blob = await response.blob();
-				const imageURL = URL.createObjectURL(blob);
-				
-				console.log("Image Load Start!");
-				
-				let image = new Image;
-				image.onload = () => {
-					console.log("Image Load Finish!");
-					console.log(image);
-					ctx.drawImage(image, 128, 128, 128, 128);
-				};
-				image.src = imageURL;
-				
-				//ctx.drawImage(image, 0, 0, 128, 128);
-				
-				//let data = new Uint8ClampedArray(R.imageData.data);
-				//let imageData = new ImageData(data, canvas_width, canvas_height)
-				//ctx.putImageData(imageData, 0, 0);
-			
+			window.addEventListener('load', () => {
 				if(socket) {
 					socket.disconnect(true);
 				}
@@ -259,64 +228,27 @@
 				await socket.emitWithAck("on_mouse_drag", button, x1, y1, x2, y2, IMAGE_SCALE_FACTOR);
 			}
 			
-			async function updateClient() {
+			async function updateCanvas() {
 				if(isUpdating) {
 					return;
 				}
 				
 				isUpdating = true;
 				
-				let R = await socket.emitWithAck("get_client_data");
+				//const start = Date.now();
 				
-				//let data = new Uint8ClampedArray(R.imageData.data);
-				//let imageData = new ImageData(data, canvas_width, canvas_height)
-				//ctx.putImageData(imageData, 0, 0);
+				let R = await socket.emitWithAck("get_image_data", IMAGE_SCALE_FACTOR);
 				
-				drawScreen(R.tiles, R.otherEntities, R.playerEntities);
+				//const end = Date.now();
+				//const start2 = Date.now();
 				
+				let data = new Uint8ClampedArray(R.imageData.data);
+				let imageData = new ImageData(data, canvas_width, canvas_height)
+				ctx.putImageData(imageData, 0, 0);
 				isUpdating = false;
-			}
-			
-			function drawScreen(tiles, otherEntities, playerEntities) {
-				// Only draw the screen where the player is located at.
-				ctx.beginPath();
-
-				while(tiles.length > 0) {
-					let tile = tiles.shift();
-					let imageTableNameArray = tile.imageTableNameArray;
-					while(imageTableNameArray.length > 0) {
-						let imageTableName = imageTableNameArray.shift();
-						let imageName = imageNameArray.shift();
-						
-						ImageCatalog.IMAGE_CATALOG.getImageTableByName(imageTableName).getImageByName(imageName)
-						
-						ctx.drawImage(imageData.image, tile.x * IMAGE_SCALE_FACTOR, tile.y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
-					}
-				}
-
-				while(images.length > 0) {
-					let imageData = images.shift();
-					ctx.drawImage(imageData.image, imageData.x * imageScaleFactor, imageData.y * imageScaleFactor, imageScaleFactor, imageScaleFactor);
-				}
-
-				ctx.fillRect(this.getNumTilesX() * imageScaleFactor, 0, imageScaleFactor, this.getNumTilesY() * imageScaleFactor);
-				ctx.fillRect((this.getNumTilesX() + 1) * imageScaleFactor, 6 * imageScaleFactor, 9 * imageScaleFactor, imageScaleFactor);
-
-				ctx.stroke();
-			}
-			
-			function getTileImages(tiles) {
-				let images = [];
-
-				for(let i = 0; i < this.imageTableNameArray.length; i++) {
-					images.push({
-						x: this.x,
-						y: this.y,
-						image: ImageCatalog.IMAGE_CATALOG.getImageTableByName(this.imageTableNameArray[i]).getImageByName(this.imageNameArray[i])
-					});
-				}
-
-				return images;
+				
+				//const end2 = Date.now();
+				//console.log(`Execution time: ${end - start} ms ${end2 - start2} ms`);
 			}
 			
 			function startUpdateInterval() {
@@ -324,7 +256,7 @@
 					checkKeyPress();
 					checkControllerPress();
 					checkControllerSticks();
-					//updateClient();
+					updateCanvas();
 				}, 1000 / FPS_RATE);
 			}
 		</script>

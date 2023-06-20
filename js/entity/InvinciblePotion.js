@@ -1,5 +1,5 @@
 const Entity = require("./Entity.js");
-const ImageCatalog = require("../image/ImageCatalog.js");
+//const ImageCatalog = require("../image/ImageCatalog.js");
 
 class InvinciblePotion extends Entity {
     id = "invincible_potion";
@@ -8,6 +8,7 @@ class InvinciblePotion extends Entity {
     
     invincibleSeconds = 10;
 
+    /*
     getEntityImages() {
         let images = [];
 
@@ -19,6 +20,7 @@ class InvinciblePotion extends Entity {
 
         return images;
     }
+    */
 
     doInteract(entity) {
         // The item will be collected.

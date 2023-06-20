@@ -1,5 +1,5 @@
 const Entity = require("./Entity.js");
-const ImageCatalog = require("../image/ImageCatalog.js");
+//const ImageCatalog = require("../image/ImageCatalog.js");
 
 class Wall extends Entity {
     isTangible = true;
@@ -11,6 +11,7 @@ class Wall extends Entity {
         this.id = "wall";
     }
 
+    /*
     getEntityImages() {
         let images = [];
 
@@ -22,6 +23,7 @@ class Wall extends Entity {
 
         return images;
     }
+    */
 }
 
 module.exports = Wall;

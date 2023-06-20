@@ -1,9 +1,10 @@
 const Entity = require("./Entity.js");
-const ImageCatalog = require("../image/ImageCatalog.js");
+//const ImageCatalog = require("../image/ImageCatalog.js");
 
 class Teleporter extends Entity {
     id = "teleporter";
 
+    /*
     getEntityImages() {
         let images = [];
 
@@ -15,6 +16,7 @@ class Teleporter extends Entity {
 
         return images;
     }
+    */
 
     doInteract(entity) {
         // Teleport a player home.

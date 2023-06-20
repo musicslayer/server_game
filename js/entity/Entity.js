@@ -1,7 +1,7 @@
-const { createCanvas, Image } = require("canvas")
+//const { createCanvas, Image } = require("canvas")
 
 const EntitySpawner = require("./EntitySpawner.js");
-const ImageCatalog = require("../image/ImageCatalog.js");
+//const ImageCatalog = require("../image/ImageCatalog.js");
 const Server = require("../server/Server.js");
 const DeathScreen = require("../world/DeathScreen.js");
 const DeathMap = require("../world/DeathMap.js");
@@ -923,7 +923,7 @@ class Entity {
 
 
 
-
+    /*
     getImages() {
         // By default, use a generic picture.
         let images = this.getEntityImages();
@@ -967,6 +967,7 @@ class Entity {
 
         return image;
     }
+    */
 
     getRootEntity(entity) {
         let rootEntity = entity;

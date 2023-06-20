@@ -1,6 +1,6 @@
-const { createCanvas, Image } = require("canvas")
+//const { createCanvas, Image } = require("canvas")
 
-const ImageCatalog = require("../image/ImageCatalog.js");
+//const ImageCatalog = require("../image/ImageCatalog.js");
 const Entity = require("./Entity.js");
 const EntitySpawner = require("./EntitySpawner.js");
 
@@ -28,6 +28,7 @@ class Monster extends Entity {
         EntitySpawner.spawnTimed("gold", 100, screen, x, y);
     }
 
+    /*
     getEntityImages() {
         let images = [];
 
@@ -62,6 +63,7 @@ class Monster extends Entity {
 
         return images;
     }
+    */
 }
 
 module.exports = Monster;

@@ -1,9 +1,10 @@
 const Entity = require("./Entity.js");
-const ImageCatalog = require("../image/ImageCatalog.js");
+//const ImageCatalog = require("../image/ImageCatalog.js");
 
 class RevivePortal extends Entity {
     id = "revive_portal";
 
+    /*
     getEntityImages() {
         let images = [];
 
@@ -15,6 +16,7 @@ class RevivePortal extends Entity {
 
         return images;
     }
+    */
 
     doInteract(entity) {
         // Teleport a player home and revive them.

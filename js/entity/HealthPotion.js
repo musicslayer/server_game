@@ -1,5 +1,5 @@
 const Entity = require("./Entity.js");
-const ImageCatalog = require("../image/ImageCatalog.js");
+//const ImageCatalog = require("../image/ImageCatalog.js");
 
 class HealthPotion extends Entity {
     id = "health_potion";
@@ -7,6 +7,7 @@ class HealthPotion extends Entity {
     
     healthReward = 40;
 
+    /*
     getEntityImages() {
         let images = [];
 
@@ -18,6 +19,7 @@ class HealthPotion extends Entity {
 
         return images;
     }
+    */
 
     doInteract(entity) {
         // The item will be collected.

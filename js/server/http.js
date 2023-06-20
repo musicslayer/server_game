@@ -4,12 +4,15 @@ const url = require("url");
 
 const FAVICON_FILE = "favicon.ico";
 const HTML_HOME = "html/index.html";
+const HTML_IMAGE_CATALOG = "html/ImageCatalog.js";
+const HTML_IMAGE_TABLE = "html/ImageTable.js";
+const HTML_FETCH = "html/fetchImages.js";
 
 const SERVER_PORT = 80;
 const SERVER_REQUEST_TIMEOUT = 30000; // milliseconds
 
 function createHTTPServer() {
-	const server = http.createServer((req, res) => {
+	const server = http.createServer(async (req, res) => {
 		res.isEnded = false;
 
 		try {
@@ -36,6 +39,26 @@ function createHTTPServer() {
 				case "/": {
 					pageName = "Home";
 					serveHTML(res, HTML_HOME);
+					break;
+				}
+				case "/ImageCatalog.js": {
+					pageName = "ImageCatalog";
+					serveJS(res, HTML_IMAGE_CATALOG);
+					break;
+				}
+				case "/ImageTable.js": {
+					pageName = "ImageTable";
+					serveJS(res, HTML_IMAGE_TABLE);
+					break;
+				}
+				case "/fetchImages.js": {
+					pageName = "Fetch";
+					serveJS(res, HTML_FETCH);
+					break;
+				}
+				case "/images": {
+					pageName = "image";
+					await serveImages(res);
 					break;
 				}
 				default: {
@@ -88,6 +111,33 @@ function serveHTML(res, htmlFile) {
 		res.statusCode = 200;
 		res.setHeader("Content-Type", "text/html");
 		fs.createReadStream(htmlFile).pipe(res);
+	}
+}
+
+function serveJS(res, htmlFile) {
+	if(!res.isEnded) {
+		res.isEnded = true;
+		res.statusCode = 200;
+		res.setHeader("Content-Type", "application/javascript");
+		fs.createReadStream(htmlFile).pipe(res);
+	}
+}
+
+async function serveImages(res) {
+	const { loadImage } = require("canvas")
+	let file = "assets/image/creature/monster.png";
+
+	let fileText = fs.readFileSync(file);
+	let image = await loadImage(file);
+	let image2 = await loadImage(fileText);
+
+	if(!res.isEnded) {
+		res.isEnded = true;
+		res.statusCode = 200;
+		res.setHeader("Content-Type", "image/png");
+		//fs.createReadStream(file).pipe(res);
+		res.write(fileText);
+		res.end();
 	}
 }
 

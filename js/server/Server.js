@@ -1,4 +1,3 @@
-//const NanoTimer = require("../util/NanoTimerZ.js");
 const { Worker } = require("worker_threads");
 
 class Server {
@@ -19,57 +18,7 @@ class Server {
 
     static currentTick = 0;
 
-    static I = Server.init();
-
-    /*
-    static tickInterval = new NanoTimer().setInterval(() => {
-        if(Server.currentTick % Server.TICK_RATE === 0) {
-            Server.processRefresh();
-        }
-        Server.processTasks();
-        Server.currentTick++;
-
-    //}, "16.666666666m");
-    }, "100m");
-    */
-
-    /*
-    static date1 = Date.now();
-    static tickInterval = new NanoTimer().setInterval(() => {
-        //console.log(Date.now() - Server.date1);
-        let date2 = Date.now();
-
-        if(Server.currentTick % Server.TICK_RATE === 0) {
-            Server.processRefresh();
-        }
-        Server.processTasks();
-        Server.currentTick++;
-
-        let date3 = Date.now();
-
-        console.log(Server.currentTick + ": " + (date2 - Server.date1) + ": " + (date3 - date2));
-        Server.date1 = date2;
-
-    //}, "16.666666666m");
-    }, "100m");
-    */
-
-    /*
-    static date1 = Date.now();
-    static tickInterval = new NanoTimer().setInterval(() => {
-        let date2 = Date.now();
-
-        console.log(Server.currentTick + ": " + (date2 - Server.date1));
-        Server.date1 = date2;
-
-        if(Server.currentTick % Server.TICK_RATE === 0) {
-            Server.processRefresh();
-        }
-        Server.processTasks();
-        Server.currentTick++;
-
-    }, "16.666666666m");
-    */
+    //static I = Server.init();
 
     static addRefresh(fcn) {
         Server.refreshQueue.push(fcn);
@@ -158,38 +107,36 @@ class Server {
         Server.currentInventoryEntityCount -= number;
     }
 
-    static init() {
-        workerFunc();
+    static init(player) {
+        workerFunc(player);
     };
 }
 
-async function workerFunc() {
+async function workerFunc(player) {
     return new Promise(async (resolve, reject) => {
-        let T = process.hrtime();
-
         const worker = new Worker("./worker_task.js", {
             workerData: {
-                //interval: 16666666,
-                interval: 33333333,
+                interval: 16666666,
+                player: player
             }
         });
-        worker.on("message", () => {
-            let hrtimeDeltaArray = process.hrtime(T);
-            hrtimeDelta = (hrtimeDeltaArray[0] * 1000000000) + hrtimeDeltaArray[1];
+        worker.on("message", (hrtimeDeltaArray) => {
+            /*
+            let hrtimeDeltaArray2 = process.hrtime(hrtimeDeltaArray);
+            let hrtimeDelta2 = (hrtimeDeltaArray2[0] * 1000000000) + hrtimeDeltaArray2[1];
 
-            //if(hrtimeDelta > 18000000) {
-            if(hrtimeDelta > 35000000) {
-                console.log(hrtimeDelta);
+            let ms = hrtimeDelta2 / 1000000;
+
+            if(ms > 5) {
+                console.log(ms);
             }
-
-            T = process.hrtime();
+            */
             
             if(Server.currentTick % Server.TICK_RATE === 0) {
                 Server.processRefresh();
             }
             Server.processTasks();
             Server.currentTick++;
-            
         })
         worker.on("exit", () => {
             resolve();

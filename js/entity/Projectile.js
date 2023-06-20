@@ -1,5 +1,5 @@
 const Entity = require("./Entity.js");
-const ImageCatalog = require("../image/ImageCatalog.js");
+//const ImageCatalog = require("../image/ImageCatalog.js");
 const Server = require("../server/Server.js");
 
 class Projectile extends Entity {
@@ -147,6 +147,7 @@ class Projectile extends Entity {
         return true;
     }
 
+    /*
     getEntityImages() {
         let images = [];
 
@@ -158,6 +159,7 @@ class Projectile extends Entity {
 
         return images;
     }
+    */
 }
 
 module.exports = Projectile;

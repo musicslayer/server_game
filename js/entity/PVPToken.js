@@ -1,11 +1,12 @@
 const Entity = require("./Entity.js");
-const ImageCatalog = require("../image/ImageCatalog.js");
+//const ImageCatalog = require("../image/ImageCatalog.js");
 
 class PVPToken extends Entity {
     id = "pvp_token";
     maxStackNumber = 1;
     maxStackSize = 10000;
 
+    /*
     getEntityImages() {
         let images = [];
 
@@ -17,6 +18,7 @@ class PVPToken extends Entity {
 
         return images;
     }
+    */
 
     doInteract(entity) {
         // The item will be collected.

@@ -1,11 +1,12 @@
 const Entity = require("./Entity.js");
-const ImageCatalog = require("../image/ImageCatalog.js");
+//const ImageCatalog = require("../image/ImageCatalog.js");
 
 class FireTrap extends Entity {
     id = "fire_trap";
     
     damage = 40;
 
+    /*
     getEntityImages() {
         let images = [];
 
@@ -17,6 +18,7 @@ class FireTrap extends Entity {
 
         return images;
     }
+    */
 
     doInteract(entity) {
         // Do some damage to the other entity, and then this entity will despawn.

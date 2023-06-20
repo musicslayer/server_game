@@ -35,10 +35,18 @@ function createSocketIOServer(server, client) {
 				callback();
 			});
 
+			/*
 			// Send the client the image data needed to draw the game.
 			socket.on("get_image_data", (imageScaleFactor, callback) => {
 				let imageData = client.drawClient(imageScaleFactor);
 				callback({imageData: imageData});
+			});
+			*/
+
+			// Send the client all the data needed to draw the player's screen.
+			socket.on("get_client_data", (callback) => {
+				let clientData = client.getClientData();
+				callback(clientData);
 			});
 		}
 

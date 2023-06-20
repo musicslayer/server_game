@@ -1,5 +1,5 @@
 const Entity = require("./Entity.js");
-const ImageCatalog = require("../image/ImageCatalog.js");
+//const ImageCatalog = require("../image/ImageCatalog.js");
 
 class Gold extends Entity {
     id = "gold";
@@ -10,17 +10,9 @@ class Gold extends Entity {
         if(entity.purse) {
             entity.doAddToPurse(this);
         }
-
-        /*
-        if(entity.purse) {
-            let success = entity.doAddToPurse(this.stackSize);
-            if(success) {
-                this.doDespawn();
-            }
-        }
-        */
     }
 
+    /*
     getEntityImages() {
         let images = [];
 
@@ -32,6 +24,7 @@ class Gold extends Entity {
 
         return images;
     }
+    */
 }
 
 module.exports = Gold;

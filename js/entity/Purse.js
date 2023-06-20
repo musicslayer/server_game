@@ -1,6 +1,6 @@
-const { createCanvas, Image } = require("canvas")
+//const { createCanvas, Image } = require("canvas")
 
-const ImageCatalog = require("../image/ImageCatalog.js");
+//const ImageCatalog = require("../image/ImageCatalog.js");
 
 class Purse {
     maxGoldTotel = 100000;
@@ -27,6 +27,7 @@ class Purse {
         this.goldTotal -= goldAmount;
     }
 
+    /*
     getPurseImages() {
         // Returns an array of all the images that should be drawn on this screen.
         let images = [];
@@ -62,6 +63,7 @@ class Purse {
 
         return image;
     }
+    */
 }
 
 module.exports = Purse;

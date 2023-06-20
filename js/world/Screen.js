@@ -18,8 +18,8 @@ class Screen {
     numTilesY = 12;
 
     tiles = [];
-    playerEntities = [];
     otherEntities = [];
+    playerEntities = [];
 
     loadScreenFromFile(screenFile) {
         let tileData = fs.readFileSync(screenFile, "ascii");
@@ -156,6 +156,7 @@ class Screen {
         return this.map.getMapDown();
     }
 
+    /*
     getScreenImages() {
         // Returns an array of all the images that should be drawn on this screen.
         let images = [];
@@ -177,6 +178,7 @@ class Screen {
 
         return images;
     }
+    */
 }
 
 module.exports = Screen;

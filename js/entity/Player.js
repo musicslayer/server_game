@@ -1,6 +1,6 @@
-const { createCanvas, Image } = require("canvas")
+//const { createCanvas, Image } = require("canvas")
 
-const ImageCatalog = require("../image/ImageCatalog.js");
+//const ImageCatalog = require("../image/ImageCatalog.js");
 const Entity = require("./Entity.js");
 const EntitySpawner = require("./EntitySpawner.js");
 const Purse = require("./Purse.js");
@@ -148,6 +148,7 @@ class Player extends Entity {
         EntitySpawner.spawn("projectile", 1, this.screen, x, y, this, this.direction, 8, false);
     }
 
+    /*
     getEntityImages() {
         // For now, just use the "player/mage" image.
         let images = [];
@@ -272,6 +273,7 @@ class Player extends Entity {
 
         return image;
     }
+    */
 }
 
 module.exports = Player;

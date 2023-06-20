@@ -1,4 +1,4 @@
-const ImageCatalog = require("../image/ImageCatalog.js");
+//const ImageCatalog = require("../image/ImageCatalog.js");
 
 class Tile {
     x;
@@ -12,6 +12,7 @@ class Tile {
         this.imageNameArray = imageNameArray;
     }
 
+    /*
     getImages() {
         let images = [];
 
@@ -25,6 +26,7 @@ class Tile {
 
         return images;
     }
+    */
 }
 
 module.exports = Tile;

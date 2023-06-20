@@ -1,17 +1,8 @@
-const { createCanvas, Image } = require("canvas")
-
-const Server = require("../server/Server.js");
-const ImageCatalog = require("../image/ImageCatalog.js");
 const Keyboard = require("../input/Keyboard.js");
 const Mouse = require("../input/Mouse.js");
 const Controller = require("../input/Controller.js");
 
 class Client {
-    maxNumTilesX = 16;
-    maxNumTilesY = 12;
-    sidePanelTiles = 10;
-    isGrid = true;
-
     keyboard = new Keyboard();
     mouse = new Mouse();
     controller = new Controller();
@@ -20,14 +11,6 @@ class Client {
 
     constructor(player) {
         this.player = player;
-    }
-
-    getNumTilesX() {
-        return Math.min(this.maxNumTilesX, this.player.screen.numTilesX);
-    }
-
-    getNumTilesY() {
-        return Math.min(this.maxNumTilesY, this.player.screen.numTilesY);
     }
 
     onClick(button, x, y, imageScaleFactor) {
@@ -200,222 +183,49 @@ class Client {
         }
     }
 
-    drawClient(imageScaleFactor) {
-        let canvas = createCanvas((this.getNumTilesX() + this.sidePanelTiles) * imageScaleFactor, this.getNumTilesY() * imageScaleFactor);
-        let ctx = canvas.getContext("2d");
-        //ctx.beginPath();
+    getClientData() {
+        // Return all the data that the client needs.
+        let tiles = [];
+        let otherEntities = [];
+        let playerEntities = [];
 
-        //ctx.strokeStyle = "red";
+        let screen = this.player.screen;
 
-        this.drawScreen(ctx, imageScaleFactor);
-        this.drawPurse(ctx, imageScaleFactor);
-        this.drawEntityCount(ctx, imageScaleFactor);
-        this.drawInventory(ctx, imageScaleFactor);
-
-        if(this.isGrid) {
-            this.drawScreenGrid(ctx, imageScaleFactor);
+        // Tiles
+        for(const tile of screen.tiles) {
+            tiles.push({
+                x: tile.x,
+                y: tile.y,
+                imageTableNameArray: tile.imageTableNameArray,
+                imageNameArray: tile.imageNameArray
+            });
         }
 
-        ctx.stroke();
-
-        return ctx.getImageData(0, 0, canvas.width, canvas.height);
-    }
-
-    drawScreen(ctx, imageScaleFactor) {
-        // Only draw the screen where the player is located at.
-        ctx.beginPath();
-
-        let images = this.player.screen.getScreenImages();
-
-        while(images.length > 0) {
-            let imageData = images.shift();
-            ctx.drawImage(imageData.image, imageData.x * imageScaleFactor, imageData.y * imageScaleFactor, imageScaleFactor, imageScaleFactor);
+        // Non-players.
+        for(const entity of screen.otherEntities) {
+            otherEntities.push({
+                x: entity.x,
+                y: entity.y,
+                id: entity.id
+            });
         }
 
-        ctx.fillRect(this.getNumTilesX() * imageScaleFactor, 0, imageScaleFactor, this.getNumTilesY() * imageScaleFactor);
-        ctx.fillRect((this.getNumTilesX() + 1) * imageScaleFactor, 6 * imageScaleFactor, 9 * imageScaleFactor, imageScaleFactor);
-
-        ctx.stroke();
-    }
-
-    drawScreenGrid(ctx, imageScaleFactor) {
-        ctx.beginPath();
-
-        for(let x = 0; x < this.getNumTilesX() + 1; x++) {
-            ctx.moveTo(x * imageScaleFactor, 0);
-            ctx.lineTo(x * imageScaleFactor, this.getNumTilesY() * imageScaleFactor);
+        // Players
+        for(const entity of screen.playerEntities) {
+            playerEntities.push({
+                x: entity.x,
+                y: entity.y,
+                id: entity.id
+            });
         }
 
-        for(let y = 0; y < this.getNumTilesY() + 1; y++) {
-            ctx.moveTo(0, y * imageScaleFactor);
-            ctx.lineTo(this.getNumTilesX() * imageScaleFactor, y * imageScaleFactor);
-        }
+        let clientData = {
+            tiles: tiles,
+            otherEntities: otherEntities,
+            playerEntities: playerEntities
+        };
 
-        ctx.stroke();
-    }
-
-    drawPurse(ctx, imageScaleFactor) {
-        ctx.beginPath();
-        
-        let originX = 17;
-        let originY = 0;
-
-        let images = this.player.purse.getPurseImages();
-        while(images.length > 0) {
-            let imageData = images.shift();
-            ctx.drawImage(imageData.image, (originX + imageData.x) * imageScaleFactor, (originY + imageData.y) * imageScaleFactor, imageScaleFactor, imageScaleFactor);
-        }
-
-        ctx.stroke();
-    }
-
-    drawEntityCount(ctx, imageScaleFactor) {
-        ctx.beginPath();
-        
-        let originX = 17;
-        let originY = 1;
-
-        let images = [];
-        
-        images.push({
-            x: 0,
-            y: 0,
-            image: ImageCatalog.IMAGE_CATALOG.getImageTableByName("letter").getImageByName("upperE")
-        });
-
-        images.push({
-            x: 1,
-            y: 0,
-            image: this.getEntityCountImage()
-        });
-
-        while(images.length > 0) {
-            let imageData = images.shift();
-            ctx.drawImage(imageData.image, (originX + imageData.x) * imageScaleFactor, (originY + imageData.y) * imageScaleFactor, imageScaleFactor, imageScaleFactor);
-        }
-
-        ctx.stroke();
-    }
-
-    getEntityCountImage() {
-        let canvas = createCanvas(128, 128);
-        let ctx = canvas.getContext("2d");
-
-        ctx.font = "30px Arial";
-        ctx.fillText("(" + Server.currentWorldEntityCount + ", " + Server.currentInstanceEntityCount + ", " + Server.currentInventoryEntityCount + ")", 0, 70);
-
-        const buffer = canvas.toBuffer("image/png");
-
-        let image = new Image();
-        image.src = buffer;
-
-        return image;
-    }
-
-    drawInventory(ctx, imageScaleFactor) {
-        this.drawInventoryGrid(ctx, imageScaleFactor);
-        this.drawInventoryItems(ctx, imageScaleFactor);
-        this.drawInventoryCursor(ctx, imageScaleFactor);
-    }
-
-    drawInventoryGrid(ctx, imageScaleFactor) {
-        ctx.beginPath();
-
-        for(let x = this.getNumTilesX() + 1; x < this.getNumTilesX() + this.sidePanelTiles + 1; x++) {
-            ctx.moveTo(x * imageScaleFactor, 7 * imageScaleFactor);
-            ctx.lineTo(x * imageScaleFactor, this.getNumTilesY() * imageScaleFactor);
-        }
-
-        for(let y = 7; y < this.getNumTilesY() + 1; y++) {
-            ctx.moveTo((this.getNumTilesX() + 1) * imageScaleFactor, y * imageScaleFactor);
-            ctx.lineTo((this.getNumTilesX() + this.sidePanelTiles) * imageScaleFactor, y * imageScaleFactor);
-        }
-
-        ctx.stroke();
-    }
-
-    drawInventoryItems(ctx, imageScaleFactor) {
-        ctx.beginPath();
-        
-        let originX = 17;
-        let originY = 7;
-
-        let images = this.player.inventory.getInventoryImages();
-        while(images.length > 0) {
-            let imageData = images.shift();
-            ctx.drawImage(imageData.image, (originX + imageData.x) * imageScaleFactor, (originY + imageData.y) * imageScaleFactor, imageScaleFactor, imageScaleFactor);
-        }
-
-        ctx.stroke();
-    }
-
-    drawInventoryCursor(ctx, imageScaleFactor) {
-        let currentSlot = this.player.inventory.currentSlot;
-        if(currentSlot !== undefined) {
-            let xy = this.slot2XY(currentSlot, imageScaleFactor);
-
-            ctx.beginPath();
-            
-            ctx.lineWidth = "3";
-            ctx.strokeStyle = "red";
-
-            ctx.rect(xy[0], xy[1], imageScaleFactor, imageScaleFactor);
-            ctx.stroke();
-
-            ctx.lineWidth = "1";
-            ctx.strokeStyle = "black";
-        }
-    }
-
-    slot2XY(slot, imageScaleFactor) {
-        let originX = 17;
-        let originY = 7;
-
-        let nx = slot % 9;
-        let ny = Math.floor(slot / 9);
-
-        let x = (originX + nx) * imageScaleFactor;
-        let y = (originY + ny) * imageScaleFactor;
-
-        return [x, y];
-    }
-
-    isScreen(x, y, imageScaleFactor) {
-        let nScreen;
-
-        if(x >= 0 && x < this.getNumTilesX() * imageScaleFactor && y >= 0 && y < this.getNumTilesY() * imageScaleFactor) {
-            // Return normalized (tile) x,y
-            nScreen = [Math.floor(x / imageScaleFactor), Math.floor(y / imageScaleFactor)];
-        }
-
-        return nScreen;
-    }
-
-    isInventory(x, y, imageScaleFactor) {
-        let originX = 17;
-        let originY = 7;
-        let inventoryWidth = 9;
-        let inventoryHeight = 5;
-
-        let slot;
-
-        if(x >= originX * imageScaleFactor && x < (originX + inventoryWidth) * imageScaleFactor && y >= originY  * imageScaleFactor && y < (originY + inventoryHeight) * imageScaleFactor) {
-            // Return inventory slot
-            let nx = Math.floor((x / imageScaleFactor) - originX);
-            let ny = Math.floor((y / imageScaleFactor) - originY);
-            slot = ny * 9 + nx;
-        }
-
-        return slot;
-    }
-
-    isPurse(x, y, imageScaleFactor) {
-        let originX = 17;
-        let originY = 0;
-        let inventoryWidth = 1;
-        let inventoryHeight = 1;
-
-        return x >= originX * imageScaleFactor && x < (originX + inventoryWidth) * imageScaleFactor && y >= originY  * imageScaleFactor && y < (originY + inventoryHeight) * imageScaleFactor;
+        return clientData;
     }
 }
 

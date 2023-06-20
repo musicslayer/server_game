@@ -1,9 +1,10 @@
 const Entity = require("./Entity.js");
-const ImageCatalog = require("../image/ImageCatalog.js");
+//const ImageCatalog = require("../image/ImageCatalog.js");
 
 class DeathTrap extends Entity {
     id = "death_trap";
 
+    /*
     getEntityImages() {
         let images = [];
 
@@ -15,6 +16,7 @@ class DeathTrap extends Entity {
 
         return images;
     }
+    */
 
     doInteract(entity) {
         // Instantly kill the other entity (even if they are invincible).

@@ -1,6 +1,6 @@
-const fs = require("fs");
+//const fs = require("fs");
 
-const ImageTable = require("./ImageTable.js");
+//const ImageTable = require("./ImageTable.js");
 
 class ImageCatalog {
     static IMAGE_CATALOG;
@@ -28,4 +28,5 @@ class ImageCatalog {
     }
 }
 
-module.exports = ImageCatalog;
+//module.exports = ImageCatalog;
+export { ImageCatalog };
