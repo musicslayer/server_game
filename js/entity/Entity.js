@@ -223,8 +223,8 @@ class Entity {
             this.isMoving = true;
             this.canMove = false;
             
-            for(let a = 0; a < Server.ANIMATION_FRAMES; a++) {
-                let fraction = a / Server.ANIMATION_FRAMES;
+            for(let a = 0; a < Server.MOVEMENT_FRAMES; a++) {
+                let fraction = a / Server.MOVEMENT_FRAMES;
                 Server.scheduleTaskForSeconds(this.movementTime * fraction, () => {
                     this.animationShiftX = -fraction;
                 });
@@ -247,8 +247,8 @@ class Entity {
             this.isMoving = true;
             this.canMove = false;
 
-            for(let a = 0; a < Server.ANIMATION_FRAMES; a++) {
-                let fraction = a / Server.ANIMATION_FRAMES;
+            for(let a = 0; a < Server.MOVEMENT_FRAMES; a++) {
+                let fraction = a / Server.MOVEMENT_FRAMES;
                 Server.scheduleTaskForSeconds(this.movementTime * fraction, () => {
                     this.animationShiftY = -fraction;
                 });
@@ -271,8 +271,8 @@ class Entity {
             this.isMoving = true;
             this.canMove = false;
 
-            for(let a = 0; a < Server.ANIMATION_FRAMES; a++) {
-                let fraction = a / Server.ANIMATION_FRAMES;
+            for(let a = 0; a < Server.MOVEMENT_FRAMES; a++) {
+                let fraction = a / Server.MOVEMENT_FRAMES;
                 Server.scheduleTaskForSeconds(this.movementTime * fraction, () => {
                     this.animationShiftX = fraction;
                 });
@@ -295,8 +295,8 @@ class Entity {
             this.isMoving = true;
             this.canMove = false;
 
-            for(let a = 0; a < Server.ANIMATION_FRAMES; a++) {
-                let fraction = a / Server.ANIMATION_FRAMES;
+            for(let a = 0; a < Server.MOVEMENT_FRAMES; a++) {
+                let fraction = a / Server.MOVEMENT_FRAMES;
                 Server.scheduleTaskForSeconds(this.movementTime * fraction, () => {
                     this.animationShiftY = fraction;
                 });

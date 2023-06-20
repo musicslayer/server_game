@@ -155,30 +155,6 @@ class Screen {
     getMapDown() {
         return this.map.getMapDown();
     }
-
-    /*
-    getScreenImages() {
-        // Returns an array of all the images that should be drawn on this screen.
-        let images = [];
-
-        // First get all the tile images.
-        for(const tile of this.tiles) {
-            images = images.concat(tile.getImages());
-        }
-
-        // Next get all of the non-player images.
-        for(const entity of this.otherEntities) {
-            images = images.concat(entity.getImages());
-        }
-
-        // Finally get all of the player images (so that players are always drawn on top).
-        for(const entity of this.playerEntities) {
-            images = images.concat(entity.getImages());
-        }
-
-        return images;
-    }
-    */
 }
 
 module.exports = Screen;

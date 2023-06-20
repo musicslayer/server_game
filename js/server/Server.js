@@ -3,7 +3,7 @@ const { Worker } = require("worker_threads");
 class Server {
     // These variables affect server performance.
     static TICK_RATE = 60; // times per second
-    static ANIMATION_FRAMES = 60; // frames per 1 tile of movement
+    static MOVEMENT_FRAMES = 60; // frames per 1 tile of movement
     static MAX_ENTITY_COUNT = 100000000;
     static LOOT_TIME = 300; // (5 minutes) seconds that spawned loot will remain in the world before despawning
 
@@ -17,8 +17,6 @@ class Server {
     static currentInventoryEntityCount = 0;
 
     static currentTick = 0;
-
-    //static I = Server.init();
 
     static addRefresh(fcn) {
         Server.refreshQueue.push(fcn);
@@ -107,37 +105,23 @@ class Server {
         Server.currentInventoryEntityCount -= number;
     }
 
-    static init(player) {
-        workerFunc(player);
+    static initServerTick(player) {
+        startServerTickThread(player);
     };
 }
 
-async function workerFunc(player) {
+async function startServerTickThread(player) {
     return new Promise(async (resolve, reject) => {
+        const shared = new Int32Array(new SharedArrayBuffer(4));
+        doWork(shared);
+
         const worker = new Worker("./worker_task.js", {
             workerData: {
-                interval: 16666666,
+                shared: shared,
+                interval: 1000000000 / Server.TICK_RATE,
                 player: player
             }
         });
-        worker.on("message", (hrtimeDeltaArray) => {
-            /*
-            let hrtimeDeltaArray2 = process.hrtime(hrtimeDeltaArray);
-            let hrtimeDelta2 = (hrtimeDeltaArray2[0] * 1000000000) + hrtimeDeltaArray2[1];
-
-            let ms = hrtimeDelta2 / 1000000;
-
-            if(ms > 5) {
-                console.log(ms);
-            }
-            */
-            
-            if(Server.currentTick % Server.TICK_RATE === 0) {
-                Server.processRefresh();
-            }
-            Server.processTasks();
-            Server.currentTick++;
-        })
         worker.on("exit", () => {
             resolve();
         });
@@ -147,6 +131,22 @@ async function workerFunc(player) {
             resolve();
         });
     });
+}
+
+async function doWork(shared) {
+    await Atomics.waitAsync(shared, 0, 0).value;
+
+    // Only perform refresh tasks every second.
+    if(Server.currentTick % Server.TICK_RATE === 0) {
+        Server.processRefresh();
+    }
+
+    // Perform regular tasks every tick.
+    Server.processTasks();
+
+    Server.currentTick++;
+
+    doWork(shared)
 }
 
 module.exports = Server;

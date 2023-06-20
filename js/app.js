@@ -12,9 +12,7 @@ const Server = require("./server/Server.js");
 
 // TODO Switch server and client image update to threads.
 
-// TODO pvp_token vs token_pvp
-
-// TODO When screen refreshes, it should be smoother (no flashing white)
+// TODO When firing projectile, the animation occurs one too many times (it looks like it will hit monster, but doesn't)
 
 async function init() {
     let world = new World();
@@ -28,7 +26,7 @@ async function init() {
     //const httpsServer = https.createHTTPSServer();
     const io = socket_io.createSocketIOServer(httpServer, client);
 
-    Server.init(player);
+    Server.initServerTick(player);
 
     console.log("Server initialized successfully.");
 }

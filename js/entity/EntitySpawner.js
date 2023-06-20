@@ -1,6 +1,5 @@
 const Server = require("../server/Server.js");
 
-// TODO Alphabetize
 class EntitySpawner {
     static spawnTimed(id, number, screen, x, y, ...args) {
         // Spawn entity that will be despawned after a certain number of seconds.
@@ -48,20 +47,14 @@ class EntitySpawner {
         let entity;
 
         switch(id) {
-            case "player":
-                entity = new Player(...args);
-                break;
-            case "gold":
-                entity = new Gold(...args);
-                break;
-            case "pvp_token":
-                entity = new PVPToken(...args);
+            case "death_trap":
+                entity = new DeathTrap(...args);
                 break;
             case "fire_trap":
                 entity = new FireTrap(...args);
                 break;
-            case "death_trap":
-                entity = new DeathTrap(...args);
+            case "gold":
+                entity = new Gold(...args);
                 break;
             case "health_potion":
                 entity = new HealthPotion(...args);
@@ -75,17 +68,23 @@ class EntitySpawner {
             case "monster":
                 entity = new Monster(...args);
                 break;
+            case "player":
+                entity = new Player(...args);
+                break;
             case "projectile":
                 entity = new Projectile(...args);
                 break;
-            case "wall":
-                entity = new Wall(...args);
+            case "pvp_token":
+                entity = new PVPToken(...args);
+                break;
+            case "revive_portal":
+                entity = new RevivePortal(...args);
                 break;
             case "teleporter":
                 entity = new Teleporter(...args);
                 break;
-            case "revive_portal":
-                entity = new RevivePortal(...args);
+            case "wall":
+                entity = new Wall(...args);
                 break;
             default:
                 entity = new UnknownEntity(...args);

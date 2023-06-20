@@ -23,21 +23,20 @@
 			const SIDE_PANEL_TILES = 10;
 			const IMAGE_SCALE_FACTOR = 64;
 			
-			let imageCatalog;
-			
-			const canvas = document.getElementById("canvas");
-			const ctx = canvas.getContext("2d");
-			
 			const canvas_width = (NUM_TILES_X + SIDE_PANEL_TILES) * IMAGE_SCALE_FACTOR;
 			const canvas_height = NUM_TILES_Y * IMAGE_SCALE_FACTOR;
 			const canvas_showGrid = true;
 			
+			const canvas = document.getElementById("canvas");
+			canvas.width = canvas_width;
+			canvas.height = canvas_height;
+			
+			const ctx = canvas.getContext("2d");
+			
+			let imageCatalog;
+			
 			let socket;
 			let interval;
-		
-			let isUpdating = false;
-			
-			let isKeyPressed = {};
 			
 			window.addEventListener('load', async () => {
 				imageCatalog = new ImageCatalog();
@@ -53,6 +52,7 @@
 				
 				socket.on("connect", (err) => {
 					startUpdateInterval();
+					requestAnimationFrame(drawClient);
 				});
 				
 				socket.on("disconnect", (err) => {
@@ -60,10 +60,6 @@
 					socket.disconnect(true);
 				});
 			});
-			
-			canvas.width = canvas_width;
-			canvas.height = canvas_height;
-			
 			
 			canvas.addEventListener("contextmenu", function (e){
 				e.preventDefault();
@@ -174,6 +170,7 @@
 			
 			
 			
+			let isKeyPressed = {};
 			
 			document.onkeydown = (evt) => { 
 				isKeyPressed[evt.keyCode] = true;
@@ -322,38 +319,40 @@
 			
 			
 			
-			
 			function startUpdateInterval() {
+				// Continuously check for client inputs to send to the server.
 				let timer = setInterval(() => {
 					checkKeyPress();
 					checkControllerPress();
 					checkControllerSticks();
-					updateClient();
 				}, 1000 / FPS_RATE);
 			}
 			
-			async function updateClient() {
-				if(isUpdating) {
-					return;
-				}
-				
-				isUpdating = true;
-				
+			async function drawClient(time) {
 				let R = await socket.emitWithAck("get_client_data");
 				
-				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				let canvasBuffer = document.createElement('canvas');
+				canvasBuffer.width = canvas_width;
+				canvasBuffer.height = canvas_height;
+				
+				let ctxBuffer = canvasBuffer.getContext("2d");
 				
 				if(canvas_showGrid) {
-					drawScreenGrid();
+					drawScreenGrid(ctxBuffer);
+					drawInventoryGrid(ctxBuffer);
 				}
-				drawScreen(R.tiles, R.otherEntities, R.playerEntities, R.inventory, R.purse);
+				drawScreen(ctxBuffer, R.tiles, R.otherEntities, R.playerEntities, R.inventory, R.purse, R.world);
 				
-				isUpdating = false;
+				// Clear current screen and draw new screen quickly to prevent flickering.
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.drawImage(canvasBuffer, 0, 0);
+				
+				requestAnimationFrame(drawClient)
 			}
 			
-			function drawScreen(tiles, otherEntities, playerEntities, inventory, purse) {
+			function drawScreen(ctxBuffer, tiles, otherEntities, playerEntities, inventory, purse, world) {
 				// Only draw the screen where the player is located at.
-				ctx.beginPath();
+				ctxBuffer.beginPath();
 
 				// Tiles
 				while(tiles.length > 0) {
@@ -364,7 +363,7 @@
 						let imageFileArray = tile.imageFileArray.shift();
 						let image = imageCatalog.getImage(imageFolderArray, imageFileArray);
 						
-						ctx.drawImage(image, tile.x * IMAGE_SCALE_FACTOR, tile.y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+						ctxBuffer.drawImage(image, tile.x * IMAGE_SCALE_FACTOR, tile.y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 				}
 				
@@ -376,26 +375,26 @@
 					let x = otherEntity.x + otherEntity.animationShiftX;
 					let y = otherEntity.y + otherEntity.animationShiftY;
 					
-					ctx.drawImage(image, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					ctxBuffer.drawImage(image, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					
 					if(otherEntity.stackSize > 1) {
-						ctx.drawImage(getEntityCountImage(otherEntity.stackSize), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+						ctxBuffer.drawImage(getStackSizeImage(otherEntity.stackSize), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 					
 					if(isValid(otherEntity.healthFraction)) {
-						ctx.drawImage(getHealthBarImage(otherEntity.healthFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+						ctxBuffer.drawImage(getHealthBarImage(otherEntity.healthFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 					
 					if(isValid(otherEntity.manaFraction)) {
-						ctx.drawImage(getManaBarImage(otherEntity.manaFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+						ctxBuffer.drawImage(getManaBarImage(otherEntity.manaFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 					
 					if(isValid(otherEntity.experienceFraction)) {
-						ctx.drawImage(getExperienceBarImage(otherEntity.experienceFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+						ctxBuffer.drawImage(getExperienceBarImage(otherEntity.experienceFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 					
 					if(isValid(otherEntity.level)) {
-						ctx.drawImage(getLevelImage(otherEntity.level), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+						ctxBuffer.drawImage(getLevelImage(otherEntity.level), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 				}
 				
@@ -407,39 +406,39 @@
 					let x = playerEntity.x + playerEntity.animationShiftX;
 					let y = playerEntity.y + playerEntity.animationShiftY;
 					
-					ctx.drawImage(image, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					ctxBuffer.drawImage(image, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					
 					if(playerEntity.stackSize > 1) {
-						ctx.drawImage(getEntityCountImage(playerEntity.stackSize), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+						ctxBuffer.drawImage(getStackSizeImage(playerEntity.stackSize), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 					
 					if(isValid(playerEntity.healthFraction)) {
-						ctx.drawImage(getHealthBarImage(playerEntity.healthFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+						ctxBuffer.drawImage(getHealthBarImage(playerEntity.healthFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 					
 					if(isValid(playerEntity.manaFraction)) {
-						ctx.drawImage(getManaBarImage(playerEntity.manaFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+						ctxBuffer.drawImage(getManaBarImage(playerEntity.manaFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 					
 					if(isValid(playerEntity.experienceFraction)) {
-						ctx.drawImage(getExperienceBarImage(playerEntity.experienceFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+						ctxBuffer.drawImage(getExperienceBarImage(playerEntity.experienceFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 					
 					if(isValid(playerEntity.level)) {
-						ctx.drawImage(getLevelImage(playerEntity.level), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+						ctxBuffer.drawImage(getLevelImage(playerEntity.level), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 					
 					if(playerEntity.statusArray) {
 						if(playerEntity.statusArray.includes("dead") || playerEntity.statusArray.includes("invincible")) {
 							let haloImage = imageCatalog.getImage("status", "invincible");
-							ctx.drawImage(haloImage, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+							ctxBuffer.drawImage(haloImage, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 						}
 					}
 				}
 
 				// Screen Dividers
-				ctx.fillRect(NUM_TILES_X * IMAGE_SCALE_FACTOR, 0, IMAGE_SCALE_FACTOR, NUM_TILES_Y * IMAGE_SCALE_FACTOR);
-				ctx.fillRect((NUM_TILES_X + 1) * IMAGE_SCALE_FACTOR, 6 * IMAGE_SCALE_FACTOR, 9 * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+				ctxBuffer.fillRect(NUM_TILES_X * IMAGE_SCALE_FACTOR, 0, IMAGE_SCALE_FACTOR, NUM_TILES_Y * IMAGE_SCALE_FACTOR);
+				ctxBuffer.fillRect((NUM_TILES_X + 1) * IMAGE_SCALE_FACTOR, 6 * IMAGE_SCALE_FACTOR, 9 * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 				
 				// Inventory
 				let originInventoryX = 17;
@@ -447,40 +446,97 @@
 				let inventoryImages = getInventoryImages(inventory.itemArray);
 				while(inventoryImages.length > 0) {
 					let inventoryImage = inventoryImages.shift();
-					ctx.drawImage(inventoryImage.image, (originInventoryX + inventoryImage.x) * IMAGE_SCALE_FACTOR, (originInventoryY + inventoryImage.y) * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					ctxBuffer.drawImage(inventoryImage.image, (originInventoryX + inventoryImage.x) * IMAGE_SCALE_FACTOR, (originInventoryY + inventoryImage.y) * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 				}
+				
+				drawInventoryCursor(ctxBuffer, inventory.currentSlot);
 				
 				// Purse
 				let originPurseX = 17;
 				let originPurseY = 0;
 				let purseImage = imageCatalog.getImage("item", "gold");
-				ctx.drawImage(purseImage, originPurseX * IMAGE_SCALE_FACTOR, originPurseY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
-				ctx.drawImage(getGoldTotalImage(purse.goldTotal), (originPurseX + 1) * IMAGE_SCALE_FACTOR, originPurseY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+				ctxBuffer.drawImage(purseImage, originPurseX * IMAGE_SCALE_FACTOR, originPurseY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+				ctxBuffer.drawImage(getGoldTotalImage(purse.goldTotal), (originPurseX + 1) * IMAGE_SCALE_FACTOR, originPurseY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+				
+				// World
+				let originEntityCountX = 17;
+				let originEntityCountY = 1;
+				let entityCountImage = imageCatalog.getImage("letter", "upperE");
+				ctxBuffer.drawImage(entityCountImage, originEntityCountX * IMAGE_SCALE_FACTOR, originEntityCountY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+				ctxBuffer.drawImage(getEntityCountImage(world.currentWorldEntityCount, world.currentInstanceEntityCount, world.currentInventoryEntityCount), (originEntityCountX + 1) * IMAGE_SCALE_FACTOR, originEntityCountY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 
-				ctx.stroke();
+				ctxBuffer.stroke();
 			}
 			
 			function isValid(n) {
 				return n !== undefined && n !== NaN && n !== null;
 			}
 			
-			function drawScreenGrid() {
-				ctx.beginPath();
+			function drawScreenGrid(ctxBuffer) {
+				ctxBuffer.beginPath();
 
 				for(let x = 0; x < NUM_TILES_X + 1; x++) {
-					ctx.moveTo(x * IMAGE_SCALE_FACTOR, 0);
-					ctx.lineTo(x * IMAGE_SCALE_FACTOR, NUM_TILES_Y * IMAGE_SCALE_FACTOR);
+					ctxBuffer.moveTo(x * IMAGE_SCALE_FACTOR, 0);
+					ctxBuffer.lineTo(x * IMAGE_SCALE_FACTOR, NUM_TILES_Y * IMAGE_SCALE_FACTOR);
 				}
 
 				for(let y = 0; y < NUM_TILES_Y + 1; y++) {
-					ctx.moveTo(0, y * IMAGE_SCALE_FACTOR);
-					ctx.lineTo(NUM_TILES_X * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR);
+					ctxBuffer.moveTo(0, y * IMAGE_SCALE_FACTOR);
+					ctxBuffer.lineTo(NUM_TILES_X * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR);
 				}
 
-				ctx.stroke();
+				ctxBuffer.stroke();
 			}
 			
-			function getEntityCountImage(stackSize) {
+			function drawInventoryGrid(ctxBuffer) {
+				ctxBuffer.beginPath();
+
+				for(let x = NUM_TILES_X + 1; x < NUM_TILES_X + SIDE_PANEL_TILES + 1; x++) {
+					ctxBuffer.moveTo(x * IMAGE_SCALE_FACTOR, 7 * IMAGE_SCALE_FACTOR);
+					ctxBuffer.lineTo(x * IMAGE_SCALE_FACTOR, NUM_TILES_Y * IMAGE_SCALE_FACTOR);
+				}
+
+				for(let y = 7; y < NUM_TILES_Y + 1; y++) {
+					ctxBuffer.moveTo((NUM_TILES_X + 1) * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR);
+					ctxBuffer.lineTo((NUM_TILES_X + SIDE_PANEL_TILES) * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR);
+				}
+
+				ctxBuffer.stroke();
+			}
+			
+			function drawInventoryCursor(ctxBuffer, currentSlot) {
+				if(currentSlot !== undefined) {
+					let xy = slot2XY(currentSlot);
+
+					ctxBuffer.beginPath();
+					
+					ctxBuffer.lineWidth = "3";
+					ctxBuffer.strokeStyle = "red";
+
+					ctxBuffer.rect(xy[0], xy[1], IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					ctxBuffer.stroke();
+
+					ctxBuffer.lineWidth = "1";
+					ctxBuffer.strokeStyle = "black";
+					
+					ctxBuffer.stroke();
+				}
+			}
+
+			function slot2XY(slot) {
+				let originX = 17;
+				let originY = 7;
+
+				let nx = slot % 9;
+				let ny = Math.floor(slot / 9);
+
+				let x = (originX + nx) * IMAGE_SCALE_FACTOR;
+				let y = (originY + ny) * IMAGE_SCALE_FACTOR;
+
+				return [x, y];
+			}
+			
+			function getStackSizeImage(stackSize) {
 				let canvasTemp = document.createElement('canvas');
 				canvasTemp.width = 128;
 				canvasTemp.height = 128;
@@ -488,11 +544,8 @@
 				let ctxTemp = canvasTemp.getContext("2d");
 				ctxTemp.font = "30px Arial";
 				ctxTemp.fillText("" + stackSize, 0, 20);
-
-				let image = new Image();
-				image.src = canvasTemp.toDataURL("image/png");
-
-				return image;
+				
+				return canvasTemp;
 			}
 			
 			function getHealthBarImage(healthFraction) {
@@ -505,11 +558,8 @@
 				ctxTemp.fillRect(20, 0, 88, 20);
 				ctxTemp.fillStyle = "#ff0000";
 				ctxTemp.fillRect(20, 0, 88 * healthFraction, 20);
-
-				let image = new Image();
-				image.src = canvasTemp.toDataURL("image/png");
-
-				return image;
+				
+				return canvasTemp;
 			}
 			
 			function getManaBarImage(manaFraction) {
@@ -522,11 +572,8 @@
 				ctxTemp.fillRect(20, 20, 88, 20);
 				ctxTemp.fillStyle = "#0000ff";
 				ctxTemp.fillRect(20, 20, 88 * manaFraction, 20);
-
-				let image = new Image();
-				image.src = canvasTemp.toDataURL("image/png");
-
-				return image;
+				
+				return canvasTemp;
 			}
 			
 			function getExperienceBarImage(experienceFraction) {
@@ -539,11 +586,8 @@
 				ctxTemp.fillRect(20, 40, 88, 20);
 				ctxTemp.fillStyle = "#00ff00";
 				ctxTemp.fillRect(20, 40, 88 * experienceFraction, 20);
-
-				let image = new Image();
-				image.src = canvasTemp.toDataURL("image/png");
-
-				return image;
+				
+				return canvasTemp;
 			}
 			
 			function getLevelImage(level) {
@@ -554,11 +598,8 @@
 				let ctxTemp = canvasTemp.getContext("2d");
 				ctxTemp.font = "30px Arial";
 				ctxTemp.fillText("Level: " + level, 20, 80);
-
-				let image = new Image();
-				image.src = canvasTemp.toDataURL("image/png");
-
-				return image;
+				
+				return canvasTemp;
 			}
 			
 			function getGoldTotalImage(goldTotal) {
@@ -569,11 +610,8 @@
 				let ctxTemp = canvasTemp.getContext("2d");
 				ctxTemp.font = "30px Arial";
 				ctxTemp.fillText("Gold: " + goldTotal, 0, 70);
-
-				let image = new Image();
-				image.src = canvasTemp.toDataURL("image/png");
-
-				return image;
+				
+				return canvasTemp;
 			}
 			
 			function getInventoryImages(itemArray) {
@@ -603,7 +641,7 @@
 							images.push({
 								x: x,
 								y: y,
-								image: getEntityCountImage(item.stackSize)
+								image: getStackSizeImage(item.stackSize)
 							});
 						}
 					}
@@ -611,7 +649,18 @@
 
 				return images;
 			}
+			
+			function getEntityCountImage(currentWorldEntityCount, currentInstanceEntityCount, currentInventoryEntityCount) {
+				let canvasTemp = document.createElement('canvas');
+				canvasTemp.width = 128;
+				canvasTemp.height = 128;
+				
+				let ctxTemp = canvasTemp.getContext("2d");
+				ctxTemp.font = "30px Arial";
+				ctxTemp.fillText("(" + currentWorldEntityCount + ", " + currentInstanceEntityCount + ", " + currentInventoryEntityCount + ")", 0, 70);
 
+				return canvasTemp;
+			}
 		</script>
 	</body>
 </html>

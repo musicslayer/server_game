@@ -1,23 +1,13 @@
-const { parentPort, workerData } = require("worker_threads");
+const { workerData } = require("worker_threads");
 
 let T = process.hrtime();
 
-foo();
+while(true) {
+    let hrtimeDeltaArray = process.hrtime(T);
+    hrtimeDelta = (hrtimeDeltaArray[0] * 1000000000) + hrtimeDeltaArray[1];
 
-function foo() {
-    while(true) {
-        let hrtimeDeltaArray = process.hrtime(T);
-        hrtimeDelta = (hrtimeDeltaArray[0] * 1000000000) + hrtimeDeltaArray[1];
-
-        if(hrtimeDelta >= workerData.interval) {
-            //if(hrtimeDelta > 19000000) {
-            //    console.log("WWW: " + hrtimeDelta);
-            //}
-
-            let hrtimeDeltaArray2 = process.hrtime();
-            parentPort.postMessage(hrtimeDeltaArray2);
-
-            T = process.hrtime();
-        }
+    if(hrtimeDelta >= workerData.interval) {
+        Atomics.notify(workerData.shared, 0, 1)
+        T = process.hrtime();
     }
 }

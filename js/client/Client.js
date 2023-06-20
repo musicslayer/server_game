@@ -2,6 +2,8 @@ const Keyboard = require("../input/Keyboard.js");
 const Mouse = require("../input/Mouse.js");
 const Controller = require("../input/Controller.js");
 
+const Server = require("../server/Server.js");
+
 class Client {
     keyboard = new Keyboard();
     mouse = new Mouse();
@@ -187,6 +189,7 @@ class Client {
         let playerEntities = [];
         let inventory = {};
         let purse = {};
+        let world = {};
 
         let screen = this.player.screen;
 
@@ -242,6 +245,7 @@ class Client {
         }
 
         // Inventory
+        inventory.currentSlot = this.player.inventory.currentSlot;
         inventory.itemArray = [];
         for(const item of this.player.inventory.itemArray) {
             if(item) {
@@ -258,12 +262,18 @@ class Client {
         // Purse
         purse.goldTotal = this.player.purse.goldTotal;
 
+        // World
+        world.currentWorldEntityCount = Server.currentWorldEntityCount;
+        world.currentInstanceEntityCount = Server.currentInstanceEntityCount;
+        world.currentInventoryEntityCount = Server.currentInventoryEntityCount;
+
         let clientData = {
             tiles: tiles,
             otherEntities: otherEntities,
             playerEntities: playerEntities,
             inventory: inventory,
-            purse: purse
+            purse: purse,
+            world: world
         };
 
         return clientData;

@@ -42,51 +42,48 @@ class ImageCatalog {
         return this.imageMap.get(folder + "#" + file);
     }
 	
-	// TODO Alphabetize
 	getImageByID(id) {
 		let image;
 		
 		switch(id) {
-            case "player":
-				// Add lots of stuff
-                image = this.getImage("player", "mage");
-                break;
-            case "gold":
-                image = this.getImage("item", "gold");
-                break;
-            case "pvp_token":
-                image = this.getImage("item", "token_pvp");
+            case "death_trap":
+                image = this.getImage("trap", "death");
                 break;
             case "fire_trap":
                 image = this.getImage("trap", "fire");
                 break;
-            case "death_trap":
-                image = this.getImage("trap", "death");
+            case "gold":
+                image = this.getImage("item", "gold");
                 break;
             case "health_potion":
-                image = this.getImage("item", "potion_health");
+                image = this.getImage("item", "health_potion");
                 break;
             case "invincible_potion":
-                image = this.getImage("item", "potion_invincible");
+                image = this.getImage("item", "invincible_potion");
                 break;
             case "mana_potion":
-                image = this.getImage("item", "potion_mana");
+                image = this.getImage("item", "mana_potion");
                 break;
             case "monster":
-				// Add health bar
                 image = this.getImage("creature", "monster");
+                break;
+            case "player":
+                image = this.getImage("player", "mage");
                 break;
             case "projectile":
                 image = this.getImage("magic", "orb");
                 break;
-            case "wall":
-                image = this.getImage("wall", "wall");
+            case "pvp_token":
+                image = this.getImage("item", "pvp_token");
+                break;
+            case "revive_portal":
+                image = this.getImage("portal", "teleporter");
                 break;
             case "teleporter":
                 image = this.getImage("portal", "teleporter");
                 break;
-            case "revive_portal":
-                image = this.getImage("portal", "teleporter");
+            case "wall":
+                image = this.getImage("wall", "wall");
                 break;
             default:
                 image = this.getImage("_base", "unknown");
