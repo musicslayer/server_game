@@ -435,37 +435,13 @@ class Entity {
 
     isNextStepAllowed() {
         // By default, check screen edges and if any entities in the direction block movement.
-        let x = this.x;
-        let y = this.y;
-        let isScreen;
-        let isEdge;
-
-        if(this.direction === "up") {
-            isEdge = y == 0;
-            isScreen = this.screen.isScreenUp();
-            y--;
-        }
-        else if(this.direction === "down") {
-            isEdge = y == 11;
-            isScreen = this.screen.isScreenDown();
-            y++;
-        }
-        else if(this.direction === "left") {
-            isEdge = x == 0;
-            isScreen = this.screen.isScreenLeft();
-            x--;
-        }
-        else if(this.direction === "right") {
-            isEdge = x == 15;
-            isScreen = this.screen.isScreenRight();
-            x++;
-        }
-
-        if(isEdge && !isScreen) {
+        let isFacingEdge = this.screen.isFacingEdge(this, this.direction);
+        let isScreen = this.screen.isScreen(this.direction);
+        if(isFacingEdge && !isScreen) {
             return false;
         }
         
-        let overlappingEntities = this.screen.getOverlappingEntities(this);
+        let overlappingEntities = this.screen.getOverlappingEntities(this, this.direction);
         for(let overlappingEntity of overlappingEntities) {
             if(overlappingEntity.blocksMovement) {
                 return false;

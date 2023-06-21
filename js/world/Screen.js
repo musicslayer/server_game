@@ -116,12 +116,66 @@ class Screen {
         }
     }
 
-    getOverlappingEntities(entity) {
+    isFacingEdge(entity, direction) {
+        let isFacingEdge;
+
+        if(direction === "up") {
+            isFacingEdge = entity.y == 0;
+        }
+        else if(direction === "down") {
+            isFacingEdge = entity.y == 11;
+        }
+        else if(direction === "left") {
+            isFacingEdge = entity.x == 0;
+        }
+        else if(direction === "right") {
+            isFacingEdge = entity.x == 15;
+        }
+
+        return isFacingEdge;
+    }
+
+    isScreen(direction) {
+        let isFacingScreen;
+
+        if(direction === "up") {
+            isFacingScreen = this.isScreenUp();
+        }
+        else if(direction === "down") {
+            isFacingScreen = this.isScreenDown();
+        }
+        else if(direction === "left") {
+            isFacingScreen = this.isScreenLeft();
+        }
+        else if(direction === "right") {
+            isFacingScreen = this.isScreenRight();
+        }
+
+        return isFacingScreen;
+    }
+
+    getOverlappingEntities(entity, direction) {
+        let x = entity.x;
+        let y = entity.y;
+
+        if(direction === "up") {
+            y--;
+        }
+        else if(direction === "down") {
+            y++;
+        }
+        else if(direction === "left") {
+            x--;
+        }
+        else if(direction === "right") {
+            x++;
+        }
+
         let overlappingEntities = [];
 
         let screenEntities = this.otherEntities.concat(this.playerEntities);
         for(let screenEntity of screenEntities) {
-            if(entity !== screenEntity && entity.x === screenEntity.x && entity.y === screenEntity.y) {
+            if(entity !== screenEntity && x === screenEntity.x && y === screenEntity.y) {
                 overlappingEntities.push(screenEntity);
             }
         }

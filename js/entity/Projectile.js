@@ -92,34 +92,14 @@ class Projectile extends Entity {
     }
 
     isNextStepAllowed() {
-        // By default, check screen edges and if any entities in the direction block action movement.
+        // By default, check screen edges and if any entities in the direction block actions.
         // Projectiles can never cross screen edges even if the next screen exists.
-        let x = this.x;
-        let y = this.y;
-        let isEdge;
-
-        if(this.direction === "up") {
-            isEdge = y == 0;
-            y--;
-        }
-        else if(this.direction === "down") {
-            isEdge = y == 11;
-            y++;
-        }
-        else if(this.direction === "left") {
-            isEdge = x == 0;
-            x--;
-        }
-        else if(this.direction === "right") {
-            isEdge = x == 15;
-            x++;
-        }
-
-        if(isEdge) {
+        let isFacingEdge = this.screen.isFacingEdge(this, this.direction);
+        if(isFacingEdge) {
             return false;
         }
 
-        let overlappingEntities = this.screen.getOverlappingEntities(this);
+        let overlappingEntities = this.screen.getOverlappingEntities(this, this.direction);
         for(let overlappingEntity of overlappingEntities) {
             if(overlappingEntity.blocksAction) {
                 return false;

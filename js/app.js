@@ -9,7 +9,6 @@ const Server = require("./server/Server.js");
 // TODO All state changes must be done through the Server class. We need to enforce this somehow.
 // TODO Handle multiple clients at once
 
-// TODO Wall collision is broken (can move in wall but not out)
 // TODO Create one (non-static) Server, make server => world => map connection.
 
 async function init() {
