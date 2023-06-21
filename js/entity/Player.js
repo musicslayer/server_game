@@ -103,7 +103,6 @@ class Player extends Entity {
         }
     }
     
-
     doTakeDamage(entity, damage) {
         if(!this.isInvincible && !this.isDead) {
             this.health = Math.max(this.health - damage, 0);
@@ -142,7 +141,7 @@ class Player extends Entity {
             }
         }
         
-        EntitySpawner.spawn("projectile", 1, this.screen, x, y, this, this.direction, 8, false);
+        EntitySpawner.spawn("projectile", 1, this.screen, x, y, this, this.direction, 8, 40, false);
     }
 }
 

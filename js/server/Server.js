@@ -105,31 +105,24 @@ class Server {
         Server.currentInventoryEntityCount -= number;
     }
 
-    static initServerTick(player) {
-        startServerTickThread(player);
+    static initServerTick() {
+        startServerTickThread();
     };
 }
 
-async function startServerTickThread(player) {
-    return new Promise(async (resolve, reject) => {
-        const shared = new Int32Array(new SharedArrayBuffer(4));
-        doWork(shared);
+function startServerTickThread() {
+    const shared = new Int32Array(new SharedArrayBuffer(4));
+    doWork(shared);
 
-        const worker = new Worker("./worker_task.js", {
-            workerData: {
-                shared: shared,
-                interval: 1000000000 / Server.TICK_RATE,
-                player: player
-            }
-        });
-        worker.on("exit", () => {
-            resolve();
-        });
-        worker.on("error", (err) => {
-            console.error(err);
-            console.error(err.stack);
-            resolve();
-        });
+    const worker = new Worker("./js/server/server_tick.js", {
+        workerData: {
+            shared: shared,
+            interval: 1000000000 / Server.TICK_RATE
+        }
+    });
+    worker.on("error", (err) => {
+        console.error(err);
+        console.error(err.stack);
     });
 }
 

@@ -1,8 +1,9 @@
+const { Worker } = require("worker_threads");
+
+const Server = require("../server/Server.js");
 const Keyboard = require("../input/Keyboard.js");
 const Mouse = require("../input/Mouse.js");
 const Controller = require("../input/Controller.js");
-
-const Server = require("../server/Server.js");
 
 class Client {
     keyboard = new Keyboard();
@@ -22,8 +23,6 @@ class Client {
     // "purse" => []
 
     onClick(button, location, info) {
-        // TODO display info about item?
-
         // Left clicking on the screen is a teleport
         // Right clicking on an inventory slot uses an item.
         // Right clicking on the purse drops up to 100 gold.
@@ -189,7 +188,6 @@ class Client {
         let playerEntities = [];
         let inventory = {};
         let purse = {};
-        let world = {};
 
         let screen = this.player.screen;
 
@@ -262,18 +260,12 @@ class Client {
         // Purse
         purse.goldTotal = this.player.purse.goldTotal;
 
-        // World
-        world.currentWorldEntityCount = Server.currentWorldEntityCount;
-        world.currentInstanceEntityCount = Server.currentInstanceEntityCount;
-        world.currentInventoryEntityCount = Server.currentInventoryEntityCount;
-
         let clientData = {
             tiles: tiles,
             otherEntities: otherEntities,
             playerEntities: playerEntities,
             inventory: inventory,
-            purse: purse,
-            world: world
+            purse: purse
         };
 
         return clientData;

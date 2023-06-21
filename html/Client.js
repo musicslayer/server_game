@@ -33,8 +33,6 @@ class Client {
     }
 
     onClick(button, x, y, imageScaleFactor) {
-        // TODO display info about item?
-
         // Left clicking on the screen is a teleport
         // Right clicking on an inventory slot uses an item.
         // Right clicking on the purse drops up to 100 gold.

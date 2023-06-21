@@ -25,23 +25,15 @@ function createSocketIOServer(server, client) {
 			});
 
 			// Mouse events are discrete and are only processed one at a time.
-			socket.on("on_mouse_click", (button, x, y, imageScaleFactor, callback) => {
-				client.onClick([button], x, y, imageScaleFactor);
+			socket.on("on_mouse_click", (button, location, info, callback) => {
+				client.onClick([button], location, info);
 				callback();
 			});
 
-			socket.on("on_mouse_drag", (button, x1, y1, x2, y2, imageScaleFactor, callback) => {
-				client.onDrag([button], x1, y1, x2, y2, imageScaleFactor);
+			socket.on("on_mouse_drag", (button, location1, info1, location2, info2, callback) => {
+				client.onDrag([button], location1, info1, location2, info2);
 				callback();
 			});
-
-			/*
-			// Send the client the image data needed to draw the game.
-			socket.on("get_image_data", (imageScaleFactor, callback) => {
-				let imageData = client.drawClient(imageScaleFactor);
-				callback({imageData: imageData});
-			});
-			*/
 
 			// Send the client all the data needed to draw the player's screen.
 			socket.on("get_client_data", (callback) => {

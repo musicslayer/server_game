@@ -7,19 +7,19 @@ class Projectile extends Entity {
     owner;
     direction;
     range;
+    damage;
     isMulti;
 
     isCollision;
-
-    damage = 40;
     movementTime = 0.05;
 
-    constructor(owner, direction, range, isMulti) {
+    constructor(owner, direction, range, damage, isMulti) {
         super();
 
         this.owner = owner;
         this.direction = direction;
         this.range = range;
+        this.damage = damage;
         this.isMulti = isMulti;
     }
 
@@ -40,7 +40,7 @@ class Projectile extends Entity {
         // Do this immediately so that projectiles can hit things overlapping the owner.
         this.doCheckCollision();
 
-        if(!this.isNextStepAllowed() || (this.isCollision && !this.isMulti)) {
+        if(this.range === 0 || !this.isNextStepAllowed() || (this.isCollision && !this.isMulti)) {
             this.despawn();
             return;
         }
@@ -59,53 +59,28 @@ class Projectile extends Entity {
         }
     }
 
-    // Movement happens one tile at a time, and if the range is reached or the edge is crossed then the projectile despawns.
     doMoveLeft() {
         this.x--;
         this.range--;
-
-        if(this.range <= 0) {
-            this.despawn();
-        }
-        else {
-            this.moveProjectile();
-        }
+        this.moveProjectile();
     }
 
     doMoveUp() {
         this.y--;
         this.range--;
-
-        if(this.range <= 0) {
-            this.despawn();
-        }
-        else {
-            this.moveProjectile();
-        }
+        this.moveProjectile();
     }
 
     doMoveRight() {
         this.x++;
         this.range--;
-
-        if(this.range <= 0) {
-            this.despawn();
-        }
-        else {
-            this.moveProjectile();
-        }
+        this.moveProjectile();
     }
 
     doMoveDown() {
         this.y++;
         this.range--;
-
-        if(this.range <= 0) {
-            this.despawn();
-        }
-        else {
-            this.moveProjectile();
-        }
+        this.moveProjectile();
     }
 
     isNextStepAllowed() {

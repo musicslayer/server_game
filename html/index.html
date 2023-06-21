@@ -36,14 +36,13 @@
 			let imageCatalog;
 			
 			let socket;
+			let socket2;
 			let interval;
 			
 			window.addEventListener('load', async () => {
 				imageCatalog = new ImageCatalog();
 				await imageCatalog.createImageCatalog();
 				
-				
-			
 				if(socket) {
 					socket.disconnect(true);
 				}
@@ -52,12 +51,28 @@
 				
 				socket.on("connect", (err) => {
 					startUpdateInterval();
-					requestAnimationFrame(drawClient);
+					//requestAnimationFrame(drawClient);
 				});
 				
 				socket.on("disconnect", (err) => {
 					clearInterval(interval);
 					socket.disconnect(true);
+				});
+				
+				if(socket2) {
+					socket2.disconnect(true);
+				}
+				
+				socket2 = io({query: {client: "xyz"}});
+				
+				socket2.on("connect", (err) => {
+					//startUpdateInterval();
+					requestAnimationFrame(drawClient);
+				});
+				
+				socket2.on("disconnect", (err) => {
+					//clearInterval(interval);
+					socket2.disconnect(true);
 				});
 			});
 			
@@ -261,12 +276,12 @@
 				await socket.emitWithAck("on_key_press", keys);
 			}
 			
-			async function reactButtonClick(button, x, y) {
-				await socket.emitWithAck("on_mouse_click", button, x, y, IMAGE_SCALE_FACTOR);
+			async function reactButtonClick(button, location, info) {
+				await socket.emitWithAck("on_mouse_click", button, location, info);
 			}
 			
-			async function reactButtonDrag(button, x1, y1, x2, y2) {
-				await socket.emitWithAck("on_mouse_drag", button, x1, y1, x2, y2, IMAGE_SCALE_FACTOR);
+			async function reactButtonDrag(button, location1, info1, location2, info2) {
+				await socket.emitWithAck("on_mouse_drag", button, location1, info1, location2, info2);
 			}
 			
 		    function isScreen(x, y) {
@@ -347,10 +362,10 @@
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				ctx.drawImage(canvasBuffer, 0, 0);
 				
-				requestAnimationFrame(drawClient)
+				requestAnimationFrame(drawClient);
 			}
 			
-			function drawScreen(ctxBuffer, tiles, otherEntities, playerEntities, inventory, purse, world) {
+			function drawScreen(ctxBuffer, tiles, otherEntities, playerEntities, inventory, purse) {
 				// Only draw the screen where the player is located at.
 				ctxBuffer.beginPath();
 
@@ -458,13 +473,6 @@
 				ctxBuffer.drawImage(purseImage, originPurseX * IMAGE_SCALE_FACTOR, originPurseY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 				ctxBuffer.drawImage(getGoldTotalImage(purse.goldTotal), (originPurseX + 1) * IMAGE_SCALE_FACTOR, originPurseY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 				
-				// World
-				let originEntityCountX = 17;
-				let originEntityCountY = 1;
-				let entityCountImage = imageCatalog.getImage("letter", "upperE");
-				ctxBuffer.drawImage(entityCountImage, originEntityCountX * IMAGE_SCALE_FACTOR, originEntityCountY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
-				ctxBuffer.drawImage(getEntityCountImage(world.currentWorldEntityCount, world.currentInstanceEntityCount, world.currentInventoryEntityCount), (originEntityCountX + 1) * IMAGE_SCALE_FACTOR, originEntityCountY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
-
 				ctxBuffer.stroke();
 			}
 			
@@ -648,18 +656,6 @@
 				}
 
 				return images;
-			}
-			
-			function getEntityCountImage(currentWorldEntityCount, currentInstanceEntityCount, currentInventoryEntityCount) {
-				let canvasTemp = document.createElement('canvas');
-				canvasTemp.width = 128;
-				canvasTemp.height = 128;
-				
-				let ctxTemp = canvasTemp.getContext("2d");
-				ctxTemp.font = "30px Arial";
-				ctxTemp.fillText("(" + currentWorldEntityCount + ", " + currentInstanceEntityCount + ", " + currentInventoryEntityCount + ")", 0, 70);
-
-				return canvasTemp;
 			}
 		</script>
 	</body>

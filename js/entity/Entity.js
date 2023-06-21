@@ -839,7 +839,7 @@ class Entity {
                 goldAmount = this.purse.goldTotal;
             }
 
-            EntitySpawner.spawn("gold", goldAmount, this.screen, this.x, this.y);
+            EntitySpawner.spawnTimed("gold", goldAmount, this.screen, this.x, this.y);
             this.purse.removeFromPurse(goldAmount);
         }
     }
@@ -899,7 +899,7 @@ class Entity {
                     number = item.stackSize;
                 }
 
-                EntitySpawner.spawn(item.id, number, this.screen, this.x, this.y);
+                EntitySpawner.spawnTimed(item.id, number, this.screen, this.x, this.y);
                 this.inventory.removeFromInventorySlot(slot, number);
             }
         }
