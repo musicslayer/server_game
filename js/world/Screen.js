@@ -116,6 +116,35 @@ class Screen {
         }
     }
 
+    getOverlappingEntities(entity) {
+        let overlappingEntities = [];
+
+        let screenEntities = this.otherEntities.concat(this.playerEntities);
+        for(let screenEntity of screenEntities) {
+            if(entity !== screenEntity && entity.x === screenEntity.x && entity.y === screenEntity.y) {
+                overlappingEntities.push(screenEntity);
+            }
+        }
+
+        return overlappingEntities;
+    }
+
+    getHighestEntity(x, y) {
+        let highestEntity;
+
+        // Iterate backwards to get the highest entity.
+        let screenEntities = this.otherEntities.concat(this.playerEntities);
+        for(let i = screenEntities.length - 1; i >= 0; i--) {
+            let screenEntity = screenEntities[i];
+            if(x === screenEntity.x && y === screenEntity.y) {
+                highestEntity = screenEntity;
+                break;
+            }
+        }
+
+        return highestEntity;
+    }
+
     isScreenUp() {
         return this.map.isScreenUp(this);
     }

@@ -7,6 +7,14 @@ class ManaPotion extends Entity {
 
     manaReward = 40;
 
+    getName() {
+        return "Mana Potion";
+    }
+
+    getInfo() {
+        return "A potion that restores your mana.";
+    }
+
     doInteract(entity) {
         // The item will be collected.
         if(entity.inventory) {

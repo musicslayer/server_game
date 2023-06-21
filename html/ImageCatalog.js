@@ -42,7 +42,7 @@ class ImageCatalog {
         return this.imageMap.get(folder + "#" + file);
     }
 	
-	getImageByID(id) {
+	getImageByID(id, animationFrame) {
 		let image;
 		
 		switch(id) {
@@ -56,7 +56,7 @@ class ImageCatalog {
                 image = this.getImage("item", "gold");
                 break;
             case "health_potion":
-                image = this.getImage("item", "health_potion");
+                image = this.getImage("item", "health_potion_" + animationFrame);
                 break;
             case "invincible_potion":
                 image = this.getImage("item", "invincible_potion");

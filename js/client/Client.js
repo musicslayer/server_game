@@ -1,6 +1,3 @@
-const { Worker } = require("worker_threads");
-
-const Server = require("../server/Server.js");
 const Keyboard = require("../input/Keyboard.js");
 const Mouse = require("../input/Mouse.js");
 const Controller = require("../input/Controller.js");
@@ -11,6 +8,7 @@ class Client {
     controller = new Controller();
 
     player;
+    selectedEntity;
 
     constructor(player) {
         this.player = player;
@@ -23,12 +21,22 @@ class Client {
     // "purse" => []
 
     onClick(button, location, info) {
-        // Left clicking on the screen is a teleport
+        // Left clicking on the screen or inventory selects an entity.
+        // Middle clicking on the screen is a teleport.
         // Right clicking on an inventory slot uses an item.
         // Right clicking on the purse drops up to 100 gold.
         let inputs = this.mouse.processClick(button);
         
         if(inputs.includes("left")) {
+            if(location === "screen") {
+                this.selectedEntity = this.player.screen.getHighestEntity(info[0], info[1]);
+            }
+            else if(location === "inventory") {
+                this.player.selectInventorySlot(info[0]);
+                this.selectedEntity = this.player.getItemAtSlot(info[0]);
+            }
+        }
+        else if(inputs.includes("middle")) {
             if(location === "screen") {
                 this.player.teleport(this.player.screen, info[0], info[1]);
             }
@@ -50,6 +58,7 @@ class Client {
         if(inputs.includes("left")) {
             if(location1 === "inventory" && location2 === "inventory" && info1[0] !== info2[0]) {
                 // Swap two inventory slots (even if one or both of them are empty)
+                this.selectedEntity = this.player.getItemAtSlot(info1[0]);
                 this.player.swapInventorySlots(info1[0], info2[0]);
             }
             else if(location1 === "inventory" && location2 === "screen") {
@@ -65,9 +74,11 @@ class Client {
         // Inventory (only one will be executed)
         if(inputs.includes("inventory_previous")) {
             this.player.shiftInventorySlotBackward();
+            this.selectedEntity = this.player.getCurrentlySelectedItem();
         }
         else if(inputs.includes("inventory_next")) {
             this.player.shiftInventorySlotForward();
+            this.selectedEntity = this.player.getCurrentlySelectedItem();
         }
         else if(inputs.includes("inventory_use")) {
             this.player.consumeFromInventoryCurrentSlot();
@@ -188,6 +199,7 @@ class Client {
         let playerEntities = [];
         let inventory = {};
         let purse = {};
+        let info = {};
 
         let screen = this.player.screen;
 
@@ -260,12 +272,18 @@ class Client {
         // Purse
         purse.goldTotal = this.player.purse.goldTotal;
 
+        // Info
+        info.id = this.selectedEntity?.id;
+        info.name = this.selectedEntity?.getName();
+        info.text = this.selectedEntity?.getInfo();
+
         let clientData = {
             tiles: tiles,
             otherEntities: otherEntities,
             playerEntities: playerEntities,
             inventory: inventory,
-            purse: purse
+            purse: purse,
+            info: info
         };
 
         return clientData;

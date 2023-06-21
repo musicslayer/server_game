@@ -70,6 +70,18 @@ class Inventory {
         }
     }
 
+    selectInventorySlot(slot) {
+        this.currentSlot = slot;
+    }
+
+    getCurrentlySelectedItem() {
+        return this.itemArray[this.currentSlot];
+    }
+
+    getItemAtSlot(slot) {
+        return this.itemArray[slot];
+    }
+
     shiftInventorySlotBackward() {
         if(this.currentSlot === undefined || this.currentSlot === 0) {
             this.currentSlot = this.maxSlots - 1;

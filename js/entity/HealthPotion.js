@@ -6,6 +6,14 @@ class HealthPotion extends Entity {
     
     healthReward = 40;
 
+    getName() {
+        return "Health Potion";
+    }
+
+    getInfo() {
+        return "A potion that restores your health.";
+    }
+
     doInteract(entity) {
         // The item will be collected.
         if(entity.inventory) {

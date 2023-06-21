@@ -11,6 +11,14 @@ class Monster extends Entity {
     isTangible = true;
     blocksMovement = true;
 
+    getName() {
+        return "Monster";
+    }
+
+    getInfo() {
+        return "A creature that you can kill for loot and experience.";
+    }
+
     doTakeDamage(entity, damage) {
         this.health = Math.max(this.health - damage, 0);
 

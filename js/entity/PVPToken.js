@@ -5,6 +5,14 @@ class PVPToken extends Entity {
     maxStackNumber = 1;
     maxStackSize = 10000;
 
+    getName() {
+        return "PVP Token";
+    }
+
+    getInfo() {
+        return "A token rewarded for killing another player.";
+    }
+
     doInteract(entity) {
         // The item will be collected.
         if(entity.inventory) {

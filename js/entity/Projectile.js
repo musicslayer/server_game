@@ -23,6 +23,14 @@ class Projectile extends Entity {
         this.isMulti = isMulti;
     }
 
+    getName() {
+        return "Projectile";
+    }
+
+    getInfo() {
+        return "A blast of magical energy.";
+    }
+
     doSpawn(world, map, screen, x, y) {
         super.doSpawn(world, map, screen, x, y);
         Server.addTask(() => { this.moveProjectile(); });
@@ -111,9 +119,9 @@ class Projectile extends Entity {
             return false;
         }
 
-        let entities = this.screen.otherEntities.concat(this.screen.playerEntities);
-        for(let entity of entities) {
-            if(this !== entity && x === entity.x && y === entity.y && entity.blocksAction) {
+        let overlappingEntities = this.screen.getOverlappingEntities(this);
+        for(let overlappingEntity of overlappingEntities) {
+            if(overlappingEntity.blocksAction) {
                 return false;
             }
         }

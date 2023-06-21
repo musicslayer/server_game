@@ -7,6 +7,14 @@ class InvinciblePotion extends Entity {
     
     invincibleSeconds = 10;
 
+    getName() {
+        return "Invincible Potion";
+    }
+
+    getInfo() {
+        return "A potion that makes you invincible for a limited time.";
+    }
+
     doInteract(entity) {
         // The item will be collected.
         if(entity.inventory) {

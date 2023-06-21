@@ -4,7 +4,7 @@ function createSocketIOServer(server, client) {
 	io.on("connection", (socket) => {
 		let type = "";
 
-		if(socket.handshake.query.key) {
+		if(socket.handshake.query.input) {
 			// Respond to key presses and mouse clicks.
 			type = type + "Key;";
 
@@ -34,7 +34,8 @@ function createSocketIOServer(server, client) {
 				client.onDrag([button], location1, info1, location2, info2);
 				callback();
 			});
-
+		}
+		else if(socket.handshake.query.client) {
 			// Send the client all the data needed to draw the player's screen.
 			socket.on("get_client_data", (callback) => {
 				let clientData = client.getClientData();

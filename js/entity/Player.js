@@ -45,6 +45,14 @@ class Player extends Entity {
             }
         })
     }
+
+    getName() {
+        return "Player";
+    }
+
+    getInfo() {
+        return "A character controlled by a real-life person.";
+    }
     
     doAddExperience(experience) {
         this.experience += experience;

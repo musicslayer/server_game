@@ -4,6 +4,14 @@ class FireTrap extends Entity {
     id = "fire_trap";
     damage = 40;
 
+    getName() {
+        return "Fire Trap";
+    }
+
+    getInfo() {
+        return "A device that inflicts harm upon stepping on it.";
+    }
+
     doInteract(entity) {
         // Do some damage to the other entity, and then this entity will despawn.
         if(entity.isTangible) {

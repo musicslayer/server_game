@@ -17,7 +17,7 @@ function createHTTPServer() {
 		try {
 			// Only allow GET method.
 			if(req.method !== "GET") {
-				console.log("HTTP Invalid Method " + req.method);
+				//console.log("HTTP Invalid Method " + req.method);
 
 				serveError(res, 400, `Invalid method (${req.method}).`);
 				return;
@@ -33,7 +33,7 @@ function createHTTPServer() {
 
 			// Serve pages.
 			const pathname = url.parse(req.url, true).pathname;
-			console.log("HTTP Serve Pathname " + pathname);
+			//console.log("HTTP Serve Pathname " + pathname);
 
 			switch(pathname) {
 				case "/": {
@@ -63,10 +63,10 @@ function createHTTPServer() {
 				}
 			}
 
-			console.log("HTTP Serve Page Success " + pageName);
+			//console.log("HTTP Serve Page Success " + pageName);
 		}
 		catch(err) {
-			console.log("HTTP Serve Page Failure " + pageName + "\n" + err);
+			//console.log("HTTP Serve Page Failure " + pageName + "\n" + err);
 
 			serveError(res, 400, "Error processing request.");
 		}

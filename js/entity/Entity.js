@@ -62,6 +62,14 @@ class Entity {
     maxStackSize = 1;
     stackSize = 1;
 
+    getName() {
+        return "?";
+    }
+
+    getInfo() {
+        return "?";
+    }
+
     // All of the main actions an entity can take are added onto the server queue.
     addExperience(experience) {
         if(this.canExperienceBoost) {
@@ -418,12 +426,10 @@ class Entity {
 
     doCheckCollision() {
         // Call this after any movement to see if this entity is overlapping another on the same screen.
-        let entities = this.screen.otherEntities.concat(this.screen.playerEntities);
-        for(let entity of entities) {
-            if(this !== entity && this.x === entity.x && this.y === entity.y) {
-                this.doInteract(entity);
-                entity.doInteract(this);
-            }
+        let overlappingEntities = this.screen.getOverlappingEntities(this);
+        for(let overlappingEntity of overlappingEntities) {
+            this.doInteract(overlappingEntity);
+            overlappingEntity.doInteract(this);
         }
     }
 
@@ -458,11 +464,10 @@ class Entity {
         if(isEdge && !isScreen) {
             return false;
         }
-
-        // TODO Should these sorts of methods be in the screen class?
-        let entities = this.screen.otherEntities.concat(this.screen.playerEntities);
-        for(let entity of entities) {
-            if(this !== entity && x === entity.x && y === entity.y && entity.blocksMovement) {
+        
+        let overlappingEntities = this.screen.getOverlappingEntities(this);
+        for(let overlappingEntity of overlappingEntities) {
+            if(overlappingEntity.blocksMovement) {
                 return false;
             }
         }
@@ -680,7 +685,19 @@ class Entity {
     }
 
 
+    selectInventorySlot(slot) {
+        if(this.canInventory) {
+            this.canInventory = false;
 
+            Server.scheduleTaskForSeconds(this.inventoryTime, () => {
+                this.canInventory = true;
+            });
+
+            Server.addTask(() => {
+                this.doSelectInventorySlot(slot);
+            });
+        }
+    }
 
     shiftInventorySlotBackward() {
         if(this.canInventory) {
@@ -844,6 +861,12 @@ class Entity {
         }
     }
 
+    doSelectInventorySlot(slot) {
+        if(this.inventory) {
+            this.inventory.selectInventorySlot(slot);
+        }
+    }
+
     doShiftInventorySlotBackward() {
         if(this.inventory) {
             this.inventory.shiftInventorySlotBackward();
@@ -890,7 +913,7 @@ class Entity {
     }
 
     doDropFromInventory(slot, number) {
-        // Drop a number of items from a stack without consuming them.
+        // Drop a number of items from a stack without consuming them, and then select that slot.
         if(this.inventory && this.inventory.isActive) {
             let item = this.inventory.itemArray[slot];
             if(item) {
@@ -902,15 +925,34 @@ class Entity {
                 EntitySpawner.spawnTimed(item.id, number, this.screen, this.x, this.y);
                 this.inventory.removeFromInventorySlot(slot, number);
             }
+
+            this.doSelectInventorySlot(slot);
         }
     }
 
     doSwapInventorySlots(slot1, slot2) {
-        // Switch 2 inventory slots.
+        // Switch 2 inventory slots and select the second one.
         if(this.inventory) {
             this.inventory.swapInventorySlots(slot1, slot2);
+            this.doSelectInventorySlot(slot2);
         }
     }
+
+    getCurrentlySelectedItem() {
+        if(this.inventory) {
+            return this.inventory.getCurrentlySelectedItem();
+        }
+    }
+
+    getItemAtSlot(slot) {
+        if(this.inventory) {
+            return this.inventory.getItemAtSlot(slot);
+        }
+    }
+
+
+
+
 
     getRootEntity(entity) {
         let rootEntity = entity;
