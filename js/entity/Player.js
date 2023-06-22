@@ -33,13 +33,13 @@ class Player extends Entity {
         super();
 
         // Register regen tasks.
-        Server.addRefresh(() => {
+        Server.SERVER.addRefreshTask(() => {
             if(!this.isDead) {
                 this.doAddHealth(this.healthRegen)
             }
         })
 
-        Server.addRefresh(() => {
+        Server.SERVER.addRefreshTask(() => {
             if(!this.isDead) {
                 this.doAddMana(this.manaRegen)
             }
@@ -73,7 +73,7 @@ class Player extends Entity {
 
     doMakeInvincible(invincibleSeconds) {
         this.isInvincible = true;
-        Server.scheduleTaskForSeconds(invincibleSeconds, () => {
+        Server.SERVER.scheduleTaskForSeconds(invincibleSeconds, () => {
             this.isInvincible = false;
         });
     }
@@ -105,9 +105,15 @@ class Player extends Entity {
     }
 
     doTeleportHome() {
-        // Teleport the entity to its home location only if it is alive.
+        // Teleport the player to their home location (on the same world) only if they are alive.
         if(!this.isDead) {
-            this.doTeleport(this.homeScreen, this.homeX, this.homeY);
+            let homeWorld = this.screen.map.world.server.getWorld(this.homeWorldName);
+            let homeMap = homeWorld?.getMap(this.homeMapName);
+            let homeScreen = homeMap?.getScreen(this.homeScreenName);
+
+            if(homeScreen) {
+                this.doTeleport(homeScreen, this.homeX, this.homeY);
+            }
         }
     }
     

@@ -6,7 +6,7 @@ function createSocketIOServer(server, client) {
 
 		if(socket.handshake.query.input) {
 			// Respond to key presses and mouse clicks.
-			type = type + "Key;";
+			type = "Key";
 
 			// Multiple keys/controller buttons may be pressed at once.
 			socket.on("on_key_press", (keys, callback) => {
@@ -37,13 +37,15 @@ function createSocketIOServer(server, client) {
 		}
 		else if(socket.handshake.query.client) {
 			// Send the client all the data needed to draw the player's screen.
+			type = "Client";
+
 			socket.on("get_client_data", (callback) => {
 				let clientData = client.getClientData();
 				callback(clientData);
 			});
 		}
 
-		console.log("Socket IO Connection Success " + type);
+		console.log("Socket IO Connection Success: " + type);
 	});
 
 	return io;

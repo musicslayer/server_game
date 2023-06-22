@@ -1,0 +1,11 @@
+2,0|letter,upperD|
+3,0|letter,upperE|
+4,0|letter,upperA|
+5,0|letter,upperT|
+6,0|letter,upperH|
+8,0|letter,upperP|
+9,0|letter,upperL|
+10,0|letter,upperA|
+11,0|letter,upperN|
+12,0|letter,upperE|
+7,3||revive_portal,1

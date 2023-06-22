@@ -33,7 +33,7 @@ class Projectile extends Entity {
 
     doSpawn(world, map, screen, x, y) {
         super.doSpawn(world, map, screen, x, y);
-        Server.addTask(() => { this.moveProjectile(); });
+        Server.SERVER.addTask(() => { this.moveProjectile(); });
     }
 
     doInteract(entity) {

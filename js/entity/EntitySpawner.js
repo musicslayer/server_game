@@ -10,7 +10,7 @@ class EntitySpawner {
         let entity = EntitySpawner.createInstance(id, number, ...args);
 
         entity.spawn(screen, x, y);
-        Server.scheduleTaskForSeconds(Server.LOOT_TIME, () => {
+        Server.SERVER.scheduleTaskForSeconds(Server.SERVER.LOOT_TIME, () => {
             entity.doDespawn();
         })
 
@@ -36,6 +36,7 @@ class EntitySpawner {
         const FireTrap = require("./FireTrap.js");
         const DeathTrap = require("./DeathTrap.js");
         const HealthPotion = require("./HealthPotion.js");
+        const HomePortal = require("./HomePortal.js");
         const ManaPotion = require("./ManaPotion.js");
         const InvinciblePotion = require("./InvinciblePotion.js");
         const Projectile = require("./Projectile.js");
@@ -58,6 +59,9 @@ class EntitySpawner {
                 break;
             case "health_potion":
                 entity = new HealthPotion(...args);
+                break;
+            case "home_portal":
+                entity = new HomePortal(...args);
                 break;
             case "invincible_potion":
                 entity = new InvinciblePotion(...args);

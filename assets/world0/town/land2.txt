@@ -1,0 +1,4 @@
+2,2|floor,red|
+3,2||
+2,3|floor,green|
+3,3|floor,blue|

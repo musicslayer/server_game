@@ -1,4 +1,0 @@
-2,2|floor,red,item,star|
-3,2||
-2,3|floor,green,item,heart|
-3,3|floor,blue|

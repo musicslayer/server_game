@@ -140,6 +140,16 @@ class Client {
         else if(inputs.includes("map_down")) {
             this.player.mapDown();
         }
+
+        // **** Move Worlds (only one will be executed)
+        if(inputs.includes("world_up")) {
+            this.player.worldUp();
+            this.player.homeWorldName = "world1";
+        }
+        else if(inputs.includes("world_down")) {
+            this.player.worldDown();
+            this.player.homeWorldName = "world0";
+        }
     }
 
     onControllerPress(buttons) {
@@ -210,6 +220,16 @@ class Client {
                 y: tile.y,
                 imageFolderArray: tile.imageFolderArray,
                 imageFileArray: tile.imageFileArray
+            });
+        }
+
+        // Add in home tile.
+        if(this.player.screen.name === this.player.homeScreenName) {
+            tiles.push({
+                x: this.player.homeX,
+                y: this.player.homeY,
+                imageFolderArray: ["marker"],
+                imageFileArray: ["home"]
             });
         }
 

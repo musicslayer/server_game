@@ -23,7 +23,7 @@ class Screen {
 
     loadScreenFromFile(screenFile) {
         let tileData = fs.readFileSync(screenFile, "ascii");
-        let lines = tileData.split(CRLF);
+        let lines = tileData ? tileData.split(CRLF) : [];
 
         // Each line represents a square within this screen.
         while(lines.length > 0) {
@@ -82,10 +82,10 @@ class Screen {
         }
 
         if(this.isDynamic) {
-            Server.registerInstanceEntity(1);
+            Server.SERVER.registerInstanceEntity(1);
         }
         else {
-            Server.registerWorldEntity(1);
+            Server.SERVER.registerWorldEntity(1);
         }
     }
 
@@ -104,15 +104,15 @@ class Screen {
         }
 
         if(this.isDynamic) {
-            Server.deregisterInstanceEntity(1);
+            Server.SERVER.deregisterInstanceEntity(1);
 
             // If there are no more players in an instance screen, then the entire screen should be deregistered.
             if(this.playerEntities.length === 0) {
-                Server.deregisterInstanceEntity(this.otherEntities.length);
+                Server.SERVER.deregisterInstanceEntity(this.otherEntities.length);
             }
         }
         else {
-            Server.deregisterWorldEntity(1);
+            Server.SERVER.deregisterWorldEntity(1);
         }
     }
 
@@ -231,12 +231,22 @@ class Screen {
         return this.map.getScreenRight(this);
     }
 
+
+
     getMapUp() {
         return this.map.getMapUp();
     }
 
     getMapDown() {
         return this.map.getMapDown();
+    }
+
+    getWorldUp() {
+        return this.map.world.getWorldUp();
+    }
+
+    getWorldDown() {
+        return this.map.world.getWorldDown();
     }
 }
 

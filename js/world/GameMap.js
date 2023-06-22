@@ -10,13 +10,22 @@ const PIPE = "|";
 class GameMap {
     world;
 
+    id;
+    name;
+
+    mapFolder;
+    voidMapFolder;
+
     screens = [];
     screenMap = new Map();
     screenPosMap = new Map();
 
-    loadMapFromFolder(mapFolder) {
-        let screenData = fs.readFileSync(mapFolder + "_map.txt", "ascii");
-        let lines = screenData.split(CRLF);
+    loadMapFromFolder(mapFolder, voidMapFolder) {
+        this.mapFolder = mapFolder;
+        this.voidMapFolder = voidMapFolder;
+
+        let mapData = fs.readFileSync(mapFolder + "_map.txt", "ascii");
+        let lines = mapData ? mapData.split(CRLF) : [];
 
         // Each line represents a screen within this map.
         while(lines.length > 0) {
@@ -44,6 +53,7 @@ class GameMap {
     }
 
     addScreen(name, screen, x, y) {
+        screen.name = name;
         screen.x = x;
         screen.y = y;
 
@@ -102,19 +112,29 @@ class GameMap {
 
         // If this screen does not exist, return a dynamically generated "void" screen.
         if(!screen) {
-            screen = VoidScreen.createVoidScreen(screenX, screenY);
-            screen.attachMap(this);
+            screen = this.createVoidScreen(screenX, screenY);
         }
         
         return screen;
     }
 
+    createVoidScreen(screenX, screenY) {
+        let voidScreen = new VoidScreen();
+        voidScreen.loadScreenFromFile(this.voidMapFolder + "void.txt");
+
+        voidScreen.x = screenX;
+        voidScreen.y = screenY;
+        
+        voidScreen.attachMap(this);
+        return voidScreen;
+    }
+
     getMapUp() {
-        return this.world?.getMapUp(this);
+        return this.world.getMapUp(this);
     }
 
     getMapDown() {
-        return this.world?.getMapDown(this);
+        return this.world.getMapDown(this);
     }
 }
 

@@ -191,11 +191,13 @@
 			
 			let isKeyPressed = {};
 			
-			document.onkeydown = (evt) => { 
+			document.onkeydown = (evt) => {
+				evt.preventDefault();
 				isKeyPressed[evt.keyCode] = true;
 			}
 			
 			document.onkeyup = (evt) => {
+				evt.preventDefault();
 				isKeyPressed[evt.keyCode] = false;
 			}
 			
@@ -487,6 +489,7 @@
 					let originInfoY = 1;
 					let infoImage = imageCatalog.getImageByID(info.id, 0);
 					ctxBuffer.drawImage(infoImage, originInfoX * IMAGE_SCALE_FACTOR, originInfoY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					ctxBuffer.drawImage(getInfoNameImage(info.name), (originInfoX + 1) * IMAGE_SCALE_FACTOR, originInfoY * IMAGE_SCALE_FACTOR, W, IMAGE_SCALE_FACTOR);
 					ctxBuffer.drawImage(getInfoTextImage(info.text), (originInfoX + 1) * IMAGE_SCALE_FACTOR, originInfoY * IMAGE_SCALE_FACTOR, W, IMAGE_SCALE_FACTOR);
 				}
 				
@@ -639,6 +642,18 @@
 				return canvasTemp;
 			}
 			
+			function getInfoNameImage(text) {
+				let canvasTemp = document.createElement('canvas');
+				canvasTemp.width = 128 * 6;
+				canvasTemp.height = 128;
+
+				let ctxTemp = canvasTemp.getContext("2d");
+				ctxTemp.font = "30px Arial";
+				ctxTemp.fillText(text, 0, 50);
+				
+				return canvasTemp;
+			}
+			
 			function getInfoTextImage(text) {
 				let canvasTemp = document.createElement('canvas');
 				canvasTemp.width = 128 * 6;
@@ -646,7 +661,7 @@
 
 				let ctxTemp = canvasTemp.getContext("2d");
 				ctxTemp.font = "30px Arial";
-				ctxTemp.fillText(text, 0, 70);
+				ctxTemp.fillText(text, 0, 90);
 				
 				return canvasTemp;
 			}
