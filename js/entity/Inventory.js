@@ -1,9 +1,6 @@
 class Inventory {
     maxSlots = 45;
-
-    currentSlot;
     itemArray = [];
-    isActive = true;
 
     owner;
 
@@ -14,14 +11,6 @@ class Inventory {
         for(let index = 0; index < this.maxSlots; index++) {
             this.itemArray[index] = undefined;
         }
-    }
-
-    turnOn() {
-        this.isActive = true;
-    }
-
-    turnOff() {
-        this.isActive = false;
     }
 
     // Return value is whether the ENTIRE entity was added to the inventory (i.e. if we need to despawn it)
@@ -47,9 +36,9 @@ class Inventory {
             if(this.itemArray[index] === undefined) {
                 numStacks++;
 
-                let item = owner.getWorld().cloneInstance(entity, 0);
+                let item = this.owner.getWorld().cloneInstance(entity, 0, this.owner.screen);
                 this.itemArray[index] = item;
-                owner.getWorld().register("inventory", 1);
+                this.owner.getWorld().register("inventory", 1);
 
                 let N = Math.min(entity.maxStackSize, entity.stackSize);
 
@@ -65,38 +54,8 @@ class Inventory {
             item.stackSize -= number;
             if(item.stackSize === 0) {
                 this.itemArray[slot] = undefined;
-                owner.getWorld().deregister("inventory", 1);
+                this.owner.getWorld().deregister("inventory", 1);
             }
-        }
-    }
-
-    selectInventorySlot(slot) {
-        this.currentSlot = slot;
-    }
-
-    getCurrentlySelectedItem() {
-        return this.itemArray[this.currentSlot];
-    }
-
-    getItemAtSlot(slot) {
-        return this.itemArray[slot];
-    }
-
-    shiftInventorySlotBackward() {
-        if(this.currentSlot === undefined || this.currentSlot === 0) {
-            this.currentSlot = this.maxSlots - 1;
-        }
-        else {
-            this.currentSlot--;
-        }
-    }
-
-    shiftInventorySlotForward() {
-        if(this.currentSlot === undefined || this.currentSlot === this.maxSlots - 1) {
-            this.currentSlot = 0;
-        }
-        else {
-            this.currentSlot++;
         }
     }
 

@@ -21,20 +21,26 @@ class EntitySpawner {
         }
 
         let entity = this.createInstance(id, number, ...args);
-        entity.attachScreen(screen, x, y);
+        entity.screen = screen;
+        entity.x = x;
+        entity.y = y;
+
         entity.spawn();
 
         return entity;
     }
 
-    spawnLoot(id, number, screen, x, y, ...args) {
+    spawnAsLoot(id, number, screen, x, y, ...args) {
         // Spawn entity that will be despawned after a certain number of seconds.
         if(number === 0) {
             return;
         }
 
         let entity = this.createInstance(id, number, ...args);
-        entity.attachScreen(screen, x, y);
+        entity.screen = screen;
+        entity.x = x;
+        entity.y = y;
+
         entity.spawnAsLoot();
 
         return entity;
@@ -94,8 +100,10 @@ class EntitySpawner {
         return entity;
     }
 
-    cloneInstance(entity, number) {
-        return entity.clone(number);
+    cloneInstance(entity, number, screen) {
+        let clone = entity.clone(number);
+        clone.screen = screen;
+        return clone;
     }
 }
 

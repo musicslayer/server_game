@@ -39,8 +39,8 @@ class Player extends Entity {
         return "A character controlled by a real-life person.";
     }
 
-    doSpawn() {
-        super.doSpawn();
+    doSpawn(screen, x, y) {
+        super.doSpawn(screen, x, y);
         
         // Register regen tasks.
         this.getServer().addRefreshTask(1, () => {
@@ -107,10 +107,9 @@ class Player extends Entity {
     }
 
     doTeleportHome() {
-        // Teleport the player to their home location (on the same world) only if they are alive.
+        // Teleport the player to their home location (in the current world) only if they are alive.
         if(!this.isDead) {
-            let homeWorld = this.getServer().getWorld(this.homeWorldName);
-            let homeMap = homeWorld?.getMap(this.homeMapName);
+            let homeMap = this.getWorld().getMap(this.homeMapName);
             let homeScreen = homeMap?.getScreen(this.homeScreenName);
 
             if(homeScreen) {
@@ -125,16 +124,11 @@ class Player extends Entity {
             if(this.health === 0) {
                 // Only spawn loot if another player did the final damage.
                 if(entity.isPlayer) {
-                    this.doSpawnLoot(this.screen, this.x, this.y);
+                    this.getWorld().spawnAsLoot("pvp_token", 1, this.screen, this.x, this.y);
                 }
                 this.kill();
             }
         }
-    }
-
-    doSpawnLoot(screen, x, y) {
-        // When a player dies, a pvp token is spawned as loot.
-        this.getWorld().spawnLoot("pvp_token", 1, screen, x, y);
     }
 
     doAction() {

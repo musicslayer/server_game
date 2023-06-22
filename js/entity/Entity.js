@@ -10,7 +10,6 @@ class Entity {
     y;
 
     // Certain entities (i.e. players) can teleport home, so store the desired location here.
-    homeWorldName;
     homeMapName;
     homeScreenName;
     homeX = 1;
@@ -77,12 +76,6 @@ class Entity {
 
     getMap() {
         return this.screen.map;
-    }
-
-    attachScreen(screen, x, y) {
-        this.screen = screen;
-        this.x = x;
-        this.y = y;
     }
 
     // All of the main actions an entity can take are added onto the server queue.
@@ -536,14 +529,6 @@ class Entity {
         })
     }
 
-    doSpawnLoot(screen, x, y) {
-        // Called when this entity should spawn other entities as loot.
-
-        // By default, do nothing.
-        // Typically, loot will be spawned under a dying entity, but this is not strictly required.
-        // For example, killing a set of enemies can cause a key to appear in a fixed location.
-    }
-
     doTakeDamage(entity, damage) {
         // By default, do nothing.
     }
@@ -562,22 +547,11 @@ class Entity {
         this.x = x;
         this.y = y;
 
+        // If the entity stays on the same screen, this is skipped to avoid triggering deregistration of instance screens.
         if(this.screen !== screen) {
-            // Lock/unlock inventory based on if the screen is dynamic.
-            // i.e. Don't allow players to drop stuff on dynamic screens since anything left there will be lost forever.
-            if(screen.isDynamic) {
-                this?.inventory.turnOff();
-                this?.purse.turnOff();
-            }
-            else {
-                this?.inventory.turnOn();
-                this?.purse.turnOn();
-            }
-
-            // If the entity stays on the same screen, this is skipped to avoid triggering "screen.checkDestruction()".
             this.screen.removeEntity(this);
             this.screen = screen;
-            screen.addEntity(this);
+            screen.addEntity(this, x, y);
         }
     }
 
@@ -723,48 +697,6 @@ class Entity {
     }
 
 
-    selectInventorySlot(slot) {
-        if(this.canInventory) {
-            this.canInventory = false;
-
-            this.getServer().addTask(this.inventoryTime, () => {
-                this.canInventory = true;
-            });
-
-            this.getServer().addTask(0, () => {
-                this.doSelectInventorySlot(slot);
-            });
-        }
-    }
-
-    shiftInventorySlotBackward() {
-        if(this.canInventory) {
-            this.canInventory = false;
-
-            this.getServer().addTask(this.inventoryTime, () => {
-                this.canInventory = true;
-            });
-
-            this.getServer().addTask(0, () => {
-                this.doShiftInventorySlotBackward();
-            });
-        }
-    }
-
-    shiftInventorySlotForward() {
-        if(this.canInventory) {
-            this.canInventory = false;
-
-            this.getServer().addTask(this.inventoryTime, () => {
-                this.canInventory = true;
-            });
-
-            this.getServer().addTask(0, () => {
-                this.doShiftInventorySlotForward();
-            });
-        }
-    }
-
     addToPurse(gold) {
         if(this.canPurse) {
             this.canPurse = false;
@@ -808,20 +740,6 @@ class Entity {
         }
     }
 
-    consumeFromInventoryCurrentSlot() {
-        if(this.canInventory) {
-            this.canInventory = false;
-
-            this.getServer().addTask(this.inventoryTime, () => {
-                this.canInventory = true;
-            });
-
-            this.getServer().addTask(0, () => {
-                this.doConsumeFromInventoryCurrentSlot();
-            });
-        }
-    }
-
     consumeFromInventory(slot) {
         if(this.canInventory) {
             this.canInventory = false;
@@ -832,20 +750,6 @@ class Entity {
 
             this.getServer().addTask(0, () => {
                 this.doConsumeFromInventory(slot);
-            });
-        }
-    }
-
-    dropFromInventoryCurrentSlot(number) {
-        if(this.canInventory) {
-            this.canInventory = false;
-
-            this.getServer().addTask(this.inventoryTime, () => {
-                this.canInventory = true;
-            });
-
-            this.getServer().addTask(0, () => {
-                this.doDropFromInventoryCurrentSlot(number);
             });
         }
     }
@@ -879,7 +783,7 @@ class Entity {
     }
 
     doAddToPurse(gold) {
-        if(this.purse && this.purse.isActive) {
+        if(this.purse) {
             this.purse.addToPurse(gold);
             if(gold.stackSize === 0) {
                 gold.doDespawn();
@@ -888,37 +792,19 @@ class Entity {
     }
 
     doDropFromPurse(goldAmount) {
-        if(this.purse && this.purse.isActive) {
+        if(this.purse) {
             // A negative value or a value too large means to drop all the gold.
             if(goldAmount < 0 || goldAmount > this.purse.goldTotal) {
                 goldAmount = this.purse.goldTotal;
             }
 
-            this.getWorld().spawnLoot("gold", goldAmount, this.screen, this.x, this.y);
+            this.getWorld().spawnAsLoot("gold", goldAmount, this.screen, this.x, this.y);
             this.purse.removeFromPurse(goldAmount);
         }
     }
 
-    doSelectInventorySlot(slot) {
-        if(this.inventory) {
-            this.inventory.selectInventorySlot(slot);
-        }
-    }
-
-    doShiftInventorySlotBackward() {
-        if(this.inventory) {
-            this.inventory.shiftInventorySlotBackward();
-        }
-    }
-
-    doShiftInventorySlotForward() {
-        if(this.inventory) {
-            this.inventory.shiftInventorySlotForward();
-        }
-    }
-
     doAddToInventory(entity) {
-        if(this.inventory && this.inventory.isActive) {
+        if(this.inventory) {
             this.inventory.addToInventory(entity);
             if(entity.stackSize === 0) {
                 entity.doDespawn();
@@ -926,15 +812,9 @@ class Entity {
         }
     }
 
-    doConsumeFromInventoryCurrentSlot() {
-        if(this.inventory && this.inventory.isActive) {
-            this.doConsumeFromInventory(this.inventory.currentSlot);
-        }
-    }
-
     doConsumeFromInventory(slot) {
         // Consume 1 item in this inventory slot.
-        if(this.inventory && this.inventory.isActive) {
+        if(this.inventory) {
             let item = this.inventory.itemArray[slot];
             if(item && item.canConsume(this)) {
                 item.consume(this);
@@ -943,16 +823,9 @@ class Entity {
         }
     }
 
-    doDropFromInventoryCurrentSlot() {
-        // Drop all items in the current slot without consuming them.
-        if(this.inventory && this.inventory.isActive) {
-            this.doDropFromInventory(this.inventory.currentSlot, -1);
-        }
-    }
-
     doDropFromInventory(slot, number) {
-        // Drop a number of items from a stack without consuming them, and then select that slot.
-        if(this.inventory && this.inventory.isActive) {
+        // Drop a number of items from a stack without consuming them.
+        if(this.inventory) {
             let item = this.inventory.itemArray[slot];
             if(item) {
                 // A negative value or a value too large means to drop the entire stack.
@@ -960,31 +833,15 @@ class Entity {
                     number = item.stackSize;
                 }
 
-                this.getWorld().spawnLoot(item.id, number, this.screen, this.x, this.y);
+                this.getWorld().spawnAsLoot(item.id, number, this.screen, this.x, this.y);
                 this.inventory.removeFromInventorySlot(slot, number);
             }
-
-            this.doSelectInventorySlot(slot);
         }
     }
 
     doSwapInventorySlots(slot1, slot2) {
-        // Switch 2 inventory slots and select the second one.
         if(this.inventory) {
             this.inventory.swapInventorySlots(slot1, slot2);
-            this.doSelectInventorySlot(slot2);
-        }
-    }
-
-    getCurrentlySelectedItem() {
-        if(this.inventory) {
-            return this.inventory.getCurrentlySelectedItem();
-        }
-    }
-
-    getItemAtSlot(slot) {
-        if(this.inventory) {
-            return this.inventory.getItemAtSlot(slot);
         }
     }
 

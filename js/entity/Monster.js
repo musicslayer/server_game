@@ -23,13 +23,9 @@ class Monster extends Entity {
 
         if(this.health === 0) {
             this.getRootEntity(entity).doAddExperience(this.experienceReward);
-            this.doSpawnLoot(this.screen, this.x, this.y);
+            this.getWorld().spawnAsLoot("gold", 100, this.screen, this.x, this.y);
             this.doDespawn();
         }
-    }
-
-    doSpawnLoot(screen, x, y) {
-        this.getWorld().spawnLoot("gold", 100, screen, x, y);
     }
 }
 

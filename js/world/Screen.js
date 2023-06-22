@@ -8,6 +8,7 @@ const PIPE = "|";
 
 class Screen {
     map;
+    name;
     x;
     y;
 
@@ -53,7 +54,10 @@ class Screen {
                 }
 
                 let tile = new Tile(imageTableIdxArray, imageIdxArray);
-                this.addTile(tile, x, y);
+                tile.x = x;
+                tile.y = y;
+        
+                this.addTile(tile);
             }
 
             // Third part is the entities
@@ -69,13 +73,7 @@ class Screen {
 
     }
 
-    attachMap(map) {
-        this.map = map;
-    }
-
-    addTile(tile, x, y) {
-        tile.x = x;
-        tile.y = y;
+    addTile(tile) {
         this.tiles.push(tile);
     }
 

@@ -9,7 +9,6 @@ const PIPE = "|";
 
 class GameMap {
     world;
-
     id;
     name;
 
@@ -38,29 +37,25 @@ class GameMap {
             let y = Number(numPart.shift());
 
             // Second part is the screen
-            let screenName = parts[1];
+            let name = parts[1];
 
             let screen = new Screen();
-            screen.attachMap(this);
-            screen.loadScreenFromFile(mapFolder + screenName + ".txt");
-            
-            this.addScreen(screenName, screen, x, y);
+            screen.map = this;
+            screen.name = name;
+            screen.x = x;
+            screen.y = y;
+
+            screen.loadScreenFromFile(mapFolder + name + ".txt");
+
+            this.addScreen(screen);
         }
     }
 
-    attachWorld(world) {
-        this.world = world;
-    }
-
-    addScreen(name, screen, x, y) {
-        screen.name = name;
-        screen.x = x;
-        screen.y = y;
-
+    addScreen(screen) {
         this.screens.push(screen);
-        this.screenMap.set(name, screen);
+        this.screenMap.set(screen.name, screen);
 
-        let key = [x, y].join(",");
+        let key = [screen.x, screen.y].join(",");
         this.screenPosMap.set(key, screen);
     }
 
@@ -86,8 +81,7 @@ class GameMap {
 
     isScreenByPosition(screenX, screenY) {
         let key = [screenX, screenY].join(",");
-        let screen = this.screenPosMap.get(key);
-        return screen !== undefined;
+        return this.screenPosMap.has(key);
     }
 
     getScreenUp(screen) {
@@ -120,11 +114,11 @@ class GameMap {
 
     createVoidScreen(screenX, screenY) {
         let voidScreen = new VoidScreen();
-        voidScreen.attachMap(this);
-        voidScreen.loadScreenFromFile(this.voidMapFolder + "void.txt");
-
+        voidScreen.map = this;
         voidScreen.x = screenX;
         voidScreen.y = screenY;
+
+        voidScreen.loadScreenFromFile(this.voidMapFolder + "void.txt");
         
         return voidScreen;
     }

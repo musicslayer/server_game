@@ -11,10 +11,10 @@ const CRLF = "\r\n";
 const PIPE = "|";
 
 class World {
+    entityCounter = new EntityCounter();
+    entitySpawner = new EntitySpawner();
+
     server;
-    entityCounter;
-    entitySpawner;
-    
     id;
     name;
 
@@ -23,11 +23,6 @@ class World {
     gameMaps = [];
     gameMapMap = new Map();
     gameMapPosMap = new Map();
-
-    constructor() {
-        this.entityCounter = new EntityCounter();
-        this.entitySpawner = new EntitySpawner();
-    }
 
     loadWorldFromFolder(worldFolder) {
         // Add special "void" map
@@ -46,35 +41,33 @@ class World {
             let id = Number(idPart.shift());
 
             // Second part is the map
-            let mapName = parts[1];
+            let name = parts[1];
 
             let map = new GameMap();
-            map.attachWorld(this);
-            map.loadMapFromFolder(worldFolder + mapName + "/", this.voidMapFolder);
+            map.world = this;
+            map.id = id;
+            map.name = name;
 
-            this.addMap(mapName, map, id);
+            map.loadMapFromFolder(worldFolder + name + "/", this.voidMapFolder);
+
+            this.addMap(map);
         }
 
         // Add special "death" map
         let deathMap = new DeathMap();
+        deathMap.world = this;
+        deathMap.id = "death";
+        deathMap.name = "death";
+
         deathMap.loadMapFromFolder(worldFolder + "_death/", this.voidMapFolder);
 
-        deathMap.attachWorld(this);
-        this.addMap("death", deathMap, "death");
+        this.addMap(deathMap);
     }
 
-    attachServer(server) {
-        this.server = server;
-    }
-
-    addMap(name, map, id) {
-        map.id = id;
-        map.name = name;
-
+    addMap(map) {
         this.gameMaps.push(map);
-        this.gameMapMap.set(name, map);
-
-        this.gameMapPosMap.set(id, map);
+        this.gameMapMap.set(map.name, map);
+        this.gameMapPosMap.set(map.id, map);
     }
 
     getMap(name) {
@@ -95,10 +88,11 @@ class World {
         // If this map does not exist, return a dynamically generated "void" map.
         if(!map) {
             map = new VoidMap();
-            map.loadMapFromFolder(this.voidMapFolder, this.voidMapFolder);
-
+            map.world = this;
             map.id = p;
-            map.attachWorld(this);
+            map.name = "void";
+            
+            map.loadMapFromFolder(this.voidMapFolder, this.voidMapFolder);
         }
 
         return map;
@@ -120,16 +114,16 @@ class World {
         return this.entitySpawner.spawn(id, number, screen, x, y, ...args);
     }
 
-    spawnLoot(id, number, screen, x, y, ...args) {
-        return this.entitySpawner.spawnLoot(id, number, screen, x, y, ...args);
+    spawnAsLoot(id, number, screen, x, y, ...args) {
+        return this.entitySpawner.spawnAsLoot(id, number, screen, x, y, ...args);
     }
 
     createInstance(id, number, ...args) {
         return this.entitySpawner.createInstance(id, number, ...args);
     }
 
-    cloneInstance(entity, number) {
-        return this.cloneInstance(entity, number);
+    cloneInstance(entity, number, screen) {
+        return this.entitySpawner.cloneInstance(entity, number, screen);
     }
 
     register(type, number) {

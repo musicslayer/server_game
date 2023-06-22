@@ -1,20 +1,11 @@
 class Purse {
     maxGoldTotel = 100000;
     goldTotal = 0;
-    isActive = true;
 
     owner;
 
     constructor(owner) {
         this.owner = owner;
-    }
-
-    turnOn() {
-        this.isActive = true;
-    }
-
-    turnOff() {
-        this.isActive = false;
     }
 
     addToPurse(gold) {
@@ -23,12 +14,12 @@ class Purse {
         gold.stackSize -= N;
         this.goldTotal += N;
 
-        owner.getWorld().register("gold", N);
+        this.owner.getWorld().register("gold", N);
     }
 
     removeFromPurse(goldAmount) {
         this.goldTotal -= goldAmount;
-        owner.getWorld().deregister("gold", goldAmount);
+        this.owner.getWorld().deregister("gold", goldAmount);
     }
 }
 

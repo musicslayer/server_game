@@ -18,19 +18,19 @@ class Server {
 
     createWorld(id, name, worldFolder) {
         let world = new World();
-        world.attachServer(this);
+        world.server = this;
+        world.id = id;
+        world.name = name;
 
         world.loadWorldFromFolder(worldFolder);
-        this.addWorld(name, world, id);
+
+        this.addWorld(world);
     }
 
-    addWorld(name, world, id) {
-        world.id = id;
-
+    addWorld(world) {
         this.worlds.push(world);
-        this.worldMap.set(name, world);
-
-        this.worldPosMap.set(id, world);
+        this.worldMap.set(world.name, world);
+        this.worldPosMap.set(world.id, world);
     }
 
     getWorld(name) {
@@ -53,10 +53,7 @@ class Server {
 
     addTask(seconds, task) {
         let tick = Math.floor(this.currentTick + seconds * this.TICK_RATE);
-        let tasks = this.scheduledTaskMap.get(tick);
-        if(tasks === undefined) {
-            tasks = [];
-        }
+        let tasks = this.scheduledTaskMap.get(tick) ?? [];
         tasks.push(task);
         this.scheduledTaskMap.set(tick, tasks);
     }
@@ -89,16 +86,14 @@ class Server {
     async doWork(shared) {
         await Atomics.waitAsync(shared, 0, 0).value;
 
-        let tasks = this.scheduledTaskMap.get(this.currentTick);
+        let tasks = this.scheduledTaskMap.get(this.currentTick) ?? [];
         this.scheduledTaskMap.delete(this.currentTick);
 
         // Increment the current tick now so that new tasks added during a task won't be executed until the next tick.
         this.currentTick++;
 
-        if(tasks !== undefined) {
-            for(let task of tasks) {
-                task();
-            }
+        for(let task of tasks) {
+            task();
         }
     
         this.doWork(shared)

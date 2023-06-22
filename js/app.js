@@ -9,9 +9,7 @@ const Server = require("./server/Server.js");
 
 // TODO On client, create separate channels for dev info...
 
-// TODO use ?? in more places to clean up code.
-
-// TODO Do we need the "Client" class? Rename as inputHandler
+// TODO Client actions need a timer since inventory slot movement no longer uses the server.
 
 async function init() {
     let server = new Server();
@@ -20,7 +18,6 @@ async function init() {
     server.initServerTick();
     
     let player = server.worlds[0].spawn("player", 1, server.worlds[0].gameMaps[0].screens[0], 0, 0);
-    player.homeWorldName = "world0";
     player.homeMapName = "city";
     player.homeScreenName = "field1";
     player.homeX = 0;

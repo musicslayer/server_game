@@ -9,12 +9,12 @@ class DeathMap extends GameMap {
 
     createDeathScreen(screenX, screenY) {
         let deathScreen = new DeathScreen();
-        deathScreen.attachMap(this);
-        deathScreen.loadScreenFromFile(this.mapFolder + "death.txt");
-        
+        deathScreen.map = this;
         deathScreen.x = screenX;
         deathScreen.y = screenY;
 
+        deathScreen.loadScreenFromFile(this.mapFolder + "death.txt");
+        
         return deathScreen;
     }
 

@@ -7,8 +7,10 @@ class Client {
     mouse = new Mouse();
     controller = new Controller();
 
-    player;
     selectedEntity;
+    selectedSlot = 0;
+
+    player;
 
     constructor(player) {
         this.player = player;
@@ -32,8 +34,8 @@ class Client {
                 this.selectedEntity = this.player.screen.getHighestEntity(info[0], info[1]);
             }
             else if(location === "inventory") {
-                this.player.selectInventorySlot(info[0]);
-                this.selectedEntity = this.player.getItemAtSlot(info[0]);
+                this.selectedSlot = info[0];
+                this.selectedEntity = this.player.inventory.itemArray[info[0]];
             }
         }
         else if(inputs.includes("middle")) {
@@ -43,10 +45,14 @@ class Client {
         }
         else if(inputs.includes("right")) {
             if(location === "inventory") {
-                this.player.consumeFromInventory(info[0]);
+                if(!this.player.screen.isDynamic) {
+                    this.player.consumeFromInventory(info[0]);
+                }
             }
             else if(location === "purse") {
-                this.player.doDropFromPurse(100);
+                if(!this.player.screen.isDynamic) {
+                    this.player.dropFromPurse(100);
+                }
             }
         }
     }
@@ -58,12 +64,22 @@ class Client {
         if(inputs.includes("left")) {
             if(location1 === "inventory" && location2 === "inventory" && info1[0] !== info2[0]) {
                 // Swap two inventory slots (even if one or both of them are empty)
-                this.selectedEntity = this.player.getItemAtSlot(info1[0]);
+                if(this.selectedSlot === info1[0]) {
+                    this.selectedEntity = this.player.inventory.itemArray[info1[0]];
+                    this.selectedSlot = info2[0];
+                }
+                else if(this.selectedSlot === info2[0]) {
+                    this.selectedEntity = this.player.inventory.itemArray[info2[0]];
+                    this.selectedSlot = info1[0];
+                }
+
                 this.player.swapInventorySlots(info1[0], info2[0]);
             }
             else if(location1 === "inventory" && location2 === "screen") {
                 // Drop entire stack on the player's current location.
-                this.player.dropFromInventory(info1[0], -1);
+                if(!this.player.screen.isDynamic) {
+                    this.player.dropFromInventory(info1[0], -1);
+                }
             }
         }
     }
@@ -73,15 +89,17 @@ class Client {
 
         // Inventory (only one will be executed)
         if(inputs.includes("inventory_previous")) {
-            this.player.shiftInventorySlotBackward();
-            this.selectedEntity = this.player.getCurrentlySelectedItem();
+            this.selectedSlot = this.selectedSlot === 0 ? this.player.inventory.maxSlots - 1 : this.selectedSlot--;
+            this.selectedEntity = this.player.inventory.itemArray[this.selectedSlot];
         }
         else if(inputs.includes("inventory_next")) {
-            this.player.shiftInventorySlotForward();
-            this.selectedEntity = this.player.getCurrentlySelectedItem();
+            this.selectedSlot = this.selectedSlot === this.player.inventory.maxSlots - 1 ? 0 : this.selectedSlot++;
+            this.selectedEntity = this.player.inventory.itemArray[this.selectedSlot];
         }
         else if(inputs.includes("inventory_use")) {
-            this.player.consumeFromInventoryCurrentSlot();
+            if(!this.player.screen.isDynamic) {
+                this.player.consumeFromInventory(this.selectedSlot);
+            }
         }
 
         // Player Action
@@ -144,11 +162,9 @@ class Client {
         // **** Move Worlds (only one will be executed)
         if(inputs.includes("world_up")) {
             this.player.worldUp();
-            this.player.homeWorldName = "world1";
         }
         else if(inputs.includes("world_down")) {
             this.player.worldDown();
-            this.player.homeWorldName = "world0";
         }
     }
 
@@ -157,13 +173,17 @@ class Client {
 
         // Inventory (only one will be executed)
         if(inputs.includes("inventory_previous")) {
-            this.player.shiftInventorySlotBackward();
+            this.selectedSlot = this.selectedSlot === 0 ? this.player.inventory.maxSlots - 1 : this.selectedSlot--;
+            this.selectedEntity = this.player.inventory.itemArray[this.selectedSlot];
         }
         else if(inputs.includes("inventory_next")) {
-            this.player.shiftInventorySlotForward();
+            this.selectedSlot = this.selectedSlot === this.player.inventory.maxSlots - 1 ? 0 : this.selectedSlot++;
+            this.selectedEntity = this.player.inventory.itemArray[this.selectedSlot];
         }
         else if(inputs.includes("inventory_use")) {
-            this.player.consumeFromInventoryCurrentSlot();
+            if(!this.player.screen.isDynamic) {
+                this.player.consumeFromInventory(this.selectedSlot);
+            }
         }
 
         // Player Action
@@ -203,18 +223,9 @@ class Client {
     }
 
     getClientData() {
-        // Return all the data that the client needs.
-        let tiles = [];
-        let otherEntities = [];
-        let playerEntities = [];
-        let inventory = {};
-        let purse = {};
-        let info = {};
-
-        let screen = this.player.screen;
-
         // Tiles
-        for(const tile of screen.tiles) {
+        let tiles = [];
+        for(const tile of this.player.screen.tiles) {
             tiles.push({
                 x: tile.x,
                 y: tile.y,
@@ -234,7 +245,8 @@ class Client {
         }
 
         // Non-players.
-        for(const entity of screen.otherEntities) {
+        let otherEntities = [];
+        for(const entity of this.player.screen.otherEntities) {
             otherEntities.push({
                 stackSize: entity.stackSize,
                 id: entity.id,
@@ -250,7 +262,8 @@ class Client {
         }
 
         // Players
-        for(const entity of screen.playerEntities) {
+        let playerEntities = [];
+        for(const entity of this.player.screen.playerEntities) {
             let statusArray = [];
             if(entity.isDead) {
                 statusArray.push("dead");
@@ -275,7 +288,8 @@ class Client {
         }
 
         // Inventory
-        inventory.currentSlot = this.player.inventory.currentSlot;
+        let inventory = {};
+        inventory.currentSlot = this.selectedSlot;
         inventory.itemArray = [];
         for(const item of this.player.inventory.itemArray) {
             if(item) {
@@ -290,14 +304,16 @@ class Client {
         }
 
         // Purse
+        let purse = {};
         purse.goldTotal = this.player.purse.goldTotal;
 
         // Info
+        let info = {};
         info.id = this.selectedEntity?.id;
         info.name = this.selectedEntity?.getName();
         info.text = this.selectedEntity?.getInfo();
 
-        let clientData = {
+        return {
             tiles: tiles,
             otherEntities: otherEntities,
             playerEntities: playerEntities,
@@ -305,8 +321,6 @@ class Client {
             purse: purse,
             info: info
         };
-
-        return clientData;
     }
 }
 
