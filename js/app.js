@@ -8,15 +8,16 @@ const Server = require("./server/Server.js");
 // TODO All state changes must be done through the Server class. We need to enforce this somehow.
 // TODO Handle multiple clients at once
 
-// TODO Create one (non-static) Server, make server => world => map connection.
-// TODO entity limits should be per world.
+// TODO entity limits should be per world, and should be on the World class instead of the Server class.
+// TODO Track server/world gold
+// TODO The server/world should have an entity spawner
 
 // TODO On client, create separate channels for dev info...
 
+// TODO use ?? in more places to clean up code.
+
 async function init() {
     let server = new Server();
-    Server.SERVER = server;
-
     server.createWorld(0, "world0", "assets/world0/");
     server.createWorld(1, "world1", "assets/world1/");
     server.initServerTick();

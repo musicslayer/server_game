@@ -1,5 +1,4 @@
 const Entity = require("./Entity.js");
-const Server = require("../server/Server.js");
 
 class Projectile extends Entity {
     id = "projectile";
@@ -33,7 +32,7 @@ class Projectile extends Entity {
 
     doSpawn(world, map, screen, x, y) {
         super.doSpawn(world, map, screen, x, y);
-        Server.SERVER.addTask(() => { this.moveProjectile(); });
+        this.getServer().addTask(0, () => { this.moveProjectile(); });
     }
 
     doInteract(entity) {

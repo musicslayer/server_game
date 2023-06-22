@@ -2,7 +2,6 @@ const Entity = require("./Entity.js");
 const EntitySpawner = require("./EntitySpawner.js");
 const Purse = require("./Purse.js");
 const Inventory = require("./Inventory.js");
-const Server = require("../server/Server.js");
 
 class Player extends Entity {
     id = "player";
@@ -26,24 +25,11 @@ class Player extends Entity {
     actionTime = .2;
     movementTime = .2;
 
-    inventory = new Inventory();
-    purse = new Purse();
-
     constructor() {
         super();
 
-        // Register regen tasks.
-        Server.SERVER.addRefreshTask(() => {
-            if(!this.isDead) {
-                this.doAddHealth(this.healthRegen)
-            }
-        })
-
-        Server.SERVER.addRefreshTask(() => {
-            if(!this.isDead) {
-                this.doAddMana(this.manaRegen)
-            }
-        })
+        this.inventory = new Inventory(this);
+        this.purse = new Purse(this);
     }
 
     getName() {
@@ -52,6 +38,23 @@ class Player extends Entity {
 
     getInfo() {
         return "A character controlled by a real-life person.";
+    }
+
+    doSpawn() {
+        super.doSpawn();
+        
+        // Register regen tasks.
+        this.getServer().addRefreshTask(1, () => {
+            if(!this.isDead) {
+                this.doAddHealth(this.healthRegen)
+            }
+        })
+
+        this.getServer().addRefreshTask(1, () => {
+            if(!this.isDead) {
+                this.doAddMana(this.manaRegen)
+            }
+        })
     }
     
     doAddExperience(experience) {
@@ -73,7 +76,7 @@ class Player extends Entity {
 
     doMakeInvincible(invincibleSeconds) {
         this.isInvincible = true;
-        Server.SERVER.scheduleTaskForSeconds(invincibleSeconds, () => {
+        this.addTask(invincibleSeconds, () => {
             this.isInvincible = false;
         });
     }
@@ -107,7 +110,7 @@ class Player extends Entity {
     doTeleportHome() {
         // Teleport the player to their home location (on the same world) only if they are alive.
         if(!this.isDead) {
-            let homeWorld = this.screen.map.world.server.getWorld(this.homeWorldName);
+            let homeWorld = this.getServer().getWorld(this.homeWorldName);
             let homeMap = homeWorld?.getMap(this.homeMapName);
             let homeScreen = homeMap?.getScreen(this.homeScreenName);
 

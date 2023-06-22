@@ -1,5 +1,3 @@
-const Server = require("../server/Server.js");
-
 class EntitySpawner {
     static spawnTimed(id, number, screen, x, y, ...args) {
         // Spawn entity that will be despawned after a certain number of seconds.
@@ -8,11 +6,8 @@ class EntitySpawner {
         }
 
         let entity = EntitySpawner.createInstance(id, number, ...args);
-
-        entity.spawn(screen, x, y);
-        Server.SERVER.scheduleTaskForSeconds(Server.SERVER.LOOT_TIME, () => {
-            entity.doDespawn();
-        })
+        entity.attachScreen(screen, x, y);
+        entity.spawnAsLoot();
 
         return entity;
     }
@@ -23,7 +18,9 @@ class EntitySpawner {
         }
 
         let entity = EntitySpawner.createInstance(id, number, ...args);
-        entity.spawn(screen, x, y);
+        entity.attachScreen(screen, x, y);
+        entity.spawn();
+
         return entity;
     }
 

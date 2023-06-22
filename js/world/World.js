@@ -40,9 +40,9 @@ class World {
             let mapName = parts[1];
 
             let map = new GameMap();
-            map.loadMapFromFolder(worldFolder + mapName + "/", this.voidMapFolder);
-
             map.attachWorld(this);
+            map.loadMapFromFolder(worldFolder + mapName + "/", this.voidMapFolder);
+            
             this.addMap(mapName, map, id);
         }
 

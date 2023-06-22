@@ -41,9 +41,9 @@ class GameMap {
             let screenName = parts[1];
 
             let screen = new Screen();
+            screen.attachMap(this);
             screen.loadScreenFromFile(mapFolder + screenName + ".txt");
             
-            screen.attachMap(this);
             this.addScreen(screenName, screen, x, y);
         }
     }
@@ -120,12 +120,12 @@ class GameMap {
 
     createVoidScreen(screenX, screenY) {
         let voidScreen = new VoidScreen();
+        voidScreen.attachMap(this);
         voidScreen.loadScreenFromFile(this.voidMapFolder + "void.txt");
 
         voidScreen.x = screenX;
         voidScreen.y = screenY;
         
-        voidScreen.attachMap(this);
         return voidScreen;
     }
 

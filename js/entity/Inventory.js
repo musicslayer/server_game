@@ -1,15 +1,17 @@
 const EntitySpawner = require("./EntitySpawner.js");
-const Server = require("../server/Server.js");
 
 class Inventory {
     maxSlots = 45;
 
     currentSlot;
     itemArray = [];
-
     isActive = true;
 
-    constructor() {
+    owner;
+
+    constructor(owner) {
+        this.owner = owner;
+
         // Prefill inventory to make logic easier.
         for(let index = 0; index < this.maxSlots; index++) {
             this.itemArray[index] = undefined;
@@ -49,7 +51,7 @@ class Inventory {
 
                 let item = EntitySpawner.cloneInstance(entity, 0);
                 this.itemArray[index] = item;
-                Server.SERVER.registerInventoryEntity(1);
+                owner.getServer().registerInventoryEntity(1);
 
                 let N = Math.min(entity.maxStackSize, entity.stackSize);
 
@@ -65,7 +67,7 @@ class Inventory {
             item.stackSize -= number;
             if(item.stackSize === 0) {
                 this.itemArray[slot] = undefined;
-                Server.SERVER.deregisterInventoryEntity(1);
+                owner.getServer().deregisterInventoryEntity(1);
             }
         }
     }

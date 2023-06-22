@@ -1,8 +1,13 @@
 class Purse {
     maxGoldTotel = 100000;
     goldTotal = 0;
-
     isActive = true;
+
+    owner;
+
+    constructor(owner) {
+        this.owner = owner;
+    }
 
     turnOn() {
         this.isActive = true;
