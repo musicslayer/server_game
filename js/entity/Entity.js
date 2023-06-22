@@ -1,5 +1,3 @@
-const EntitySpawner = require("./EntitySpawner.js");
-
 class Entity {
     // e.g. The entity that spawned a projectile is the owner.
     owner;
@@ -71,6 +69,14 @@ class Entity {
 
     getServer() {
         return this.screen.map.world.server;
+    }
+
+    getWorld() {
+        return this.screen.map.world;
+    }
+
+    getMap() {
+        return this.screen.map;
     }
 
     attachScreen(screen, x, y) {
@@ -509,7 +515,7 @@ class Entity {
         this.screen.removeEntity(this);
 
         if(this.inventory) {
-            this.getServer().deregisterInventoryEntity(this.inventory.itemArray.length);
+            this.getWorld().deregister("inventory", this.inventory.itemArray.length);
         }
     }
 
@@ -581,7 +587,7 @@ class Entity {
 
     doTeleportDeath() {
         // Teleport the entity to the death plane.
-        let deathMap = this.screen.map.world.getMapByPosition("death");
+        let deathMap = this.getWorld().getMapByPosition("death");
         let deathScreen = deathMap.getScreenByPosition(0, 0);
         this.doTeleport(deathScreen, 7, 11);
     }
@@ -704,14 +710,14 @@ class Entity {
 
     doWorldUp() {
         let newWorld = this.screen.getWorldUp();
-        let newMap = newWorld.getMapByPosition(this.screen.map.id);
+        let newMap = newWorld.getMapByPosition(this.getMap().id);
         let newScreen = newMap.getScreenByPosition(this.screen.x, this.screen.y);
         this.doTeleport(newScreen, this.x, this.y);
     }
 
     doWorldDown() {
         let newWorld = this.screen.getWorldDown();
-        let newMap = newWorld.getMapByPosition(this.screen.map.id);
+        let newMap = newWorld.getMapByPosition(this.getMap().id);
         let newScreen = newMap.getScreenByPosition(this.screen.x, this.screen.y);
         this.doTeleport(newScreen, this.x, this.y);
     }
@@ -888,7 +894,7 @@ class Entity {
                 goldAmount = this.purse.goldTotal;
             }
 
-            EntitySpawner.spawnTimed("gold", goldAmount, this.screen, this.x, this.y);
+            this.getWorld().spawnLoot("gold", goldAmount, this.screen, this.x, this.y);
             this.purse.removeFromPurse(goldAmount);
         }
     }
@@ -954,7 +960,7 @@ class Entity {
                     number = item.stackSize;
                 }
 
-                EntitySpawner.spawnTimed(item.id, number, this.screen, this.x, this.y);
+                this.getWorld().spawnLoot(item.id, number, this.screen, this.x, this.y);
                 this.inventory.removeFromInventorySlot(slot, number);
             }
 
@@ -998,7 +1004,7 @@ class Entity {
 
     clone(number) {
         // By default, just create another instance.
-        return EntitySpawner.createInstance(this.id, number);
+        return this.getWorld().createInstance(this.id, number);
     }
 }
 

@@ -2,19 +2,16 @@ const http = require("./server/http.js");
 const socket_io = require("./server/socket_io.js");
 
 const Client = require("./client/Client.js");
-const EntitySpawner = require("./entity/EntitySpawner.js");
 const Server = require("./server/Server.js");
 
 // TODO All state changes must be done through the Server class. We need to enforce this somehow.
 // TODO Handle multiple clients at once
 
-// TODO entity limits should be per world, and should be on the World class instead of the Server class.
-// TODO Track server/world gold
-// TODO The server/world should have an entity spawner
-
 // TODO On client, create separate channels for dev info...
 
 // TODO use ?? in more places to clean up code.
+
+// TODO Do we need the "Client" class? Rename as inputHandler
 
 async function init() {
     let server = new Server();
@@ -22,7 +19,7 @@ async function init() {
     server.createWorld(1, "world1", "assets/world1/");
     server.initServerTick();
     
-    let player = EntitySpawner.spawn("player", 1, server.worlds[0].gameMaps[0].screens[0], 0, 0);
+    let player = server.worlds[0].spawn("player", 1, server.worlds[0].gameMaps[0].screens[0], 0, 0);
     player.homeWorldName = "world0";
     player.homeMapName = "city";
     player.homeScreenName = "field1";

@@ -1,10 +1,11 @@
 const { Worker } = require("worker_threads");
 
+const World = require("../world/World.js");
+
 class Server {
     // These variables affect server performance.
     TICK_RATE = 60; // times per second
     MOVEMENT_FRAMES = 60; // frames per 1 tile of movement
-    MAX_ENTITY_COUNT = 100000000;
     LOOT_TIME = 300; // (5 minutes) seconds that spawned loot will remain in the world before despawning
 
     worlds = [];
@@ -13,17 +14,9 @@ class Server {
 
     scheduledTaskMap = new Map(); 
 
-    // These counters are for all worlds combined.
-    currentWorldEntityCount = 0;
-    currentInstanceEntityCount = 0; // Includes dynamic screens (void, death) and regular instances (dungeons).
-    currentInventoryEntityCount = 0;
-
     currentTick = 0;
 
     createWorld(id, name, worldFolder) {
-        // This require cannot be placed at the top of the file because it creates a circular dependency loop.
-        const World = require("../world/World.js");
-
         let world = new World();
         world.attachServer(this);
 
@@ -109,54 +102,6 @@ class Server {
         }
     
         this.doWork(shared)
-    }
-
-
-
-
-    getTotalEntityCount() {
-        return this.currentWorldEntityCount + this.currentInstanceEntityCount + this.currentInventoryEntityCount;
-    }
-
-
-
-    registerWorldEntity(number) {
-        if(this.getTotalEntityCount() + number > this.MAX_ENTITY_COUNT) {
-            // LOG/THROW SERVER ERROR?
-            console.log("Too many entities (world)!");
-        }
-
-        this.currentWorldEntityCount += number;
-    }
-
-    registerInstanceEntity(number) {
-        if(this.getTotalEntityCount() + number > this.MAX_ENTITY_COUNT) {
-            // LOG/THROW SERVER ERROR?
-            console.log("Too many entities (instance)!");
-        }
-
-        this.currentInstanceEntityCount += number;
-    }
-
-    registerInventoryEntity(number) {
-        if(this.getTotalEntityCount() + number > this.MAX_ENTITY_COUNT) {
-            // LOG/THROW SERVER ERROR?
-            console.log("Too many entities (inventory)!");
-        }
-
-        this.currentInventoryEntityCount += number;
-    }
-
-    deregisterWorldEntity(number) {
-        this.currentWorldEntityCount -= number;
-    }
-
-    deregisterInstanceEntity(number) {
-        this.currentInstanceEntityCount -= number;
-    }
-
-    deregisterInventoryEntity(number) {
-        this.currentInventoryEntityCount -= number;
     }
 }
 

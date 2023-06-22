@@ -1,5 +1,3 @@
-const EntitySpawner = require("./EntitySpawner.js");
-
 class Inventory {
     maxSlots = 45;
 
@@ -49,9 +47,9 @@ class Inventory {
             if(this.itemArray[index] === undefined) {
                 numStacks++;
 
-                let item = EntitySpawner.cloneInstance(entity, 0);
+                let item = owner.getWorld().cloneInstance(entity, 0);
                 this.itemArray[index] = item;
-                owner.getServer().registerInventoryEntity(1);
+                owner.getWorld().register("inventory", 1);
 
                 let N = Math.min(entity.maxStackSize, entity.stackSize);
 
@@ -67,7 +65,7 @@ class Inventory {
             item.stackSize -= number;
             if(item.stackSize === 0) {
                 this.itemArray[slot] = undefined;
-                owner.getServer().deregisterInventoryEntity(1);
+                owner.getWorld().deregister("inventory", 1);
             }
         }
     }

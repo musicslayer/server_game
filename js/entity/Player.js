@@ -1,5 +1,4 @@
 const Entity = require("./Entity.js");
-const EntitySpawner = require("./EntitySpawner.js");
 const Purse = require("./Purse.js");
 const Inventory = require("./Inventory.js");
 
@@ -135,7 +134,7 @@ class Player extends Entity {
 
     doSpawnLoot(screen, x, y) {
         // When a player dies, a pvp token is spawned as loot.
-        EntitySpawner.spawnTimed("pvp_token", 1, screen, x, y);
+        this.getWorld().spawnLoot("pvp_token", 1, screen, x, y);
     }
 
     doAction() {
@@ -158,7 +157,7 @@ class Player extends Entity {
             }
         }
         
-        EntitySpawner.spawn("projectile", 1, this.screen, x, y, this, this.direction, 8, 40, false);
+        this.getWorld().spawn("projectile", 1, this.screen, x, y, this, this.direction, 8, 40, false);
     }
 }
 

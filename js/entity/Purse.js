@@ -22,10 +22,13 @@ class Purse {
 
         gold.stackSize -= N;
         this.goldTotal += N;
+
+        owner.getWorld().register("gold", N);
     }
 
     removeFromPurse(goldAmount) {
         this.goldTotal -= goldAmount;
+        owner.getWorld().deregister("gold", goldAmount);
     }
 }
 

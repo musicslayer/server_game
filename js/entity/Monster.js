@@ -1,5 +1,4 @@
 const Entity = require("./Entity.js");
-const EntitySpawner = require("./EntitySpawner.js");
 
 class Monster extends Entity {
     id = "monster";
@@ -30,7 +29,7 @@ class Monster extends Entity {
     }
 
     doSpawnLoot(screen, x, y) {
-        EntitySpawner.spawnTimed("gold", 100, screen, x, y);
+        this.getWorld().spawnLoot("gold", 100, screen, x, y);
     }
 }
 

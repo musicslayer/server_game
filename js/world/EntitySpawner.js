@@ -1,47 +1,46 @@
+const Player = require("../entity/Player.js");
+const Gold = require("../entity/Gold.js");
+const PVPToken = require("../entity/PVPToken.js");
+const Wall = require("../entity/Wall.js");
+const FireTrap = require("../entity/FireTrap.js");
+const DeathTrap = require("../entity/DeathTrap.js");
+const HealthPotion = require("../entity/HealthPotion.js");
+const HomePortal = require("../entity/HomePortal.js");
+const ManaPotion = require("../entity/ManaPotion.js");
+const InvinciblePotion = require("../entity/InvinciblePotion.js");
+const Projectile = require("../entity/Projectile.js");
+const Monster = require("../entity/Monster.js");
+const Teleporter = require("../entity/Teleporter.js");
+const RevivePortal = require("../entity/RevivePortal.js");
+const UnknownEntity = require("../entity/UnknownEntity.js");
+
 class EntitySpawner {
-    static spawnTimed(id, number, screen, x, y, ...args) {
-        // Spawn entity that will be despawned after a certain number of seconds.
+    spawn(id, number, screen, x, y, ...args) {
         if(number === 0) {
             return;
         }
 
-        let entity = EntitySpawner.createInstance(id, number, ...args);
-        entity.attachScreen(screen, x, y);
-        entity.spawnAsLoot();
-
-        return entity;
-    }
-
-    static spawn(id, number, screen, x, y, ...args) {
-        if(number === 0) {
-            return;
-        }
-
-        let entity = EntitySpawner.createInstance(id, number, ...args);
+        let entity = this.createInstance(id, number, ...args);
         entity.attachScreen(screen, x, y);
         entity.spawn();
 
         return entity;
     }
 
-    static createInstance(id, number, ...args) {
-        // These requires cannot be placed at the top of the file because it creates a circular dependency loop.
-        const Player = require("./Player.js");
-        const Gold = require("./Gold.js");
-        const PVPToken = require("./PVPToken.js");
-        const Wall = require("./Wall.js");
-        const FireTrap = require("./FireTrap.js");
-        const DeathTrap = require("./DeathTrap.js");
-        const HealthPotion = require("./HealthPotion.js");
-        const HomePortal = require("./HomePortal.js");
-        const ManaPotion = require("./ManaPotion.js");
-        const InvinciblePotion = require("./InvinciblePotion.js");
-        const Projectile = require("./Projectile.js");
-        const Monster = require("./Monster.js");
-        const Teleporter = require("./Teleporter.js");
-        const RevivePortal = require("./RevivePortal.js");
-        const UnknownEntity = require("./UnknownEntity.js");
+    spawnLoot(id, number, screen, x, y, ...args) {
+        // Spawn entity that will be despawned after a certain number of seconds.
+        if(number === 0) {
+            return;
+        }
 
+        let entity = this.createInstance(id, number, ...args);
+        entity.attachScreen(screen, x, y);
+        entity.spawnAsLoot();
+
+        return entity;
+    }
+
+    createInstance(id, number, ...args) {
         let entity;
 
         switch(id) {
@@ -95,7 +94,7 @@ class EntitySpawner {
         return entity;
     }
 
-    static cloneInstance(entity, number) {
+    cloneInstance(entity, number) {
         return entity.clone(number);
     }
 }

@@ -1,5 +1,7 @@
 const fs = require("fs");
 
+const EntityCounter = require("./EntityCounter.js");
+const EntitySpawner = require("./EntitySpawner.js");
 const GameMap = require("./GameMap.js");
 const VoidMap = require("./VoidMap.js");
 const DeathMap = require("./DeathMap.js");
@@ -10,6 +12,8 @@ const PIPE = "|";
 
 class World {
     server;
+    entityCounter;
+    entitySpawner;
     
     id;
     name;
@@ -19,6 +23,11 @@ class World {
     gameMaps = [];
     gameMapMap = new Map();
     gameMapPosMap = new Map();
+
+    constructor() {
+        this.entityCounter = new EntityCounter();
+        this.entitySpawner = new EntitySpawner();
+    }
 
     loadWorldFromFolder(worldFolder) {
         // Add special "void" map
@@ -42,7 +51,7 @@ class World {
             let map = new GameMap();
             map.attachWorld(this);
             map.loadMapFromFolder(worldFolder + mapName + "/", this.voidMapFolder);
-            
+
             this.addMap(mapName, map, id);
         }
 
@@ -105,6 +114,56 @@ class World {
 
     getWorldDown() {
         return this.server.getWorldDown(this);
+    }
+
+    spawn(id, number, screen, x, y, ...args) {
+        return this.entitySpawner.spawn(id, number, screen, x, y, ...args);
+    }
+
+    spawnLoot(id, number, screen, x, y, ...args) {
+        return this.entitySpawner.spawnLoot(id, number, screen, x, y, ...args);
+    }
+
+    createInstance(id, number, ...args) {
+        return this.entitySpawner.createInstance(id, number, ...args);
+    }
+
+    cloneInstance(entity, number) {
+        return this.cloneInstance(entity, number);
+    }
+
+    register(type, number) {
+        switch(type) {
+            case "persistent":
+                this.entityCounter.registerPersistentEntity(number);
+                break;
+            case "instance":
+                this.entityCounter.registerInstanceEntity(number);
+                break;
+            case "inventory":
+                this.entityCounter.registerInventoryEntity(number);
+                break;
+            case "gold":
+                this.entityCounter.registerGold(number);
+                break;
+        }
+    }
+
+    deregister(type, number) {
+        switch(type) {
+            case "persistent":
+                this.entityCounter.deregisterPersistentEntity(number);
+                break;
+            case "instance":
+                this.entityCounter.deregisterInstanceEntity(number);
+                break;
+            case "inventory":
+                this.entityCounter.deregisterInventoryEntity(number);
+                break;
+            case "gold":
+                this.entityCounter.deregisterGold(number);
+                break;
+        }
     }
 }
 

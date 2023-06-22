@@ -1,6 +1,5 @@
 const fs = require("fs");
 
-const EntitySpawner = require("../entity/EntitySpawner.js");
 const Tile = require("./Tile.js");
 
 const COMMA = ",";
@@ -22,6 +21,10 @@ class Screen {
 
     getServer() {
         return this.map.world.server;
+    }
+
+    getWorld() {
+        return this.map.world;
     }
 
     loadScreenFromFile(screenFile) {
@@ -59,7 +62,7 @@ class Screen {
                 while(entityPart.length > 0) {
                     let id = entityPart.shift();
                     let stackSize = Number(entityPart.shift());
-                    EntitySpawner.spawn(id, stackSize, this, x, y);
+                    this.getWorld().spawn(id, stackSize, this, x, y);
                 }
             }
         }
@@ -85,10 +88,10 @@ class Screen {
         }
 
         if(this.isDynamic) {
-            this.getServer().registerInstanceEntity(1);
+            this.getWorld().register("instance", 1);
         }
         else {
-            this.getServer().registerWorldEntity(1);
+            this.getWorld().register("persistent", 1);
         }
     }
 
@@ -107,15 +110,15 @@ class Screen {
         }
 
         if(this.isDynamic) {
-            this.getServer().deregisterInstanceEntity(1);
+            this.getWorld().deregister("instance", 1);
 
             // If there are no more players in an instance screen, then the entire screen should be deregistered.
             if(this.playerEntities.length === 0) {
-                this.getServer().deregisterInstanceEntity(this.otherEntities.length);
+                this.getWorld().deregister("instance", this.otherEntities.length);
             }
         }
         else {
-            this.getServer().deregisterWorldEntity(1);
+            this.getWorld().deregister("persistent", 1);
         }
     }
 
