@@ -7,10 +7,6 @@ const Server = require("./server/Server.js");
 // TODO All state changes must be done through the Server class. We need to enforce this somehow.
 // TODO Handle multiple clients at once
 
-// TODO On client, create separate channels for dev info...
-
-// TODO Client actions need a timer since inventory slot movement no longer uses the server.
-
 async function init() {
     let server = new Server();
     server.createWorld(0, "world0", "assets/world0/");

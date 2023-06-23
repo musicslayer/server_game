@@ -3,7 +3,6 @@ const Entity = require("./Entity.js");
 class Projectile extends Entity {
     id = "projectile";
 
-    owner;
     direction;
     range;
     damage;

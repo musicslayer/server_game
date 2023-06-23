@@ -16,6 +16,7 @@ class Entity {
     homeY = 1;
 
     inventory;
+    purse;
 
     animationShiftX = 0;
     animationShiftY = 0;
@@ -33,21 +34,15 @@ class Entity {
     canHealthBoost = true;
     canManaBoost = true;
     canMakeInvincible = true;
-
     canOtherAction = true; // Used for "dev" actions like teleporting.
 
-    // By default, entities can move and take actions in a single server tick.
-    actionTime = 0; // Seconds to perform 1 action.
     movementTime = 0; // Seconds to move 1 tile.
-
-    // This is chosen to make inventory management smooth.
-    inventoryTime = 0.1;
-
+    actionTime = 0; // Seconds to perform 1 action.
+    inventoryTime = 0.1; // This is chosen to make inventory management smooth.
     experienceBoostTime = 0.1;
     healthBoostTime = 0.1;
     manaBoostTime = 0.1;
     invincibleTime = 0.1;
-
     otherTime = 0.1;
 
     // To avoid awkward edge cases, just make every entity start facing to the right.

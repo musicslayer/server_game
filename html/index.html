@@ -8,8 +8,9 @@
 		<!-- <h1>Canvas</h1> -->
 		
 		<canvas id="canvas" style="border:10px solid"></canvas>
-		<script type="text/javascript" src="jszip.min.js"></script>
+		<text id="devText"></text>
 		
+		<script src="jszip.min.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
 		<script type="module" src="ImageCatalog.js"></script>
 		
@@ -37,11 +38,16 @@
 			
 			const ctx = canvas.getContext("2d");
 			
+			const devText = document.getElementById("devText");
+			
 			let imageCatalog;
 			
 			let socket;
 			let socket2;
 			let interval;
+			
+			let socketDev;
+			let intervalDev;
 			
 			window.addEventListener('load', async () => {
 				imageCatalog = new ImageCatalog();
@@ -54,14 +60,17 @@
 				socket = io({query: {input: "xyz"}});
 				
 				socket.on("connect", (err) => {
-					startUpdateInterval();
-					//requestAnimationFrame(drawClient);
+					startInterval();
 				});
 				
 				socket.on("disconnect", (err) => {
 					clearInterval(interval);
 					socket.disconnect(true);
 				});
+				
+				
+				
+				
 				
 				if(socket2) {
 					socket2.disconnect(true);
@@ -70,13 +79,30 @@
 				socket2 = io({query: {client: "xyz"}});
 				
 				socket2.on("connect", (err) => {
-					//startUpdateInterval();
 					requestAnimationFrame(drawClient);
 				});
 				
 				socket2.on("disconnect", (err) => {
-					//clearInterval(interval);
 					socket2.disconnect(true);
+				});
+				
+				
+				
+				
+				
+				if(socketDev) {
+					socketDev.disconnect(true);
+				}
+				
+				socketDev = io({query: {dev: "xyz"}});
+				
+				socketDev.on("connect", (err) => {
+					startDevInterval();
+				});
+				
+				socketDev.on("disconnect", (err) => {
+					clearInterval(interval);
+					socketDev.disconnect(true);
 				});
 			});
 			
@@ -271,10 +297,12 @@
 			}
 			
 			async function reactControllerPress(buttons) {
+			console.log("Button");
 				await socket.emitWithAck("on_controller_press", buttons);
 			}
 			
 			async function reactControllerSticks(axes) {
+				console.log("STICK");
 				await socket.emitWithAck("on_controller_sticks", axes);
 			}
 
@@ -333,22 +361,33 @@
 			
 			
 			
-			
-			
-			
-			
-			
-			
-			
-			
-			function startUpdateInterval() {
+			function startInterval() {
 				// Continuously check for client inputs to send to the server.
-				let timer = setInterval(() => {
+				let interval = setInterval(() => {
 					checkKeyPress();
 					checkControllerPress();
 					checkControllerSticks();
 				}, 1000 / INPUT_FPS_RATE);
 			}
+			
+			function startDevInterval() {
+				// Continuously check for client inputs to send to the server.
+				let intervalDev = setInterval(() => {
+					checkDevInfo();
+				}, 1000 / INPUT_FPS_RATE);
+			}
+			
+			async function checkDevInfo() {
+				let R = await socketDev.emitWithAck("get_dev_data");
+				
+				let currentTick = Math.floor(Number(R.info.currentTick) / 60);
+				//console.log(message);
+				devText.innerHTML = currentTick;
+			}
+			
+			
+			
+			
 			
 			async function drawClient(time) {
 				let R = await socket2.emitWithAck("get_client_data");

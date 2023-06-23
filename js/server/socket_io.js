@@ -6,7 +6,7 @@ function createSocketIOServer(server, client) {
 
 		if(socket.handshake.query.input) {
 			// Respond to key presses and mouse clicks.
-			type = "Key";
+			type = "Input";
 
 			// Multiple keys/controller buttons may be pressed at once.
 			socket.on("on_key_press", (keys, callback) => {
@@ -42,6 +42,14 @@ function createSocketIOServer(server, client) {
 			socket.on("get_client_data", (callback) => {
 				let clientData = client.getClientData();
 				callback(clientData);
+			});
+		}
+		else if(socket.handshake.query.dev) {
+			type = "Dev";
+
+			socket.on("get_dev_data", (callback) => {
+				let devData = client.getDevData();
+				callback(devData);
 			});
 		}
 

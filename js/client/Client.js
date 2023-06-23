@@ -10,6 +10,9 @@ class Client {
     selectedEntity;
     selectedSlot = 0;
 
+    canInput = true;
+    inputTime = 0.1;
+
     player;
 
     constructor(player) {
@@ -89,12 +92,16 @@ class Client {
 
         // Inventory (only one will be executed)
         if(inputs.includes("inventory_previous")) {
-            this.selectedSlot = this.selectedSlot === 0 ? this.player.inventory.maxSlots - 1 : this.selectedSlot--;
-            this.selectedEntity = this.player.inventory.itemArray[this.selectedSlot];
+            this.performTask(() => {
+                this.selectedSlot = this.selectedSlot === 0 ? this.player.inventory.maxSlots - 1 : this.selectedSlot - 1;
+                this.selectedEntity = this.player.inventory.itemArray[this.selectedSlot];
+            });
         }
         else if(inputs.includes("inventory_next")) {
-            this.selectedSlot = this.selectedSlot === this.player.inventory.maxSlots - 1 ? 0 : this.selectedSlot++;
-            this.selectedEntity = this.player.inventory.itemArray[this.selectedSlot];
+            this.performTask(() => {
+                this.selectedSlot = this.selectedSlot === this.player.inventory.maxSlots - 1 ? 0 : this.selectedSlot + 1;
+                this.selectedEntity = this.player.inventory.itemArray[this.selectedSlot];
+            });
         }
         else if(inputs.includes("inventory_use")) {
             if(!this.player.screen.isDynamic) {
@@ -173,12 +180,16 @@ class Client {
 
         // Inventory (only one will be executed)
         if(inputs.includes("inventory_previous")) {
-            this.selectedSlot = this.selectedSlot === 0 ? this.player.inventory.maxSlots - 1 : this.selectedSlot--;
-            this.selectedEntity = this.player.inventory.itemArray[this.selectedSlot];
+            this.performTask(() => {
+                this.selectedSlot = this.selectedSlot === 0 ? this.player.inventory.maxSlots - 1 : this.selectedSlot - 1;
+                this.selectedEntity = this.player.inventory.itemArray[this.selectedSlot];
+            });
         }
         else if(inputs.includes("inventory_next")) {
-            this.selectedSlot = this.selectedSlot === this.player.inventory.maxSlots - 1 ? 0 : this.selectedSlot++;
-            this.selectedEntity = this.player.inventory.itemArray[this.selectedSlot];
+            this.performTask(() => {
+                this.selectedSlot = this.selectedSlot === this.player.inventory.maxSlots - 1 ? 0 : this.selectedSlot + 1;
+                this.selectedEntity = this.player.inventory.itemArray[this.selectedSlot];
+            });
         }
         else if(inputs.includes("inventory_use")) {
             if(!this.player.screen.isDynamic) {
@@ -219,6 +230,21 @@ class Client {
         else if(Math.abs(axes[2]) > deadzone || Math.abs(axes[3]) > deadzone) {
             this.player.x += axes[2] / speedFactor;
             this.player.y += axes[3] / speedFactor;
+        }
+    }
+
+    performTask(task) {
+        // Rate limit actions which don't rely on server ticking.
+        if(this.canInput) {
+            this.canInput = false;
+
+            this.player.getServer().addTask(this.inputTime, () => {
+                this.canInput = true;
+            });
+
+            this.player.getServer().addTask(0, () => {
+                task();
+            });
         }
     }
 
@@ -321,6 +347,16 @@ class Client {
             purse: purse,
             info: info
         };
+    }
+
+    getDevData() {
+        // Info
+        let info = {};
+        info.currentTick = this.player.getServer().currentTick;
+        
+        return {
+            info: info
+        }
     }
 }
 
