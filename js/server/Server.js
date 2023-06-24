@@ -33,18 +33,22 @@ class Server {
         this.worldPosMap.set(world.id, world);
     }
 
-    getWorld(name) {
+    getWorldByName(name) {
         return this.worldMap.get(name);
     }
 
-    getWorldUp(world) {
-        // If this world does not exist, return the original world so nothing changes.
-        return this.getWorldByPosition(world.id + 1) ?? world;
-    }
+    getWorldInDirection(world, direction) {
+        // If the new world does not exist, return the original world so nothing changes.
+        let newWorld;
 
-    getWorldDown(world) {
-        // If this world does not exist, return the original world so nothing changes.
-        return this.getWorldByPosition(world.id - 1) ?? world;
+        if(direction === "up") {
+            newWorld = this.getWorldByPosition(world.id + 1) ?? world;
+        }
+        else if(direction === "down") {
+            newWorld = this.getWorldByPosition(world.id - 1) ?? world;
+        }
+
+        return newWorld;
     }
 
     getWorldByPosition(p) {

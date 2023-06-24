@@ -109,8 +109,8 @@ class PlayerMage extends Entity {
     doTeleportHome() {
         // Teleport the player to their home location (in the current world) only if they are alive.
         if(!this.isDead) {
-            let homeMap = this.getWorld().getMap(this.homeMapName);
-            let homeScreen = homeMap?.getScreen(this.homeScreenName);
+            let homeMap = this.getWorld().getMapByName(this.homeMapName);
+            let homeScreen = homeMap?.getScreenByName(this.homeScreenName);
 
             if(homeScreen) {
                 this.doTeleport(homeScreen, this.homeX, this.homeY);
@@ -151,7 +151,8 @@ class PlayerMage extends Entity {
             }
         }
         
-        this.getWorld().spawn("projectile", 1, this.screen, x, y, this, this.direction, 8, 40, false);
+        let projectile = this.getWorld().spawn("projectile", 1, this.screen, x, y, this.direction, 8, 40, false);
+        projectile.owner = this;
     }
 }
 

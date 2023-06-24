@@ -133,46 +133,46 @@ class Client {
 
         // Move Position (only one will be executed)
         if(inputs.includes("move_up")) {
-            this.player.moveUp();
+            this.player.move("up");
         }
         else if(inputs.includes("move_down")) {
-            this.player.moveDown();
+            this.player.move("down");
         }
         else if(inputs.includes("move_left")) {
-            this.player.moveLeft();
+            this.player.move("left");
         }
         else if(inputs.includes("move_right")) {
-            this.player.moveRight();
+            this.player.move("right");
         }
 
         // **** Move Screens (only one will be executed)
         if(inputs.includes("screen_up")) {
-            this.player.screenUp();
+            this.player.moveScreen("up");
         }
         else if(inputs.includes("screen_down")) {
-            this.player.screenDown();
+            this.player.moveScreen("down");
         }
         else if(inputs.includes("screen_left")) {
-            this.player.screenLeft();
+            this.player.moveScreen("left");
         }
         else if(inputs.includes("screen_right")) {
-            this.player.screenRight();
+            this.player.moveScreen("right");
         }
 
         // **** Move Maps (only one will be executed)
         if(inputs.includes("map_up")) {
-            this.player.mapUp();
+            this.player.moveMap("up");
         }
         else if(inputs.includes("map_down")) {
-            this.player.mapDown();
+            this.player.moveMap("down");
         }
 
         // **** Move Worlds (only one will be executed)
         if(inputs.includes("world_up")) {
-            this.player.worldUp();
+            this.player.moveWorld("up");
         }
         else if(inputs.includes("world_down")) {
-            this.player.worldDown();
+            this.player.moveWorld("down");
         }
     }
 
@@ -205,16 +205,16 @@ class Client {
 
         // Move Position (only one will be executed)
         if(inputs.includes("move_up")) {
-            this.player.moveUp();
+            this.player.move("up");
         }
         else if(inputs.includes("move_down")) {
-            this.player.moveDown();
+            this.player.move("down");
         }
         else if(inputs.includes("move_left")) {
-            this.player.moveLeft();
+            this.player.move("left");
         }
         else if(inputs.includes("move_right")) {
-            this.player.moveRight();
+            this.player.move("right");
         }
     }
 

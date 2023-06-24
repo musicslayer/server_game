@@ -233,105 +233,58 @@ class Entity {
         }
     }
 
-    moveLeft() {
-        if(!this.isMoving) {
-            this.direction = "left";
+    move(direction) {
+        if(!this.isMoving && direction) {
+            this.direction = direction;
         }
 
-        if(this.canMove && this.isNextStepAllowed()) {
+        if(this.canMove && (direction === undefined || this.isNextStepAllowed())) {
             this.isMoving = true;
             this.canMove = false;
             
             for(let a = 0; a < this.getServer().MOVEMENT_FRAMES; a++) {
                 let fraction = a / this.getServer().MOVEMENT_FRAMES;
                 this.getServer().addTask(this.movementTime * fraction, () => {
-                    this.animationShiftX = -fraction;
+                    if(direction === "up") {
+                        this.animationShiftY = -fraction;
+                    }
+                    else if(direction === "down") {
+                        this.animationShiftY = fraction;
+                    }
+                    else if(direction === "left") {
+                        this.animationShiftX = -fraction;
+                    }
+                    else if(direction === "right") {
+                        this.animationShiftX = fraction;
+                    }
                 });
             }
             this.getServer().addTask(this.movementTime, () => {
                 this.animationShiftX = 0;
-                this.isMoving = false;
-                this.canMove = true;
-                this.doMoveLeft();
-            });
-        }
-    }
-
-    moveUp() {
-        if(!this.isMoving) {
-            this.direction = "up";
-        }
-
-        if(this.canMove && this.isNextStepAllowed()) {
-            this.isMoving = true;
-            this.canMove = false;
-
-            for(let a = 0; a < this.getServer().MOVEMENT_FRAMES; a++) {
-                let fraction = a / this.getServer().MOVEMENT_FRAMES;
-                this.getServer().addTask(this.movementTime * fraction, () => {
-                    this.animationShiftY = -fraction;
-                });
-            }
-            this.getServer().addTask(this.movementTime, () => {
                 this.animationShiftY = 0;
+
                 this.isMoving = false;
                 this.canMove = true;
-                this.doMoveUp();
+
+                this.doMove(direction);
             });
         }
     }
 
-    moveRight() {
-        if(!this.isMoving) {
-            this.direction = "right";
-        }
-
-        if(this.canMove && this.isNextStepAllowed()) {
-            this.isMoving = true;
+    wait() {
+        if(this.canMove) {
             this.canMove = false;
 
-            for(let a = 0; a < this.getServer().MOVEMENT_FRAMES; a++) {
-                let fraction = a / this.getServer().MOVEMENT_FRAMES;
-                this.getServer().addTask(this.movementTime * fraction, () => {
-                    this.animationShiftX = fraction;
-                });
-            }
             this.getServer().addTask(this.movementTime, () => {
-                this.animationShiftX = 0;
-                this.isMoving = false;
                 this.canMove = true;
-                this.doMoveRight();
-            });
-        }
-    }
-
-    moveDown() {
-        if(!this.isMoving) {
-            this.direction = "down";
-        }
-
-        if(this.canMove && this.isNextStepAllowed()) {
-            this.isMoving = true;
-            this.canMove = false;
-
-            for(let a = 0; a < this.getServer().MOVEMENT_FRAMES; a++) {
-                let fraction = a / this.getServer().MOVEMENT_FRAMES;
-                this.getServer().addTask(this.movementTime * fraction, () => {
-                    this.animationShiftY = fraction;
-                });
-            }
-            this.getServer().addTask(this.movementTime, () => {
-                this.animationShiftY = 0;
-                this.isMoving = false;
-                this.canMove = true;
-                this.doMoveDown();
+                this.doWait();
             });
         }
     }
 
 
 
-    screenLeft() {
+    moveScreen(direction) {
         if(this.canOtherAction) {
             this.canOtherAction = false;
 
@@ -340,12 +293,12 @@ class Entity {
             });
 
             this.getServer().addTask(0, () => {
-                this.doScreenLeft();
+                this.doMoveScreen(direction);
             });
         }
     }
 
-    screenUp() {
+    moveMap(direction) {
         if(this.canOtherAction) {
             this.canOtherAction = false;
 
@@ -354,12 +307,13 @@ class Entity {
             });
 
             this.getServer().addTask(0, () => {
-                this.doScreenUp();
+                this.doMoveMap(direction);
             });
         }
     }
 
-    screenRight() {
+
+    moveWorld(direction) {
         if(this.canOtherAction) {
             this.canOtherAction = false;
 
@@ -368,83 +322,11 @@ class Entity {
             });
 
             this.getServer().addTask(0, () => {
-                this.doScreenRight();
+                this.doMoveWorld(direction);
             });
         }
     }
 
-    screenDown() {
-        if(this.canOtherAction) {
-            this.canOtherAction = false;
-
-            this.getServer().addTask(this.otherTime, () => {
-                this.canOtherAction = true;
-            });
-
-            this.getServer().addTask(0, () => {
-                this.doScreenDown();
-            });
-        }
-    }
-
-
-    mapUp() {
-        if(this.canOtherAction) {
-            this.canOtherAction = false;
-
-            this.getServer().addTask(this.otherTime, () => {
-                this.canOtherAction = true;
-            });
-
-            this.getServer().addTask(0, () => {
-                this.doMapUp();
-            });
-        }
-    }
-
-    mapDown() {
-        if(this.canOtherAction) {
-            this.canOtherAction = false;
-
-            this.getServer().addTask(this.otherTime, () => {
-                this.canOtherAction = true;
-            });
-
-            this.getServer().addTask(0, () => {
-                this.doMapDown();
-            });
-        }
-    }
-
-
-
-    worldUp() {
-        if(this.canOtherAction) {
-            this.canOtherAction = false;
-
-            this.getServer().addTask(this.otherTime, () => {
-                this.canOtherAction = true;
-            });
-
-            this.getServer().addTask(0, () => {
-                this.doWorldUp();
-            });
-        }
-    }
-
-    worldDown() {
-        if(this.canOtherAction) {
-            this.canOtherAction = false;
-
-            this.getServer().addTask(this.otherTime, () => {
-                this.canOtherAction = true;
-            });
-
-            this.getServer().addTask(0, () => {
-                this.doWorldDown();
-            });
-        }
-    }
 
 
 
@@ -477,14 +359,15 @@ class Entity {
     isNextStepAllowed() {
         // By default, check screen edges and if any entities in the direction block movement.
         let isFacingEdge = this.screen.isFacingEdge(this, this.direction);
-        let isScreen = this.screen.isScreen(this.direction);
-        if(isFacingEdge && !isScreen) {
+        let canCrossScreen = this.canCrossScreen();
+        let isScreenInDirection = this.isScreenInDirection(this.direction);
+        if(isFacingEdge && (!canCrossScreen || !isScreenInDirection)) {
             return false;
         }
         
         let overlappingEntities = this.screen.getOverlappingEntities(this, this.direction);
         for(let overlappingEntity of overlappingEntities) {
-            if(overlappingEntity.blocksMovement) {
+            if(this.isBlockedBy(overlappingEntity)) {
                 return false;
             }
         }
@@ -566,133 +449,64 @@ class Entity {
 
     // By default, movement happens one tile at a time, and if the edge is crossed then the entity moves to the next screen.
     // Also, if you move onto another entity, the two entities interact with each other.
-    doMoveLeft() {
-        this.x--;
-        if(this.x < 0) {
-            if(this.isScreenLeft()) {
-                this.x = this.screen.numTilesX - 1;
-                this.doScreenLeft();
-            }
-            else {
-                this.x++;
-            }
-        }
-
-        this.doCheckCollision();
-    }
-
-    doMoveUp() {
-        this.y--;
-        if(this.y < 0) {
-            if(this.isScreenUp()) {
+    doMove(direction) {
+        if(direction === "up") {
+            this.y--;
+            if(this.y < 0) {
                 this.y = this.screen.numTilesY - 1;
-                this.doScreenUp();
-            }
-            else {
-                this.y++;
+                this.doMoveScreen(direction);
             }
         }
-
-        this.doCheckCollision();
-    }
-
-    doMoveRight() {
-        this.x++;
-        if(this.x > this.screen.numTilesX - 1) {
-            if(this.isScreenRight()) {
-                this.x = 0;
-                this.doScreenRight();
-            }
-            else {
-                this.x--;
-            }
-        }
-
-        this.doCheckCollision();
-    }
-
-    doMoveDown() {
-        this.y++;
-        if(this.y > this.screen.numTilesY - 1) {
-            if(this.isScreenDown()) {
+        else if(direction === "down") {
+            this.y++;
+            if(this.y > this.screen.numTilesY - 1) {
                 this.y = 0;
-                this.doScreenDown();
+                this.doMoveScreen(direction);
             }
-            else {
-                this.y--;
+        }
+        else if(direction === "left") {
+            this.x--;
+            if(this.x < 0) {
+                this.x = this.screen.numTilesX - 1;
+                this.doMoveScreen(direction);
+            }
+        }
+        else if(direction === "right") {
+            this.x++;
+            if(this.x > this.screen.numTilesX - 1) {
+                this.x = 0;
+                this.doMoveScreen(direction);
             }
         }
 
         this.doCheckCollision();
     }
 
-
-
-    isScreenLeft() {
-        return this.screen.isScreenLeft();
+    doWait() {
+        // By default, do nothing.
     }
 
-    isScreenUp() {
-        return this.screen.isScreenUp();
+    isScreenInDirection(direction) {
+        return this.screen.isScreenInDirection(direction);
     }
 
-    isScreenRight() {
-        return this.screen.isScreenRight();
-    }
-
-    isScreenDown() {
-        return this.screen.isScreenDown();
-    }
-
-    doScreenLeft() {
-        let newScreen = this.screen.getScreenLeft();
+    doMoveScreen(direction) {
+        let newScreen = this.screen.getScreenInDirection(direction);
         this.doTeleport(newScreen, this.x, this.y);
     }
 
-    doScreenUp() {
-        let newScreen = this.screen.getScreenUp();
-        this.doTeleport(newScreen, this.x, this.y);
-    }
-
-    doScreenRight() {
-        let newScreen = this.screen.getScreenRight();
-        this.doTeleport(newScreen, this.x, this.y);
-    }
-
-    doScreenDown() {
-        let newScreen = this.screen.getScreenDown();
-        this.doTeleport(newScreen, this.x, this.y);
-    }
-
-
-
-
-    doMapUp() {
-        let newMap = this.screen.getMapUp();
+    doMoveMap(direction) {
+        let newMap = this.screen.getMapInDirection(direction);
         let newScreen = newMap.getScreenByPosition(this.screen.x, this.screen.y);
         this.doTeleport(newScreen, this.x, this.y);
     }
 
-    doMapDown() {
-        let newMap = this.screen.getMapDown();
-        let newScreen = newMap.getScreenByPosition(this.screen.x, this.screen.y);
-        this.doTeleport(newScreen, this.x, this.y);
-    }
-
-    doWorldUp() {
-        let newWorld = this.screen.getWorldUp();
+    doMoveWorld(direction) {
+        let newWorld = this.screen.getWorldInDirection(direction);
         let newMap = newWorld.getMapByPosition(this.getMap().id);
         let newScreen = newMap.getScreenByPosition(this.screen.x, this.screen.y);
         this.doTeleport(newScreen, this.x, this.y);
     }
-
-    doWorldDown() {
-        let newWorld = this.screen.getWorldDown();
-        let newMap = newWorld.getMapByPosition(this.getMap().id);
-        let newScreen = newMap.getScreenByPosition(this.screen.x, this.screen.y);
-        this.doTeleport(newScreen, this.x, this.y);
-    }
-
 
     addToPurse(gold) {
         if(this.canPurse) {
@@ -859,6 +673,16 @@ class Entity {
     clone(number) {
         // By default, just create another instance.
         return this.getWorld().createInstance(this.id, number);
+    }
+
+    isBlockedBy(entity) {
+        // By default, an entity is blocked by any other entity that blocks movement.
+        return entity.blocksMovement;
+    }
+
+    canCrossScreen() {
+        // By default, an entity can cross into any screen that exists.
+        return true;
     }
 }
 

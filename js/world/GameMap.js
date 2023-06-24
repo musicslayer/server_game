@@ -59,45 +59,52 @@ class GameMap {
         this.screenPosMap.set(key, screen);
     }
 
-    getScreen(name) {
+    getScreenByName(name) {
         return this.screenMap.get(name);
     }
 
-    isScreenUp(screen) {
-        return this.isScreenByPosition(screen.x, screen.y - 1);
+    isScreenInDirection(screen, direction) {
+        let bool;
+
+        if(direction === "up") {
+            bool = this.isScreenByPosition(screen.x, screen.y - 1);
+        }
+        else if(direction === "down") {
+            bool = this.isScreenByPosition(screen.x, screen.y + 1);
+        }
+        else if(direction === "left") {
+            bool = this.isScreenByPosition(screen.x - 1, screen.y);
+        }
+        else if(direction === "right") {
+            bool = this.isScreenByPosition(screen.x + 1, screen.y);
+        }
+
+        return bool;
     }
 
-    isScreenDown(screen) {
-        return this.isScreenByPosition(screen.x, screen.y + 1);
-    }
-
-    isScreenLeft(screen) {
-        return this.isScreenByPosition(screen.x - 1, screen.y);
-    }
-
-    isScreenRight(screen) {
-        return this.isScreenByPosition(screen.x + 1, screen.y);
-    }
 
     isScreenByPosition(screenX, screenY) {
         let key = [screenX, screenY].join(",");
         return this.screenPosMap.has(key);
     }
 
-    getScreenUp(screen) {
-        return this.getScreenByPosition(screen.x, screen.y - 1);
-    }
+    getScreenInDirection(screen, direction) {
+        let newScreen;
 
-    getScreenDown(screen) {
-        return this.getScreenByPosition(screen.x, screen.y + 1);
-    }
+        if(direction === "up") {
+            newScreen = this.getScreenByPosition(screen.x, screen.y - 1);
+        }
+        else if(direction === "down") {
+            newScreen = this.getScreenByPosition(screen.x, screen.y + 1);
+        }
+        else if(direction === "left") {
+            newScreen = this.getScreenByPosition(screen.x - 1, screen.y);
+        }
+        else if(direction === "right") {
+            newScreen = this.getScreenByPosition(screen.x + 1, screen.y);
+        }
 
-    getScreenLeft(screen) {
-        return this.getScreenByPosition(screen.x - 1, screen.y);
-    }
-
-    getScreenRight(screen) {
-        return this.getScreenByPosition(screen.x + 1, screen.y);
+        return newScreen;
     }
 
     getScreenByPosition(screenX, screenY) {
@@ -112,6 +119,10 @@ class GameMap {
         return screen;
     }
 
+    getMapInDirection(direction) {
+        return this.world.getMapInDirection(this, direction);
+    }
+
     createVoidScreen(screenX, screenY) {
         let voidScreen = new VoidScreen();
         voidScreen.map = this;
@@ -121,14 +132,6 @@ class GameMap {
         voidScreen.loadScreenFromFile(this.voidMapFolder + "void.txt");
         
         return voidScreen;
-    }
-
-    getMapUp() {
-        return this.world.getMapUp(this);
-    }
-
-    getMapDown() {
-        return this.world.getMapDown(this);
     }
 }
 

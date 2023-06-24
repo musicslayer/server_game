@@ -9,9 +9,7 @@ const Server = require("./server/Server.js");
 // TODO Players that die should drop their inventory if they are in PVP zone?
 // TODO How to save/load server state?
 
-// TODO Monster spawners should recognize individual monsters and give them all spearate timers? Or have a spawner for each monster / set of monsters (e.g. swarm of bugs)
-// TODO Monster spawn needs to start only after the monster dies? (for individual monster at least)
-// TODO Let monsters move around!
+// Players should block movement? Do we need variables like "isTangible"
 
 async function init() {
     // Load game server

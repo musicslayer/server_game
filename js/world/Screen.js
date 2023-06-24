@@ -20,14 +20,6 @@ class Screen {
     otherEntities = [];
     playerEntities = [];
 
-    getServer() {
-        return this.map.world.server;
-    }
-
-    getWorld() {
-        return this.map.world;
-    }
-
     loadScreenFromFile(screenFile) {
         let tileData = fs.readFileSync(screenFile, "ascii");
         let lines = tileData ? tileData.split(CRLF) : [];
@@ -139,23 +131,8 @@ class Screen {
         return isFacingEdge;
     }
 
-    isScreen(direction) {
-        let isFacingScreen;
-
-        if(direction === "up") {
-            isFacingScreen = this.isScreenUp();
-        }
-        else if(direction === "down") {
-            isFacingScreen = this.isScreenDown();
-        }
-        else if(direction === "left") {
-            isFacingScreen = this.isScreenLeft();
-        }
-        else if(direction === "right") {
-            isFacingScreen = this.isScreenRight();
-        }
-
-        return isFacingScreen;
+    isScreenInDirection(direction) {
+        return this.map.isScreenInDirection(this, direction);
     }
 
     getOverlappingEntities(entity, direction) {
@@ -203,54 +180,26 @@ class Screen {
         return highestEntity;
     }
 
-    isScreenUp() {
-        return this.map.isScreenUp(this);
+    getScreenInDirection(direction) {
+        return this.map.getScreenInDirection(this, direction);
     }
 
-    isScreenDown() {
-        return this.map.isScreenDown(this);
+    getMapInDirection(direction) {
+        return this.map.getMapInDirection(direction);
     }
 
-    isScreenLeft() {
-        return this.map.isScreenLeft(this);
-    }
-
-    isScreenRight() {
-        return this.map.isScreenRight(this);
-    }
-
-    getScreenUp() {
-        return this.map.getScreenUp(this);
-    }
-
-    getScreenDown() {
-        return this.map.getScreenDown(this);
-    }
-
-    getScreenLeft() {
-        return this.map.getScreenLeft(this);
-    }
-
-    getScreenRight() {
-        return this.map.getScreenRight(this);
+    getWorldInDirection(direction) {
+        return this.map.world.getWorldInDirection(direction);
     }
 
 
 
-    getMapUp() {
-        return this.map.getMapUp();
+    getServer() {
+        return this.map.world.server;
     }
 
-    getMapDown() {
-        return this.map.getMapDown();
-    }
-
-    getWorldUp() {
-        return this.map.world.getWorldUp();
-    }
-
-    getWorldDown() {
-        return this.map.world.getWorldDown();
+    getWorld() {
+        return this.map.world;
     }
 }
 

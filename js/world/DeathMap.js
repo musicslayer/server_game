@@ -18,11 +18,7 @@ class DeathMap extends GameMap {
         return deathScreen;
     }
 
-    getMapUp() {
-        return this;
-    }
-
-    getMapDown() {
+    getMapInDirection(direction) {
         return this;
     }
 }

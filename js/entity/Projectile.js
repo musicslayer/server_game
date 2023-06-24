@@ -11,10 +11,9 @@ class Projectile extends Entity {
     isCollision;
     movementTime = 0.05;
 
-    constructor(owner, direction, range, damage, isMulti) {
+    constructor(direction, range, damage, isMulti) {
         super();
 
-        this.owner = owner;
         this.direction = direction;
         this.range = range;
         this.damage = damage;
@@ -31,6 +30,7 @@ class Projectile extends Entity {
 
     doSpawn() {
         super.doSpawn();
+
         this.getServer().addTask(0, () => {
             this.moveProjectile();
         });
@@ -53,60 +53,33 @@ class Projectile extends Entity {
             return;
         }
 
-        if(this.direction === "left") {
-            this.moveLeft();
-        }
-        else if(this.direction === "right") {
-            this.moveRight();
-        }
-        else if(this.direction === "up") {
-            this.moveUp();
-        }
-        else if(this.direction === "down") {
-            this.moveDown();
-        }
+        this.move(this.direction);
     }
 
-    doMoveLeft() {
-        this.x--;
+    doMove(direction) {
+        if(direction === "up") {
+            this.y--;
+        }
+        else if(direction === "down") {
+            this.y++;
+        }
+        else if(direction === "left") {
+            this.x--;
+        }
+        else if(direction === "right") {
+            this.x++;
+        }
+
         this.range--;
         this.moveProjectile();
     }
 
-    doMoveUp() {
-        this.y--;
-        this.range--;
-        this.moveProjectile();
+    isBlockedBy(entity) {
+        return entity.blocksAction;
     }
 
-    doMoveRight() {
-        this.x++;
-        this.range--;
-        this.moveProjectile();
-    }
-
-    doMoveDown() {
-        this.y++;
-        this.range--;
-        this.moveProjectile();
-    }
-
-    isNextStepAllowed() {
-        // By default, check screen edges and if any entities in the direction block actions.
-        // Projectiles can never cross screen edges even if the next screen exists.
-        let isFacingEdge = this.screen.isFacingEdge(this, this.direction);
-        if(isFacingEdge) {
-            return false;
-        }
-
-        let overlappingEntities = this.screen.getOverlappingEntities(this, this.direction);
-        for(let overlappingEntity of overlappingEntities) {
-            if(overlappingEntity.blocksAction) {
-                return false;
-            }
-        }
-
-        return true;
+    canCrossScreen() {
+        return false;
     }
 }
 

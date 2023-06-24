@@ -70,16 +70,21 @@ class World {
         this.gameMapPosMap.set(map.id, map);
     }
 
-    getMap(name) {
+    getMapByName(name) {
         return this.gameMapMap.get(name);
     }
 
-    getMapUp(map) {
-        return this.getMapByPosition(map.id + 1);
-    }
+    getMapInDirection(map, direction) {
+        let newMap;
 
-    getMapDown(map) {
-        return this.getMapByPosition(map.id - 1);
+        if(direction === "up") {
+            newMap = this.getMapByPosition(map.id + 1);
+        }
+        else if(direction === "down") {
+            newMap = this.getMapByPosition(map.id - 1);
+        }
+
+        return newMap;
     }
 
     getMapByPosition(p) {
@@ -98,12 +103,8 @@ class World {
         return map;
     }
 
-    getWorldUp() {
-        return this.server.getWorldUp(this);
-    }
-
-    getWorldDown() {
-        return this.server.getWorldDown(this);
+    getWorldInDirection(direction) {
+        return this.server.getWorldInDirection(this, direction);
     }
 
     spawn(id, number, screen, x, y, ...args) {
