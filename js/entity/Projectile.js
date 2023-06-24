@@ -29,9 +29,11 @@ class Projectile extends Entity {
         return "A blast of magical energy.";
     }
 
-    doSpawn(world, map, screen, x, y) {
-        super.doSpawn(world, map, screen, x, y);
-        this.getServer().addTask(0, () => { this.moveProjectile(); });
+    doSpawn() {
+        super.doSpawn();
+        this.getServer().addTask(0, () => {
+            this.moveProjectile();
+        });
     }
 
     doInteract(entity) {

@@ -39,8 +39,8 @@ class PlayerMage extends Entity {
         return "A character controlled by a real-life person.";
     }
 
-    doSpawn(screen, x, y) {
-        super.doSpawn(screen, x, y);
+    doSpawn() {
+        super.doSpawn();
         
         // Register regen tasks.
         this.getServer().addRefreshTask(1, () => {

@@ -1,1 +1,2 @@
 2,2|floor,red|
+5,5||monster_spawner

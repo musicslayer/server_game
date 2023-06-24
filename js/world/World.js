@@ -98,10 +98,6 @@ class World {
         return map;
     }
 
-    getMapPosition(map) {
-        return this.gameMaps.indexOf(map);
-    }
-
     getWorldUp() {
         return this.server.getWorldUp(this);
     }

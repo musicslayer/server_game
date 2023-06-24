@@ -1,19 +1,20 @@
-const PlayerMage = require("../entity/PlayerMage.js");
-const PlayerWarrior = require("../entity/PlayerWarrior.js");
-const Gold = require("../entity/Gold.js");
-const PVPToken = require("../entity/PVPToken.js");
-const Wall = require("../entity/Wall.js");
-const FireTrap = require("../entity/FireTrap.js");
 const DeathTrap = require("../entity/DeathTrap.js");
+const FireTrap = require("../entity/FireTrap.js");
+const Gold = require("../entity/Gold.js");
 const HealthPotion = require("../entity/HealthPotion.js");
 const HomePortal = require("../entity/HomePortal.js");
-const ManaPotion = require("../entity/ManaPotion.js");
 const InvinciblePotion = require("../entity/InvinciblePotion.js");
-const Projectile = require("../entity/Projectile.js");
+const ManaPotion = require("../entity/ManaPotion.js");
 const Monster = require("../entity/Monster.js");
-const Teleporter = require("../entity/Teleporter.js");
+const MonsterSpawner = require("../entity/MonsterSpawner.js");
+const PlayerMage = require("../entity/PlayerMage.js");
+const PlayerWarrior = require("../entity/PlayerWarrior.js");
+const Projectile = require("../entity/Projectile.js");
+const PVPToken = require("../entity/PVPToken.js");
 const RevivePortal = require("../entity/RevivePortal.js");
+const Teleporter = require("../entity/Teleporter.js");
 const UnknownEntity = require("../entity/UnknownEntity.js");
+const Wall = require("../entity/Wall.js");
 
 class EntitySpawner {
     spawn(id, number, screen, x, y, ...args) {
@@ -74,6 +75,9 @@ class EntitySpawner {
                 break;
             case "monster":
                 entity = new Monster(...args);
+                break;
+            case "monster_spawner":
+                entity = new MonsterSpawner(...args);
                 break;
             case "player_mage":
                 entity = new PlayerMage(...args);

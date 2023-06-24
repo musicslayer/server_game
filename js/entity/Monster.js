@@ -25,6 +25,10 @@ class Monster extends Entity {
             this.getRootEntity(entity).doAddExperience(this.experienceReward);
             this.getWorld().spawnAsLoot("gold", 100, this.screen, this.x, this.y);
             this.doDespawn();
+
+            if(this.owner) {
+                this.owner.monsterCount--;
+            }
         }
     }
 }

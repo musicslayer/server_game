@@ -71,6 +71,9 @@ function attachListeners(socket, client, username) {
 	// Respond to key presses.
 	socket.on("on_key_press", (keys, callback) => {
 		performInputTask(username, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
 			if(!validateKeys(keys)) {
 				return;
 			}
@@ -83,6 +86,9 @@ function attachListeners(socket, client, username) {
 	// Respond to controller button presses.
 	socket.on("on_controller_press", (buttons, callback) => {
 		performInputTask(username, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
 			if(!validateButtons(buttons)) {
 				return;
 			}
@@ -95,6 +101,9 @@ function attachListeners(socket, client, username) {
 	// Respond to controller analog sticks.
 	socket.on("on_controller_sticks", (axes, callback) => {
 		performInputTask(username, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
 			if(!validateAxes(axes)) {
 				return;
 			}
@@ -107,6 +116,9 @@ function attachListeners(socket, client, username) {
 	// Respond to mouse clicks.
 	socket.on("on_mouse_click", (button, location, info, callback) => {
 		performInputTask(username, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
 			if(!validateMouse(button, location, info)) {
 				return;
 			}
@@ -119,6 +131,9 @@ function attachListeners(socket, client, username) {
 	// Respond to mouse drags.
 	socket.on("on_mouse_drag", (button, location1, info1, location2, info2, callback) => {
 		performInputTask(username, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
 			if(!validateMouse(button, location2, info2)) {
 				return;
 			}
@@ -134,6 +149,10 @@ function attachListeners(socket, client, username) {
 	// Send the client all the data needed to draw the player's screen.
 	socket.on("get_client_data", (callback) => {
 		performDataTask(username, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
+
 			let clientData = client.getClientData();
 			callback(clientData);
 		});
@@ -142,6 +161,10 @@ function attachListeners(socket, client, username) {
 	// Send certain developer data to the client.
 	socket.on("get_dev_data", (callback) => {
 		performDevTask(username, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
+
 			let devData = client.getDevData();
 			callback(devData);
 		});
@@ -188,6 +211,10 @@ function performDevTask(username, task) {
 	}
 }
 
+function validateCallback(callback) {
+	return isFunction(callback);
+}
+
 function validateKeys(keys) {
 	return isNumberArray(keys, 20);
 }
@@ -226,8 +253,8 @@ function validateMouseInputs(location, info) {
 	}
 }
 
-function isString(value) {
-	return typeof value === "string" || value instanceof String;
+function isFunction(value) {
+	return typeof value === "function" || value instanceof Function;
 }
 
 function isNumber(value) {
@@ -236,6 +263,10 @@ function isNumber(value) {
 
 function isNumberArray(value, maxLength) {
 	return Array.isArray(value) && value.length <= maxLength && value.every((v) => isNumber(v));
+}
+
+function isString(value) {
+	return typeof value === "string" || value instanceof String;
 }
 
 module.exports.createSocketIOServer = createSocketIOServer;

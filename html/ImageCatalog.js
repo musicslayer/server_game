@@ -70,6 +70,9 @@ class ImageCatalog {
             case "monster":
                 image = this.getImage("creature", "monster");
                 break;
+			case "monster_spawner":
+                image = this.getImage("creature", "monster_spawner");
+                break;
             case "player_mage":
                 image = this.getImage("player", "mage");
                 break;
