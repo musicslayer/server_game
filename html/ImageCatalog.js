@@ -64,8 +64,14 @@ class ImageCatalog {
             case "invincible_potion":
                 image = this.getImage("item", "invincible_potion");
                 break;
+			case "magic_projectile":
+                image = this.getImage("magic", "orb");
+                break;
             case "mana_potion":
                 image = this.getImage("item", "mana_potion");
+                break;
+			case "melee_projectile":
+                image = this.getImage("melee", "orb");
                 break;
             case "monster":
                 image = this.getImage("creature", "monster");
@@ -78,9 +84,6 @@ class ImageCatalog {
                 break;
 			case "player_warrior":
                 image = this.getImage("player", "warrior");
-                break;
-            case "projectile":
-                image = this.getImage("magic", "orb");
                 break;
             case "pvp_token":
                 image = this.getImage("item", "pvp_token");

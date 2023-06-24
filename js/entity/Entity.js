@@ -1,33 +1,33 @@
 const Util = require("../util/Util.js");
 
 class Entity {
-    // e.g. The entity that spawned a projectile is the owner.
-    owner;
+    id; // Each subclass should have a unique ID.
+    owner; // e.g. The entity that spawned a projectile is the owner.
 
-    // Each subclass should have a unique ID.
-    id;
+    inventory;
+    purse;
 
     screen;
     x;
     y;
+    animationShiftX = 0;
+    animationShiftY = 0;
 
     // Certain entities (i.e. players) can teleport home, so store the desired location here.
     homeMapName;
     homeScreenName;
     homeX = 1;
     homeY = 1;
+    
 
-    inventory;
-    purse;
 
-    animationShiftX = 0;
-    animationShiftY = 0;
+    isPlayer = false;
+    isTangible = false; // Tangible objects block movement and can interact with projectiles.
+    isActionBlocker = false; // Action blockers block projectiles without interacting with them.
 
-    isMoving = false;
 
-    isTangible = false;
-    blocksMovement = false;
-    blocksAction = false;
+
+    isMoveInProgress = false;
 
     canMove = true;
     canAction = true;
@@ -236,12 +236,12 @@ class Entity {
     }
 
     move(direction) {
-        if(!this.isMoving) {
+        if(!this.isMoveInProgress) {
             this.direction = direction;
         }
 
         if(this.canMove && this.isNextStepAllowed(direction)) {
-            this.isMoving = true;
+            this.isMoveInProgress = true;
             this.canMove = false;
             
             for(let a = 0; a < this.getServer().MOVEMENT_FRAMES; a++) {
@@ -256,7 +256,7 @@ class Entity {
                 this.animationShiftX = 0;
                 this.animationShiftY = 0;
 
-                this.isMoving = false;
+                this.isMoveInProgress = false;
                 this.canMove = true;
 
                 this.doMove(direction);
@@ -651,8 +651,8 @@ class Entity {
     }
 
     isBlockedBy(entity) {
-        // By default, an entity is blocked by any other entity that blocks movement.
-        return entity.blocksMovement;
+        // By default, an entity is blocked from moving by any other tangible entity.
+        return entity.isTangible;
     }
 
     canCrossScreen() {

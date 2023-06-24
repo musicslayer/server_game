@@ -4,12 +4,13 @@ const Gold = require("../entity/Gold.js");
 const HealthPotion = require("../entity/HealthPotion.js");
 const HomePortal = require("../entity/HomePortal.js");
 const InvinciblePotion = require("../entity/InvinciblePotion.js");
+const MagicProjectile = require("../entity/MagicProjectile.js");
 const ManaPotion = require("../entity/ManaPotion.js");
+const MeleeProjectile = require("../entity/MeleeProjectile.js");
 const Monster = require("../entity/Monster.js");
 const MonsterSpawner = require("../entity/MonsterSpawner.js");
 const PlayerMage = require("../entity/PlayerMage.js");
 const PlayerWarrior = require("../entity/PlayerWarrior.js");
-const Projectile = require("../entity/Projectile.js");
 const PVPToken = require("../entity/PVPToken.js");
 const RevivePortal = require("../entity/RevivePortal.js");
 const Teleporter = require("../entity/Teleporter.js");
@@ -70,8 +71,14 @@ class EntitySpawner {
             case "invincible_potion":
                 entity = new InvinciblePotion(...args);
                 break;
+            case "magic_projectile":
+                entity = new MagicProjectile(...args);
+                break;
             case "mana_potion":
                 entity = new ManaPotion(...args);
+                break;
+            case "melee_projectile":
+                entity = new MeleeProjectile(...args);
                 break;
             case "monster":
                 entity = new Monster(...args);
@@ -84,9 +91,6 @@ class EntitySpawner {
                 break;
             case "player_warrior":
                 entity = new PlayerWarrior(...args);
-                break;
-            case "projectile":
-                entity = new Projectile(...args);
                 break;
             case "pvp_token":
                 entity = new PVPToken(...args);

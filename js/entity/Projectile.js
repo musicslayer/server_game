@@ -2,8 +2,6 @@ const Entity = require("./Entity.js");
 const Util = require("../util/Util.js");
 
 class Projectile extends Entity {
-    id = "projectile";
-
     direction;
     range;
     damage;
@@ -19,14 +17,6 @@ class Projectile extends Entity {
         this.range = range;
         this.damage = damage;
         this.isMulti = isMulti;
-    }
-
-    getName() {
-        return "Projectile";
-    }
-
-    getInfo() {
-        return "A blast of magical energy.";
     }
 
     doSpawn() {
@@ -67,7 +57,7 @@ class Projectile extends Entity {
     }
 
     isBlockedBy(entity) {
-        return entity.blocksAction;
+        return entity.isActionBlocker;
     }
 
     canCrossScreen() {

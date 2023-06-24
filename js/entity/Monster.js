@@ -1,4 +1,5 @@
 const Entity = require("./Entity.js");
+const MonsterAI = require("../ai/MonsterAI.js");
 const Util = require("../util/Util.js");
 
 class Monster extends Entity {
@@ -9,9 +10,13 @@ class Monster extends Entity {
     experienceReward = 20;
 
     isTangible = true;
-    blocksMovement = true;
 
     movementTime = 1;
+
+    ai = new MonsterAI();
+
+    aggroMap = new Map();
+    lastPlayer;
 
     getName() {
         return "Monster";
@@ -22,10 +27,21 @@ class Monster extends Entity {
     }
 
     doTakeDamage(entity, damage) {
-        this.health = Math.max(this.health - damage, 0);
+        //this.health = Math.max(this.health - damage, 0);
+
+        let rootEntity = this.getRootEntity(entity);
+
+        // If damage came from a player, increase aggro.
+        if(rootEntity.isPlayer) {
+            this.lastPlayer = rootEntity;
+
+            let aggro = this.aggroMap.get(rootEntity) ?? 0;
+            aggro++;
+            this.aggroMap.set(rootEntity, aggro);
+        }
 
         if(this.health === 0) {
-            this.getRootEntity(entity).doAddExperience(this.experienceReward);
+            rootEntity.doAddExperience(this.experienceReward);
             this.getWorld().spawnAsLoot("gold", 100, this.screen, this.x, this.y);
             this.doDespawn();
 
@@ -35,24 +51,58 @@ class Monster extends Entity {
         }
     }
 
+    getAggroPlayer() {
+        // Returns the player that currently has the aggro.
+        let players = [];
+
+        // First find max aggro.
+        let max = 0;
+        for(let player of this.screen.playerEntities) {
+            let aggro = this.aggroMap.get(player) ?? 0;
+            max = Math.max(max, aggro);
+
+            if(max === aggro) {
+                players.push(player);
+            }
+        }
+
+        if(max === 0 || players.length === 0) {
+            // If no players have non-zero aggro, than don't target anyone.
+            return undefined;
+        }
+
+        // If the last player to hit the monster is tied for first, choose that one.
+        if(players.includes(this.lastPlayer)) {
+            return this.lastPlayer;
+        }
+
+        // Otherwise, just return the first player in the array.
+        return players[0];
+    }
+
     doSpawn() {
         super.doSpawn();
 
         this.getServer().addTask(0, () => {
-            this.moveMonster();
+            //this.moveMonster();
+            this.ai.generateNextActivity(this);
         });
     }
 
-    moveMonster() {
-        // Randomly pick a new valid direction, or wait if there isn't anywhere the monster can move.
-        let randomDirection = this.getRandomValidDirection();
+    attack() {
+        // Spawn a "melee projectile" representing a melee attack.
+        let x = this.x;
+        let y = this.y;
 
-        if(randomDirection) {
-            this.move(randomDirection);
+        // If the monster is moving, fire the projectile ahead of the motion.
+        if(this.isMoveInProgress) {
+            let [shiftX, shiftY] = Util.getDirectionalShift(this.direction);
+            x += shiftX;
+            y += shiftY;
         }
-        else {
-            this.wait();
-        }
+
+        let projectile = this.getWorld().spawn("melee_projectile", 1, this.screen, x, y, this.direction, 1, 40, false);
+        projectile.owner = this;
     }
 
     doMove(direction) {
@@ -60,35 +110,17 @@ class Monster extends Entity {
         this.x += shiftX;
         this.y += shiftY;
 
-        this.moveMonster();
+        //this.moveMonster();
+        this.ai.generateNextActivity(this);
     }
 
     doWait() {
-        this.moveMonster();
+        //this.moveMonster();
+        this.ai.generateNextActivity(this);
     }
 
     canCrossScreen() {
         return false;
-    }
-
-    getRandomValidDirection() {
-        // Returns a direction that the monster can move in, or else returns undefined.
-        let directions = [];
-        if(this.isNextStepAllowed("up")) {
-            directions.push("up");
-        }
-        if(this.isNextStepAllowed("down")) {
-            directions.push("down");
-        }
-        if(this.isNextStepAllowed("left")) {
-            directions.push("left");
-        }
-        if(this.isNextStepAllowed("right")) {
-            directions.push("right");
-        }
-    
-        let R = Util.getRandomInt(directions.length);
-        return directions[R];
     }
 }
 

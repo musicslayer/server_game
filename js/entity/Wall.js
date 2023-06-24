@@ -12,8 +12,7 @@ class Wall extends Entity {
     }
 
     isTangible = true;
-    blocksMovement = true;
-    blocksAction = true;
+    isActionBlocker = true;
 }
 
 module.exports = Wall;
