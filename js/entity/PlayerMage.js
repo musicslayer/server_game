@@ -1,6 +1,7 @@
 const Entity = require("./Entity.js");
 const Purse = require("./Purse.js");
 const Inventory = require("./Inventory.js");
+const Util = require("../util/Util.js");
 
 class PlayerMage extends Entity {
     id = "player_mage";
@@ -137,18 +138,9 @@ class PlayerMage extends Entity {
 
         // If the player is moving, fire the projectile ahead of the motion.
         if(this.isMoving) {
-            if(this.direction === "up") {
-                y--;
-            }
-            else if(this.direction === "down") {
-                y++;
-            }
-            else if(this.direction === "left") {
-                x--;
-            }
-            else if(this.direction === "right") {
-                x++;
-            }
+            let [shiftX, shiftY] = Util.getDirectionalShift(this.direction);
+            x += shiftX;
+            y += shiftY;
         }
         
         let projectile = this.getWorld().spawn("projectile", 1, this.screen, x, y, this.direction, 8, 40, false);

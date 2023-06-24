@@ -2,6 +2,7 @@ const fs = require("fs");
 
 const Screen = require("./Screen.js");
 const VoidScreen = require("./VoidScreen.js");
+const Util = require("../util/Util.js");
 
 const COMMA = ",";
 const CRLF = "\r\n";
@@ -64,22 +65,8 @@ class GameMap {
     }
 
     isScreenInDirection(screen, direction) {
-        let bool;
-
-        if(direction === "up") {
-            bool = this.isScreenByPosition(screen.x, screen.y - 1);
-        }
-        else if(direction === "down") {
-            bool = this.isScreenByPosition(screen.x, screen.y + 1);
-        }
-        else if(direction === "left") {
-            bool = this.isScreenByPosition(screen.x - 1, screen.y);
-        }
-        else if(direction === "right") {
-            bool = this.isScreenByPosition(screen.x + 1, screen.y);
-        }
-
-        return bool;
+        let [shiftX, shiftY] = Util.getDirectionalShift(direction);
+        return this.isScreenByPosition(screen.x + shiftX, screen.y + shiftY);
     }
 
 
@@ -89,22 +76,8 @@ class GameMap {
     }
 
     getScreenInDirection(screen, direction) {
-        let newScreen;
-
-        if(direction === "up") {
-            newScreen = this.getScreenByPosition(screen.x, screen.y - 1);
-        }
-        else if(direction === "down") {
-            newScreen = this.getScreenByPosition(screen.x, screen.y + 1);
-        }
-        else if(direction === "left") {
-            newScreen = this.getScreenByPosition(screen.x - 1, screen.y);
-        }
-        else if(direction === "right") {
-            newScreen = this.getScreenByPosition(screen.x + 1, screen.y);
-        }
-
-        return newScreen;
+        let [shiftX, shiftY] = Util.getDirectionalShift(direction);
+        return this.getScreenByPosition(screen.x + shiftX, screen.y + shiftY);
     }
 
     getScreenByPosition(screenX, screenY) {

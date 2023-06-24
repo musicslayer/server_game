@@ -1,4 +1,5 @@
 const Entity = require("./Entity.js");
+const Util = require("../util/Util.js");
 
 class Monster extends Entity {
     id = "monster";
@@ -43,13 +44,11 @@ class Monster extends Entity {
     }
 
     moveMonster() {
-        // Randomly pick a new direction.
+        // Randomly pick a new valid direction, or wait if there isn't anywhere the monster can move.
+        let randomDirection = this.getRandomValidDirection();
 
-        // TODO Only pick a direction that is allowed to try and avoid waiting.
-        this.direction = getRandomDirection();
-
-        if(this.isNextStepAllowed()) {
-            this.move(this.direction);
+        if(randomDirection) {
+            this.move(randomDirection);
         }
         else {
             this.wait();
@@ -57,18 +56,9 @@ class Monster extends Entity {
     }
 
     doMove(direction) {
-        if(direction === "up") {
-            this.y--;
-        }
-        else if(direction === "down") {
-            this.y++;
-        }
-        else if(direction === "left") {
-            this.x--;
-        }
-        else if(direction === "right") {
-            this.x++;
-        }
+        let [shiftX, shiftY] = Util.getDirectionalShift(direction);
+        this.x += shiftX;
+        this.y += shiftY;
 
         this.moveMonster();
     }
@@ -80,30 +70,26 @@ class Monster extends Entity {
     canCrossScreen() {
         return false;
     }
-}
 
-function getRandomDirection() {
-    let R = getRandomInt(4);
-
-    let direction;
-    if(R === 0) {
-        direction = "left";
+    getRandomValidDirection() {
+        // Returns a direction that the monster can move in, or else returns undefined.
+        let directions = [];
+        if(this.isNextStepAllowed("up")) {
+            directions.push("up");
+        }
+        if(this.isNextStepAllowed("down")) {
+            directions.push("down");
+        }
+        if(this.isNextStepAllowed("left")) {
+            directions.push("left");
+        }
+        if(this.isNextStepAllowed("right")) {
+            directions.push("right");
+        }
+    
+        let R = Util.getRandomInt(directions.length);
+        return directions[R];
     }
-    else if(R === 1) {
-        direction = "right";
-    }
-    else if(R === 2) {
-        direction = "up";
-    }
-    else if(R === 3) {
-        direction = "down";
-    }
-
-    return direction;
-}
-
-function getRandomInt(max) {
-    return Math.floor(Math.random() * max);
 }
 
 module.exports = Monster;

@@ -1,4 +1,5 @@
 const Entity = require("./Entity.js");
+const Util = require("../util/Util.js");
 
 class Projectile extends Entity {
     id = "projectile";
@@ -48,7 +49,7 @@ class Projectile extends Entity {
         // Do this immediately so that projectiles can hit things overlapping the owner.
         this.doCheckCollision();
 
-        if(this.range === 0 || !this.isNextStepAllowed() || (this.isCollision && !this.isMulti)) {
+        if(this.range === 0 || !this.isNextStepAllowed(this.direction) || (this.isCollision && !this.isMulti)) {
             this.despawn();
             return;
         }
@@ -57,18 +58,9 @@ class Projectile extends Entity {
     }
 
     doMove(direction) {
-        if(direction === "up") {
-            this.y--;
-        }
-        else if(direction === "down") {
-            this.y++;
-        }
-        else if(direction === "left") {
-            this.x--;
-        }
-        else if(direction === "right") {
-            this.x++;
-        }
+        let [shiftX, shiftY] = Util.getDirectionalShift(direction);
+        this.x += shiftX;
+        this.y += shiftY;
 
         this.range--;
         this.moveProjectile();

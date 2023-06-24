@@ -1,6 +1,7 @@
 const { Worker } = require("worker_threads");
 
 const World = require("../world/World.js");
+const Util = require("../util/Util.js");
 
 class Server {
     // These variables affect server performance.
@@ -39,16 +40,8 @@ class Server {
 
     getWorldInDirection(world, direction) {
         // If the new world does not exist, return the original world so nothing changes.
-        let newWorld;
-
-        if(direction === "up") {
-            newWorld = this.getWorldByPosition(world.id + 1) ?? world;
-        }
-        else if(direction === "down") {
-            newWorld = this.getWorldByPosition(world.id - 1) ?? world;
-        }
-
-        return newWorld;
+        let [, shiftY] = Util.getDirectionalShift(direction);
+        return this.getWorldByPosition(world.id - shiftY) ?? world; // Use opposite of shift for world position.
     }
 
     getWorldByPosition(p) {

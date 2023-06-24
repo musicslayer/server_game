@@ -1,3 +1,5 @@
+const Util = require("../util/Util.js");
+
 class Entity {
     // e.g. The entity that spawned a projectile is the owner.
     owner;
@@ -234,29 +236,20 @@ class Entity {
     }
 
     move(direction) {
-        if(!this.isMoving && direction) {
+        if(!this.isMoving) {
             this.direction = direction;
         }
 
-        if(this.canMove && (direction === undefined || this.isNextStepAllowed())) {
+        if(this.canMove && this.isNextStepAllowed(direction)) {
             this.isMoving = true;
             this.canMove = false;
             
             for(let a = 0; a < this.getServer().MOVEMENT_FRAMES; a++) {
                 let fraction = a / this.getServer().MOVEMENT_FRAMES;
                 this.getServer().addTask(this.movementTime * fraction, () => {
-                    if(direction === "up") {
-                        this.animationShiftY = -fraction;
-                    }
-                    else if(direction === "down") {
-                        this.animationShiftY = fraction;
-                    }
-                    else if(direction === "left") {
-                        this.animationShiftX = -fraction;
-                    }
-                    else if(direction === "right") {
-                        this.animationShiftX = fraction;
-                    }
+                    let [shiftX, shiftY] = Util.getDirectionalShift(direction);
+                    this.animationShiftX = (shiftX * fraction);
+                    this.animationShiftY = (shiftY * fraction);
                 });
             }
             this.getServer().addTask(this.movementTime, () => {
@@ -356,16 +349,16 @@ class Entity {
         }
     }
 
-    isNextStepAllowed() {
+    isNextStepAllowed(direction) {
         // By default, check screen edges and if any entities in the direction block movement.
-        let isFacingEdge = this.screen.isFacingEdge(this, this.direction);
+        let isFacingEdge = this.screen.isFacingEdge(this, direction);
         let canCrossScreen = this.canCrossScreen();
-        let isScreenInDirection = this.isScreenInDirection(this.direction);
+        let isScreenInDirection = this.isScreenInDirection(direction);
         if(isFacingEdge && (!canCrossScreen || !isScreenInDirection)) {
             return false;
         }
         
-        let overlappingEntities = this.screen.getOverlappingEntities(this, this.direction);
+        let overlappingEntities = this.screen.getOverlappingEntities(this, direction);
         for(let overlappingEntity of overlappingEntities) {
             if(this.isBlockedBy(overlappingEntity)) {
                 return false;
@@ -450,33 +443,15 @@ class Entity {
     // By default, movement happens one tile at a time, and if the edge is crossed then the entity moves to the next screen.
     // Also, if you move onto another entity, the two entities interact with each other.
     doMove(direction) {
-        if(direction === "up") {
-            this.y--;
-            if(this.y < 0) {
-                this.y = this.screen.numTilesY - 1;
-                this.doMoveScreen(direction);
-            }
+        if(this.screen.isFacingEdge(this, direction)) {
+            // Cross into the next screen.
+            this.screen.doCrossScreen(this, direction);
         }
-        else if(direction === "down") {
-            this.y++;
-            if(this.y > this.screen.numTilesY - 1) {
-                this.y = 0;
-                this.doMoveScreen(direction);
-            }
-        }
-        else if(direction === "left") {
-            this.x--;
-            if(this.x < 0) {
-                this.x = this.screen.numTilesX - 1;
-                this.doMoveScreen(direction);
-            }
-        }
-        else if(direction === "right") {
-            this.x++;
-            if(this.x > this.screen.numTilesX - 1) {
-                this.x = 0;
-                this.doMoveScreen(direction);
-            }
+        else {
+            // Just do normal movement.
+            let [shiftX, shiftY] = Util.getDirectionalShift(direction);
+            this.x += shiftX;
+            this.y += shiftY;
         }
 
         this.doCheckCollision();

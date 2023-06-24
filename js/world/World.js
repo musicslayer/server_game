@@ -5,6 +5,7 @@ const EntitySpawner = require("./EntitySpawner.js");
 const GameMap = require("./GameMap.js");
 const VoidMap = require("./VoidMap.js");
 const DeathMap = require("./DeathMap.js");
+const Util = require("../util/Util.js");
 
 const COMMA = ",";
 const CRLF = "\r\n";
@@ -75,16 +76,8 @@ class World {
     }
 
     getMapInDirection(map, direction) {
-        let newMap;
-
-        if(direction === "up") {
-            newMap = this.getMapByPosition(map.id + 1);
-        }
-        else if(direction === "down") {
-            newMap = this.getMapByPosition(map.id - 1);
-        }
-
-        return newMap;
+        let [, shiftY] = Util.getDirectionalShift(direction);
+        return this.getMapByPosition(map.id - shiftY); // Use opposite of shift for map position.
     }
 
     getMapByPosition(p) {

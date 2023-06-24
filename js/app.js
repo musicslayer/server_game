@@ -9,7 +9,11 @@ const Server = require("./server/Server.js");
 // TODO Players that die should drop their inventory if they are in PVP zone?
 // TODO How to save/load server state?
 
-// Players should block movement? Do we need variables like "isTangible"
+// TODO Players should block movement? Do we need variables like "isTangible"
+
+// TODO Monster Aggro
+// TODO Sometimes projectiles pass through monsters if they are moving towards you.
+// TODO Should collisions use both the old and new position for moving objects.
 
 async function init() {
     // Load game server

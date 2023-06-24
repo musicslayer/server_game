@@ -1,6 +1,7 @@
 const fs = require("fs");
 
 const Tile = require("./Tile.js");
+const Util = require("../util/Util.js");
 
 const COMMA = ",";
 const CRLF = "\r\n";
@@ -113,22 +114,20 @@ class Screen {
     }
 
     isFacingEdge(entity, direction) {
-        let isFacingEdge;
+        let [shiftX, shiftY] = Util.getDirectionalShift(direction);
+        let x = entity.x + shiftX;
+        let y = entity.y + shiftY;
 
-        if(direction === "up") {
-            isFacingEdge = entity.y == 0;
-        }
-        else if(direction === "down") {
-            isFacingEdge = entity.y == 11;
-        }
-        else if(direction === "left") {
-            isFacingEdge = entity.x == 0;
-        }
-        else if(direction === "right") {
-            isFacingEdge = entity.x == 15;
-        }
+        return x < 0 || x > this.numTilesX - 1 || y < 0 || y > this.numTilesY - 1;
+    }
 
-        return isFacingEdge;
+    doCrossScreen(entity, direction) {
+        // Move to the next screen and wrap position around.
+        let [shiftX, shiftY] = Util.getDirectionalShift(direction);
+        entity.x -= shiftX * (this.numTilesX - 1);
+        entity.y -= shiftY * (this.numTilesY - 1)
+        
+        entity.doMoveScreen(direction);
     }
 
     isScreenInDirection(direction) {
@@ -136,21 +135,9 @@ class Screen {
     }
 
     getOverlappingEntities(entity, direction) {
-        let x = entity.x;
-        let y = entity.y;
-
-        if(direction === "up") {
-            y--;
-        }
-        else if(direction === "down") {
-            y++;
-        }
-        else if(direction === "left") {
-            x--;
-        }
-        else if(direction === "right") {
-            x++;
-        }
+        let [shiftX, shiftY] = Util.getDirectionalShift(direction);
+        let x = entity.x + shiftX;
+        let y = entity.y + shiftY;
 
         let overlappingEntities = [];
 
