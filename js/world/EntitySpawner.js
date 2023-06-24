@@ -1,4 +1,5 @@
-const Player = require("../entity/Player.js");
+const PlayerMage = require("../entity/PlayerMage.js");
+const PlayerWarrior = require("../entity/PlayerWarrior.js");
 const Gold = require("../entity/Gold.js");
 const PVPToken = require("../entity/PVPToken.js");
 const Wall = require("../entity/Wall.js");
@@ -74,8 +75,11 @@ class EntitySpawner {
             case "monster":
                 entity = new Monster(...args);
                 break;
-            case "player":
-                entity = new Player(...args);
+            case "player_mage":
+                entity = new PlayerMage(...args);
+                break;
+            case "player_warrior":
+                entity = new PlayerWarrior(...args);
                 break;
             case "projectile":
                 entity = new Projectile(...args);

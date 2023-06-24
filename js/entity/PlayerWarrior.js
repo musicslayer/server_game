@@ -2,8 +2,8 @@ const Entity = require("./Entity.js");
 const Purse = require("./Purse.js");
 const Inventory = require("./Inventory.js");
 
-class Player extends Entity {
-    id = "player";
+class PlayerWarrior extends Entity {
+    id = "player_warrior";
     isPlayer = true;
 
     health = 70;
@@ -123,7 +123,7 @@ class Player extends Entity {
             this.health = Math.max(this.health - damage, 0);
             if(this.health === 0) {
                 // Only spawn loot if another player did the final damage.
-                if(entity.isPlayer) {
+                if(this.getRootEntity(entity).isPlayer) {
                     this.getWorld().spawnAsLoot("pvp_token", 1, this.screen, this.x, this.y);
                 }
                 this.kill();
@@ -155,4 +155,4 @@ class Player extends Entity {
     }
 }
 
-module.exports = Player;
+module.exports = PlayerWarrior;

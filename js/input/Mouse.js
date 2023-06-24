@@ -11,12 +11,10 @@ class Mouse {
         this.inputMap.set(this._rightclick, "right");
     }
 
-    processClick(buttons) {
+    processClick(button) {
+        // Note that "button" will only be a single button, not an array.
         let inputs = [];
-
-        for(let button of buttons) {
-            inputs.push(this.inputMap.get(button));
-        }
+        inputs.push(this.inputMap.get(button));
 
         return inputs;
     }

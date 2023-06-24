@@ -1,30 +1,30 @@
 const http = require("./server/http.js");
 const socket_io = require("./server/socket_io.js");
 
-const Client = require("./client/Client.js");
+const AccountManager = require("./account/AccountManager.js");
 const Server = require("./server/Server.js");
 
 // TODO All state changes must be done through the Server class. We need to enforce this somehow.
-// TODO Handle multiple clients at once
+
+// TODO Loot spawners.
+// TODO Players that die should drop their inventory if they are in PVP zone?
+// TODO How to save/load server state?
+
+// TODO More Arrays should really be maps (like in Inventory class)
 
 async function init() {
+    // Load game server
     let server = new Server();
     server.createWorld(0, "world0", "assets/world0/");
     server.createWorld(1, "world1", "assets/world1/");
     server.initServerTick();
     
-    let player = server.worlds[0].spawn("player", 1, server.worlds[0].gameMaps[0].screens[0], 0, 0);
-    player.homeMapName = "city";
-    player.homeScreenName = "field1";
-    player.homeX = 0;
-    player.homeY = 0;
-
-    let client = new Client(player);
+    let accountManager = AccountManager.createInitialAccountManager(server);
 
     // Create servers to serve the web pages and communicate between front and back ends.
     let httpServer = http.createHTTPServer();
     //let httpsServer = https.createHTTPSServer();
-    socket_io.createSocketIOServer(httpServer, client);
+    socket_io.createSocketIOServer(httpServer, accountManager);
 
     console.log("Server initialized successfully.");
 }

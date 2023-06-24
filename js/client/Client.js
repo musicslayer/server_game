@@ -20,7 +20,6 @@ class Client {
     }
 
     // location vs. info:
-    // undefined => []
     // "screen" => [x, y] (normalized)
     // "inventory" => [slot]
     // "purse" => []
@@ -37,8 +36,10 @@ class Client {
                 this.selectedEntity = this.player.screen.getHighestEntity(info[0], info[1]);
             }
             else if(location === "inventory") {
-                this.selectedSlot = info[0];
-                this.selectedEntity = this.player.inventory.itemArray[info[0]];
+                if(this.player.inventory.itemMap.has(info[0])) {
+                    this.selectedSlot = info[0];
+                    this.selectedEntity = this.player.inventory.itemMap.get(info[0]);
+                }
             }
         }
         else if(inputs.includes("middle")) {
@@ -68,11 +69,11 @@ class Client {
             if(location1 === "inventory" && location2 === "inventory" && info1[0] !== info2[0]) {
                 // Swap two inventory slots (even if one or both of them are empty)
                 if(this.selectedSlot === info1[0]) {
-                    this.selectedEntity = this.player.inventory.itemArray[info1[0]];
+                    this.selectedEntity = this.player.inventory.itemMap.get(info1[0]);
                     this.selectedSlot = info2[0];
                 }
                 else if(this.selectedSlot === info2[0]) {
-                    this.selectedEntity = this.player.inventory.itemArray[info2[0]];
+                    this.selectedEntity = this.player.inventory.itemMap.get(info2[0]);
                     this.selectedSlot = info1[0];
                 }
 
@@ -94,13 +95,13 @@ class Client {
         if(inputs.includes("inventory_previous")) {
             this.performTask(() => {
                 this.selectedSlot = this.selectedSlot === 0 ? this.player.inventory.maxSlots - 1 : this.selectedSlot - 1;
-                this.selectedEntity = this.player.inventory.itemArray[this.selectedSlot];
+                this.selectedEntity = this.player.inventory.itemMap.get(this.selectedSlot);
             });
         }
         else if(inputs.includes("inventory_next")) {
             this.performTask(() => {
                 this.selectedSlot = this.selectedSlot === this.player.inventory.maxSlots - 1 ? 0 : this.selectedSlot + 1;
-                this.selectedEntity = this.player.inventory.itemArray[this.selectedSlot];
+                this.selectedEntity = this.player.inventory.itemMap.get(this.selectedSlot);
             });
         }
         else if(inputs.includes("inventory_use")) {
@@ -182,13 +183,13 @@ class Client {
         if(inputs.includes("inventory_previous")) {
             this.performTask(() => {
                 this.selectedSlot = this.selectedSlot === 0 ? this.player.inventory.maxSlots - 1 : this.selectedSlot - 1;
-                this.selectedEntity = this.player.inventory.itemArray[this.selectedSlot];
+                this.selectedEntity = this.player.inventory.itemMap.get(this.selectedSlot);
             });
         }
         else if(inputs.includes("inventory_next")) {
             this.performTask(() => {
                 this.selectedSlot = this.selectedSlot === this.player.inventory.maxSlots - 1 ? 0 : this.selectedSlot + 1;
-                this.selectedEntity = this.player.inventory.itemArray[this.selectedSlot];
+                this.selectedEntity = this.player.inventory.itemMap.get(this.selectedSlot);
             });
         }
         else if(inputs.includes("inventory_use")) {
@@ -317,7 +318,8 @@ class Client {
         let inventory = {};
         inventory.currentSlot = this.selectedSlot;
         inventory.itemArray = [];
-        for(const item of this.player.inventory.itemArray) {
+        for(let index = 0; index < this.player.inventory.maxSlots; index++) {
+            let item = this.player.inventory.itemMap.get(index);
             if(item) {
                 inventory.itemArray.push({
                     id: item.id,

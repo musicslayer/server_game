@@ -1,16 +1,30 @@
 class Inventory {
     maxSlots = 45;
-    itemArray = [];
+    itemMap = new Map();
 
     owner;
 
     constructor(owner) {
         this.owner = owner;
 
-        // Prefill inventory to make logic easier.
+        // Prefill inventory with undefined so that 0 -> maxSlots count as having values in the map.
         for(let index = 0; index < this.maxSlots; index++) {
-            this.itemArray[index] = undefined;
+            this.itemMap.set(index, undefined)
         }
+    }
+
+    numItems() {
+        // Returns the number of actual items (i.e. not undefined) in the item map.
+        let num = 0;
+
+        for(let index = 0; index < this.maxSlots; index++) {
+            let item = this.itemMap.get(index);
+            if(item) {
+                num++;
+            }
+        }
+
+        return num;
     }
 
     // Return value is whether the ENTIRE entity was added to the inventory (i.e. if we need to despawn it)
@@ -19,7 +33,7 @@ class Inventory {
 
         // See if this item is already in the inventory and there is room in the stack to add it.
         for(let index = 0; index < this.maxSlots && entity.stackSize > 0; index++) {
-            let item = this.itemArray[index];
+            let item = this.itemMap.get(index);
             if(item && item.id === entity.id) {
                 // Item is already in the inventory. Add as much of the entity's stack as we can to this stack.
                 numStacks++;
@@ -33,11 +47,12 @@ class Inventory {
 
         // There is no more room in existing stacks, so now we try to create new stacks.
         for(let index = 0; index < this.maxSlots && entity.stackSize > 0 && numStacks < entity.maxStackNumber; index++) {
-            if(this.itemArray[index] === undefined) {
+            let item = this.itemMap.get(index);
+            if(!item) {
                 numStacks++;
 
                 let item = this.owner.getWorld().cloneInstance(entity, 0, this.owner.screen);
-                this.itemArray[index] = item;
+                this.itemMap.set(index, item);
                 this.owner.getWorld().register("inventory", 1);
 
                 let N = Math.min(entity.maxStackSize, entity.stackSize);
@@ -49,22 +64,24 @@ class Inventory {
     }
 
     removeFromInventorySlot(slot, number) {
-        let item = this.itemArray[slot];
+        let item = this.itemMap.get(slot);
         if(item) {
             item.stackSize -= number;
             if(item.stackSize === 0) {
-                this.itemArray[slot] = undefined;
+                this.itemMap.set(slot, undefined);
                 this.owner.getWorld().deregister("inventory", 1);
             }
         }
     }
 
     swapInventorySlots(slot1, slot2) {
-        let item1 = this.itemArray[slot1];
-        let item2 = this.itemArray[slot2];
+        if(this.itemMap.has(slot1) && this.itemMap.has(slot2)) {
+            let item1 = this.itemMap.get(slot1);
+            let item2 = this.itemMap.get(slot2);
 
-        this.itemArray[slot1] = item2;
-        this.itemArray[slot2] = item1;
+            this.itemMap.set(slot1, item2);
+            this.itemMap.set(slot2, item1);
+        }
     }
 }
 

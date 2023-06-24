@@ -1,4 +1,4 @@
-0,0|floor,red|
+0,0||
 2,2||wall,1
 10,10||fire_trap,1
 11,10||death_trap,1

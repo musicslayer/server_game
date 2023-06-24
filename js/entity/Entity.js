@@ -30,6 +30,7 @@ class Entity {
     canMove = true;
     canAction = true;
     canInventory = true;
+    canPurse = true;
     canExperienceBoost = true;
     canHealthBoost = true;
     canManaBoost = true;
@@ -39,6 +40,7 @@ class Entity {
     movementTime = 0; // Seconds to move 1 tile.
     actionTime = 0; // Seconds to perform 1 action.
     inventoryTime = 0.1; // This is chosen to make inventory management smooth.
+    purseTime = 0.1;
     experienceBoostTime = 0.1;
     healthBoostTime = 0.1;
     manaBoostTime = 0.1;
@@ -503,7 +505,7 @@ class Entity {
         this.screen.removeEntity(this);
 
         if(this.inventory) {
-            this.getWorld().deregister("inventory", this.inventory.itemArray.length);
+            this.getWorld().deregister("inventory", this.inventory.numItems());
         }
     }
 
@@ -810,7 +812,7 @@ class Entity {
     doConsumeFromInventory(slot) {
         // Consume 1 item in this inventory slot.
         if(this.inventory) {
-            let item = this.inventory.itemArray[slot];
+            let item = this.inventory.itemMap.get(slot);
             if(item && item.canConsume(this)) {
                 item.consume(this);
                 this.inventory.removeFromInventorySlot(slot, 1);
@@ -821,7 +823,7 @@ class Entity {
     doDropFromInventory(slot, number) {
         // Drop a number of items from a stack without consuming them.
         if(this.inventory) {
-            let item = this.inventory.itemArray[slot];
+            let item = this.inventory.itemMap.get(slot);
             if(item) {
                 // A negative value or a value too large means to drop the entire stack.
                 if(number < 0 || number > item.stackSize) {
