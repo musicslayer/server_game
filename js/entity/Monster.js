@@ -16,6 +16,7 @@ class Monster extends Entity {
     ai = new MonsterAI();
 
     aggroMap = new Map();
+    maxAggro = 300;
     lastPlayer;
 
     getName() {
@@ -26,8 +27,22 @@ class Monster extends Entity {
         return "A creature that you can kill for loot and experience.";
     }
 
+    doSpawn() {
+        super.doSpawn();
+
+        // Monster activities are controlled by an AI class.
+        this.getServer().addTask(0, () => {
+            this.ai.generateNextActivity(this);
+        });
+
+        // Use this to gradually decrease aggro over time.
+        this.getServer().addRefreshTask(10, () => {
+            this.decreaseAggro();
+        });
+    }
+
     doTakeDamage(entity, damage) {
-        //this.health = Math.max(this.health - damage, 0);
+        this.health = Math.max(this.health - damage, 0);
 
         let rootEntity = this.getRootEntity(entity);
 
@@ -36,17 +51,35 @@ class Monster extends Entity {
             this.lastPlayer = rootEntity;
 
             let aggro = this.aggroMap.get(rootEntity) ?? 0;
-            aggro++;
+            aggro = Math.min(aggro + 1, this.maxAggro);
             this.aggroMap.set(rootEntity, aggro);
         }
 
         if(this.health === 0) {
+            this.aggroMap.clear();
             rootEntity.doAddExperience(this.experienceReward);
             this.getWorld().spawnAsLoot("gold", 100, this.screen, this.x, this.y);
             this.doDespawn();
 
             if(this.owner) {
                 this.owner.onMonsterDeath();
+            }
+        }
+    }
+
+    decreaseAggro() {
+        // If a player is no longer on the screen, decrease the aggro for that player.
+        for(let player of this.aggroMap.keys()) {
+            if(!this.screen.playerEntities.includes(player)) {
+                let aggro = this.aggroMap.get(player) ?? 0;
+                let newAggro = Math.max(aggro - 10, 0);
+
+                if(newAggro === 0) {
+                    this.aggroMap.delete(player);
+                }
+                else {
+                    this.aggroMap.set(player, newAggro);
+                }
             }
         }
     }
@@ -80,15 +113,6 @@ class Monster extends Entity {
         return players[0];
     }
 
-    doSpawn() {
-        super.doSpawn();
-
-        this.getServer().addTask(0, () => {
-            //this.moveMonster();
-            this.ai.generateNextActivity(this);
-        });
-    }
-
     attack() {
         // Spawn a "melee projectile" representing a melee attack.
         let x = this.x;
@@ -110,12 +134,14 @@ class Monster extends Entity {
         this.x += shiftX;
         this.y += shiftY;
 
-        //this.moveMonster();
+        this.ai.generateNextActivity(this);
+    }
+
+    doChangeDirection() {
         this.ai.generateNextActivity(this);
     }
 
     doWait() {
-        //this.moveMonster();
         this.ai.generateNextActivity(this);
     }
 

@@ -1,3 +1,3 @@
-0,0|land1
-1,0|land2
-2,0|land3
+0,0|land1|safe
+1,0|land2|safe
+2,0|land3|safe

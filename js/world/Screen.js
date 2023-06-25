@@ -12,6 +12,7 @@ class Screen {
     name;
     x;
     y;
+    pvpStatus;
 
     // For now, these are just fixed numbers.
     numTilesX = 16;
@@ -134,21 +135,27 @@ class Screen {
         return this.map.isScreenInDirection(this, direction);
     }
 
-    getOverlappingEntities(entity, direction) {
-        let [shiftX, shiftY] = Util.getDirectionalShift(direction);
-        let x = entity.x + shiftX;
-        let y = entity.y + shiftY;
-
-        let overlappingEntities = [];
-
-        let screenEntities = this.otherEntities.concat(this.playerEntities);
-        for(let screenEntity of screenEntities) {
-            if(entity !== screenEntity && x === screenEntity.x && y === screenEntity.y) {
-                overlappingEntities.push(screenEntity);
-            }
+    getOverlappingEntities(entity) {
+        let overlappingEntities = this.getEntitiesAt(entity.x, entity.y);
+        if(entity.isMoveInProgress) {
+            let [shiftX, shiftY] = Util.getDirectionalShift(entity.direction);
+            overlappingEntities = overlappingEntities.concat(this.getEntitiesAt(entity.x + shiftX, entity.y + shiftY));
         }
 
         return overlappingEntities;
+    }
+
+    getEntitiesAt(x, y) {
+        let entities = [];
+
+        let screenEntities = this.otherEntities.concat(this.playerEntities);
+        for(let screenEntity of screenEntities) {
+            if(screenEntity.isAt(x, y)) {
+                entities.push(screenEntity);
+            }
+        }
+
+        return entities;
     }
 
     getHighestEntity(x, y) {

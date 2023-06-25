@@ -1,2 +1,2 @@
-0,0|field1
-1,0|field2
+0,0|field1|safe
+1,0|field2|pvp

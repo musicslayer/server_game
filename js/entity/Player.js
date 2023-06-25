@@ -75,7 +75,7 @@ class Player extends Entity {
 
     doMakeInvincible(invincibleSeconds) {
         this.isInvincible = true;
-        this.addTask(invincibleSeconds, () => {
+        this.getServer().addTask(invincibleSeconds, () => {
             this.isInvincible = false;
         });
     }
@@ -119,12 +119,21 @@ class Player extends Entity {
     }
     
     doTakeDamage(entity, damage) {
-        if(!this.isInvincible && !this.isDead) {
+        // If a player attacks another player, only allow damage if we are in a pvp screen.
+        // Also, invincible/dead players cannot take damage.
+        let rootEntity = this.getRootEntity(entity);
+
+        let canTakePlayerDamage = !rootEntity.isPlayer || this.screen.pvpStatus === "pvp";
+        let canTakeNormalDamage = !this.isInvincible && !this.isDead;
+        if(canTakePlayerDamage && canTakeNormalDamage) {
             this.health = Math.max(this.health - damage, 0);
             if(this.health === 0) {
-                // Only spawn loot if another player did the final damage.
-                if(this.getRootEntity(entity).isPlayer) {
+                // If another player did the final damage, spawn a PVP Token and drop some of your gold.
+                if(rootEntity.isPlayer) {
                     this.getWorld().spawnAsLoot("pvp_token", 1, this.screen, this.x, this.y);
+
+                    let goldAmount = Math.floor(this.purse.goldTotal * 0.2);
+                    this.dropFromPurse(goldAmount);
                 }
                 this.kill();
             }

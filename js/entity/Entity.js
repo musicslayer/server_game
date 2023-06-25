@@ -264,6 +264,24 @@ class Entity {
         }
     }
 
+    changeDirection(direction) {
+        if(!this.isMoveInProgress) {
+            this.direction = direction;
+        }
+
+        if(this.canMove) {
+            this.isMoveInProgress = true;
+            this.canMove = false;
+
+            this.getServer().addTask(this.movementTime, () => {
+                this.isMoveInProgress = false;
+                this.canMove = true;
+
+                this.doChangeDirection(direction);
+            });
+        }
+    }
+
     wait() {
         if(this.canMove) {
             this.canMove = false;
@@ -340,6 +358,7 @@ class Entity {
         // By default, do nothing.
     }
 
+    // TODO If an entity is in motion, check both start and end locations...
     doCheckCollision() {
         // Call this after any movement to see if this entity is overlapping another on the same screen.
         let overlappingEntities = this.screen.getOverlappingEntities(this);
@@ -358,9 +377,13 @@ class Entity {
             return false;
         }
         
-        let overlappingEntities = this.screen.getOverlappingEntities(this, direction);
-        for(let overlappingEntity of overlappingEntities) {
-            if(this.isBlockedBy(overlappingEntity)) {
+        let [shiftX, shiftY] = Util.getDirectionalShift(direction);
+        let x = this.x + shiftX;
+        let y = this.y + shiftY;
+
+        let entities = this.screen.getEntitiesAt(x, y);
+        for(let entity of entities) {
+            if(this !== entity && this.isBlockedBy(entity)) {
                 return false;
             }
         }
@@ -455,6 +478,10 @@ class Entity {
         }
 
         this.doCheckCollision();
+    }
+
+    doChangeDirection(direction) {
+        // By default, do nothing.
     }
 
     doWait() {
@@ -658,6 +685,14 @@ class Entity {
     canCrossScreen() {
         // By default, an entity can cross into any screen that exists.
         return true;
+    }
+
+    isAt(x, y) {
+        // Returns true if this entity is at the point or currently moving onto the point.
+        let [shiftX, shiftY] = Util.getDirectionalShift(this.direction);
+
+        return (this.x === x && this.y === y)
+        || (this.isMoveInProgress && this.x + shiftX === x && this.y + shiftY === y);
     }
 }
 

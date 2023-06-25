@@ -40,11 +40,15 @@ class GameMap {
             // Second part is the screen
             let name = parts[1];
 
+            // Third part is whether the screen is safe or pvp
+            let pvpStatus = parts[2];
+
             let screen = new Screen();
             screen.map = this;
             screen.name = name;
             screen.x = x;
             screen.y = y;
+            screen.pvpStatus = pvpStatus;
 
             screen.loadScreenFromFile(mapFolder + name + ".txt");
 
