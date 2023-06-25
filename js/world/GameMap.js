@@ -1,7 +1,6 @@
 const fs = require("fs");
 
 const Screen = require("./Screen.js");
-const VoidScreen = require("./VoidScreen.js");
 const Util = require("../util/Util.js");
 
 const COMMA = ",";
@@ -45,7 +44,6 @@ class GameMap {
             screen.pvpStatus = pvpStatus;
 
             screen.loadScreenFromFile(mapFolder + name + ".txt");
-
             this.addScreen(screen);
         }
     }
@@ -84,7 +82,8 @@ class GameMap {
 
         // If this screen does not exist, return a dynamically generated "void" screen.
         if(!screen) {
-            screen = this.createVoidScreen(screenX, screenY);
+            let voidMap = this.world.getMapByPosition("void");
+            screen = voidMap.createVoidScreen(this, screenX, screenY)
         }
         
         return screen;
@@ -92,17 +91,6 @@ class GameMap {
 
     getMapInDirection(direction) {
         return this.world.getMapInDirection(this, direction);
-    }
-
-    createVoidScreen(screenX, screenY) {
-        let voidScreen = new VoidScreen();
-        voidScreen.map = this;
-        voidScreen.x = screenX;
-        voidScreen.y = screenY;
-
-        voidScreen.loadScreenFromFile(this.world.voidMapFolder + "void.txt");
-        
-        return voidScreen;
     }
 }
 

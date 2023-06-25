@@ -9,8 +9,6 @@ const Util = require("./util/Util.js");
 // TODO All state changes must be done through the Server class. We need to enforce this somehow.
 // TODO How to save/load server state?
 
-// TODO Store both void and death map, then we can clone void map and not need to store the void map folder.
-
 async function init() {
     // Recreate image zip file.
     await Util.createZipFileFromFolder("assets/image.zip", "assets/image/");

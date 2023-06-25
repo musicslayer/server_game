@@ -19,16 +19,12 @@ class World {
     id;
     name;
 
-    voidMapFolder;
-
     gameMaps = [];
     gameMapMap = new Map();
     gameMapPosMap = new Map();
 
     loadWorldFromFolder(worldFolder) {
         // Store the folder definining the special "void" map for this world.
-        this.voidMapFolder = worldFolder + "_void/"
-
         let worldData = fs.readFileSync(worldFolder + "_world.txt", "ascii");
         let lines = worldData ? worldData.split(CRLF) : [];
 
@@ -61,8 +57,16 @@ class World {
         deathMap.name = "death";
 
         deathMap.loadMapFromFolder(worldFolder + "_death/");
-
         this.addMap(deathMap);
+
+        // Add special "void" map
+        let voidMap = new VoidMap();
+        voidMap.world = this;
+        voidMap.id = "void";
+        voidMap.name = "void";
+
+        voidMap.loadMapFromFolder(worldFolder + "_void/");
+        this.addMap(voidMap);
     }
 
     addMap(map) {
@@ -85,12 +89,8 @@ class World {
 
         // If this map does not exist, return a dynamically generated "void" map.
         if(!map) {
-            map = new VoidMap();
-            map.world = this;
-            map.id = p;
-            map.name = "void";
-            
-            map.loadMapFromFolder(this.voidMapFolder, this.voidMapFolder);
+            let voidMap = this.getMapByPosition("void");
+            map = voidMap.createVoidMapClone(p);
         }
 
         return map;
