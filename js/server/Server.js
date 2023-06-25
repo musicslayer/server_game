@@ -1,52 +1,13 @@
 const { Worker } = require("worker_threads");
 
-const World = require("../world/World.js");
-const Util = require("../util/Util.js");
-
 class Server {
     // These variables affect server performance.
     TICK_RATE = 60; // times per second
     MOVEMENT_FRAMES = 60; // frames per 1 tile of movement
     LOOT_TIME = 300; // (5 minutes) seconds that spawned loot will remain in the world before despawning
 
-    worlds = [];
-    worldMap = new Map();
-    worldPosMap = new Map();
-
     scheduledTaskMap = new Map(); 
-
     currentTick = 0;
-
-    createWorld(id, name, worldFolder) {
-        let world = new World();
-        world.server = this;
-        world.id = id;
-        world.name = name;
-
-        world.loadWorldFromFolder(worldFolder);
-
-        this.addWorld(world);
-    }
-
-    addWorld(world) {
-        this.worlds.push(world);
-        this.worldMap.set(world.name, world);
-        this.worldPosMap.set(world.id, world);
-    }
-
-    getWorldByName(name) {
-        return this.worldMap.get(name);
-    }
-
-    getWorldInDirection(world, direction) {
-        // If the new world does not exist, return the original world so nothing changes.
-        let [, shiftY] = Util.getDirectionalShift(direction);
-        return this.getWorldByPosition(world.id - shiftY) ?? world; // Use opposite of shift for world position.
-    }
-
-    getWorldByPosition(p) {
-        return this.worldPosMap.get(p);
-    }
 
     addTask(seconds, task) {
         let tick = Math.floor(this.currentTick + seconds * this.TICK_RATE);

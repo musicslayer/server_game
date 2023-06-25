@@ -17,6 +17,9 @@ class Monster extends Entity {
 
     aggroMap = new Map();
     maxAggro = 300;
+    aggroGain = 1;
+    aggroForgiveness = 10;
+
     lastPlayer;
 
     getName() {
@@ -51,7 +54,7 @@ class Monster extends Entity {
             this.lastPlayer = rootEntity;
 
             let aggro = this.aggroMap.get(rootEntity) ?? 0;
-            aggro = Math.min(aggro + 1, this.maxAggro);
+            aggro = Math.min(aggro + this.aggroGain, this.maxAggro);
             this.aggroMap.set(rootEntity, aggro);
         }
 
@@ -72,7 +75,7 @@ class Monster extends Entity {
         for(let player of this.aggroMap.keys()) {
             if(!this.screen.playerEntities.includes(player)) {
                 let aggro = this.aggroMap.get(player) ?? 0;
-                let newAggro = Math.max(aggro - 10, 0);
+                let newAggro = Math.max(aggro - this.aggroForgiveness, 0);
 
                 if(newAggro === 0) {
                     this.aggroMap.delete(player);

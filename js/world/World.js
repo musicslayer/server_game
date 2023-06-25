@@ -15,7 +15,7 @@ class World {
     entityCounter = new EntityCounter();
     entitySpawner = new EntitySpawner();
 
-    server;
+    galaxy;
     id;
     name;
 
@@ -26,7 +26,7 @@ class World {
     gameMapPosMap = new Map();
 
     loadWorldFromFolder(worldFolder) {
-        // Add special "void" map
+        // Store the folder definining the special "void" map for this world.
         this.voidMapFolder = worldFolder + "_void/"
 
         let worldData = fs.readFileSync(worldFolder + "_world.txt", "ascii");
@@ -49,7 +49,7 @@ class World {
             map.id = id;
             map.name = name;
 
-            map.loadMapFromFolder(worldFolder + name + "/", this.voidMapFolder);
+            map.loadMapFromFolder(worldFolder + name + "/");
 
             this.addMap(map);
         }
@@ -60,7 +60,7 @@ class World {
         deathMap.id = "death";
         deathMap.name = "death";
 
-        deathMap.loadMapFromFolder(worldFolder + "_death/", this.voidMapFolder);
+        deathMap.loadMapFromFolder(worldFolder + "_death/");
 
         this.addMap(deathMap);
     }
@@ -97,7 +97,7 @@ class World {
     }
 
     getWorldInDirection(direction) {
-        return this.server.getWorldInDirection(this, direction);
+        return this.galaxy.getWorldInDirection(this, direction);
     }
 
     spawn(id, number, screen, x, y, ...args) {
@@ -148,6 +148,10 @@ class World {
                 this.entityCounter.deregisterGold(number);
                 break;
         }
+    }
+
+    getServer() {
+        return this.galaxy.server;
     }
 }
 

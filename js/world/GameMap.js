@@ -13,17 +13,11 @@ class GameMap {
     id;
     name;
 
-    mapFolder;
-    voidMapFolder;
-
     screens = [];
     screenMap = new Map();
     screenPosMap = new Map();
 
-    loadMapFromFolder(mapFolder, voidMapFolder) {
-        this.mapFolder = mapFolder;
-        this.voidMapFolder = voidMapFolder;
-
+    loadMapFromFolder(mapFolder) {
         let mapData = fs.readFileSync(mapFolder + "_map.txt", "ascii");
         let lines = mapData ? mapData.split(CRLF) : [];
 
@@ -106,7 +100,7 @@ class GameMap {
         voidScreen.x = screenX;
         voidScreen.y = screenY;
 
-        voidScreen.loadScreenFromFile(this.voidMapFolder + "void.txt");
+        voidScreen.loadScreenFromFile(this.world.voidMapFolder + "void.txt");
         
         return voidScreen;
     }

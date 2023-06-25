@@ -66,7 +66,7 @@ class Entity {
     }
 
     getServer() {
-        return this.screen.map.world.server;
+        return this.screen.map.world.galaxy.server;
     }
 
     getWorld() {

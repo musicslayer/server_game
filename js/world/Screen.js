@@ -189,7 +189,7 @@ class Screen {
 
 
     getServer() {
-        return this.map.world.server;
+        return this.map.world.galaxy.server;
     }
 
     getWorld() {
