@@ -233,46 +233,44 @@ class Screen {
         s += "\"otherEntities\":";
         s += "[";
         for(let otherEntity of this.otherEntities) {
-            s += otherEntity.serialize();
-            s += ",";
+            if(otherEntity.isSerializable) {
+                s += otherEntity.serialize();
+                s += ",";
+            }
         }
         if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
         s += "]";
-        s += ",";
 
-        s += "\"playerEntities\":";
-        s += "[";
-        for(let playerEntity of this.playerEntities) {
-            s += playerEntity.serialize();
-            s += ",";
-        }
-        if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
-        s += "]";
+        // Don't serialize players here.
         s += "}";
 
         return s;
     }
 
-    static deserialize(s) {
+    deserialize(s) {
         let j = JSON.parse(s);
 
-        let screen = new Screen();
-        screen.name = j.name;
-        screen.x = Number(j.x);
-        screen.y = Number(j.y);
-        screen.numTilesX = Number(j.numTilesX);
-        screen.numTilesY = Number(j.numTilesY);
-        screen.pvpStatus = j.pvpStatus;
+        this.name = j.name;
+        this.x = Number(j.x);
+        this.y = Number(j.y);
+        this.numTilesX = Number(j.numTilesX);
+        this.numTilesY = Number(j.numTilesY);
+        this.pvpStatus = j.pvpStatus;
 
         for(let tile_j of j.tiles) {
             let tile_s = JSON.stringify(tile_j);
 
             let tile = Tile.deserialize(tile_s);
 
-            screen.addTile(tile);
+            this.addTile(tile);
         }
 
-        return screen;
+        for(let otherEntity_j of j.otherEntities) {
+            let otherEntity = this.getWorld().spawn(otherEntity_j.id, Number(otherEntity_j.stackSize), this, Number(otherEntity_j.x), Number(otherEntity_j.y));
+            this.addEntity(otherEntity);
+        }
+
+        // Don't deserialize players here.
     }
 }
 

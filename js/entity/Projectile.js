@@ -2,6 +2,8 @@ const Entity = require("./Entity.js");
 const Util = require("../util/Util.js");
 
 class Projectile extends Entity {
+    isSerializable = false;
+
     direction;
     range;
     damage;

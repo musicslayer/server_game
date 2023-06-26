@@ -10,7 +10,7 @@ const numDevsMap = new Map();
 // Map of all currently logged in users.
 const clientMap = new Map();
 
-function createSocketIOServer(server, accountManager) {
+function createSocketIOServer(httpServer, accountManager, serverManager) {
 	setInterval(() => {
 		numLoginsMap.clear();
 		numInputsMap.clear();
@@ -18,7 +18,7 @@ function createSocketIOServer(server, accountManager) {
 		numDevsMap.clear();
 	}, 1000);
 
-	const io = new require("socket.io")(server);
+	const io = new require("socket.io")(httpServer);
 
 	io.on("connection", (socket) => {
 		if(!socket.handshake.auth) {
@@ -43,7 +43,7 @@ function createSocketIOServer(server, accountManager) {
 				return;
 			}
 
-			let player = account.getCharacter(socket.handshake.query.name);
+			let player = account.getCharacter(socket.handshake.query.playerName);
 			if(!player) {
 				// If the character does not exist, don't proceed any further.
 				return;
@@ -52,8 +52,23 @@ function createSocketIOServer(server, accountManager) {
 			let client = new Client(player);
 
 			clientMap.set(username, client);
-			client.player.spawn();
 
+			let server = serverManager.getServerByName(socket.handshake.query.serverName);
+			let world = server?.galaxy.getWorldByName(socket.handshake.query.worldName);
+			if(!world) {
+				return;
+			}
+
+			// If the player has never logged in before then default to their home screen.
+			if(!client.player.screen) {
+				let screen = world.getMapByName(client.player.homeMapName).getScreenByName(client.player.homeScreenName);
+				if(!screen) {
+					return;
+				}
+				client.player.screen = screen;
+			}
+
+			client.player.spawnInWorld(world);
 			attachListeners(socket, client, username);
 		});
 	});

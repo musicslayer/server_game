@@ -1,6 +1,8 @@
 const Util = require("../util/Util.js");
 
 class Entity {
+    isSerializable = true; // By default, entities can be serialized and saved.
+
     id; // Each subclass should have a unique ID.
     owner; // e.g. The entity that spawned a projectile is the owner.
 
@@ -155,6 +157,12 @@ class Entity {
     spawn() {
         this.getServer().addTask(0, () => {
             this.doSpawn();
+        });
+    }
+
+    spawnInWorld(world) {
+        this.getServer().addTask(0, () => {
+            this.doSpawnInWorld(world);
         });
     }
 
@@ -416,9 +424,21 @@ class Entity {
         this.screen.addEntity(this);
     }
 
+    doSpawnInWorld(world) {
+        // Spawns into the same map/screen/x/y that the entity is already located at but in the given world.
+        this.doSpawn();
+
+        let map = world.getMapByName(this.getMap().name);
+        let screen = map?.getScreenByName(this.screen.name);
+
+        if(screen) {
+            this.doTeleport(screen, this.x, this.y);
+        }
+    }
+
     doSpawnAsLoot() {
         // Spawns this entity as loot (i.e. it will despawn after a certain amount of time).
-        this.screen.addEntity(this);
+        this.doSpawn();
 
         this.getServer().addTask(this.getServer().LOOT_TIME, () => {
             this.doDespawn();
@@ -452,7 +472,12 @@ class Entity {
     }
 
     doTeleportHome() {
-        // By default, do nothing.
+        let homeMap = this.getWorld().getMapByName(this.homeMapName);
+        let homeScreen = homeMap?.getScreenByName(this.homeScreenName);
+
+        if(homeScreen) {
+            this.doTeleport(homeScreen, this.homeX, this.homeY);
+        }
     }
 
     doTeleportDeath() {
@@ -697,76 +722,25 @@ class Entity {
 
 
     serialize() {
-        return "{}";
-    }
+        let s = "{";
+        s += "\"classname\":";
+        s += "\"" + this.constructor.name + "\"";
+        s += ",";
+        s += "\"id\":";
+        s += "\"" + this.id + "\"";
+        s += ",";
+        s += "\"stackSize\":";
+        s += "\"" + this.stackSize + "\"";
+        s += ",";
+        s += "\"x\":";
+        s += "\"" + this.x + "\"";
+        s += ",";
+        s += "\"y\":";
+        s += "\"" + this.y + "\"";
+        s += "}";
 
-    static deserialize(s) {
-        let j = JSON.parse(s);
-
-        // TODO How to use the EntitySpawner here
-        let id = j.id;
-        let entity = new Player();
-
-        return entity;
+        return s;
     }
 }
-
-/*
-    id; // Each subclass should have a unique ID.
-    owner; // e.g. The entity that spawned a projectile is the owner.
-
-    inventory;
-    purse;
-
-    screen;
-    x;
-    y;
-    animationShiftX = 0;
-    animationShiftY = 0;
-
-    // Certain entities (i.e. players) can teleport home, so store the desired location here.
-    homeMapName;
-    homeScreenName;
-    homeX = 1;
-    homeY = 1;
-    
-
-
-    isPlayer = false;
-    isTangible = false; // Tangible objects block movement and can interact with projectiles.
-    isActionBlocker = false; // Action blockers block projectiles without interacting with them.
-
-
-
-    isMoveInProgress = false;
-
-    canMove = true;
-    canAction = true;
-    canInventory = true;
-    canPurse = true;
-    canExperienceBoost = true;
-    canHealthBoost = true;
-    canManaBoost = true;
-    canMakeInvincible = true;
-    canOtherAction = true; // Used for "dev" actions like teleporting.
-
-    movementTime = 0; // Seconds to move 1 tile.
-    actionTime = 0; // Seconds to perform 1 action.
-    inventoryTime = 0.1; // This is chosen to make inventory management smooth.
-    purseTime = 0.1;
-    experienceBoostTime = 0.1;
-    healthBoostTime = 0.1;
-    manaBoostTime = 0.1;
-    invincibleTime = 0.1;
-    otherTime = 0.1;
-
-    // To avoid awkward edge cases, just make every entity start facing to the right.
-    direction = "right";
-
-    // By default, entities don't form into stacks of themselves.
-    maxStackNumber = 1;
-    maxStackSize = 1;
-    stackSize = 1;
-    */
 
 module.exports = Entity;

@@ -4,6 +4,8 @@ const Inventory = require("./Inventory.js");
 const Util = require("../util/Util.js");
 
 class Player extends Entity {
+    isSerializable = false;
+
     isPlayer = true;
     isTangible = true;
 
@@ -109,12 +111,7 @@ class Player extends Entity {
     doTeleportHome() {
         // Teleport the player to their home location (in the current world) only if they are alive.
         if(!this.isDead) {
-            let homeMap = this.getWorld().getMapByName(this.homeMapName);
-            let homeScreen = homeMap?.getScreenByName(this.homeScreenName);
-
-            if(homeScreen) {
-                this.doTeleport(homeScreen, this.homeX, this.homeY);
-            }
+            super.doTeleportHome();
         }
     }
     
@@ -153,19 +150,6 @@ class Player extends Entity {
         
         let projectile = this.getWorld().spawn("magic_projectile", 1, this.screen, x, y, this.direction, 8, 40, false);
         projectile.owner = this;
-    }
-
-    serialize() {
-        // When a player is serialized, we must handle things differently.
-        return "{}";
-    }
-
-    static deserialize(s) {
-        let j = JSON.parse(s);
-
-        let player = new Player();
-
-        return player;
     }
 }
 

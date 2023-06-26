@@ -36,7 +36,6 @@ class Galaxy {
             world.name = name;
 
             world.loadWorldFromFolder(galaxyFolder + name + "/");
-
             this.addWorld(world);
         }
     }
@@ -76,21 +75,18 @@ class Galaxy {
         return s;
     }
 
-    static deserialize(s) {
+    deserialize(s) {
         let j = JSON.parse(s);
-
-        let galaxy = new Galaxy();
 
         for(let world_j of j.worlds) {
             let world_s = JSON.stringify(world_j);
 
-            let world = World.deserialize(world_s);
-            world.galaxy = galaxy;
+            let world = new World();
+            world.galaxy = this;
 
-            galaxy.addWorld(world);
+            world.deserialize(world_s);
+            this.addWorld(world);
         }
-
-        return galaxy;
     }
 }
 

@@ -78,12 +78,12 @@
 				await imageCatalog.createImageCatalog();
 			});
 			
-			function connectSockets(username, password, name) {
+			function connectSockets(username, password, playerName) {
 				if(socket) {
 					socket.disconnect(true);
 				}
 				
-				socket = io({auth: {username: username, password: password}, query: {name: name}});
+				socket = io({auth: {username: username, password: password}, query: {playerName: playerName, serverName: "origin", worldName: "world0"}});
 				
 				socket.on("connect", (err) => {
 					startInterval();

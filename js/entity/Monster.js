@@ -3,6 +3,8 @@ const MonsterAI = require("../ai/MonsterAI.js");
 const Util = require("../util/Util.js");
 
 class Monster extends Entity {
+    isSerializable = false;
+
     id = "monster";
 
     health = 70;

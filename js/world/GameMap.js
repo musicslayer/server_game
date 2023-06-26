@@ -95,6 +95,9 @@ class GameMap {
 
     serialize() {
         let s = "{";
+        s += "\"classname\":";
+        s += "\"" + this.constructor.name + "\"";
+        s += ",";
         s += "\"id\":";
         s += "\"" + this.id + "\"";
         s += ",";
@@ -114,23 +117,21 @@ class GameMap {
         return s;
     }
 
-    static deserialize(s) {
+    deserialize(s) {
         let j = JSON.parse(s);
 
-        let map = new GameMap();
-        map.id = j.id;
-        map.name = j.name;
+        this.id = j.id;
+        this.name = j.name;
         
         for(let screen_j of j.screens) {
             let screen_s = JSON.stringify(screen_j);
 
-            let screen = Screen.deserialize(screen_s);
-            screen.map = map;
+            let screen = new Screen();
+            screen.map = this;
 
-            map.addScreen(screen);
+            screen.deserialize(screen_s);
+            this.addScreen(screen);
         }
-
-        return map;
     }
 }
 

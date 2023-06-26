@@ -46,7 +46,6 @@ class World {
             map.name = name;
 
             map.loadMapFromFolder(worldFolder + name + "/");
-
             this.addMap(map);
         }
 
@@ -170,28 +169,42 @@ class World {
         }
         if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
         s += "]";
+        s += ",";
+        s += "\"entityCounter\":";
+        s += this.entityCounter.serialize();
         s += "}";
 
         return s;
     }
 
-    static deserialize(s) {
+    deserialize(s) {
         let j = JSON.parse(s);
 
-        let world = new World();
-        world.id = j.id;
-        world.name = j.name;
+        this.id = j.id;
+        this.name = j.name;
         
         for(let map_j of j.maps) {
             let map_s = JSON.stringify(map_j);
 
-            let map = GameMap.deserialize(map_s);
-            map.world = world;
+            let map;
+            if(map_j.classname === "DeathMap") {
+                map = new DeathMap();
+            }
+            else if(map_j.classname === "VoidMap") {
+                map = new VoidMap();
+            }
+            else {
+                map = new GameMap();
+            }
 
-            world.addMap(map);
+            map.world = this;
+
+            map.deserialize(map_s);
+            this.addMap(map);
         }
 
-        return world;
+        let entityCounter_s = JSON.stringify(j.entityCounter);
+        this.entityCounter = EntityCounter.deserialize(entityCounter_s);
     }
 }
 

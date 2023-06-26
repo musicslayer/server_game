@@ -1,6 +1,6 @@
 const Entity = require("./Entity.js");
 
-class Monster extends Entity {
+class MonsterSpawner extends Entity {
     id = "monster_spawner";
 
     spawnTime = 3; // Seconds to spawn a new monster after one dies.
@@ -38,4 +38,4 @@ class Monster extends Entity {
     }
 }
 
-module.exports = Monster;
+module.exports = MonsterSpawner;
