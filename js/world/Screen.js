@@ -39,15 +39,15 @@ class Screen {
             // Second part is the tiles
             let tilePart = parts[1].split(COMMA);
             if(tilePart[0]) {
-                let imageTableIdxArray = [];
-                let imageIdxArray = [];
+                let imageFolders = [];
+                let imageFiles = [];
 
                 while(tilePart.length > 0) {
-                    imageTableIdxArray.push(tilePart.shift());
-                    imageIdxArray.push(tilePart.shift());
+                    imageFolders.push(tilePart.shift());
+                    imageFiles.push(tilePart.shift());
                 }
 
-                let tile = new Tile(imageTableIdxArray, imageIdxArray);
+                let tile = new Tile(imageFolders, imageFiles);
                 tile.x = x;
                 tile.y = y;
         
@@ -194,6 +194,85 @@ class Screen {
 
     getWorld() {
         return this.map.world;
+    }
+
+
+    serialize() {
+        let s = "{";
+        s += "\"name\":";
+        s += "\"" + this.name + "\"";
+        s += ",";
+        s += "\"x\":";
+        s += "\"" + this.x + "\"";
+        s += ",";
+        s += "\"y\":";
+        s += "\"" + this.y + "\"";
+        s += ",";
+        s += "\"numTilesX\":";
+        s += "\"" + this.numTilesX + "\"";
+        s += ",";
+        s += "\"numTilesY\":";
+        s += "\"" + this.numTilesY + "\"";
+        s += ",";
+        s += "\"pvpStatus\":";
+        s += "\"" + this.pvpStatus + "\"";
+        s += ",";
+
+
+
+        s += "\"tiles\":";
+        s += "[";
+        for(let tile of this.tiles) {
+            s += tile.serialize();
+            s += ",";
+        }
+        if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
+        s += "]";
+        s += ",";
+
+        s += "\"otherEntities\":";
+        s += "[";
+        for(let otherEntity of this.otherEntities) {
+            s += otherEntity.serialize();
+            s += ",";
+        }
+        if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
+        s += "]";
+        s += ",";
+
+        s += "\"playerEntities\":";
+        s += "[";
+        for(let playerEntity of this.playerEntities) {
+            s += playerEntity.serialize();
+            s += ",";
+        }
+        if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
+        s += "]";
+        s += "}";
+
+        return s;
+    }
+
+    static deserialize(s) {
+        let j = JSON.parse(s);
+
+        let screen = new Screen();
+        screen.name = j.name;
+        screen.x = Number(j.x);
+        screen.y = Number(j.y);
+        screen.numTilesX = Number(j.numTilesX);
+        screen.numTilesY = Number(j.numTilesY);
+        screen.pvpStatus = j.pvpStatus;
+
+        for(let tile_j of j.tiles) {
+            let tile_s = JSON.stringify(tile_j);
+
+            let tile = Tile.deserialize(tile_s);
+
+            screen.addTile(tile);
+        }
+
+        return screen;
     }
 }
 

@@ -256,8 +256,8 @@ class Client {
             tiles.push({
                 x: tile.x,
                 y: tile.y,
-                imageFolderArray: tile.imageFolderArray,
-                imageFileArray: tile.imageFileArray
+                imageFolders: tile.imageFolders,
+                imageFiles: tile.imageFiles
             });
         }
 
@@ -266,8 +266,8 @@ class Client {
             tiles.push({
                 x: this.player.homeX,
                 y: this.player.homeY,
-                imageFolderArray: ["marker"],
-                imageFileArray: ["home"]
+                imageFolders: ["marker"],
+                imageFiles: ["home"]
             });
         }
 
@@ -291,12 +291,12 @@ class Client {
         // Players
         let playerEntities = [];
         for(const entity of this.player.screen.playerEntities) {
-            let statusArray = [];
+            let statuses = [];
             if(entity.isDead) {
-                statusArray.push("dead");
+                statuses.push("dead");
             }
             if(entity.isInvincible) {
-                statusArray.push("invincible");
+                statuses.push("invincible");
             }
 
             playerEntities.push({
@@ -310,24 +310,24 @@ class Client {
                 manaFraction: entity.mana / entity.maxMana,
                 experienceFraction: entity.experience / 100,
                 level: entity.level,
-                statusArray: statusArray
+                statuses: statuses
             });
         }
 
         // Inventory
         let inventory = {};
         inventory.currentSlot = this.selectedSlot;
-        inventory.itemArray = [];
+        inventory.items = [];
         for(let index = 0; index < this.player.inventory.maxSlots; index++) {
             let item = this.player.inventory.itemMap.get(index);
             if(item) {
-                inventory.itemArray.push({
+                inventory.items.push({
                     id: item.id,
                     stackSize: item.stackSize
                 });
             }
             else {
-                inventory.itemArray.push(undefined);
+                inventory.items.push(undefined);
             }
         }
 

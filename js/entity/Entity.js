@@ -694,6 +694,79 @@ class Entity {
         return (this.x === x && this.y === y)
         || (this.isMoveInProgress && this.x + shiftX === x && this.y + shiftY === y);
     }
+
+
+    serialize() {
+        return "{}";
+    }
+
+    static deserialize(s) {
+        let j = JSON.parse(s);
+
+        // TODO How to use the EntitySpawner here
+        let id = j.id;
+        let entity = new Player();
+
+        return entity;
+    }
 }
+
+/*
+    id; // Each subclass should have a unique ID.
+    owner; // e.g. The entity that spawned a projectile is the owner.
+
+    inventory;
+    purse;
+
+    screen;
+    x;
+    y;
+    animationShiftX = 0;
+    animationShiftY = 0;
+
+    // Certain entities (i.e. players) can teleport home, so store the desired location here.
+    homeMapName;
+    homeScreenName;
+    homeX = 1;
+    homeY = 1;
+    
+
+
+    isPlayer = false;
+    isTangible = false; // Tangible objects block movement and can interact with projectiles.
+    isActionBlocker = false; // Action blockers block projectiles without interacting with them.
+
+
+
+    isMoveInProgress = false;
+
+    canMove = true;
+    canAction = true;
+    canInventory = true;
+    canPurse = true;
+    canExperienceBoost = true;
+    canHealthBoost = true;
+    canManaBoost = true;
+    canMakeInvincible = true;
+    canOtherAction = true; // Used for "dev" actions like teleporting.
+
+    movementTime = 0; // Seconds to move 1 tile.
+    actionTime = 0; // Seconds to perform 1 action.
+    inventoryTime = 0.1; // This is chosen to make inventory management smooth.
+    purseTime = 0.1;
+    experienceBoostTime = 0.1;
+    healthBoostTime = 0.1;
+    manaBoostTime = 0.1;
+    invincibleTime = 0.1;
+    otherTime = 0.1;
+
+    // To avoid awkward edge cases, just make every entity start facing to the right.
+    direction = "right";
+
+    // By default, entities don't form into stacks of themselves.
+    maxStackNumber = 1;
+    maxStackSize = 1;
+    stackSize = 1;
+    */
 
 module.exports = Entity;

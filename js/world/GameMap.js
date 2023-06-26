@@ -92,6 +92,46 @@ class GameMap {
     getMapInDirection(direction) {
         return this.world.getMapInDirection(this, direction);
     }
+
+    serialize() {
+        let s = "{";
+        s += "\"id\":";
+        s += "\"" + this.id + "\"";
+        s += ",";
+        s += "\"name\":";
+        s += "\"" + this.name + "\"";
+        s += ",";
+        s += "\"screens\":";
+        s += "[";
+        for(let screen of this.screens) {
+            s += screen.serialize();
+            s += ",";
+        }
+        if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
+        s += "]";
+        s += "}";
+
+        return s;
+    }
+
+    static deserialize(s) {
+        let j = JSON.parse(s);
+
+        let map = new GameMap();
+        map.id = j.id;
+        map.name = j.name;
+        
+        for(let screen_j of j.screens) {
+            let screen_s = JSON.stringify(screen_j);
+
+            let screen = Screen.deserialize(screen_s);
+            screen.map = map;
+
+            map.addScreen(screen);
+        }
+
+        return map;
+    }
 }
 
 module.exports = GameMap;

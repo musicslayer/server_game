@@ -60,24 +60,18 @@ class MonsterAI {
         }
     }
 
-    getRandomValidDirection(monster, directionArray) {
+    getRandomValidDirection(monster, directions) {
         // Returns a direction that the monster can move in, or else returns undefined.
-        let directions = [];
+        let validDirections = [];
 
-        for(let direction of directionArray) {
+        for(let direction of directions) {
             if(monster.isNextStepAllowed(direction)) {
-                directions.push(direction);
+                validDirections.push(direction);
             }
         }
     
-        let R = Util.getRandomInt(directions.length);
-        return directions[R];
-    }
-
-    getRandomDirection(directionArray) {
-        // Returns a direction, or else returns undefined (i.e. if the array is empty).
-        let R = Util.getRandomInt(directionArray.length);
-        return directionArray[R];
+        let R = Util.getRandomInt(validDirections.length);
+        return validDirections[R];
     }
 
     isFacingAPlayer(monster) {

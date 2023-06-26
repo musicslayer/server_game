@@ -60,6 +60,38 @@ class Galaxy {
     getWorldByPosition(p) {
         return this.worldPosMap.get(p);
     }
+
+    serialize() {
+        let s = "{";
+        s += "\"worlds\":";
+        s += "[";
+        for(let world of this.worlds) {
+            s += world.serialize();
+            s += ",";
+        }
+        if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
+        s += "]";
+        s += "}";
+
+        return s;
+    }
+
+    static deserialize(s) {
+        let j = JSON.parse(s);
+
+        let galaxy = new Galaxy();
+
+        for(let world_j of j.worlds) {
+            let world_s = JSON.stringify(world_j);
+
+            let world = World.deserialize(world_s);
+            world.galaxy = galaxy;
+
+            galaxy.addWorld(world);
+        }
+
+        return galaxy;
+    }
 }
 
 module.exports = Galaxy;

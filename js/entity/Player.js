@@ -154,6 +154,19 @@ class Player extends Entity {
         let projectile = this.getWorld().spawn("magic_projectile", 1, this.screen, x, y, this.direction, 8, 40, false);
         projectile.owner = this;
     }
+
+    serialize() {
+        // When a player is serialized, we must handle things differently.
+        return "{}";
+    }
+
+    static deserialize(s) {
+        let j = JSON.parse(s);
+
+        let player = new Player();
+
+        return player;
+    }
 }
 
 module.exports = Player;

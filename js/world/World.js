@@ -153,6 +153,46 @@ class World {
     getServer() {
         return this.galaxy.server;
     }
+
+    serialize() {
+        let s = "{";
+        s += "\"id\":";
+        s += "\"" + this.id + "\"";
+        s += ",";
+        s += "\"name\":";
+        s += "\"" + this.name + "\"";
+        s += ",";
+        s += "\"maps\":";
+        s += "[";
+        for(let map of this.gameMaps) {
+            s += map.serialize();
+            s += ",";
+        }
+        if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
+        s += "]";
+        s += "}";
+
+        return s;
+    }
+
+    static deserialize(s) {
+        let j = JSON.parse(s);
+
+        let world = new World();
+        world.id = j.id;
+        world.name = j.name;
+        
+        for(let map_j of j.maps) {
+            let map_s = JSON.stringify(map_j);
+
+            let map = GameMap.deserialize(map_s);
+            map.world = world;
+
+            world.addMap(map);
+        }
+
+        return world;
+    }
 }
 
 module.exports = World;
