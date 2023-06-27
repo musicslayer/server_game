@@ -46,13 +46,13 @@ class Player extends Entity {
         super.doSpawn();
         
         // Register regen tasks.
-        this.getServer().addRefreshTask(1, () => {
+        this.getServerClock().addRefreshTask(1, () => {
             if(!this.isDead) {
                 this.doAddHealth(this.healthRegen)
             }
         })
 
-        this.getServer().addRefreshTask(1, () => {
+        this.getServerClock().addRefreshTask(1, () => {
             if(!this.isDead) {
                 this.doAddMana(this.manaRegen)
             }
@@ -78,7 +78,7 @@ class Player extends Entity {
 
     doMakeInvincible(invincibleSeconds) {
         this.isInvincible = true;
-        this.getServer().addTask(invincibleSeconds, () => {
+        this.getServerClock().addTask(invincibleSeconds, () => {
             this.isInvincible = false;
         });
     }

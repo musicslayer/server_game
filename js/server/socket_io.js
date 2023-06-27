@@ -171,7 +171,7 @@ function attachAccountListeners(socket, accountManager, serverManager) {
 			}
 
 			let server = serverManager.getServerByName(serverName);
-			let world = server?.galaxy.getWorldByName(worldName);
+			let world = server?.universe.getWorldByName(worldName);
 			if(!world) {
 				callback({"isSuccess": false});
 				return;

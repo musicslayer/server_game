@@ -1,6 +1,6 @@
 const fs = require("fs");
 
-const WorldCounter = require("./WorldCounter.js");
+
 const GameMap = require("./GameMap.js");
 const VoidMap = require("./VoidMap.js");
 const DeathMap = require("./DeathMap.js");
@@ -11,9 +11,7 @@ const CRLF = "\r\n";
 const PIPE = "|";
 
 class World {
-    worldCounter = new WorldCounter();
-
-    galaxy;
+    universe;
     id;
     name;
 
@@ -94,7 +92,7 @@ class World {
     }
 
     getWorldInDirection(direction) {
-        return this.galaxy.getWorldInDirection(this, direction);
+        return this.universe.getWorldInDirection(this, direction);
     }
 
     serialize() {
@@ -113,9 +111,6 @@ class World {
         }
         if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
         s += "]";
-        s += ",";
-        s += "\"worldCounter\":";
-        s += this.worldCounter.serialize();
         s += "}";
 
         return s;
@@ -146,9 +141,6 @@ class World {
             map.deserialize(map_s);
             this.addMap(map);
         }
-
-        let entityCounter_s = JSON.stringify(j.worldCounter);
-        this.worldCounter = EntityCounter.deserialize(entityCounter_s);
     }
 }
 

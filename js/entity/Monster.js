@@ -37,12 +37,12 @@ class Monster extends Entity {
         super.doSpawn();
 
         // Monster activities are controlled by an AI class.
-        this.getServer().addTask(0, () => {
+        this.getServerClock().addTask(0, () => {
             this.ai.generateNextActivity(this);
         });
 
         // Use this to gradually decrease aggro over time.
-        this.getServer().addRefreshTask(10, () => {
+        this.getServerClock().addRefreshTask(10, () => {
             this.decreaseAggro();
         });
     }

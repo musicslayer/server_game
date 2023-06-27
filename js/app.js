@@ -8,7 +8,6 @@ const Util = require("./util/Util.js");
 // TODO All state changes must be done through the Server class. We need to enforce this somehow.
 // TODO Only The client and monster ai classes can schedule things on the server (and then there would be less getServer methods)
 
-// TODO Have a servers folder (assign galaxies/worlds to them)?
 // TODO Should server and accounts be saved separately?
 // TODO I should be able to save accounts/servers both all of them and some of them.
 

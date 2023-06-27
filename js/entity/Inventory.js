@@ -58,7 +58,7 @@ class Inventory {
                 let item = EntityFactory.cloneInstance(entity, N);
 
                 this.itemMap.set(index, item);
-                this.owner.getWorldCounter().register("inventory", 1);
+                this.owner.getServerCounter().register("inventory", 1);
             }
         }
     }
@@ -69,7 +69,7 @@ class Inventory {
             item.stackSize -= number;
             if(item.stackSize === 0) {
                 this.itemMap.set(slot, undefined);
-                this.owner.getWorldCounter().deregister("inventory", 1);
+                this.owner.getServerCounter().deregister("inventory", 1);
             }
         }
     }

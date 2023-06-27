@@ -7,18 +7,20 @@ const COMMA = ",";
 const CRLF = "\r\n";
 const PIPE = "|";
 
-class Galaxy {
+class Universe {
     server;
+    id;
+    name;
 
     worlds = [];
     worldMap = new Map();
     worldPosMap = new Map();
 
-    loadGalaxyFromFolder(galaxyFolder) {
-        let galaxyData = fs.readFileSync(galaxyFolder + "_galaxy.txt", "ascii");
-        let lines = galaxyData ? galaxyData.split(CRLF) : [];
+    loadUniverseFromFolder(universeFolder) {
+        let universeData = fs.readFileSync(universeFolder + "_universe.txt", "ascii");
+        let lines = universeData ? universeData.split(CRLF) : [];
 
-        // Each line represents a world within this galaxy.
+        // Each line represents a world within this universe.
         while(lines.length > 0) {
             let line = lines.shift();
             let parts = line.split(PIPE);
@@ -31,11 +33,11 @@ class Galaxy {
             let name = parts[1];
 
             let world = new World();
-            world.galaxy = this;
+            world.universe = this;
             world.id = id;
             world.name = name;
 
-            world.loadWorldFromFolder(galaxyFolder + name + "/");
+            world.loadWorldFromFolder(universeFolder + name + "/");
             this.addWorld(world);
         }
     }
@@ -82,7 +84,7 @@ class Galaxy {
             let world_s = JSON.stringify(world_j);
 
             let world = new World();
-            world.galaxy = this;
+            world.universe = this;
 
             world.deserialize(world_s);
             this.addWorld(world);
@@ -90,4 +92,4 @@ class Galaxy {
     }
 }
 
-module.exports = Galaxy;
+module.exports = Universe;

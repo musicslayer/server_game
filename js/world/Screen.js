@@ -87,10 +87,10 @@ class Screen {
         }
 
         if(this.isDynamic) {
-            this.getWorldCounter().register("instance", 1);
+            this.getServerCounter().register("instance", 1);
         }
         else {
-            this.getWorldCounter().register("persistent", 1);
+            this.getServerCounter().register("persistent", 1);
         }
     }
 
@@ -109,15 +109,15 @@ class Screen {
         }
 
         if(this.isDynamic) {
-            this.getWorldCounter().deregister("instance", 1);
+            this.getServerCounter().deregister("instance", 1);
 
             // If there are no more players in an instance screen, then the entire screen should be deregistered.
             if(this.playerEntities.length === 0) {
-                this.getWorldCounter().deregister("instance", this.otherEntities.length);
+                this.getServerCounter().deregister("instance", this.otherEntities.length);
             }
         }
         else {
-            this.getWorldCounter().deregister("persistent", 1);
+            this.getServerCounter().deregister("persistent", 1);
         }
     }
 
@@ -192,8 +192,8 @@ class Screen {
         return this.map.world.getWorldInDirection(direction);
     }
 
-    getWorldCounter() {
-        return this.map.world.worldCounter;
+    getServerCounter() {
+        return this.map.world.universe.server.serverCounter;
     }
 
     serialize() {

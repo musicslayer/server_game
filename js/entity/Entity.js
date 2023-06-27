@@ -1,5 +1,6 @@
 const EntityFactory = require("./EntityFactory.js");
 const Util = require("../util/Util.js");
+const Performance = require("../server/Performance.js");
 
 class Entity {
     isSerializable = true; // By default, entities can be serialized and saved.
@@ -62,12 +63,12 @@ class Entity {
         return "?";
     }
 
-    getServer() {
-        return this.screen.map.world.galaxy.server;
+    getServerClock() {
+        return this.screen.map.world.universe.server.serverClock;
     }
 
-    getWorldCounter() {
-        return this.screen.map.world.worldCounter;
+    getServerCounter() {
+        return this.screen.map.world.universe.server.serverCounter;
     }
 
     // All of the main actions an entity can take are added onto the server queue.
@@ -75,11 +76,11 @@ class Entity {
         if(this.canAction) {
             this.canAction = false;
 
-            this.getServer().addTask(this.actionTime, () => {
+            this.getServerClock().addTask(this.actionTime, () => {
                 this.canAction = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doAddExperience(experience);
             });
         }
@@ -89,11 +90,11 @@ class Entity {
         if(this.canAction) {
             this.canAction = false;
 
-            this.getServer().addTask(this.actionTime, () => {
+            this.getServerClock().addTask(this.actionTime, () => {
                 this.canAction = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doAddHealth(health);
             });
         }
@@ -103,11 +104,11 @@ class Entity {
         if(this.canAction) {
             this.canAction = false;
 
-            this.getServer().addTask(this.actionTime, () => {
+            this.getServerClock().addTask(this.actionTime, () => {
                 this.canAction = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doAddMana(mana);
             });
         }
@@ -117,11 +118,11 @@ class Entity {
         if(this.canAction) {
             this.canAction = false;
 
-            this.getServer().addTask(this.actionTime, () => {
+            this.getServerClock().addTask(this.actionTime, () => {
                 this.canAction = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doMakeInvincible(invincibleSeconds);
             });
         }
@@ -131,30 +132,30 @@ class Entity {
         if(this.canCreate) {
             this.canCreate = false;
 
-            this.getServer().addTask(this.createTime, () => {
+            this.getServerClock().addTask(this.createTime, () => {
                 this.canCreate = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doCreateEntity(entity);
             });
         }
     }
 
     despawn() {
-        this.getServer().addTask(0, () => {
+        this.getServerClock().addTask(0, () => {
             this.doDespawn();
         });
     }
 
     spawn() {
-        this.getServer().addTask(0, () => {
+        this.getServerClock().addTask(0, () => {
             this.doSpawn();
         });
     }
 
     spawnInWorld(world) {
-        this.getServer().addTask(0, () => {
+        this.getServerClock().addTask(0, () => {
             this.doSpawnInWorld(world);
         });
     }
@@ -163,11 +164,11 @@ class Entity {
         if(this.canAction) {
             this.canAction = false;
 
-            this.getServer().addTask(this.actionTime, () => {
+            this.getServerClock().addTask(this.actionTime, () => {
                 this.canAction = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doAction();
             });
         }
@@ -177,11 +178,11 @@ class Entity {
         if(this.canMove) {
             this.canMove = false;
 
-            this.getServer().addTask(this.movementTime, () => {
+            this.getServerClock().addTask(this.movementTime, () => {
                 this.canMove = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doTeleport(screen, x, y);
             });
         }
@@ -191,11 +192,11 @@ class Entity {
         if(this.canMove) {
             this.canMove = false;
 
-            this.getServer().addTask(this.movementTime, () => {
+            this.getServerClock().addTask(this.movementTime, () => {
                 this.canMove = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doTeleportHome();
             });
         }
@@ -205,11 +206,11 @@ class Entity {
         if(this.canMove) {
             this.canMove = false;
 
-            this.getServer().addTask(this.movementTime, () => {
+            this.getServerClock().addTask(this.movementTime, () => {
                 this.canMove = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doKill();
             });
         }
@@ -219,11 +220,11 @@ class Entity {
         if(this.canMove) {
             this.canMove = false;
 
-            this.getServer().addTask(this.movementTime, () => {
+            this.getServerClock().addTask(this.movementTime, () => {
                 this.canMove = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doRevive();
             });
         }
@@ -238,15 +239,15 @@ class Entity {
             this.isMoveInProgress = true;
             this.canMove = false;
             
-            for(let a = 0; a < this.getServer().MOVEMENT_FRAMES; a++) {
-                let fraction = a / this.getServer().MOVEMENT_FRAMES;
-                this.getServer().addTask(this.movementTime * fraction, () => {
+            for(let a = 0; a < Performance.MOVEMENT_FRAMES; a++) {
+                let fraction = a / Performance.MOVEMENT_FRAMES;
+                this.getServerClock().addTask(this.movementTime * fraction, () => {
                     let [shiftX, shiftY] = Util.getDirectionalShift(direction);
                     this.animationShiftX = (shiftX * fraction);
                     this.animationShiftY = (shiftY * fraction);
                 });
             }
-            this.getServer().addTask(this.movementTime, () => {
+            this.getServerClock().addTask(this.movementTime, () => {
                 this.animationShiftX = 0;
                 this.animationShiftY = 0;
 
@@ -267,7 +268,7 @@ class Entity {
             this.isMoveInProgress = true;
             this.canMove = false;
 
-            this.getServer().addTask(this.movementTime, () => {
+            this.getServerClock().addTask(this.movementTime, () => {
                 this.isMoveInProgress = false;
                 this.canMove = true;
 
@@ -280,7 +281,7 @@ class Entity {
         if(this.canMove) {
             this.canMove = false;
 
-            this.getServer().addTask(this.movementTime, () => {
+            this.getServerClock().addTask(this.movementTime, () => {
                 this.canMove = true;
                 this.doWait();
             });
@@ -293,11 +294,11 @@ class Entity {
         if(this.canMove) {
             this.canMove = false;
 
-            this.getServer().addTask(this.movementTime, () => {
+            this.getServerClock().addTask(this.movementTime, () => {
                 this.canMove = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doMoveScreen(direction);
             });
         }
@@ -307,11 +308,11 @@ class Entity {
         if(this.canMove) {
             this.canMove = false;
 
-            this.getServer().addTask(this.movementTime, () => {
+            this.getServerClock().addTask(this.movementTime, () => {
                 this.canMove = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doMoveMap(direction);
             });
         }
@@ -322,11 +323,11 @@ class Entity {
         if(this.canMove) {
             this.canMove = false;
 
-            this.getServer().addTask(this.movementTime, () => {
+            this.getServerClock().addTask(this.movementTime, () => {
                 this.canMove = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doMoveWorld(direction);
             });
         }
@@ -336,11 +337,11 @@ class Entity {
         if(this.canPurse) {
             this.canPurse = false;
 
-            this.getServer().addTask(this.purseTime, () => {
+            this.getServerClock().addTask(this.purseTime, () => {
                 this.canPurse = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doAddToPurse(gold);
             });
         }
@@ -350,11 +351,11 @@ class Entity {
         if(this.canPurse) {
             this.canPurse = false;
 
-            this.getServer().addTask(this.purseTime, () => {
+            this.getServerClock().addTask(this.purseTime, () => {
                 this.canPurse = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doDropFromPurse(goldAmount);
             });
         }
@@ -365,11 +366,11 @@ class Entity {
         if(this.canInventory) {
             this.canInventory = false;
 
-            this.getServer().addTask(this.inventoryTime, () => {
+            this.getServerClock().addTask(this.inventoryTime, () => {
                 this.canInventory = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doAddToInventory(entity);
             });
         }
@@ -379,11 +380,11 @@ class Entity {
         if(this.canInventory) {
             this.canInventory = false;
 
-            this.getServer().addTask(this.inventoryTime, () => {
+            this.getServerClock().addTask(this.inventoryTime, () => {
                 this.canInventory = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doConsumeFromInventory(slot);
             });
         }
@@ -393,11 +394,11 @@ class Entity {
         if(this.canInventory) {
             this.canInventory = false;
 
-            this.getServer().addTask(this.inventoryTime, () => {
+            this.getServerClock().addTask(this.inventoryTime, () => {
                 this.canInventory = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doDropFromInventory(slot, number);
             });
         }
@@ -407,11 +408,11 @@ class Entity {
         if(this.canInventory) {
             this.canInventory = false;
 
-            this.getServer().addTask(this.inventoryTime, () => {
+            this.getServerClock().addTask(this.inventoryTime, () => {
                 this.canInventory = true;
             });
 
-            this.getServer().addTask(0, () => {
+            this.getServerClock().addTask(0, () => {
                 this.doSwapInventorySlots(slot1, slot2);
             });
         }
@@ -488,7 +489,7 @@ class Entity {
         this.screen.removeEntity(this);
 
         if(this.inventory) {
-            this.getWorldCounter().deregister("inventory", this.inventory.numItems());
+            this.getServerCounter().deregister("inventory", this.inventory.numItems());
         }
     }
 
@@ -524,7 +525,7 @@ class Entity {
         // Spawns this entity as loot (i.e. it will despawn after a certain amount of time).
         this.doSpawn();
 
-        this.getServer().addTask(this.getServer().LOOT_TIME, () => {
+        this.getServerClock().addTask(Performance.LOOT_TIME, () => {
             this.doDespawn();
         })
     }

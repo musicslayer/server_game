@@ -1,15 +1,16 @@
 const fs = require("fs");
 
 const Server = require("./Server.js");
-const Galaxy = require("../world/Galaxy.js");
 
 class ServerManager {
     servers = [];
     serverMap = new Map();
+    serverPosMap = new Map();
 
     addServer(server) {
         this.servers.push(server);
         this.serverMap.set(server.name, server);
+        this.serverPosMap.set(server.id, server);
     }
 
     getServerByName(name) {
@@ -63,23 +64,16 @@ class ServerManager {
 
 
     static createInitialServerManager() {
-        // Load game server and galaxy.
-        let serverManager = new ServerManager();
-
+        // Load one game server and start its server tick.
         let server = new Server();
         server.id = 0;
         server.name = "origin";
 
-        let galaxy = new Galaxy();
-        galaxy.server = server;
+        server.loadServerFromFolder("assets/server/");
+        server.serverClock.initServerTick();
 
-        galaxy.loadGalaxyFromFolder("assets/galaxy/");
-        server.addGalaxy(galaxy);
-
+        let serverManager = new ServerManager();
         serverManager.addServer(server);
-
-        // Start the server tick.
-        server.initServerTick();
 
         return serverManager;
     }

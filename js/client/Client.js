@@ -256,11 +256,11 @@ class Client {
         if(this.canInput) {
             this.canInput = false;
 
-            this.player.getServer().addTask(this.inputTime, () => {
+            this.player.getServerClock().addTask(this.inputTime, () => {
                 this.canInput = true;
             });
 
-            this.player.getServer().addTask(0, () => {
+            this.player.getServerClock().addTask(0, () => {
                 task();
             });
         }
@@ -371,7 +371,7 @@ class Client {
     getDevData() {
         // Info
         let info = {};
-        info.currentTick = this.player.getServer().currentTick;
+        info.currentTick = this.player.getServerClock().currentTick;
         
         return {
             info: info

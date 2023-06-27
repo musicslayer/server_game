@@ -8,7 +8,7 @@ class DataBridge {
         }
         else {
             switch(classname) {
-                case "galaxy":
+                case "":
                     s = 1;
                     break;
                 default:

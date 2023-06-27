@@ -1,4 +1,4 @@
-class WorldCounter {
+class ServerCounter {
     persistentEntityCount = 0; // Includes entities placed on a persistent screen.
     instanceEntityCount = 0; // Includes entities placed on dynamic screens (void, death) and regular instances (dungeons).
     inventoryEntityCount = 0; // Includes entities in inventories.
@@ -59,14 +59,14 @@ class WorldCounter {
     static deserialize(s) {
         let j = JSON.parse(s);
 
-        let worldCounter = new WorldCounter();
-        worldCounter.persistentEntityCount = Number(j.persistentEntityCount);
-        worldCounter.instanceEntityCount = Number(j.instanceEntityCount);
-        worldCounter.inventoryEntityCount = Number(j.inventoryEntityCount);
-        worldCounter.goldCount = Number(j.goldCount);
+        let serverCounter = new ServerCounter();
+        serverCounter.persistentEntityCount = Number(j.persistentEntityCount);
+        serverCounter.instanceEntityCount = Number(j.instanceEntityCount);
+        serverCounter.inventoryEntityCount = Number(j.inventoryEntityCount);
+        serverCounter.goldCount = Number(j.goldCount);
 
-        return worldCounter;
+        return ServerCounter;
     }
 }
 
-module.exports = WorldCounter;
+module.exports = ServerCounter;

@@ -14,12 +14,12 @@ class Purse {
         gold.stackSize -= N;
         this.goldTotal += N;
 
-        this.owner.getWorldCounter().register("gold", N);
+        this.owner.getServerCounter().register("gold", N);
     }
 
     removeFromPurse(goldAmount) {
         this.goldTotal -= goldAmount;
-        this.owner.getWorldCounter().deregister("gold", goldAmount);
+        this.owner.getServerCounter().deregister("gold", goldAmount);
     }
 }
 

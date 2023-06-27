@@ -28,7 +28,7 @@ class MonsterSpawner extends Entity {
 
     onMonsterDeath() {
         // When a monster dies, start a timer to spawn another one.
-        this.getServer().addTask(this.spawnTime, () => {
+        this.getServerClock().addTask(this.spawnTime, () => {
             this.doSpawnMonster();
         })
     }

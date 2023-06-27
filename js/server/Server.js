@@ -1,91 +1,66 @@
 const fs = require("fs");
-const { Worker } = require("worker_threads");
 
-const Galaxy = require("../world/Galaxy.js");
+const Universe = require("../world/Universe.js");
+const ServerClock = require("./ServerClock.js");
+const ServerCounter = require("./ServerCounter.js");
 
 class Server {
-    // These variables affect server performance.
-    TICK_RATE = 60; // times per second
-    MOVEMENT_FRAMES = 60; // frames per 1 tile of movement
-    LOOT_TIME = 300; // (5 minutes) seconds that spawned loot will remain in the world before despawning
+    serverClock = new ServerClock();
+    serverCounter = new ServerCounter();
 
-    isPaused = true;
-    scheduledTaskMap = new Map();
-    currentTick = 0;
-
-    galaxy;
     id;
     name;
 
-    addTask(seconds, task) {
-        let tick = Math.floor(this.currentTick + seconds * this.TICK_RATE);
-        let tasks = this.scheduledTaskMap.get(tick) ?? [];
-        tasks.push(task);
-        this.scheduledTaskMap.set(tick, tasks);
-    }
+    universes = [];
+    universeMap = new Map();
+    universePosMap = new Map();
 
-    addRefreshTask(seconds, task) {
-        // Add a task that will execute every time the given duration passes.
-        this.addTask(seconds, () => {
-            task();
-            this.addRefreshTask(seconds, task);
-        });
-    }
+    loadServerFromFolder(serverFolder) {
+        let serverData = fs.readFileSync(serverFolder + "_server.txt", "ascii");
+        let lines = serverData ? serverData.split(CRLF) : [];
 
-    initServerTick() {
-        // Start a timer thread that will alert the main thread after every tick.
-        this.isPaused = false;
+        // Each line represents a world within this server.
+        while(lines.length > 0) {
+            let line = lines.shift();
+            let parts = line.split(PIPE);
 
-        const shared = new Int32Array(new SharedArrayBuffer(4));
-        this.doWork(shared);
-    
-        const worker = new Worker("./js/server/server_tick.js", {
-            workerData: {
-                shared: shared,
-                interval: 1000000000 / this.TICK_RATE // In nanoseconds
-            }
-        });
-        worker.on("error", (err) => {
-            console.error(err);
-            console.error(err.stack);
-        });
-    };
+            // First part is the id
+            let idPart = parts[0].split(COMMA);
+            let id = Number(idPart.shift());
 
-    async doWork(shared) {
-        await Atomics.waitAsync(shared, 0, 0).value;
-        if(!this.isPaused) {
-            let tasks = this.scheduledTaskMap.get(this.currentTick) ?? [];
-            this.scheduledTaskMap.delete(this.currentTick);
+            // Second part is the universe
+            let name = parts[1];
 
-            // Increment the current tick now so that new tasks added during a task won't be executed until the next tick.
-            this.currentTick++;
+            let universe = new Universe();
+            universe.server = this;
+            universe.id = id;
+            universe.name = name;
 
-            for(let task of tasks) {
-                task();
-            }
+            universe.loadUniverseFromFolder(serverFolder + name + "/");
+            this.addUniverse(universe);
         }
-    
-        this.doWork(shared)
     }
-
-    addGalaxy(galaxy) {
-        this.galaxy = galaxy;
+    
+    addUniverse(universe) {
+        this.universes.push(universe);
+        this.universeMap.set(universe.name, universe);
+        this.universePosMap.set(universe.id, universe);
     }
 
     save(stateFile) {
         // Save the server state to the file.
         // We save the current tick but none of the scheduled tasks.
-        this.isPaused = true;
+        this.serverClock.isPaused = true;
 
         let s = this.serialize();
         fs.writeFileSync(stateFile, s, "ascii");
 
-        this.isPaused = false;
+        this.serverClock.isPaused = false;
     }
 
     load(stateFile) {
         // Change the server state to the state recorded in the file.
-        this.isPaused = true;
+        this.serverClock.isPaused = true;
 
         // Wipe the scheduled tasks.
         this.scheduledTaskMap = new Map();
@@ -93,7 +68,7 @@ class Server {
         let s = fs.readFileSync(stateFile, "ascii");
         this.deserialize(s);
 
-        this.isPaused = false;
+        this.serverClock.isPaused = false;
     }
 
     serialize() {
@@ -101,24 +76,35 @@ class Server {
         s += "\"currentTick\":";
         s += "\"" + this.currentTick + "\"";
         s += ",";
-        s += "\"galaxy\":";
-        s += this.galaxy.serialize();
+        s += "\"universe\":";
+        s += this.universe.serialize();
         s += "}";
+
+        /*
+        s += ",";
+        s += "\"worldCounter\":";
+        s += this.worldCounter.serialize();
+        */
 
         return s;
     }
 
     deserialize(s) {
         let j = JSON.parse(s);
-        let galaxy_s = JSON.stringify(j.galaxy);
+        let universe_s = JSON.stringify(j.universe);
 
         this.currentTick = j.currentTick;
 
-        let galaxy = new Galaxy();
-        galaxy.server = this;
+        let universe = new Universe();
+        universe.server = this;
 
-        galaxy.deserialize(galaxy_s);
-        this.addGalaxy(galaxy);
+        universe.deserialize(universe_s);
+        this.addUniverse(universe);
+
+        /*
+        let entityCounter_s = JSON.stringify(j.worldCounter);
+        this.worldCounter = EntityCounter.deserialize(entityCounter_s);
+        */
 
         // Don't deserialize the scheduled tasks here.
     }
