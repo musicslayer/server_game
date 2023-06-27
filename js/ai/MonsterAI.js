@@ -14,17 +14,17 @@ class MonsterAI {
         else {
             directions = [];
 
-            if(aggroPlayer.y < monster.y) {
+            if(aggroPlayer.getMovementY() < monster.y) {
                 directions.push("up");
             }
-            else if (aggroPlayer.y > monster.y) {
+            else if (aggroPlayer.getMovementY() > monster.y) {
                 directions.push("down");
             }
 
-            if(aggroPlayer.x < monster.x) {
+            if(aggroPlayer.getMovementX() < monster.x) {
                 directions.push("left");
             }
-            else if(aggroPlayer.x > monster.x) {
+            else if(aggroPlayer.getMovementX() > monster.x) {
                 directions.push("right");
             }
         }
@@ -32,7 +32,7 @@ class MonsterAI {
         let randomValidDirection = this.getRandomValidDirection(monster, directions);
         if(randomValidDirection) {
             // Take a step towards the aggro player.
-            monster.move(randomValidDirection);
+            monster.move(randomValidDirection, 1);
         }
         else {
             // Pick a direction towards the player, if possible. Do this deterministically to avoid jittering.

@@ -145,8 +145,7 @@ class Screen {
     getOverlappingEntities(entity) {
         let overlappingEntities = this.getEntitiesAt(entity.x, entity.y);
         if(entity.isMoveInProgress) {
-            let [shiftX, shiftY] = Util.getDirectionalShift(entity.direction);
-            overlappingEntities = overlappingEntities.concat(this.getEntitiesAt(entity.x + shiftX, entity.y + shiftY));
+            overlappingEntities = overlappingEntities.concat(this.getEntitiesAt(entity.getMovementX(), entity.getMovementY()));
         }
 
         return overlappingEntities;

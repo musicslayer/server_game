@@ -35,12 +35,11 @@ class MonsterSpawner extends Entity {
 
     doSpawnMonster() {
         let monster = EntityFactory.createInstance("monster", 1);
-        monster.owner = this;
         monster.screen = this.screen;
         monster.x = this.x;
         monster.y = this.y;
 
-        monster.doSpawn();
+        this.doCreateEntity(monster);
     }
 }
 

@@ -118,23 +118,14 @@ class Player extends Entity {
     }
 
     doAction() {
-        let x = this.x;
-        let y = this.y;
-
+        // Spawn a "magic projectile" representing a magical attack.
         // If the player is moving, fire the projectile ahead of the motion.
-        if(this.isMoveInProgress) {
-            let [shiftX, shiftY] = Util.getDirectionalShift(this.direction);
-            x += shiftX;
-            y += shiftY;
-        }
-
         let projectile = EntityFactory.createInstance("magic_projectile", 1, this.direction, 8, 40, false);
-        projectile.owner = this;
         projectile.screen = this.screen;
-        projectile.x = x;
-        projectile.y = y;
+        projectile.x = this.getMovementX();
+        projectile.y = this.getMovementY();
 
-        projectile.doSpawn();
+        this.doCreateEntity(projectile);
     }
 }
 

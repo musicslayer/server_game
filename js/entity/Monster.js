@@ -73,9 +73,7 @@ class Monster extends Entity {
             gold.doSpawnAsLoot();
             this.doDespawn();
 
-            if(this.owner) {
-                this.owner.onMonsterDeath();
-            }
+            this.owner?.onMonsterDeath();
         }
     }
 
@@ -127,26 +125,16 @@ class Monster extends Entity {
 
     doAttack() {
         // Spawn a "melee projectile" representing a melee attack.
-        let x = this.x;
-        let y = this.y;
-
         // If the monster is moving, fire the projectile ahead of the motion.
-        if(this.isMoveInProgress) {
-            let [shiftX, shiftY] = Util.getDirectionalShift(this.direction);
-            x += shiftX;
-            y += shiftY;
-        }
-
         let projectile = EntityFactory.createInstance("melee_projectile", 1, this.direction, 1, 40, false);
-        projectile.owner = this;
         projectile.screen = this.screen;
-        projectile.x = x;
-        projectile.y = y;
+        projectile.x = this.getMovementX();
+        projectile.y = this.getMovementY();
 
-        projectile.doSpawn();
+        this.doCreateEntity(projectile);
     }
 
-    doMove(direction) {
+    doMoveStep(direction) {
         let [shiftX, shiftY] = Util.getDirectionalShift(direction);
         this.x += shiftX;
         this.y += shiftY;

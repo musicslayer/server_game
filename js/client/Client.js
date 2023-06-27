@@ -142,21 +142,24 @@ class Client {
         }
         if(inputs.includes("add_gold")) {
             let gold = require("../entity/EntityFactory").createInstance("gold", 1000);
-            this.player.addToPurse(gold);
+            gold.screen = this.player.screen;
+            gold.x = this.player.getMovementX();
+            gold.y = this.player.getMovementY();
+            this.player.createEntity(gold);
         }
 
         // Move Position (only one will be executed)
         if(inputs.includes("move_up")) {
-            this.player.move("up");
+            this.player.move("up", 1);
         }
         else if(inputs.includes("move_down")) {
-            this.player.move("down");
+            this.player.move("down", 1);
         }
         else if(inputs.includes("move_left")) {
-            this.player.move("left");
+            this.player.move("left", 1);
         }
         else if(inputs.includes("move_right")) {
-            this.player.move("right");
+            this.player.move("right", 1);
         }
 
         // **** Move Screens (only one will be executed)
@@ -219,16 +222,16 @@ class Client {
 
         // Move Position (only one will be executed)
         if(inputs.includes("move_up")) {
-            this.player.move("up");
+            this.player.move("up", 1);
         }
         else if(inputs.includes("move_down")) {
-            this.player.move("down");
+            this.player.move("down", 1);
         }
         else if(inputs.includes("move_left")) {
-            this.player.move("left");
+            this.player.move("left", 1);
         }
         else if(inputs.includes("move_right")) {
-            this.player.move("right");
+            this.player.move("right", 1);
         }
     }
 

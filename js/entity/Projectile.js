@@ -9,8 +9,7 @@ class Projectile extends Entity {
     damage;
     isMulti;
 
-    isCollision;
-    movementTime = 0.05;
+    movementTime = 0.05; // Move faster than most other entities.
 
     constructor(direction, range, damage, isMulti) {
         super();
@@ -24,38 +23,47 @@ class Projectile extends Entity {
     doSpawn() {
         super.doSpawn();
 
-        this.getServer().addTask(0, () => {
-            this.moveProjectile();
-        });
+        // Do this immediately so that projectiles can hit things overlapping the owner.
+        this.doCheckCollision();
+
+        if(!this.isSpawned) {
+            return;
+        }
+        
+        if(this.range === 0 || !this.isNextStepAllowed(this.direction)) {
+            this.doDespawn();
+            return;
+        }
+
+        this.move(this.direction, this.range);
     }
 
     doInteract(entity) {
         // Do some damage to the other entity unless it is the owner.
         if(entity !== this.owner && entity.isTangible) {
             entity.doTakeDamage(this, this.damage);
-            this.isCollision = true;
+
+            if(!this.isMulti) {
+                this.doDespawn();
+            }
         }
     }
 
-    moveProjectile() {
-        // Do this immediately so that projectiles can hit things overlapping the owner.
-        this.doCheckCollision();
-
-        if(this.range === 0 || !this.isNextStepAllowed(this.direction) || (this.isCollision && !this.isMulti)) {
-            this.doDespawn();
-            return;
-        }
-
-        this.move(this.direction);
-    }
-
-    doMove(direction) {
+    doMoveStep(direction) {
         let [shiftX, shiftY] = Util.getDirectionalShift(direction);
         this.x += shiftX;
         this.y += shiftY;
 
+        this.doCheckCollision();
+
+        if(!this.isSpawned) {
+            return;
+        }
+
         this.range--;
-        this.moveProjectile();
+        if(this.range === 0 || !this.isNextStepAllowed(direction)) {
+            this.doDespawn();
+        }
     }
 
     isBlockedBy(entity) {

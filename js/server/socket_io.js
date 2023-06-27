@@ -50,13 +50,13 @@ function createSocketIOServer(httpServer, accountManager, serverManager) {
 			numSocketsMap.set(ip, numSockets);
 		});
 
-		attachListeners(socket, accountManager, serverManager);
+		attachAccountListeners(socket, accountManager, serverManager);
 	});
 
 	return io;
 }
 
-function attachListeners(socket, accountManager, serverManager) {
+function attachAccountListeners(socket, accountManager, serverManager) {
 	let ip = socket.handshake.address;
 
 	// Respond to account creation.
@@ -192,7 +192,13 @@ function attachListeners(socket, accountManager, serverManager) {
 
 			clientMap.set(username, client);
 			client.player.spawnInWorld(world);
-			attachListeners2(socket, client, username);
+
+			socket.on("disconnect", (reason) => {
+				clientMap.delete(username);
+				client.player.despawn();
+			});
+
+			attachGameListeners(socket, client);
 
 			callback({"isSuccess": true});
 		}, () => {
@@ -204,14 +210,8 @@ function attachListeners(socket, accountManager, serverManager) {
 	});
 }
 
-function attachListeners2(socket, client, username) {
+function attachGameListeners(socket, client) {
 	let ip = socket.handshake.address;
-
-	// Respond to the client disconnecting.
-	socket.on("disconnect", (reason) => {
-		clientMap.delete(username); ////// Do this just with client.
-		client.player.despawn();
-	});
 
 	// Respond to key presses.
 	socket.on("on_key_press", (keys, callback) => {

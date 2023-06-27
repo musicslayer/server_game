@@ -3,6 +3,7 @@ const Util = require("../util/Util.js");
 
 class Entity {
     isSerializable = true; // By default, entities can be serialized and saved.
+    isSpawned = false; // Only true if this entity instance exists in the game world.
 
     id; // Each subclass should have a unique ID.
     owner; // e.g. The entity that spawned a projectile is the owner.
@@ -36,20 +37,14 @@ class Entity {
     canAction = true;
     canInventory = true;
     canPurse = true;
-    canExperienceBoost = true;
-    canHealthBoost = true;
-    canManaBoost = true;
-    canMakeInvincible = true;
+    canCreate = true;
 
-    movementTime = 0; // Seconds to move 1 tile.
-    actionTime = 0; // Seconds to perform 1 action.
-    inventoryTime = 0.1; // This is chosen to make inventory management smooth.
+    // Seconds to perform 1 movement or action.
+    movementTime = 0.1;
+    actionTime = 0.1;
+    inventoryTime = 0.1;
     purseTime = 0.1;
-    experienceBoostTime = 0.1;
-    healthBoostTime = 0.1;
-    manaBoostTime = 0.1;
-    invincibleTime = 0.1;
-    otherTime = 0.1;
+    createTime = 0.1
 
     // To avoid awkward edge cases, just make every entity start facing to the right.
     direction = "right";
@@ -77,11 +72,11 @@ class Entity {
 
     // All of the main actions an entity can take are added onto the server queue.
     addExperience(experience) {
-        if(this.canExperienceBoost) {
-            this.canExperienceBoost = false;
+        if(this.canAction) {
+            this.canAction = false;
 
-            this.getServer().addTask(this.experienceBoostTime, () => {
-                this.canExperienceBoost = true;
+            this.getServer().addTask(this.actionTime, () => {
+                this.canAction = true;
             });
 
             this.getServer().addTask(0, () => {
@@ -91,11 +86,11 @@ class Entity {
     }
 
     addHealth(health) {
-        if(this.canHealthBoost) {
-            this.canHealthBoost = false;
+        if(this.canAction) {
+            this.canAction = false;
 
-            this.getServer().addTask(this.healthBoostTime, () => {
-                this.canHealthBoost = true;
+            this.getServer().addTask(this.actionTime, () => {
+                this.canAction = true;
             });
 
             this.getServer().addTask(0, () => {
@@ -105,11 +100,11 @@ class Entity {
     }
 
     addMana(mana) {
-        if(this.canManaBoost) {
-            this.canManaBoost = false;
+        if(this.canAction) {
+            this.canAction = false;
 
-            this.getServer().addTask(this.manaBoostTime, () => {
-                this.canManaBoost = true;
+            this.getServer().addTask(this.actionTime, () => {
+                this.canAction = true;
             });
 
             this.getServer().addTask(0, () => {
@@ -119,15 +114,29 @@ class Entity {
     }
 
     makeInvincible(invincibleSeconds) {
-        if(this.canMakeInvincible) {
-            this.canMakeInvincible = false;
+        if(this.canAction) {
+            this.canAction = false;
 
-            this.getServer().addTask(this.invincibleTime, () => {
-                this.canMakeInvincible = true;
+            this.getServer().addTask(this.actionTime, () => {
+                this.canAction = true;
             });
 
             this.getServer().addTask(0, () => {
                 this.doMakeInvincible(invincibleSeconds);
+            });
+        }
+    }
+
+    createEntity(entity) {
+        if(this.canCreate) {
+            this.canCreate = false;
+
+            this.getServer().addTask(this.createTime, () => {
+                this.canCreate = true;
+            });
+
+            this.getServer().addTask(0, () => {
+                this.doCreateEntity(entity);
             });
         }
     }
@@ -168,7 +177,7 @@ class Entity {
         if(this.canMove) {
             this.canMove = false;
 
-            this.getServer().addTask(this.otherTime, () => {
+            this.getServer().addTask(this.movementTime, () => {
                 this.canMove = true;
             });
 
@@ -182,7 +191,7 @@ class Entity {
         if(this.canMove) {
             this.canMove = false;
 
-            this.getServer().addTask(this.otherTime, () => {
+            this.getServer().addTask(this.movementTime, () => {
                 this.canMove = true;
             });
 
@@ -196,7 +205,7 @@ class Entity {
         if(this.canMove) {
             this.canMove = false;
 
-            this.getServer().addTask(this.otherTime, () => {
+            this.getServer().addTask(this.movementTime, () => {
                 this.canMove = true;
             });
 
@@ -210,7 +219,7 @@ class Entity {
         if(this.canMove) {
             this.canMove = false;
 
-            this.getServer().addTask(this.otherTime, () => {
+            this.getServer().addTask(this.movementTime, () => {
                 this.canMove = true;
             });
 
@@ -220,7 +229,7 @@ class Entity {
         }
     }
 
-    move(direction) {
+    move(direction, range) {
         if(!this.isMoveInProgress) {
             this.direction = direction;
         }
@@ -244,7 +253,7 @@ class Entity {
                 this.isMoveInProgress = false;
                 this.canMove = true;
 
-                this.doMove(direction);
+                this.doMove(direction, range);
             });
         }
     }
@@ -284,7 +293,7 @@ class Entity {
         if(this.canMove) {
             this.canMove = false;
 
-            this.getServer().addTask(this.otherTime, () => {
+            this.getServer().addTask(this.movementTime, () => {
                 this.canMove = true;
             });
 
@@ -298,7 +307,7 @@ class Entity {
         if(this.canMove) {
             this.canMove = false;
 
-            this.getServer().addTask(this.otherTime, () => {
+            this.getServer().addTask(this.movementTime, () => {
                 this.canMove = true;
             });
 
@@ -313,7 +322,7 @@ class Entity {
         if(this.canMove) {
             this.canMove = false;
 
-            this.getServer().addTask(this.otherTime, () => {
+            this.getServer().addTask(this.movementTime, () => {
                 this.canMove = true;
             });
 
@@ -475,6 +484,7 @@ class Entity {
     }
 
     doDespawn() {
+        this.isSpawned = false;
         this.screen.removeEntity(this);
 
         if(this.inventory) {
@@ -486,7 +496,13 @@ class Entity {
         // By default, do nothing.
     }
 
+    doCreateEntity(entity) {
+        entity.owner = this;
+        entity.spawn();
+    }
+
     doSpawn() {
+        this.isSpawned = true;
         this.screen.addEntity(this);
     }
 
@@ -579,7 +595,7 @@ class Entity {
 
     // By default, movement happens one tile at a time, and if the edge is crossed then the entity moves to the next screen.
     // Also, if you move onto another entity, the two entities interact with each other.
-    doMove(direction) {
+    doMoveStep(direction) {
         if(this.screen.isFacingEdge(this, direction)) {
             // Cross into the next screen.
             this.screen.doCrossScreen(this, direction);
@@ -592,6 +608,15 @@ class Entity {
         }
 
         this.doCheckCollision();
+    }
+
+    doMove(direction, range) {
+        this.doMoveStep(direction);
+
+        range--;
+        if(this.isSpawned && range > 0) {
+            this.move(direction, range);
+        }
     }
 
     doChangeDirection(direction) {
@@ -628,10 +653,7 @@ class Entity {
         if(this.purse) {
             this.purse.addToPurse(gold);
             if(gold.stackSize === 0) {
-                // Allow for "dev" gold where there is no screen.
-                if(gold.screen) {
-                    gold.doDespawn();
-                }
+                gold.doDespawn();
             }
         }
     }
@@ -660,10 +682,7 @@ class Entity {
         if(this.inventory) {
             this.inventory.addToInventory(entity);
             if(entity.stackSize === 0) {
-                // Allow for "dev" items where there is no screen.
-                if(entity.screen) {
-                    entity.doDespawn();
-                }
+                entity.doDespawn();
             }
         }
     }
@@ -740,12 +759,20 @@ class Entity {
 
     isAt(x, y) {
         // Returns true if this entity is at the point or currently moving onto the point.
-        let [shiftX, shiftY] = Util.getDirectionalShift(this.direction);
-
-        return (this.x === x && this.y === y)
-        || (this.isMoveInProgress && this.x + shiftX === x && this.y + shiftY === y);
+        return (this.x === x && this.y === y) || (this.getMovementX() === x && this.getMovementY() === y);
     }
 
+    getMovementX() {
+        // Returns x, but if movement is in progress return the value that the entity is moving towards.
+        let [shiftX, ] = Util.getDirectionalShift(this.direction);
+        return this.isMoveInProgress ? this.x + shiftX : this.x;
+    }
+
+    getMovementY() {
+        // Returns y, but if movement is in progress return the value that the entity is moving towards.
+        let [, shiftY] = Util.getDirectionalShift(this.direction);
+        return this.isMoveInProgress ? this.y + shiftY : this.y;
+    }
 
     serialize() {
         let s = "{";
