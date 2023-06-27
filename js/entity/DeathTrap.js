@@ -14,7 +14,7 @@ class DeathTrap extends Entity {
     doInteract(entity) {
         // Instantly kill a player (even if they are invincible).
         if(entity.isPlayer) {
-            entity.kill();
+            entity.doKill();
         }
     }
 }

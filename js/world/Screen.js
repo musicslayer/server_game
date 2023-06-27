@@ -67,7 +67,7 @@ class Screen {
                     entity.x = x;
                     entity.y = y;
             
-                    entity.spawn();
+                    entity.doSpawn();
                 }
             }
         }
@@ -271,7 +271,7 @@ class Screen {
             otherEntity.x = Number(otherEntity_j.x);
             otherEntity.y = Number(otherEntity_j.y);
     
-            otherEntity.spawn();
+            otherEntity.doSpawn();
         }
 
         // Don't deserialize players here.

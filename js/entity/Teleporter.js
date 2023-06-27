@@ -14,7 +14,7 @@ class Teleporter extends Entity {
     doInteract(entity) {
         // Teleport a player home.
         if(entity.isPlayer) {
-            entity.teleportHome();
+            entity.doTeleportHome();
         }
     }
 }

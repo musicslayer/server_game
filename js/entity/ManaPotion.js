@@ -27,7 +27,7 @@ class ManaPotion extends Entity {
     }
 
     doConsume(entity) {
-        entity.addMana(this.manaReward);
+        entity.doAddMana(this.manaReward);
     }
 }
 

@@ -11,4 +11,4 @@
 0,9||mana_potion,1
 0,10||mana_potion,1
 0,11||mana_potion,1
-5,11||invincible_potion,3
+5,11||invincible_potion,0

@@ -24,6 +24,8 @@ const clientMap = new Map();
 
 function createSocketIOServer(httpServer, accountManager, serverManager) {
 	setInterval(() => {
+		numAccountCreationsMap.clear();
+		numCharacterCreationsMap.clear();
 		numLoginsMap.clear();
 		numInputsMap.clear();
 		numDatasMap.clear();
@@ -42,141 +44,173 @@ function createSocketIOServer(httpServer, accountManager, serverManager) {
 		numSockets++;
 		numSocketsMap.set(ip, numSockets);
 
-		let type = socket.handshake.query?.type;
+		socket.on("disconnect", (reason) => {
+			let numSockets = numSocketsMap.get(ip);
+			numSockets--;
+			numSocketsMap.set(ip, numSockets);
+		});
 
-		let authUsername = socket.handshake.auth?.username;
-		let authPassword = socket.handshake.auth?.password;
-
-		let username = socket.handshake.query?.username;
-		let password = socket.handshake.query?.password;
-		let playerName = socket.handshake.query?.playerName;
-		let playerClass = socket.handshake.query?.playerClass;
-		let serverName = socket.handshake.query?.serverName;
-		let worldName = socket.handshake.query?.worldName;
-
-		if(type === "account_create") {
-			performAccountCreationTask(ip, () => {
-				if(!username || !password) {
-					// Missing info.
-					return;
-				}
-
-				let key = username + "-" + password;
-				if(accountManager.getAccount(key)) {
-					// The account already exists.
-					return;
-				}
-
-				// Create a new account.
-				let account = new Account();
-				account.key = key;
-				accountManager.addAccount(account);
-			});
-		}
-		else if(type === "character_create") {
-			performCharacterCreationTask(ip, () => {
-				if(!authUsername || !authPassword) {
-					// Do not allow any handshakes without authentication.
-					return;
-				}
-
-				if(!username || !password || !playerName || !playerClass) {
-					// Missing info.
-					return;
-				}
-
-				let key = username + "-" + password;
-				let account = accountManager.getAccount(key);
-				if(!account) {
-					// The account does not exist.
-					return;
-				}
-				
-				if(!["player_mage", "player_warrior"].includes(playerClass)) {
-					return;
-				}
-
-				// Don't attach the screen here. This will be done on first login.
-				// All new players will be spawned on a special tutorial map.
-				let player = EntityFactory.createInstance(playerClass, 1);
-				player.homeMapName = "city";
-				player.homeScreenName = "field1";
-				player.homeX = 0;
-				player.homeY = 0;
-
-				account.addCharacter(playerName, player);
-			});
-		}
-		else if(type === "login") {
-			performLoginTask(username, () => {
-				if(!authUsername || !authPassword) {
-					// Do not allow any handshakes without authentication.
-					return;
-				}
-
-				if(!username || !password || !playerName || !serverName || !worldName) {
-					// Missing info.
-					return;
-				}
-
-				if(clientMap.has(username)) {
-					// User is already logged in.
-					return;
-				}
-
-				let key = username + "-" + password;
-	
-				let account = accountManager.getAccount(key);
-				if(!account) {
-					// The account does not exist.
-					return;
-				}
-	
-				let player = account.getCharacter(playerName);
-				if(!player) {
-					// The character does not exist.
-					return;
-				}
-	
-				let server = serverManager.getServerByName(serverName);
-				let world = server?.galaxy.getWorldByName(worldName);
-				if(!world) {
-					return;
-				}
-	
-				// If the player has never logged in before then default to their home screen on this world.
-				let client = new Client(player);
-				if(!client.player.screen) {
-					let screen = world.getMapByName(client.player.homeMapName).getScreenByName(client.player.homeScreenName);
-					if(!screen) {
-						return;
-					}
-					client.player.screen = screen;
-					client.player.x = client.player.homeX;
-					client.player.y = client.player.homeY;
-				}
-
-				clientMap.set(username, client);
-				client.player.spawnInWorld(world);
-				attachListeners(socket, client, username);
-			});
-		}
+		attachListeners(socket, accountManager, serverManager);
 	});
 
 	return io;
 }
 
-function attachListeners(socket, client, username) {
+function attachListeners(socket, accountManager, serverManager) {
+	let ip = socket.handshake.address;
+
+	// Respond to account creation.
+	socket.on("on_account_creation", (username, password, callback) => {
+		performAccountCreationTask(ip, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
+			if(!validateStrings(username, password)) {
+				return;
+			}
+
+			let key = username + "-" + password;
+			if(accountManager.getAccount(key)) {
+				// The account already exists.
+				callback({"isSuccess": false});
+				return;
+			}
+
+			// Create a new account.
+			let account = new Account();
+			account.key = key;
+			accountManager.addAccount(account);
+
+			callback({"isSuccess": true});
+		}, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
+			callback({"isSuccess": false, "error": "rate limit"});
+		});
+	});
+
+	// Respond to character creation.
+	socket.on("on_character_creation", (username, password, playerName, playerClass, callback) => {
+		performCharacterCreationTask(ip, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
+			if(!validateStrings(username, password, playerName, playerClass)) {
+				return;
+			}
+
+			let key = username + "-" + password;
+			let account = accountManager.getAccount(key);
+			if(!account) {
+				// The account does not exist.
+				callback({"isSuccess": false});
+				return;
+			}
+
+			if(account.getCharacter(playerName)) {
+				// The character already exists.
+				callback({"isSuccess": false});
+				return;
+			}
+			
+			if(!["player_mage", "player_warrior"].includes(playerClass)) {
+				callback({"isSuccess": false});
+				return;
+			}
+
+			// Don't attach the screen here. This will be done on first login.
+			// All new players will be spawned on a special tutorial map.
+			let player = EntityFactory.createInstance(playerClass, 1);
+			player.homeMapName = "city";
+			player.homeScreenName = "field1";
+			player.homeX = 0;
+			player.homeY = 0;
+
+			account.addCharacter(playerName, player);
+
+			callback({"isSuccess": true});
+		}, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
+			callback({"isSuccess": false, "error": "rate limit"});
+		});
+	});
+
+	// Respond to login.
+	socket.on("on_login", (username, password, playerName, serverName, worldName, callback) => {
+		performLoginTask(ip, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
+			if(!validateStrings(username, password, playerName, serverName, worldName)) {
+				return;
+			}
+
+			if(clientMap.has(username)) {
+				// User is already logged in.
+				callback({"isSuccess": false});
+				return;
+			}
+
+			let key = username + "-" + password;
+
+			let account = accountManager.getAccount(key);
+			if(!account) {
+				// The account does not exist.
+				callback({"isSuccess": false});
+				return;
+			}
+
+			let player = account.getCharacter(playerName);
+			if(!player) {
+				// The character does not exist.
+				callback({"isSuccess": false});
+				return;
+			}
+
+			let server = serverManager.getServerByName(serverName);
+			let world = server?.galaxy.getWorldByName(worldName);
+			if(!world) {
+				callback({"isSuccess": false});
+				return;
+			}
+
+			// If the player has never logged in before then default to their home screen on this world.
+			let client = new Client(player);
+			if(!client.player.screen) {
+				let screen = world.getMapByName(client.player.homeMapName).getScreenByName(client.player.homeScreenName);
+				if(!screen) {
+					callback({"isSuccess": false});
+					return;
+				}
+				client.player.screen = screen;
+				client.player.x = client.player.homeX;
+				client.player.y = client.player.homeY;
+			}
+
+			clientMap.set(username, client);
+			client.player.spawnInWorld(world);
+			attachListeners2(socket, client, username);
+
+			callback({"isSuccess": true});
+		}, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
+			callback({"isSuccess": false, "error": "rate limit"});
+		});
+	});
+}
+
+function attachListeners2(socket, client, username) {
 	let ip = socket.handshake.address;
 
 	// Respond to the client disconnecting.
 	socket.on("disconnect", (reason) => {
-		clientMap.delete(username);
+		clientMap.delete(username); ////// Do this just with client.
 		client.player.despawn();
-
-		let numSockets = numSocketsMap.get(ip);
-		numSockets--;
-		numSocketsMap.set(ip, numSockets);
 	});
 
 	// Respond to key presses.
@@ -191,6 +225,11 @@ function attachListeners(socket, client, username) {
 
 			client.onKeyPress(keys);
 			callback();
+		}, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
+			callback({"isSuccess": false, "error": "rate limit"});
 		});
 	});
 
@@ -206,6 +245,11 @@ function attachListeners(socket, client, username) {
 
 			client.onControllerPress(buttons);
 			callback();
+		}, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
+			callback({"isSuccess": false, "error": "rate limit"});
 		});
 	});
 
@@ -221,6 +265,11 @@ function attachListeners(socket, client, username) {
 
 			client.onControllerSticks(axes);
 			callback();
+		}, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
+			callback({"isSuccess": false, "error": "rate limit"});
 		});
 	});
 
@@ -236,6 +285,11 @@ function attachListeners(socket, client, username) {
 
 			client.onClick(button, location, info);
 			callback();
+		}, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
+			callback({"isSuccess": false, "error": "rate limit"});
 		});
 	});
 
@@ -254,6 +308,11 @@ function attachListeners(socket, client, username) {
 
 			client.onDrag(button, location1, info1, location2, info2);
 			callback();
+		}, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
+			callback({"isSuccess": false, "error": "rate limit"});
 		});
 	});
 
@@ -278,11 +337,16 @@ function attachListeners(socket, client, username) {
 
 			let devData = client.getDevData();
 			callback(devData);
+		}, () => {
+			if(!validateCallback(callback)) {
+				return;
+			}
+			callback({"isSuccess": false, "error": "rate limit"});
 		});
 	});
 }
 
-function performAccountCreationTask(ip, task) {
+function performAccountCreationTask(ip, task, rtask) {
 	let N = numAccountCreationsMap.get(ip) ?? 0;
 	if(N < numAllowedAccountOperations) {
 		N++;
@@ -290,9 +354,12 @@ function performAccountCreationTask(ip, task) {
 
 		task();
 	}
+	else {
+		rtask();
+	}
 }
 
-function performCharacterCreationTask(ip, task) {
+function performCharacterCreationTask(ip, task, rtask) {
 	let N = numCharacterCreationsMap.get(ip) ?? 0;
 	if(N < numAllowedAccountOperations) {
 		N++;
@@ -300,9 +367,12 @@ function performCharacterCreationTask(ip, task) {
 
 		task();
 	}
+	else {
+		rtask();
+	}
 }
 
-function performLoginTask(ip, task) {
+function performLoginTask(ip, task, rtask) {
 	let N = numLoginsMap.get(ip) ?? 0;
 	if(N < numAllowedAccountOperations) {
 		N++;
@@ -310,9 +380,12 @@ function performLoginTask(ip, task) {
 
 		task();
 	}
+	else {
+		rtask();
+	}
 }
 
-function performInputTask(ip, task) {
+function performInputTask(ip, task, rtask) {
 	let N = numInputsMap.get(ip) ?? 0;
 	if(N < numAllowedInputOperations) {
 		N++;
@@ -320,9 +393,12 @@ function performInputTask(ip, task) {
 
 		task();
 	}
+	else {
+		rtask();
+	}
 }
 
-function performDataTask(ip, task) {
+function performDataTask(ip, task, rtask) {
 	let N = numDatasMap.get(ip) ?? 0;
 	if(N < numAllowedDataOperations) {
 		N++;
@@ -330,15 +406,21 @@ function performDataTask(ip, task) {
 
 		task();
 	}
+	else {
+		rtask();
+	}
 }
 
-function performDevTask(ip, task) {
+function performDevTask(ip, task, rtask) {
 	let N = numDevsMap.get(ip) ?? 0;
 	if(N < numAllowedDevOperations) {
 		N++;
 		numDevsMap.set(ip, N);
 		
 		task();
+	}
+	else {
+		rtask();
 	}
 }
 
@@ -384,6 +466,10 @@ function validateMouseInputs(location, info) {
 	}
 }
 
+function validateStrings(...args) {
+	return isStringArray(args, 5);
+}
+
 function isFunction(value) {
 	return typeof value === "function" || value instanceof Function;
 }
@@ -398,6 +484,10 @@ function isNumberArray(value, maxLength) {
 
 function isString(value) {
 	return typeof value === "string" || value instanceof String;
+}
+
+function isStringArray(value, maxLength) {
+	return Array.isArray(value) && value.length <= maxLength && value.every((v) => isString(v));
 }
 
 module.exports.createSocketIOServer = createSocketIOServer;

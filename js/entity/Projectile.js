@@ -42,7 +42,7 @@ class Projectile extends Entity {
         this.doCheckCollision();
 
         if(this.range === 0 || !this.isNextStepAllowed(this.direction) || (this.isCollision && !this.isMulti)) {
-            this.despawn();
+            this.doDespawn();
             return;
         }
 

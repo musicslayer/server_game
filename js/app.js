@@ -6,22 +6,16 @@ const ServerManager = require("./server/ServerManager.js");
 const Util = require("./util/Util.js");
 
 // TODO All state changes must be done through the Server class. We need to enforce this somehow.
-// TODO Any server task must be atomic (taking damage and dying should be one task...)
+// TODO Only The client and monster ai classes can schedule things on the server (and then there would be less getServer methods)
 
+// TODO Have a servers folder (assign galaxies/worlds to them)?
+// TODO Should server and accounts be saved separately?
 // TODO I should be able to save accounts/servers both all of them and some of them.
 
 // TODO Players need to store experience and quest progression, etc...
 // TODO Should entity have a deserialize method?
 
-// TODO Have a servers folder (assign galaxies/worlds to them)?
-
-// TODO Should server and accounts be saved separately?
-
 // TODO The purse and inventory need to be serialized?
-
-// TODO If the projectile is made while I am moving, it is created in the start position when it should be in the end position.
-
-// TODO You can go into void right after reviving just by moving...
 
 async function init() {
     // Recreate image zip file.

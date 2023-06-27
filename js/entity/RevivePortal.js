@@ -14,8 +14,7 @@ class RevivePortal extends Entity {
     doInteract(entity) {
         // Teleport a player home and revive them.
         if(entity.isPlayer) {
-            entity.revive();
-            entity.teleportHome();
+            entity.doRevive();
         }
     }
 }

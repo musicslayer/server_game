@@ -22,25 +22,25 @@ class MonsterSpawner extends Entity {
 
         // Initial spawn of monsters.
         for(let i = 0; i < this.maxMonsterCount; i++) {
-            this.spawnMonster();
+            this.doSpawnMonster();
         }
     }
 
     onMonsterDeath() {
         // When a monster dies, start a timer to spawn another one.
         this.getServer().addTask(this.spawnTime, () => {
-            this.spawnMonster();
+            this.doSpawnMonster();
         })
     }
 
-    spawnMonster() {
+    doSpawnMonster() {
         let monster = EntityFactory.createInstance("monster", 1);
         monster.owner = this;
         monster.screen = this.screen;
         monster.x = this.x;
         monster.y = this.y;
 
-        monster.spawn();
+        monster.doSpawn();
     }
 }
 

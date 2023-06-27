@@ -9,15 +9,22 @@
 		
 		<canvas id="canvas" style="border:10px solid"></canvas>
 		
+		<!-- <button id="connectButton">Connect</button><br/> -->
+		
 		<button id="createAccount1Button">Account 1 Create</button>
-		<button id="createAccount1MageButton">Account 1 Mage Create</button><br/>
+		<button id="createAccount1MageButton">Account 1 Mage Create</button>
+		<button id="createAccount1WarriorButton">Account 1 Warrior Create</button><br/>
 		
-		<button id="createAccount2Button">Account 2 Create</button><br/>
+		<button id="createAccount2Button">Account 2 Create</button>
+		<button id="createAccount2MageButton">Account 2 Mage Create</button>
+		<button id="createAccount2WarriorButton">Account 2 Warrior Create</button><br/>
 		
-		<button id="account1MageButton">Account 1 Mage</button>
-		<button id="account1WarriorButton">Account 1 Warrior</button><br/>
-		<button id="account2MageButton">Account 2 Mage</button>
-		<button id="account2WarriorButton">Account 2 Warrior</button><br/>
+		<button id="loginAccount1MageButton">Account 1 Mage</button>
+		<button id="loginAccount1WarriorButton">Account 1 Warrior</button><br/>
+		
+		<button id="loginAccount2MageButton">Account 2 Mage</button>
+		<button id="loginAccount2WarriorButton">Account 2 Warrior</button><br/>
+		
 		<text id="devText"></text>
 		
 		<script src="jszip.min.js"></script>
@@ -29,15 +36,24 @@
 			import { ImageCatalog } from "./ImageCatalog.js";
 			
 			const devText = document.getElementById("devText");
+			//const connectButton = document.querySelector('#connectButton');
+			
 			const createAccount1Button = document.querySelector('#createAccount1Button');
 			const createAccount1MageButton = document.querySelector('#createAccount1MageButton');
-			const createAccount2Button = document.querySelector('#createAccount2Button');
-			const account1MageButton = document.querySelector('#account1MageButton');
-			const account1WarriorButton = document.querySelector('#account1WarriorButton');
-			const account2MageButton = document.querySelector('#account2MageButton');
-			const account2WarriorButton = document.querySelector('#account2WarriorButton');
+			const createAccount1WarriorButton = document.querySelector('#createAccount1WarriorButton');
 			
-			const SOCKET_TIMEOUT = 10000;
+			const createAccount2Button = document.querySelector('#createAccount2Button');
+			const createAccount2MageButton = document.querySelector('#createAccount2MageButton');
+			const createAccount2WarriorButton = document.querySelector('#createAccount2WarriorButton');
+			
+			const loginAccount1MageButton = document.querySelector('#loginAccount1MageButton');
+			const loginAccount1WarriorButton = document.querySelector('#loginAccount1WarriorButton');
+			
+			const loginAccount2MageButton = document.querySelector('#loginAccount2MageButton');
+			const loginAccount2WarriorButton = document.querySelector('#loginAccount2WarriorButton');
+			
+			//const SOCKET_TIMEOUT = 10000;
+			const SOCKET_TIMEOUT = 1000;
 			const INPUT_FPS_RATE = 60; // times per second inputs are queried
 			const ANIMATION_TIME = 4; // seconds per animation cycle
 			const ANIMATION_FRAMES = 8; // frames per animation cycle
@@ -63,126 +79,124 @@
 			let imageCatalog;
 			
 			let socket;
-			let socketAccount;
-			let socketCharacter;
+			let isSocketConnected = false;
+			let isSocketLoggedIn = false;
+			
 			let interval;
 			let intervalDev;
 			
-			createAccount1Button.addEventListener('click', () => {
-				connectSocketsAccountCreation("smith", "password123");
-			});
+			//connectButton.addEventListener('click', () => {
+			//	connectSocket();
+			//});
 			
-			createAccount1MageButton.addEventListener('click', () => {
-				connectSocketsCharacterCreation("smith", "password123", "mage", "player_mage");
-			});
-			
-			createAccount2Button.addEventListener('click', () => {
-				connectSocketsAccountCreation("maria", "secret");
-			});
-			
-			account1MageButton.addEventListener('click', () => {
-				connectSocketsLogin("smith", "password123", "mage");
-			});
-			
-			account1WarriorButton.addEventListener('click', () => {
-				connectSocketsLogin("smith", "password123", "warrior");
-			});
-			
-			account2MageButton.addEventListener('click', () => {
-				connectSocketsLogin("maria", "secret", "mage");
-			});
-			
-			account2WarriorButton.addEventListener('click', () => {
-				connectSocketsLogin("maria", "secret", "warrior");
-			});
-			
-			window.addEventListener('load', async () => {
-				imageCatalog = new ImageCatalog();
-				await imageCatalog.createImageCatalog();
-			});
-			
-			function connectSocketsAccountCreation(username, password) {
-				if(socketAccount) {
-					//socketAccount.disconnect(true);
-				}
-				
-				if(!socketAccount) {
-				socketAccount = io({query: {
-					type: "account_create",
-					username: username, 
-					password: password
-				}});
-				}
-				
-				socketAccount.on("connect", (err) => {
-					console.log("Connect");
-					//socketAccount.disconnect(true);
-				});
-				
-				socketAccount.on("disconnect", (err) => {
-					console.log("Disconnect");
-					//socketAccount.disconnect(true);
-				});
-			}
-			
-			function connectSocketsCharacterCreation(username, password, playerName, playerClass) {
-				if(socketCharacter) {
-					socketCharacter.disconnect(true);
-				}
-				
-				socketCharacter = io({auth: {
-					username: username, 
-					password: password
-				}, query: {
-					type: "character_create",
-					username: username, 
-					password: password,
-					playerName: playerName, 
-					playerClass: playerClass,
-				}});
-				
-				socketCharacter.on("connect", (err) => {
-				});
-				
-				socketCharacter.on("disconnect", (err) => {
-					socketCharacter.disconnect(true);
-				});
-			}
-			
-			function connectSocketsLogin(username, password, playerName) {
+			function connectSocket() {
 				if(socket) {
 					socket.disconnect(true);
+					
+					isSocketConnected = false;
+					isSocketLoggedIn = false;
 				}
 				
-				socket = io({auth: {
-					username: username, 
-					password: password
-				}, query: {
-					type: "login",
-					username: username, 
-					password: password,
-					playerName: playerName, 
-					serverName: "origin", 
-					worldName: "world0"
-				}});
+				socket = io();
 				
 				socket.on("connect", (err) => {
-					startInterval();
-					startDevInterval();
-					requestAnimationFrame(drawClient);
+					// Display the rest of the game...
+					isSocketConnected = true;
 				});
 				
 				socket.on("disconnect", (err) => {
 					socket.disconnect(true);
-					clearInterval(interval);
-					clearInterval(intervalDev);
+					isSocketConnected = false;
 				});
 			}
+			
+			createAccount1Button.addEventListener('click', () => {
+				reactAccountCreation("smith", "password123");
+			});
+			
+			createAccount1MageButton.addEventListener('click', () => {
+				reactCharacterCreation("smith", "password123", "mage", "player_mage");
+			});
+			
+			createAccount1WarriorButton.addEventListener('click', () => {
+				reactCharacterCreation("smith", "password123", "warrior", "player_warrior");
+			});
+			
+			createAccount2Button.addEventListener('click', () => {
+				reactAccountCreation("maria", "secret");
+			});
+			
+			createAccount2MageButton.addEventListener('click', () => {
+				reactCharacterCreation("maria", "secret", "mage", "player_mage");
+			});
+			
+			createAccount2WarriorButton.addEventListener('click', () => {
+				reactCharacterCreation("maria", "secret", "warrior", "player_warrior");
+			});
+			
+			loginAccount1MageButton.addEventListener('click', () => {
+				reactLogin("smith", "password123", "mage", "origin", "world0");
+			});
+			
+			loginAccount1WarriorButton.addEventListener('click', () => {
+				reactLogin("smith", "password123", "warrior", "origin", "world0");
+			});
+			
+			loginAccount2MageButton.addEventListener('click', () => {
+				reactLogin("maria", "secret", "mage", "origin", "world0");
+			});
+			
+			loginAccount2WarriorButton.addEventListener('click', () => {
+				reactLogin("maria", "secret", "warrior", "origin", "world0");
+			});
+			
+			async function reactAccountCreation(username, password) {
+				if(socket && isSocketConnected) {
+					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_account_creation", username, password);
+					console.log(R);
+				}
+			}
+			
+			async function reactCharacterCreation(username, password, playerName, playerClass) {
+				if(socket && isSocketConnected) {
+					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_character_creation", username, password, playerName, playerClass);
+					console.log(R);
+				}
+			}
+			
+			async function reactLogin(username, password, playerName, serverName, worldName) {
+				if(socket&& isSocketConnected) {
+					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login", username, password, playerName, serverName, worldName);
+					console.log(R);
+					
+					if(R.isSuccess) {
+						startInterval();
+						startDevInterval();
+						requestAnimationFrame(drawClient);
+						
+						isSocketLoggedIn = true;
+						
+						socket.on("disconnect", (err) => {
+							socket.disconnect(true);
+							isSocketLoggedIn = false;
+							
+							clearInterval(interval);
+							clearInterval(intervalDev);
+						});
+					}
+				}
+			}
+			
+			window.addEventListener('load', async () => {
+				connectSocket();
+			
+				imageCatalog = new ImageCatalog();
+				await imageCatalog.createImageCatalog();
+			});
 			
 			canvas.addEventListener("contextmenu", function (e){
 				e.preventDefault();
 			}, false);
-			
 			
 			const maxClickDeltaSpace = 10;
 			const maxClickDeltaTime = 100;
@@ -374,31 +388,31 @@
 			}
 			
 			async function reactControllerPress(buttons) {
-				if(socket) {
+				if(socket && isSocketLoggedIn) {
 					await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_controller_press", buttons);
 				}
 			}
 			
 			async function reactControllerSticks(axes) {
-				if(socket) {
+				if(socket && isSocketLoggedIn) {
 					await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_controller_sticks", axes);
 				}
 			}
 
 			async function reactKeyPress(keys) {
-				if(socket) {
+				if(socket && isSocketLoggedIn) {
 					await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_key_press", keys);
 				}
 			}
 			
 			async function reactButtonClick(button, location, info) {
-				if(socket) {
+				if(socket && isSocketLoggedIn) {
 					await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_mouse_click", button, location, info);
 				}
 			}
 			
 			async function reactButtonDrag(button, location1, info1, location2, info2) {
-				if(socket) {
+				if(socket && isSocketLoggedIn) {
 					await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_mouse_drag", button, location1, info1, location2, info2);
 				}
 			}
@@ -463,7 +477,7 @@
 			}
 			
 			async function checkDevInfo() {
-				if(socket) {
+				if(socket && isSocketLoggedIn) {
 					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("get_dev_data");
 					
 					let currentTick = Math.floor(Number(R.info.currentTick) / 60);
@@ -477,7 +491,7 @@
 			
 			
 			async function drawClient(time) {
-				if(socket) {
+				if(socket && isSocketLoggedIn) {
 					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("get_client_data");
 					
 					let canvasBuffer = document.createElement('canvas');
@@ -529,7 +543,7 @@
 					
 					ctxBuffer.drawImage(image, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					
-					if(otherEntity.stackSize > 1) {
+					if(otherEntity.stackSize !== 1) {
 						ctxBuffer.drawImage(getStackSizeImage(otherEntity.stackSize), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 					
@@ -560,7 +574,7 @@
 					
 					ctxBuffer.drawImage(image, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					
-					if(playerEntity.stackSize > 1) {
+					if(playerEntity.stackSize !== 1) {
 						ctxBuffer.drawImage(getStackSizeImage(playerEntity.stackSize), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 					
@@ -816,8 +830,8 @@
 							});
 						//}
 
-						// For cosmetic reasons, only add the stackSize if it is > 1
-						if(item.stackSize > 1) {
+						// For cosmetic reasons, only add the stackSize if it is not 1
+						if(item.stackSize !== 1) {
 							images.push({
 								x: x,
 								y: y,

@@ -24,10 +24,6 @@ class PVPToken extends Entity {
         // These can only be traded, not consumed.
         return false;
     }
-
-    doConsume(entity) {
-        entity.addHealth(this.healthReward);
-    }
 }
 
 module.exports = PVPToken;

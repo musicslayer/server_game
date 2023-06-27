@@ -120,6 +120,16 @@ class Client {
             this.player.teleportHome();
         }
 
+        // **** Player Kill
+        if(inputs.includes("kill")) {
+            this.player.kill();
+        }
+
+        // **** Player Revive
+        if(inputs.includes("revive")) {
+            this.player.revive();
+        }
+
         // **** Player Boosts
         if(inputs.includes("boost_experience")) {
             this.player.addExperience(10);

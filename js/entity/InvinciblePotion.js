@@ -27,7 +27,7 @@ class InvinciblePotion extends Entity {
     }
 
     doConsume(entity) {
-        entity.makeInvincible(this.invincibleSeconds);
+        entity.doMakeInvincible(this.invincibleSeconds);
     }
 }
 

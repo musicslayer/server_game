@@ -40,7 +40,6 @@ class Entity {
     canHealthBoost = true;
     canManaBoost = true;
     canMakeInvincible = true;
-    canOtherAction = true; // Used for "dev" actions like teleporting.
 
     movementTime = 0; // Seconds to move 1 tile.
     actionTime = 0; // Seconds to perform 1 action.
@@ -133,21 +132,9 @@ class Entity {
         }
     }
 
-    consume(entity) {
-        this.getServer().addTask(0, () => {
-            this.doConsume(entity);
-        });
-    }
-
     despawn() {
         this.getServer().addTask(0, () => {
             this.doDespawn();
-        });
-    }
-
-    interact() {
-        this.getServer().addTask(0, () => {
-            this.doInteract();
         });
     }
 
@@ -162,27 +149,6 @@ class Entity {
             this.doSpawnInWorld(world);
         });
     }
-
-    spawnAsLoot() {
-        this.getServer().addTask(0, () => {
-            this.doSpawnAsLoot();
-        });
-    }
-
-    takeDamage(entity, damage) {
-        this.getServer().addTask(0, () => {
-            this.doTakeDamage(entity, damage);
-        });
-    }
-
-    
-
-    
-
-
-
-
-    
 
     action() {
         if(this.canAction) {
@@ -199,11 +165,11 @@ class Entity {
     }
 
     teleport(screen, x, y) {
-        if(this.canOtherAction) {
-            this.canOtherAction = false;
+        if(this.canMove) {
+            this.canMove = false;
 
             this.getServer().addTask(this.otherTime, () => {
-                this.canOtherAction = true;
+                this.canMove = true;
             });
 
             this.getServer().addTask(0, () => {
@@ -213,11 +179,11 @@ class Entity {
     }
 
     teleportHome() {
-        if(this.canOtherAction) {
-            this.canOtherAction = false;
+        if(this.canMove) {
+            this.canMove = false;
 
             this.getServer().addTask(this.otherTime, () => {
-                this.canOtherAction = true;
+                this.canMove = true;
             });
 
             this.getServer().addTask(0, () => {
@@ -226,16 +192,30 @@ class Entity {
         }
     }
 
-    teleportDeath() {
-        if(this.canOtherAction) {
-            this.canOtherAction = false;
+    kill() {
+        if(this.canMove) {
+            this.canMove = false;
 
             this.getServer().addTask(this.otherTime, () => {
-                this.canOtherAction = true;
+                this.canMove = true;
             });
 
             this.getServer().addTask(0, () => {
-                this.doTeleportDeath();
+                this.doKill();
+            });
+        }
+    }
+
+    revive() {
+        if(this.canMove) {
+            this.canMove = false;
+
+            this.getServer().addTask(this.otherTime, () => {
+                this.canMove = true;
+            });
+
+            this.getServer().addTask(0, () => {
+                this.doRevive();
             });
         }
     }
@@ -301,11 +281,11 @@ class Entity {
 
 
     moveScreen(direction) {
-        if(this.canOtherAction) {
-            this.canOtherAction = false;
+        if(this.canMove) {
+            this.canMove = false;
 
             this.getServer().addTask(this.otherTime, () => {
-                this.canOtherAction = true;
+                this.canMove = true;
             });
 
             this.getServer().addTask(0, () => {
@@ -315,11 +295,11 @@ class Entity {
     }
 
     moveMap(direction) {
-        if(this.canOtherAction) {
-            this.canOtherAction = false;
+        if(this.canMove) {
+            this.canMove = false;
 
             this.getServer().addTask(this.otherTime, () => {
-                this.canOtherAction = true;
+                this.canMove = true;
             });
 
             this.getServer().addTask(0, () => {
@@ -330,11 +310,11 @@ class Entity {
 
 
     moveWorld(direction) {
-        if(this.canOtherAction) {
-            this.canOtherAction = false;
+        if(this.canMove) {
+            this.canMove = false;
 
             this.getServer().addTask(this.otherTime, () => {
-                this.canOtherAction = true;
+                this.canMove = true;
             });
 
             this.getServer().addTask(0, () => {
@@ -342,6 +322,97 @@ class Entity {
             });
         }
     }
+
+    // TODO There should be dev keys to add gold
+    addToPurse(gold) {
+        if(this.canPurse) {
+            this.canPurse = false;
+
+            this.getServer().addTask(this.purseTime, () => {
+                this.canPurse = true;
+            });
+
+            this.getServer().addTask(0, () => {
+                this.doAddToPurse(gold);
+            });
+        }
+    }
+
+    dropFromPurse(goldAmount) {
+        if(this.canPurse) {
+            this.canPurse = false;
+
+            this.getServer().addTask(this.purseTime, () => {
+                this.canPurse = true;
+            });
+
+            this.getServer().addTask(0, () => {
+                this.doDropFromPurse(goldAmount);
+            });
+        }
+    }
+
+
+    addToInventory(entity) {
+        if(this.canInventory) {
+            this.canInventory = false;
+
+            this.getServer().addTask(this.inventoryTime, () => {
+                this.canInventory = true;
+            });
+
+            this.getServer().addTask(0, () => {
+                this.doAddToInventory(entity);
+            });
+        }
+    }
+
+    consumeFromInventory(slot) {
+        if(this.canInventory) {
+            this.canInventory = false;
+
+            this.getServer().addTask(this.inventoryTime, () => {
+                this.canInventory = true;
+            });
+
+            this.getServer().addTask(0, () => {
+                this.doConsumeFromInventory(slot);
+            });
+        }
+    }
+
+    dropFromInventory(slot, number) {
+        if(this.canInventory) {
+            this.canInventory = false;
+
+            this.getServer().addTask(this.inventoryTime, () => {
+                this.canInventory = true;
+            });
+
+            this.getServer().addTask(0, () => {
+                this.doDropFromInventory(slot, number);
+            });
+        }
+    }
+
+    swapInventorySlots(slot1, slot2) {
+        if(this.canInventory) {
+            this.canInventory = false;
+
+            this.getServer().addTask(this.inventoryTime, () => {
+                this.canInventory = true;
+            });
+
+            this.getServer().addTask(0, () => {
+                this.doSwapInventorySlots(slot1, slot2);
+            });
+        }
+    }
+
+
+
+
+
 
 
 
@@ -486,6 +557,27 @@ class Entity {
         this.doTeleport(deathScreen, 7, 11);
     }
 
+    doKill() {
+        // Called when an entity is killed but not despawned, for example players who die and get sent to the death plane.
+        this.health = 0;
+        this.mana = 0;
+
+        this.isDead = true;
+        this.isInvincible = false;
+
+        // ??? If the player is in a dungeon, could we just teleport them to the entrance instead?
+        this.doTeleportDeath();
+    }
+
+    doRevive() {
+        // Called when an entity is revived but was not despawned first, for example players who enter a revive portal.
+        this.health = this.maxHealth;
+        this.mana = this.maxMana;
+
+        this.isDead = false;
+
+        this.doTeleportHome();
+    }
 
     // By default, movement happens one tile at a time, and if the edge is crossed then the entity moves to the next screen.
     // Also, if you move onto another entity, the two entities interact with each other.
@@ -534,91 +626,6 @@ class Entity {
         this.doTeleport(newScreen, this.x, this.y);
     }
 
-    addToPurse(gold) {
-        if(this.canPurse) {
-            this.canPurse = false;
-
-            this.getServer().addTask(this.purseTime, () => {
-                this.canPurse = true;
-            });
-
-            this.getServer().addTask(0, () => {
-                this.doAddToPurse(gold);
-            });
-        }
-    }
-
-    dropFromPurse(gold) {
-        if(this.canPurse) {
-            this.canPurse = false;
-
-            this.getServer().addTask(this.purseTime, () => {
-                this.canPurse = true;
-            });
-
-            this.getServer().addTask(0, () => {
-                this.doDropFromPurse(gold);
-            });
-        }
-    }
-
-
-    addToInventory(entity) {
-        if(this.canInventory) {
-            this.canInventory = false;
-
-            this.getServer().addTask(this.inventoryTime, () => {
-                this.canInventory = true;
-            });
-
-            this.getServer().addTask(0, () => {
-                this.doAddToInventory(entity);
-            });
-        }
-    }
-
-    consumeFromInventory(slot) {
-        if(this.canInventory) {
-            this.canInventory = false;
-
-            this.getServer().addTask(this.inventoryTime, () => {
-                this.canInventory = true;
-            });
-
-            this.getServer().addTask(0, () => {
-                this.doConsumeFromInventory(slot);
-            });
-        }
-    }
-
-    dropFromInventory(slot, number) {
-        if(this.canInventory) {
-            this.canInventory = false;
-
-            this.getServer().addTask(this.inventoryTime, () => {
-                this.canInventory = true;
-            });
-
-            this.getServer().addTask(0, () => {
-                this.doDropFromInventory(slot, number);
-            });
-        }
-    }
-
-    swapInventorySlots(slot1, slot2) {
-        if(this.canInventory) {
-            this.canInventory = false;
-
-            this.getServer().addTask(this.inventoryTime, () => {
-                this.canInventory = true;
-            });
-
-            this.getServer().addTask(0, () => {
-                this.doSwapInventorySlots(slot1, slot2);
-            });
-        }
-    }
-
     doAddToPurse(gold) {
         if(this.purse) {
             this.purse.addToPurse(gold);
@@ -635,14 +642,16 @@ class Entity {
                 goldAmount = this.purse.goldTotal;
             }
 
-            let gold = EntityFactory.createInstance(gold, goldAmount);
-            gold.screen = this.screen;
-            gold.x = this.x;
-            gold.y = this.y;
+            if(goldAmount > 0) {
+                let gold = EntityFactory.createInstance("gold", goldAmount);
+                gold.screen = this.screen;
+                gold.x = this.x;
+                gold.y = this.y;
 
-            gold.spawnAsLoot();
+                gold.doSpawnAsLoot();
 
-            this.purse.removeFromPurse(goldAmount);
+                this.purse.removeFromPurse(goldAmount);
+            }
         }
     }
 
@@ -660,7 +669,7 @@ class Entity {
         if(this.inventory) {
             let item = this.inventory.itemMap.get(slot);
             if(item && item.canConsume(this)) {
-                item.consume(this);
+                item.doConsume(this);
                 this.inventory.removeFromInventorySlot(slot, 1);
             }
         }
@@ -676,14 +685,16 @@ class Entity {
                     number = item.stackSize;
                 }
 
-                let itemDrop = EntityFactory.createInstance(item.id, number);
-                itemDrop.screen = this.screen;
-                itemDrop.x = this.x;
-                itemDrop.y = this.y;
+                if(number > 0) {
+                    let itemDrop = EntityFactory.createInstance(item.id, number);
+                    itemDrop.screen = this.screen;
+                    itemDrop.x = this.x;
+                    itemDrop.y = this.y;
 
-                itemDrop.spawnAsLoot();
+                    itemDrop.doSpawnAsLoot();
 
-                this.inventory.removeFromInventorySlot(slot, number);
+                    this.inventory.removeFromInventorySlot(slot, number);
+                }
             }
         }
     }

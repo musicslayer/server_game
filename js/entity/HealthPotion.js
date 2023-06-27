@@ -26,7 +26,7 @@ class HealthPotion extends Entity {
     }
 
     doConsume(entity) {
-        entity.addHealth(this.healthReward);
+        entity.doAddHealth(this.healthReward);
     }
 }
 

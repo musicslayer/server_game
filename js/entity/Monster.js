@@ -70,7 +70,7 @@ class Monster extends Entity {
             gold.x = this.x;
             gold.y = this.y;
     
-            gold.spawnAsLoot();
+            gold.doSpawnAsLoot();
             this.doDespawn();
 
             if(this.owner) {
@@ -125,7 +125,7 @@ class Monster extends Entity {
         return players[0];
     }
 
-    attack() {
+    doAttack() {
         // Spawn a "melee projectile" representing a melee attack.
         let x = this.x;
         let y = this.y;
@@ -140,10 +140,10 @@ class Monster extends Entity {
         let projectile = EntityFactory.createInstance("melee_projectile", 1, this.direction, 1, 40, false);
         projectile.owner = this;
         projectile.screen = this.screen;
-        projectile.x = this.x;
-        projectile.y = this.y;
+        projectile.x = x;
+        projectile.y = y;
 
-        projectile.spawn();
+        projectile.doSpawn();
     }
 
     doMove(direction) {

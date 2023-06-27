@@ -29,7 +29,6 @@ class Inventory {
         return num;
     }
 
-    // Return value is whether the ENTIRE entity was added to the inventory (i.e. if we need to despawn it)
     addToInventory(entity) {
         let numStacks = 0;
 
@@ -54,6 +53,7 @@ class Inventory {
                 numStacks++;
 
                 let N = Math.min(entity.maxStackSize, entity.stackSize);
+                
                 entity.stackSize -= N;
                 let item = EntityFactory.cloneInstance(entity, N);
 

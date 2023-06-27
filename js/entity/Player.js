@@ -83,32 +83,6 @@ class Player extends Entity {
         });
     }
 
-    doFullRestore() {
-        this.health = this.maxHealth;
-        this.mana = this.maxMana;
-    }
-
-    kill() {
-        // The player cannot use their actions, inventory, or purse in this state.
-        // Also teleport them to a special death plane.
-        this.health = 0;
-        this.mana = 0;
-
-        this.isDead = true;
-        this.isInvincible = false;
-
-        // ??? If the player is in a dungeon, could we just teleport them to the entrance instead?
-        this.teleportDeath();
-    }
-
-    revive() {
-        // Restore the player to normal.
-        this.health = this.maxHealth;
-        this.mana = this.maxMana;
-
-        this.isDead = false;
-    }
-
     doTeleportHome() {
         // Teleport the player to their home location (in the current world) only if they are alive.
         if(!this.isDead) {
@@ -133,12 +107,12 @@ class Player extends Entity {
                     pvpToken.x = this.x;
                     pvpToken.y = this.y;
 
-                    pvpToken.spawnAsLoot();
+                    pvpToken.doSpawnAsLoot();
 
                     let goldAmount = Math.floor(this.purse.goldTotal * 0.2);
                     this.dropFromPurse(goldAmount);
                 }
-                this.kill();
+                this.doKill();
             }
         }
     }
@@ -157,10 +131,10 @@ class Player extends Entity {
         let projectile = EntityFactory.createInstance("magic_projectile", 1, this.direction, 8, 40, false);
         projectile.owner = this;
         projectile.screen = this.screen;
-        projectile.x = this.x;
-        projectile.y = this.y;
+        projectile.x = x;
+        projectile.y = y;
 
-        projectile.spawn();
+        projectile.doSpawn();
     }
 }
 

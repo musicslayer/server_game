@@ -56,6 +56,8 @@ class Keyboard {
 
         this.inputMap.set(this._spacebar, "action");
         this.inputMap.set(this._0, "teleport_home");
+        this.inputMap.set(this._dash, "kill");
+        this.inputMap.set(this._equals, "revive");
 
         this.inputMap.set(this._z, "boost_experience");
         this.inputMap.set(this._x, "boost_health");

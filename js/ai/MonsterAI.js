@@ -45,7 +45,7 @@ class MonsterAI {
                 else if(this.isFacingAPlayer(monster, aggroPlayer)) {
                     // If any player is in front of us (aggro or not) attack them.
                     // This means that if another player is blocking the monster from the aggro player, they will be attacked.
-                    monster.attack();
+                    monster.doAttack();
                     monster.wait();
                 }
                 else {
