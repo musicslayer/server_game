@@ -1,3 +1,5 @@
+const EntityFactory = require("../entity/EntityFactory.js");
+
 class Account {
     characterMap = new Map();
 
@@ -46,7 +48,7 @@ class Account {
         return s;
     }
 
-    deserialize(s, server) {
+    deserialize(s) {
         let j = JSON.parse(s);
 
         this.characterMap = new Map();
@@ -55,7 +57,7 @@ class Account {
             let value_s = JSON.stringify(j.characterMap.values[i]);
 
             let player_j = j.characterMap.values[i];
-            let player = server.galaxy.worlds[0].createInstance(player_j.id, Number(player_j.stackSize));
+            let player = EntityFactory.createInstance(player_j.id, Number(player_j.stackSize));
             //player.deserialize(value_s);
 
             this.characterMap.set(key, player);

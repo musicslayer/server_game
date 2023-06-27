@@ -1,4 +1,5 @@
 const Entity = require("./Entity.js");
+const EntityFactory = require("./EntityFactory.js");
 const Purse = require("./Purse.js");
 const Inventory = require("./Inventory.js");
 const Util = require("../util/Util.js");
@@ -127,7 +128,12 @@ class Player extends Entity {
             if(this.health === 0) {
                 // If another player did the final damage, spawn a PVP Token and drop some of your gold.
                 if(rootEntity.isPlayer) {
-                    this.getWorld().spawnAsLoot("pvp_token", 1, this.screen, this.x, this.y);
+                    let pvpToken = EntityFactory.createInstance("pvp_token", 1);
+                    pvpToken.screen = this.screen;
+                    pvpToken.x = this.x;
+                    pvpToken.y = this.y;
+
+                    pvpToken.spawnAsLoot();
 
                     let goldAmount = Math.floor(this.purse.goldTotal * 0.2);
                     this.dropFromPurse(goldAmount);
@@ -147,9 +153,14 @@ class Player extends Entity {
             x += shiftX;
             y += shiftY;
         }
-        
-        let projectile = this.getWorld().spawn("magic_projectile", 1, this.screen, x, y, this.direction, 8, 40, false);
+
+        let projectile = EntityFactory.createInstance("magic_projectile", 1, this.direction, 8, 40, false);
         projectile.owner = this;
+        projectile.screen = this.screen;
+        projectile.x = this.x;
+        projectile.y = this.y;
+
+        projectile.spawn();
     }
 }
 

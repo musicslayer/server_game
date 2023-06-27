@@ -1,5 +1,6 @@
 const fs = require("fs");
 
+const EntityFactory = require("../entity/EntityFactory.js");
 const Tile = require("./Tile.js");
 const Util = require("../util/Util.js");
 
@@ -60,7 +61,13 @@ class Screen {
                 while(entityPart.length > 0) {
                     let id = entityPart.shift();
                     let stackSize = Number(entityPart.shift());
-                    this.getWorld().spawn(id, stackSize, this, x, y);
+
+                    let entity = EntityFactory.createInstance(id, stackSize);
+                    entity.screen = this;
+                    entity.x = x;
+                    entity.y = y;
+            
+                    entity.spawn();
                 }
             }
         }
@@ -80,10 +87,10 @@ class Screen {
         }
 
         if(this.isDynamic) {
-            this.getWorld().register("instance", 1);
+            this.getWorldCounter().register("instance", 1);
         }
         else {
-            this.getWorld().register("persistent", 1);
+            this.getWorldCounter().register("persistent", 1);
         }
     }
 
@@ -102,15 +109,15 @@ class Screen {
         }
 
         if(this.isDynamic) {
-            this.getWorld().deregister("instance", 1);
+            this.getWorldCounter().deregister("instance", 1);
 
             // If there are no more players in an instance screen, then the entire screen should be deregistered.
             if(this.playerEntities.length === 0) {
-                this.getWorld().deregister("instance", this.otherEntities.length);
+                this.getWorldCounter().deregister("instance", this.otherEntities.length);
             }
         }
         else {
-            this.getWorld().deregister("persistent", 1);
+            this.getWorldCounter().deregister("persistent", 1);
         }
     }
 
@@ -186,16 +193,9 @@ class Screen {
         return this.map.world.getWorldInDirection(direction);
     }
 
-
-
-    getServer() {
-        return this.map.world.galaxy.server;
+    getWorldCounter() {
+        return this.map.world.worldCounter;
     }
-
-    getWorld() {
-        return this.map.world;
-    }
-
 
     serialize() {
         let s = "{";
@@ -266,8 +266,12 @@ class Screen {
         }
 
         for(let otherEntity_j of j.otherEntities) {
-            let otherEntity = this.getWorld().spawn(otherEntity_j.id, Number(otherEntity_j.stackSize), this, Number(otherEntity_j.x), Number(otherEntity_j.y));
-            this.addEntity(otherEntity);
+            let otherEntity = EntityFactory.createInstance(otherEntity_j.id, Number(otherEntity_j.stackSize));
+            otherEntity.screen = this;
+            otherEntity.x = Number(otherEntity_j.x);
+            otherEntity.y = Number(otherEntity_j.y);
+    
+            otherEntity.spawn();
         }
 
         // Don't deserialize players here.

@@ -1,4 +1,5 @@
 0,0||
+1,1|letter,upperB|
 2,2||wall,1
 10,10||fire_trap,1
 11,10||death_trap,1

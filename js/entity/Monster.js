@@ -1,4 +1,5 @@
 const Entity = require("./Entity.js");
+const EntityFactory = require("./EntityFactory.js");
 const MonsterAI = require("../ai/MonsterAI.js");
 const Util = require("../util/Util.js");
 
@@ -63,7 +64,13 @@ class Monster extends Entity {
         if(this.health === 0) {
             this.aggroMap.clear();
             rootEntity.doAddExperience(this.experienceReward);
-            this.getWorld().spawnAsLoot("gold", 100, this.screen, this.x, this.y);
+
+            let gold = EntityFactory.createInstance("gold", 100);
+            gold.screen = this.screen;
+            gold.x = this.x;
+            gold.y = this.y;
+    
+            gold.spawnAsLoot();
             this.doDespawn();
 
             if(this.owner) {
@@ -130,8 +137,13 @@ class Monster extends Entity {
             y += shiftY;
         }
 
-        let projectile = this.getWorld().spawn("melee_projectile", 1, this.screen, x, y, this.direction, 1, 40, false);
+        let projectile = EntityFactory.createInstance("melee_projectile", 1, this.direction, 1, 40, false);
         projectile.owner = this;
+        projectile.screen = this.screen;
+        projectile.x = this.x;
+        projectile.y = this.y;
+
+        projectile.spawn();
     }
 
     doMove(direction) {

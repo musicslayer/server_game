@@ -1,7 +1,19 @@
 const Client = require("../client/Client.js");
+const Account = require("../account/Account.js");
+const EntityFactory = require("../entity/EntityFactory.js");
 
-// Used to limit the amount of messages that any client can send per second.
-const numAllowedOperations = 1000;
+// Used to limit the amount of socket connections that an IP can form at once.
+const numAllowedSockets = 10;
+const numSocketsMap = new Map();
+
+// Used to limit the amount of messages that any IP can send per second.
+const numAllowedAccountOperations = 1;
+const numAllowedInputOperations = 1000;
+const numAllowedDataOperations = 1000;
+const numAllowedDevOperations = 1000;
+
+const numAccountCreationsMap = new Map();
+const numCharacterCreationsMap = new Map();
 const numLoginsMap = new Map();
 const numInputsMap = new Map();
 const numDatasMap = new Map();
@@ -21,71 +33,155 @@ function createSocketIOServer(httpServer, accountManager, serverManager) {
 	const io = new require("socket.io")(httpServer);
 
 	io.on("connection", (socket) => {
-		if(!socket.handshake.auth) {
-			// Do not allow any handshakes without authentication.
+		let ip = socket.handshake.address;
+		let numSockets = numSocketsMap.get(ip) ?? 0;
+		if(numSockets >= numAllowedSockets) {
 			return;
 		}
 
-		let username = socket.handshake.auth.username;
-		performLoginTask(username, () => {
-			if(clientMap.has(username)) {
-				// User is already logged in.
-				// ??? We should probably error or offer a chance to force log out...
-				return;
-			}
+		numSockets++;
+		numSocketsMap.set(ip, numSockets);
 
-			let password = socket.handshake.auth.password;
-			let key = username + "-" + password;
+		let type = socket.handshake.query?.type;
 
-			let account = accountManager.getAccount(key);
-			if(!account) {
-				// If the account doesn't exist, don't proceed any further.
-				return;
-			}
+		let authUsername = socket.handshake.auth?.username;
+		let authPassword = socket.handshake.auth?.password;
 
-			let player = account.getCharacter(socket.handshake.query.playerName);
-			if(!player) {
-				// If the character does not exist, don't proceed any further.
-				return;
-			}
+		let username = socket.handshake.query?.username;
+		let password = socket.handshake.query?.password;
+		let playerName = socket.handshake.query?.playerName;
+		let playerClass = socket.handshake.query?.playerClass;
+		let serverName = socket.handshake.query?.serverName;
+		let worldName = socket.handshake.query?.worldName;
 
-			let client = new Client(player);
-
-			clientMap.set(username, client);
-
-			let server = serverManager.getServerByName(socket.handshake.query.serverName);
-			let world = server?.galaxy.getWorldByName(socket.handshake.query.worldName);
-			if(!world) {
-				return;
-			}
-
-			// If the player has never logged in before then default to their home screen.
-			if(!client.player.screen) {
-				let screen = world.getMapByName(client.player.homeMapName).getScreenByName(client.player.homeScreenName);
-				if(!screen) {
+		if(type === "account_create") {
+			performAccountCreationTask(ip, () => {
+				if(!username || !password) {
+					// Missing info.
 					return;
 				}
-				client.player.screen = screen;
-			}
 
-			client.player.spawnInWorld(world);
-			attachListeners(socket, client, username);
-		});
+				let key = username + "-" + password;
+				if(accountManager.getAccount(key)) {
+					// The account already exists.
+					return;
+				}
+
+				// Create a new account.
+				let account = new Account();
+				account.key = key;
+				accountManager.addAccount(account);
+			});
+		}
+		else if(type === "character_create") {
+			performCharacterCreationTask(ip, () => {
+				if(!authUsername || !authPassword) {
+					// Do not allow any handshakes without authentication.
+					return;
+				}
+
+				if(!username || !password || !playerName || !playerClass) {
+					// Missing info.
+					return;
+				}
+
+				let key = username + "-" + password;
+				let account = accountManager.getAccount(key);
+				if(!account) {
+					// The account does not exist.
+					return;
+				}
+				
+				if(!["player_mage", "player_warrior"].includes(playerClass)) {
+					return;
+				}
+
+				// Don't attach the screen here. This will be done on first login.
+				// All new players will be spawned on a special tutorial map.
+				let player = EntityFactory.createInstance(playerClass, 1);
+				player.homeMapName = "city";
+				player.homeScreenName = "field1";
+				player.homeX = 0;
+				player.homeY = 0;
+
+				account.addCharacter(playerName, player);
+			});
+		}
+		else if(type === "login") {
+			performLoginTask(username, () => {
+				if(!authUsername || !authPassword) {
+					// Do not allow any handshakes without authentication.
+					return;
+				}
+
+				if(!username || !password || !playerName || !serverName || !worldName) {
+					// Missing info.
+					return;
+				}
+
+				if(clientMap.has(username)) {
+					// User is already logged in.
+					return;
+				}
+
+				let key = username + "-" + password;
+	
+				let account = accountManager.getAccount(key);
+				if(!account) {
+					// The account does not exist.
+					return;
+				}
+	
+				let player = account.getCharacter(playerName);
+				if(!player) {
+					// The character does not exist.
+					return;
+				}
+	
+				let server = serverManager.getServerByName(serverName);
+				let world = server?.galaxy.getWorldByName(worldName);
+				if(!world) {
+					return;
+				}
+	
+				// If the player has never logged in before then default to their home screen on this world.
+				let client = new Client(player);
+				if(!client.player.screen) {
+					let screen = world.getMapByName(client.player.homeMapName).getScreenByName(client.player.homeScreenName);
+					if(!screen) {
+						return;
+					}
+					client.player.screen = screen;
+					client.player.x = client.player.homeX;
+					client.player.y = client.player.homeY;
+				}
+
+				clientMap.set(username, client);
+				client.player.spawnInWorld(world);
+				attachListeners(socket, client, username);
+			});
+		}
 	});
 
 	return io;
 }
 
 function attachListeners(socket, client, username) {
+	let ip = socket.handshake.address;
+
 	// Respond to the client disconnecting.
 	socket.on("disconnect", (reason) => {
 		clientMap.delete(username);
 		client.player.despawn();
+
+		let numSockets = numSocketsMap.get(ip);
+		numSockets--;
+		numSocketsMap.set(ip, numSockets);
 	});
 
 	// Respond to key presses.
 	socket.on("on_key_press", (keys, callback) => {
-		performInputTask(username, () => {
+		performInputTask(ip, () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -100,7 +196,7 @@ function attachListeners(socket, client, username) {
 
 	// Respond to controller button presses.
 	socket.on("on_controller_press", (buttons, callback) => {
-		performInputTask(username, () => {
+		performInputTask(ip, () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -115,7 +211,7 @@ function attachListeners(socket, client, username) {
 
 	// Respond to controller analog sticks.
 	socket.on("on_controller_sticks", (axes, callback) => {
-		performInputTask(username, () => {
+		performInputTask(ip, () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -130,7 +226,7 @@ function attachListeners(socket, client, username) {
 
 	// Respond to mouse clicks.
 	socket.on("on_mouse_click", (button, location, info, callback) => {
-		performInputTask(username, () => {
+		performInputTask(ip, () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -145,7 +241,7 @@ function attachListeners(socket, client, username) {
 
 	// Respond to mouse drags.
 	socket.on("on_mouse_drag", (button, location1, info1, location2, info2, callback) => {
-		performInputTask(username, () => {
+		performInputTask(ip, () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -163,7 +259,7 @@ function attachListeners(socket, client, username) {
 
 	// Send the client all the data needed to draw the player's screen.
 	socket.on("get_client_data", (callback) => {
-		performDataTask(username, () => {
+		performDataTask(ip, () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -175,7 +271,7 @@ function attachListeners(socket, client, username) {
 
 	// Send certain developer data to the client.
 	socket.on("get_dev_data", (callback) => {
-		performDevTask(username, () => {
+		performDevTask(ip, () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -186,41 +282,61 @@ function attachListeners(socket, client, username) {
 	});
 }
 
-function performLoginTask(username, task) {
-	let N = numLoginsMap.get(username) ?? 0;
-	if(N < numAllowedOperations) {
+function performAccountCreationTask(ip, task) {
+	let N = numAccountCreationsMap.get(ip) ?? 0;
+	if(N < numAllowedAccountOperations) {
 		N++;
-		numLoginsMap.set(username, N);
+		numAccountCreationsMap.set(ip, N);
 
 		task();
 	}
 }
 
-function performInputTask(username, task) {
-	let N = numInputsMap.get(username) ?? 0;
-	if(N < numAllowedOperations) {
+function performCharacterCreationTask(ip, task) {
+	let N = numCharacterCreationsMap.get(ip) ?? 0;
+	if(N < numAllowedAccountOperations) {
 		N++;
-		numInputsMap.set(username, N);
+		numCharacterCreationsMap.set(ip, N);
 
 		task();
 	}
 }
 
-function performDataTask(username, task) {
-	let N = numDatasMap.get(username) ?? 0;
-	if(N < numAllowedOperations) {
+function performLoginTask(ip, task) {
+	let N = numLoginsMap.get(ip) ?? 0;
+	if(N < numAllowedAccountOperations) {
 		N++;
-		numDatasMap.set(username, N);
+		numLoginsMap.set(ip, N);
 
 		task();
 	}
 }
 
-function performDevTask(username, task) {
-	let N = numDevsMap.get(username) ?? 0;
-	if(N < numAllowedOperations) {
+function performInputTask(ip, task) {
+	let N = numInputsMap.get(ip) ?? 0;
+	if(N < numAllowedInputOperations) {
 		N++;
-		numDevsMap.set(username, N);
+		numInputsMap.set(ip, N);
+
+		task();
+	}
+}
+
+function performDataTask(ip, task) {
+	let N = numDatasMap.get(ip) ?? 0;
+	if(N < numAllowedDataOperations) {
+		N++;
+		numDatasMap.set(ip, N);
+
+		task();
+	}
+}
+
+function performDevTask(ip, task) {
+	let N = numDevsMap.get(ip) ?? 0;
+	if(N < numAllowedDevOperations) {
+		N++;
+		numDevsMap.set(ip, N);
 		
 		task();
 	}

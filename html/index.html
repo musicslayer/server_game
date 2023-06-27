@@ -8,6 +8,12 @@
 		<!-- <h1>Canvas</h1> -->
 		
 		<canvas id="canvas" style="border:10px solid"></canvas>
+		
+		<button id="createAccount1Button">Account 1 Create</button>
+		<button id="createAccount1MageButton">Account 1 Mage Create</button><br/>
+		
+		<button id="createAccount2Button">Account 2 Create</button><br/>
+		
 		<button id="account1MageButton">Account 1 Mage</button>
 		<button id="account1WarriorButton">Account 1 Warrior</button><br/>
 		<button id="account2MageButton">Account 2 Mage</button>
@@ -23,6 +29,9 @@
 			import { ImageCatalog } from "./ImageCatalog.js";
 			
 			const devText = document.getElementById("devText");
+			const createAccount1Button = document.querySelector('#createAccount1Button');
+			const createAccount1MageButton = document.querySelector('#createAccount1MageButton');
+			const createAccount2Button = document.querySelector('#createAccount2Button');
 			const account1MageButton = document.querySelector('#account1MageButton');
 			const account1WarriorButton = document.querySelector('#account1WarriorButton');
 			const account2MageButton = document.querySelector('#account2MageButton');
@@ -54,23 +63,37 @@
 			let imageCatalog;
 			
 			let socket;
+			let socketAccount;
+			let socketCharacter;
 			let interval;
 			let intervalDev;
 			
+			createAccount1Button.addEventListener('click', () => {
+				connectSocketsAccountCreation("smith", "password123");
+			});
+			
+			createAccount1MageButton.addEventListener('click', () => {
+				connectSocketsCharacterCreation("smith", "password123", "mage", "player_mage");
+			});
+			
+			createAccount2Button.addEventListener('click', () => {
+				connectSocketsAccountCreation("maria", "secret");
+			});
+			
 			account1MageButton.addEventListener('click', () => {
-				connectSockets("smith", "password123", "mage");
+				connectSocketsLogin("smith", "password123", "mage");
 			});
 			
 			account1WarriorButton.addEventListener('click', () => {
-				connectSockets("smith", "password123", "warrior");
+				connectSocketsLogin("smith", "password123", "warrior");
 			});
 			
 			account2MageButton.addEventListener('click', () => {
-				connectSockets("maria", "secret", "mage");
+				connectSocketsLogin("maria", "secret", "mage");
 			});
 			
 			account2WarriorButton.addEventListener('click', () => {
-				connectSockets("maria", "secret", "warrior");
+				connectSocketsLogin("maria", "secret", "warrior");
 			});
 			
 			window.addEventListener('load', async () => {
@@ -78,12 +101,70 @@
 				await imageCatalog.createImageCatalog();
 			});
 			
-			function connectSockets(username, password, playerName) {
+			function connectSocketsAccountCreation(username, password) {
+				if(socketAccount) {
+					//socketAccount.disconnect(true);
+				}
+				
+				if(!socketAccount) {
+				socketAccount = io({query: {
+					type: "account_create",
+					username: username, 
+					password: password
+				}});
+				}
+				
+				socketAccount.on("connect", (err) => {
+					console.log("Connect");
+					//socketAccount.disconnect(true);
+				});
+				
+				socketAccount.on("disconnect", (err) => {
+					console.log("Disconnect");
+					//socketAccount.disconnect(true);
+				});
+			}
+			
+			function connectSocketsCharacterCreation(username, password, playerName, playerClass) {
+				if(socketCharacter) {
+					socketCharacter.disconnect(true);
+				}
+				
+				socketCharacter = io({auth: {
+					username: username, 
+					password: password
+				}, query: {
+					type: "character_create",
+					username: username, 
+					password: password,
+					playerName: playerName, 
+					playerClass: playerClass,
+				}});
+				
+				socketCharacter.on("connect", (err) => {
+				});
+				
+				socketCharacter.on("disconnect", (err) => {
+					socketCharacter.disconnect(true);
+				});
+			}
+			
+			function connectSocketsLogin(username, password, playerName) {
 				if(socket) {
 					socket.disconnect(true);
 				}
 				
-				socket = io({auth: {username: username, password: password}, query: {playerName: playerName, serverName: "origin", worldName: "world0"}});
+				socket = io({auth: {
+					username: username, 
+					password: password
+				}, query: {
+					type: "login",
+					username: username, 
+					password: password,
+					playerName: playerName, 
+					serverName: "origin", 
+					worldName: "world0"
+				}});
 				
 				socket.on("connect", (err) => {
 					startInterval();

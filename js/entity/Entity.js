@@ -1,3 +1,4 @@
+const EntityFactory = require("./EntityFactory.js");
 const Util = require("../util/Util.js");
 
 class Entity {
@@ -71,12 +72,8 @@ class Entity {
         return this.screen.map.world.galaxy.server;
     }
 
-    getWorld() {
-        return this.screen.map.world;
-    }
-
-    getMap() {
-        return this.screen.map;
+    getWorldCounter() {
+        return this.screen.map.world.worldCounter;
     }
 
     // All of the main actions an entity can take are added onto the server queue.
@@ -412,7 +409,7 @@ class Entity {
         this.screen.removeEntity(this);
 
         if(this.inventory) {
-            this.getWorld().deregister("inventory", this.inventory.numItems());
+            this.getWorldCounter().deregister("inventory", this.inventory.numItems());
         }
     }
 
@@ -428,13 +425,15 @@ class Entity {
         // Spawns into the same map/screen/x/y that the entity is already located at but in the given world.
         this.doSpawn();
 
-        let map = world.getMapByName(this.getMap().name);
+        let map = world.getMapByName(this.screen.map.name);
         let screen = map?.getScreenByName(this.screen.name);
 
         if(screen) {
             this.doTeleport(screen, this.x, this.y);
         }
     }
+
+    //let screen = world.getMapByName(client.player.homeMapName).getScreenByName(client.player.homeScreenName);
 
     doSpawnAsLoot() {
         // Spawns this entity as loot (i.e. it will despawn after a certain amount of time).
@@ -472,7 +471,7 @@ class Entity {
     }
 
     doTeleportHome() {
-        let homeMap = this.getWorld().getMapByName(this.homeMapName);
+        let homeMap = this.screen.map.world.getMapByName(this.homeMapName);
         let homeScreen = homeMap?.getScreenByName(this.homeScreenName);
 
         if(homeScreen) {
@@ -482,7 +481,7 @@ class Entity {
 
     doTeleportDeath() {
         // Teleport the entity to the death plane.
-        let deathMap = this.getWorld().getMapByPosition("death");
+        let deathMap = this.screen.map.world.getMapByPosition("death");
         let deathScreen = deathMap.getScreenByPosition(0, 0);
         this.doTeleport(deathScreen, 7, 11);
     }
@@ -530,7 +529,7 @@ class Entity {
 
     doMoveWorld(direction) {
         let newWorld = this.screen.getWorldInDirection(direction);
-        let newMap = newWorld.getMapByPosition(this.getMap().id);
+        let newMap = newWorld.getMapByPosition(this.screen.map.id);
         let newScreen = newMap.getScreenByPosition(this.screen.x, this.screen.y);
         this.doTeleport(newScreen, this.x, this.y);
     }
@@ -636,7 +635,13 @@ class Entity {
                 goldAmount = this.purse.goldTotal;
             }
 
-            this.getWorld().spawnAsLoot("gold", goldAmount, this.screen, this.x, this.y);
+            let gold = EntityFactory.createInstance(gold, goldAmount);
+            gold.screen = this.screen;
+            gold.x = this.x;
+            gold.y = this.y;
+
+            gold.spawnAsLoot();
+
             this.purse.removeFromPurse(goldAmount);
         }
     }
@@ -671,7 +676,13 @@ class Entity {
                     number = item.stackSize;
                 }
 
-                this.getWorld().spawnAsLoot(item.id, number, this.screen, this.x, this.y);
+                let itemDrop = EntityFactory.createInstance(item.id, number);
+                itemDrop.screen = this.screen;
+                itemDrop.x = this.x;
+                itemDrop.y = this.y;
+
+                itemDrop.spawnAsLoot();
+
                 this.inventory.removeFromInventorySlot(slot, number);
             }
         }
@@ -699,7 +710,7 @@ class Entity {
 
     clone(number) {
         // By default, just create another instance.
-        return this.getWorld().createInstance(this.id, number);
+        return EntityFactory.createInstance(this.id, number);
     }
 
     isBlockedBy(entity) {

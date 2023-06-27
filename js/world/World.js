@@ -1,7 +1,6 @@
 const fs = require("fs");
 
-const EntityCounter = require("./EntityCounter.js");
-const EntitySpawner = require("./EntitySpawner.js");
+const WorldCounter = require("./WorldCounter.js");
 const GameMap = require("./GameMap.js");
 const VoidMap = require("./VoidMap.js");
 const DeathMap = require("./DeathMap.js");
@@ -12,8 +11,7 @@ const CRLF = "\r\n";
 const PIPE = "|";
 
 class World {
-    entityCounter = new EntityCounter();
-    entitySpawner = new EntitySpawner();
+    worldCounter = new WorldCounter();
 
     galaxy;
     id;
@@ -99,60 +97,6 @@ class World {
         return this.galaxy.getWorldInDirection(this, direction);
     }
 
-    spawn(id, number, screen, x, y, ...args) {
-        return this.entitySpawner.spawn(id, number, screen, x, y, ...args);
-    }
-
-    spawnAsLoot(id, number, screen, x, y, ...args) {
-        return this.entitySpawner.spawnAsLoot(id, number, screen, x, y, ...args);
-    }
-
-    createInstance(id, number, ...args) {
-        return this.entitySpawner.createInstance(id, number, ...args);
-    }
-
-    cloneInstance(entity, number, screen) {
-        return this.entitySpawner.cloneInstance(entity, number, screen);
-    }
-
-    register(type, number) {
-        switch(type) {
-            case "persistent":
-                this.entityCounter.registerPersistentEntity(number);
-                break;
-            case "instance":
-                this.entityCounter.registerInstanceEntity(number);
-                break;
-            case "inventory":
-                this.entityCounter.registerInventoryEntity(number);
-                break;
-            case "gold":
-                this.entityCounter.registerGold(number);
-                break;
-        }
-    }
-
-    deregister(type, number) {
-        switch(type) {
-            case "persistent":
-                this.entityCounter.deregisterPersistentEntity(number);
-                break;
-            case "instance":
-                this.entityCounter.deregisterInstanceEntity(number);
-                break;
-            case "inventory":
-                this.entityCounter.deregisterInventoryEntity(number);
-                break;
-            case "gold":
-                this.entityCounter.deregisterGold(number);
-                break;
-        }
-    }
-
-    getServer() {
-        return this.galaxy.server;
-    }
-
     serialize() {
         let s = "{";
         s += "\"id\":";
@@ -170,8 +114,8 @@ class World {
         if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
         s += "]";
         s += ",";
-        s += "\"entityCounter\":";
-        s += this.entityCounter.serialize();
+        s += "\"worldCounter\":";
+        s += this.worldCounter.serialize();
         s += "}";
 
         return s;
@@ -203,8 +147,8 @@ class World {
             this.addMap(map);
         }
 
-        let entityCounter_s = JSON.stringify(j.entityCounter);
-        this.entityCounter = EntityCounter.deserialize(entityCounter_s);
+        let entityCounter_s = JSON.stringify(j.worldCounter);
+        this.worldCounter = EntityCounter.deserialize(entityCounter_s);
     }
 }
 

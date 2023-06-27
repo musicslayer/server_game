@@ -10,8 +10,6 @@ const Util = require("./util/Util.js");
 
 // TODO I should be able to save accounts/servers both all of them and some of them.
 
-// TODO EntitySpawner Should be it's own static class
-
 // TODO Players need to store experience and quest progression, etc...
 // TODO Should entity have a deserialize method?
 
@@ -19,13 +17,20 @@ const Util = require("./util/Util.js");
 
 // TODO Should server and accounts be saved separately?
 
+// TODO The purse and inventory need to be serialized?
+
+// TODO If the projectile is made while I am moving, it is created in the start position when it should be in the end position.
+
+// TODO You can go into void right after reviving just by moving...
+
 async function init() {
     // Recreate image zip file.
     await Util.createZipFileFromFolder("assets/image.zip", "assets/image/");
 
     // Create initial player accounts and servers.
+    //let accountManager = AccountManager.createInitialAccountManager();
+    let accountManager = new AccountManager();
     let serverManager = ServerManager.createInitialServerManager();
-    let accountManager = AccountManager.createInitialAccountManager(serverManager.servers[0].galaxy.worlds[0]);
     
     // Create servers to serve the web pages and communicate between front and back ends.
     let httpServer = http.createHTTPServer();

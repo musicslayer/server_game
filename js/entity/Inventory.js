@@ -1,3 +1,5 @@
+const EntityFactory = require("./EntityFactory.js");
+
 class Inventory {
     maxSlots = 45;
     itemMap = new Map();
@@ -51,14 +53,12 @@ class Inventory {
             if(!item) {
                 numStacks++;
 
-                let item = this.owner.getWorld().cloneInstance(entity, 0, this.owner.screen);
-                this.itemMap.set(index, item);
-                this.owner.getWorld().register("inventory", 1);
-
                 let N = Math.min(entity.maxStackSize, entity.stackSize);
-
                 entity.stackSize -= N;
-                item.stackSize += N;
+                let item = EntityFactory.cloneInstance(entity, N);
+
+                this.itemMap.set(index, item);
+                this.owner.getWorldCounter().register("inventory", 1);
             }
         }
     }
@@ -69,7 +69,7 @@ class Inventory {
             item.stackSize -= number;
             if(item.stackSize === 0) {
                 this.itemMap.set(slot, undefined);
-                this.owner.getWorld().deregister("inventory", 1);
+                this.owner.getWorldCounter().deregister("inventory", 1);
             }
         }
     }
