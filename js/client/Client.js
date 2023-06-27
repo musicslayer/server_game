@@ -140,6 +140,10 @@ class Client {
         if(inputs.includes("boost_mana")) {
             this.player.addMana(10);
         }
+        if(inputs.includes("add_gold")) {
+            let gold = require("../entity/EntityFactory").createInstance("gold", 1000);
+            this.player.addToPurse(gold);
+        }
 
         // Move Position (only one will be executed)
         if(inputs.includes("move_up")) {

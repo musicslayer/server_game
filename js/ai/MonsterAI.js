@@ -81,7 +81,7 @@ class MonsterAI {
         let y = monster.y + shiftY;
 
         for(let player of monster.screen.playerEntities) {
-            if(x === player.x && y === player.y) {
+            if(player.isAt(x, y)) {
                 return true;
             }
         }

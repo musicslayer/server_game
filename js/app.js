@@ -14,7 +14,6 @@ const Util = require("./util/Util.js");
 
 // TODO Players need to store experience and quest progression, etc...
 // TODO Should entity have a deserialize method?
-
 // TODO The purse and inventory need to be serialized?
 
 async function init() {

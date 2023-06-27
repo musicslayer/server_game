@@ -172,7 +172,7 @@ class Screen {
         let screenEntities = this.otherEntities.concat(this.playerEntities);
         for(let i = screenEntities.length - 1; i >= 0; i--) {
             let screenEntity = screenEntities[i];
-            if(x === screenEntity.x && y === screenEntity.y) {
+            if(screenEntity.isAt(x, y)) {
                 highestEntity = screenEntity;
                 break;
             }

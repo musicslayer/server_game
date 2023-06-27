@@ -1,6 +1,6 @@
 class EntityFactory {
     static createInstance(id, number, ...args) {
-        // Keep these requires here to avoid a circular dependency loop.
+        // Keep these requires here to avoid circular dependency loops.
         const DeathTrap = require("./DeathTrap.js");
         const FireTrap = require("./FireTrap.js");
         const Gold = require("./Gold.js");

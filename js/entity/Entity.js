@@ -323,7 +323,6 @@ class Entity {
         }
     }
 
-    // TODO There should be dev keys to add gold
     addToPurse(gold) {
         if(this.canPurse) {
             this.canPurse = false;
@@ -434,7 +433,6 @@ class Entity {
         // By default, do nothing.
     }
 
-    // TODO If an entity is in motion, check both start and end locations...
     doCheckCollision() {
         // Call this after any movement to see if this entity is overlapping another on the same screen.
         let overlappingEntities = this.screen.getOverlappingEntities(this);
@@ -630,7 +628,10 @@ class Entity {
         if(this.purse) {
             this.purse.addToPurse(gold);
             if(gold.stackSize === 0) {
-                gold.doDespawn();
+                // Allow for "dev" gold where there is no screen.
+                if(gold.screen) {
+                    gold.doDespawn();
+                }
             }
         }
     }
@@ -659,7 +660,10 @@ class Entity {
         if(this.inventory) {
             this.inventory.addToInventory(entity);
             if(entity.stackSize === 0) {
-                entity.doDespawn();
+                // Allow for "dev" items where there is no screen.
+                if(entity.screen) {
+                    entity.doDespawn();
+                }
             }
         }
     }
