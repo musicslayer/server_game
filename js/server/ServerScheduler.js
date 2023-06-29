@@ -1,25 +1,25 @@
 const { Worker } = require("worker_threads");
 
-const Performance = require("./Performance.js");
+const Performance = require("../server/Performance.js");
 
-class ServerClock {
+class ServerScheduler {
     scheduledTaskMap = new Map();
     currentTick = 0;
     isPaused = true;
 
-    addTask(seconds, task) {
-        let tick = Math.floor(this.currentTick + seconds * Performance.TICK_RATE);
+    scheduleTask(animation, time, task) {
+        animation?.scheduleAnimation(this);
+
+        this.addTask(time, () => {
+            task();
+        });
+    }
+
+    addTask(time, task) {
+        let tick = Math.floor(this.currentTick + time * Performance.TICK_RATE);
         let tasks = this.scheduledTaskMap.get(tick) ?? [];
         tasks.push(task);
         this.scheduledTaskMap.set(tick, tasks);
-    }
-
-    addRefreshTask(seconds, task) {
-        // Add a task that will execute every time the given duration passes.
-        this.addTask(seconds, () => {
-            task();
-            this.addRefreshTask(seconds, task);
-        });
     }
 
     initServerTick() {
@@ -59,4 +59,4 @@ class ServerClock {
     }
 }
 
-module.exports = ServerClock;
+module.exports = ServerScheduler;

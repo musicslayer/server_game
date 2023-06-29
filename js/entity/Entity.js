@@ -12,6 +12,15 @@ class Entity {
     inventory;
     purse;
 
+    health = 0;
+    maxHealth = 0;
+
+    mana = 0;
+    maxMana = 0;
+
+    isDead = false;
+    isInvincible = false;
+
     screen;
     x;
     y;
@@ -30,18 +39,11 @@ class Entity {
     isTangible = false; // Tangible objects block movement and can interact with projectiles.
     isActionBlocker = false; // Action blockers block projectiles without interacting with them.
 
-
-
     isMoveInProgress = false;
 
-    canMove = true;
-    canAction = true;
-    canInventory = true;
-    canPurse = true;
-    canCreate = true;
-
     // Seconds to perform 1 movement or action.
-    movementTime = 0.1;
+    moveTime = 0.1;
+    directionTime = 0;
     actionTime = 0.1;
     inventoryTime = 0.1;
     purseTime = 0.1;
@@ -56,391 +58,39 @@ class Entity {
     stackSize = 1;
 
     getName() {
-        return "?";
+        return undefined;
     }
 
     getInfo() {
-        return "?";
+        return undefined;
     }
 
-    getServerClock() {
-        return this.screen.map.world.universe.server.serverClock;
+    getServerScheduler() {
+        return this.screen.map.world.universe.server.serverScheduler;
     }
 
-    getServerCounter() {
-        return this.screen.map.world.universe.server.serverCounter;
-    }
-
-    // All of the main actions an entity can take are added onto the server queue.
-    addExperience(experience) {
-        if(this.canAction) {
-            this.canAction = false;
-
-            this.getServerClock().addTask(this.actionTime, () => {
-                this.canAction = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doAddExperience(experience);
-            });
-        }
-    }
-
-    addHealth(health) {
-        if(this.canAction) {
-            this.canAction = false;
-
-            this.getServerClock().addTask(this.actionTime, () => {
-                this.canAction = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doAddHealth(health);
-            });
-        }
-    }
-
-    addMana(mana) {
-        if(this.canAction) {
-            this.canAction = false;
-
-            this.getServerClock().addTask(this.actionTime, () => {
-                this.canAction = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doAddMana(mana);
-            });
-        }
-    }
-
-    makeInvincible(invincibleSeconds) {
-        if(this.canAction) {
-            this.canAction = false;
-
-            this.getServerClock().addTask(this.actionTime, () => {
-                this.canAction = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doMakeInvincible(invincibleSeconds);
-            });
-        }
-    }
-
-    createEntity(entity) {
-        if(this.canCreate) {
-            this.canCreate = false;
-
-            this.getServerClock().addTask(this.createTime, () => {
-                this.canCreate = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doCreateEntity(entity);
-            });
-        }
-    }
-
-    despawn() {
-        this.getServerClock().addTask(0, () => {
-            this.doDespawn();
-        });
-    }
-
-    spawn() {
-        this.getServerClock().addTask(0, () => {
-            this.doSpawn();
-        });
-    }
-
-    spawnInWorld(world) {
-        this.getServerClock().addTask(0, () => {
-            this.doSpawnInWorld(world);
-        });
-    }
-
-    action() {
-        if(this.canAction) {
-            this.canAction = false;
-
-            this.getServerClock().addTask(this.actionTime, () => {
-                this.canAction = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doAction();
-            });
-        }
-    }
-
-    teleport(screen, x, y) {
-        if(this.canMove) {
-            this.canMove = false;
-
-            this.getServerClock().addTask(this.movementTime, () => {
-                this.canMove = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doTeleport(screen, x, y);
-            });
-        }
-    }
-
-    teleportHome() {
-        if(this.canMove) {
-            this.canMove = false;
-
-            this.getServerClock().addTask(this.movementTime, () => {
-                this.canMove = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doTeleportHome();
-            });
-        }
-    }
-
-    kill() {
-        if(this.canMove) {
-            this.canMove = false;
-
-            this.getServerClock().addTask(this.movementTime, () => {
-                this.canMove = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doKill();
-            });
-        }
-    }
-
-    revive() {
-        if(this.canMove) {
-            this.canMove = false;
-
-            this.getServerClock().addTask(this.movementTime, () => {
-                this.canMove = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doRevive();
-            });
-        }
-    }
-
-    move(direction, range) {
-        if(!this.isMoveInProgress) {
-            this.direction = direction;
-        }
-
-        if(this.canMove && this.isNextStepAllowed(direction)) {
-            this.isMoveInProgress = true;
-            this.canMove = false;
-            
-            for(let a = 0; a < Performance.MOVEMENT_FRAMES; a++) {
-                let fraction = a / Performance.MOVEMENT_FRAMES;
-                this.getServerClock().addTask(this.movementTime * fraction, () => {
-                    let [shiftX, shiftY] = Util.getDirectionalShift(direction);
-                    this.animationShiftX = (shiftX * fraction);
-                    this.animationShiftY = (shiftY * fraction);
-                });
-            }
-            this.getServerClock().addTask(this.movementTime, () => {
-                this.animationShiftX = 0;
-                this.animationShiftY = 0;
-
-                this.isMoveInProgress = false;
-                this.canMove = true;
-
-                this.doMove(direction, range);
-            });
-        }
-    }
-
-    changeDirection(direction) {
-        if(!this.isMoveInProgress) {
-            this.direction = direction;
-        }
-
-        if(this.canMove) {
-            this.isMoveInProgress = true;
-            this.canMove = false;
-
-            this.getServerClock().addTask(this.movementTime, () => {
-                this.isMoveInProgress = false;
-                this.canMove = true;
-
-                this.doChangeDirection(direction);
-            });
-        }
-    }
-
-    wait() {
-        if(this.canMove) {
-            this.canMove = false;
-
-            this.getServerClock().addTask(this.movementTime, () => {
-                this.canMove = true;
-                this.doWait();
-            });
-        }
-    }
-
-
-
-    moveScreen(direction) {
-        if(this.canMove) {
-            this.canMove = false;
-
-            this.getServerClock().addTask(this.movementTime, () => {
-                this.canMove = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doMoveScreen(direction);
-            });
-        }
-    }
-
-    moveMap(direction) {
-        if(this.canMove) {
-            this.canMove = false;
-
-            this.getServerClock().addTask(this.movementTime, () => {
-                this.canMove = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doMoveMap(direction);
-            });
-        }
-    }
-
-
-    moveWorld(direction) {
-        if(this.canMove) {
-            this.canMove = false;
-
-            this.getServerClock().addTask(this.movementTime, () => {
-                this.canMove = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doMoveWorld(direction);
-            });
-        }
-    }
-
-    addToPurse(gold) {
-        if(this.canPurse) {
-            this.canPurse = false;
-
-            this.getServerClock().addTask(this.purseTime, () => {
-                this.canPurse = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doAddToPurse(gold);
-            });
-        }
-    }
-
-    dropFromPurse(goldAmount) {
-        if(this.canPurse) {
-            this.canPurse = false;
-
-            this.getServerClock().addTask(this.purseTime, () => {
-                this.canPurse = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doDropFromPurse(goldAmount);
-            });
-        }
-    }
-
-
-    addToInventory(entity) {
-        if(this.canInventory) {
-            this.canInventory = false;
-
-            this.getServerClock().addTask(this.inventoryTime, () => {
-                this.canInventory = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doAddToInventory(entity);
-            });
-        }
-    }
-
-    consumeFromInventory(slot) {
-        if(this.canInventory) {
-            this.canInventory = false;
-
-            this.getServerClock().addTask(this.inventoryTime, () => {
-                this.canInventory = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doConsumeFromInventory(slot);
-            });
-        }
-    }
-
-    dropFromInventory(slot, number) {
-        if(this.canInventory) {
-            this.canInventory = false;
-
-            this.getServerClock().addTask(this.inventoryTime, () => {
-                this.canInventory = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doDropFromInventory(slot, number);
-            });
-        }
-    }
-
-    swapInventorySlots(slot1, slot2) {
-        if(this.canInventory) {
-            this.canInventory = false;
-
-            this.getServerClock().addTask(this.inventoryTime, () => {
-                this.canInventory = true;
-            });
-
-            this.getServerClock().addTask(0, () => {
-                this.doSwapInventorySlots(slot1, slot2);
-            });
-        }
-    }
-
-
-
-
-
-
-
-
-
-
+    /*
+        These methods can change the state of the game and should always be scheduled on the server.
+    */
+
+    // TODO Players should have an object to store progress.
     doAddExperience(experience) {
         // By default, do nothing.
     }
 
     doAddHealth(health) {
-        // By default, do nothing.
+        this.health = Math.min(this.health + health, this.maxHealth);
     }
 
     doAddMana(mana) {
-        // By default, do nothing.
+        this.mana = Math.min(this.mana + mana, this.maxMana);
     }
 
     doMakeInvincible(invincibleSeconds) {
-        // By default, do nothing.
+        this.isInvincible = true;
+        this.getServerScheduler().scheduleTask(undefined, invincibleSeconds, () => {
+            this.isInvincible = false;
+        });
     }
 
     doCheckCollision() {
@@ -452,33 +102,7 @@ class Entity {
         }
     }
 
-    isNextStepAllowed(direction) {
-        // By default, check screen edges and if any entities in the direction block movement.
-        let isFacingEdge = this.screen.isFacingEdge(this, direction);
-        let canCrossScreen = this.canCrossScreen();
-        let isScreenInDirection = this.isScreenInDirection(direction);
-        if(isFacingEdge && (!canCrossScreen || !isScreenInDirection)) {
-            return false;
-        }
-        
-        let [shiftX, shiftY] = Util.getDirectionalShift(direction);
-        let x = this.x + shiftX;
-        let y = this.y + shiftY;
-
-        let entities = this.screen.getEntitiesAt(x, y);
-        for(let entity of entities) {
-            if(this !== entity && this.isBlockedBy(entity)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    canConsume(entity) {
-        // By default, any entity can consume any item.
-        return true;
-    }
+    
 
     doConsume(entity) {
         // By default, do nothing.
@@ -487,19 +111,15 @@ class Entity {
     doDespawn() {
         this.isSpawned = false;
         this.screen.removeEntity(this);
-
-        if(this.inventory) {
-            this.getServerCounter().deregister("inventory", this.inventory.numItems());
-        }
     }
 
     doInteract(entity) {
         // By default, do nothing.
     }
 
-    doCreateEntity(entity) {
+    doSpawnEntity(entity) {
         entity.owner = this;
-        entity.spawn();
+        entity.doSpawn();
     }
 
     doSpawn() {
@@ -519,13 +139,12 @@ class Entity {
         }
     }
 
-    //let screen = world.getMapByName(client.player.homeMapName).getScreenByName(client.player.homeScreenName);
 
     doSpawnAsLoot() {
         // Spawns this entity as loot (i.e. it will despawn after a certain amount of time).
         this.doSpawn();
 
-        this.getServerClock().addTask(Performance.LOOT_TIME, () => {
+        this.getServerScheduler().scheduleTask(undefined, Performance.LOOT_TIME, () => {
             this.doDespawn();
         })
     }
@@ -594,42 +213,26 @@ class Entity {
         this.doTeleportHome();
     }
 
-    // By default, movement happens one tile at a time, and if the edge is crossed then the entity moves to the next screen.
-    // Also, if you move onto another entity, the two entities interact with each other.
-    doMoveStep(direction) {
-        if(this.screen.isFacingEdge(this, direction)) {
+    doChangeDirection(direction) {
+        this.direction = direction;
+    }
+
+    doMoveStep() {
+        // Perform a single step of movement in the entity's current direction.
+        // If the edge is crossed then the entity moves to the next screen.
+        // Also, if you move onto another entity, the two entities interact with each other.
+        if(this.screen.isFacingEdge(this, this.direction)) {
             // Cross into the next screen.
-            this.screen.doCrossScreen(this, direction);
+            this.screen.doCrossScreen(this, this.direction);
         }
         else {
             // Just do normal movement.
-            let [shiftX, shiftY] = Util.getDirectionalShift(direction);
+            let [shiftX, shiftY] = Util.getDirectionalShift(this.direction);
             this.x += shiftX;
             this.y += shiftY;
         }
 
         this.doCheckCollision();
-    }
-
-    doMove(direction, range) {
-        this.doMoveStep(direction);
-
-        range--;
-        if(this.isSpawned && range > 0) {
-            this.move(direction, range);
-        }
-    }
-
-    doChangeDirection(direction) {
-        // By default, do nothing.
-    }
-
-    doWait() {
-        // By default, do nothing.
-    }
-
-    isScreenInDirection(direction) {
-        return this.screen.isScreenInDirection(direction);
     }
 
     doMoveScreen(direction) {
@@ -733,6 +336,39 @@ class Entity {
 
 
 
+    isScreenInDirection(direction) {
+        return this.screen.isScreenInDirection(direction);
+    }
+
+    isNextStepAllowed(direction) {
+        // By default, check screen edges and if any entities in the direction block movement.
+        let isFacingEdge = this.screen.isFacingEdge(this, direction);
+        let canCrossScreen = this.canCrossScreen();
+        let isScreenInDirection = this.isScreenInDirection(direction);
+        if(isFacingEdge && (!canCrossScreen || !isScreenInDirection)) {
+            return false;
+        }
+        
+        let [shiftX, shiftY] = Util.getDirectionalShift(direction);
+        let x = this.x + shiftX;
+        let y = this.y + shiftY;
+
+        let entities = this.screen.getEntitiesAt(x, y);
+        for(let entity of entities) {
+            if(this !== entity && this.isBlockedBy(entity)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    canConsume(entity) {
+        // By default, any entity can consume any item.
+        return true;
+    }
+
+    // TODO Should we have another function to return only players.
     getRootEntity(entity) {
         let rootEntity = entity;
 

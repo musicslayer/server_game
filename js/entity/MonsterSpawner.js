@@ -1,45 +1,38 @@
 const Entity = require("./Entity.js");
 const EntityFactory = require("./EntityFactory.js");
+const MonsterSpawnerAI = require("../ai/MonsterSpawnerAI.js");
 
 class MonsterSpawner extends Entity {
     id = "monster_spawner";
 
+    ai = new MonsterSpawnerAI();
+
     spawnTime = 3; // Seconds to spawn a new monster after one dies.
+    monsterCount = 0;
     maxMonsterCount = 4;
-
-    getName() {
-        // This entity is hidden.
-        return undefined;
-    }
-
-    getInfo() {
-        // This entity is hidden.
-        return undefined;
-    }
 
     doSpawn() {
         super.doSpawn();
 
-        // Initial spawn of monsters.
-        for(let i = 0; i < this.maxMonsterCount; i++) {
-            this.doSpawnMonster();
-        }
+        // Monster spawner activities are controlled by an AI class.
+        this.ai.generateNextActivity(this);
     }
 
-    onMonsterDeath() {
-        // When a monster dies, start a timer to spawn another one.
-        this.getServerClock().addTask(this.spawnTime, () => {
-            this.doSpawnMonster();
-        })
+    onMonsterDespawn() {
+        this.monsterCount--;
     }
 
-    doSpawnMonster() {
+    onMonsterSpawn() {
+        this.monsterCount++;
+    }
+
+    createMonsterInstance() {
         let monster = EntityFactory.createInstance("monster", 1);
         monster.screen = this.screen;
         monster.x = this.x;
         monster.y = this.y;
-
-        this.doCreateEntity(monster);
+        
+        return monster;
     }
 }
 

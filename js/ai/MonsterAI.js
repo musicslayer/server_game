@@ -1,9 +1,15 @@
 const Util = require("../util/Util.js");
+const MoveAnimation = require("../animation/MoveAnimation.js");
 
 class MonsterAI {
-    // This function will decide what this monster does next (i.e. move, attack, etc...)
+    // This is the time to do any non-standard action (waiting, changing direction).
+    // This should be quick so the monster does not appear to be stalled.
+    defaultTime = .1;
+
     generateNextActivity(monster) {
         // Look for the player with the highest agro and move towards them.
+        let time = this.defaultTime;
+
         let aggroPlayer = monster.getAggroPlayer();
 
         let directions;
@@ -30,34 +36,46 @@ class MonsterAI {
         }
 
         let randomValidDirection = this.getRandomValidDirection(monster, directions);
+        let direction = directions[0]; // Pick a direction towards the player deterministically to avoid jittering.
+
+        // TODO Merge all this?
         if(randomValidDirection) {
-            // Take a step towards the aggro player.
-            monster.move(randomValidDirection, 1);
-        }
-        else {
-            // Pick a direction towards the player, if possible. Do this deterministically to avoid jittering.
-            let direction = directions[0];
-            if(direction) {
-                if(!directions.includes(monster.direction)) {
-                    // Face towards towards the aggro player.
-                    monster.changeDirection(direction);
-                }
-                else if(this.isFacingAPlayer(monster, aggroPlayer)) {
-                    // If any player is in front of us (aggro or not) attack them.
-                    // This means that if another player is blocking the monster from the aggro player, they will be attacked.
-                    monster.doAttack();
-                    monster.wait();
-                }
-                else {
-                    // We are facing the player but cannot attack them or anyone else, so just do nothing.
-                    monster.wait();
-                }
+            // Turn or move towards the aggro player, if possible.
+            if(monster.direction === randomValidDirection) {
+                time = monster.moveTime;
+                monster.getServerScheduler().scheduleTask(new MoveAnimation(monster, time), time, () => {
+                    monster.doMoveStep();
+                });
             }
             else {
-                // There is no appropriate action to take.
-                monster.wait();
+                time = monster.directionTime;
+                monster.getServerScheduler().scheduleTask(undefined, 0, () => {
+                    monster.doChangeDirection(randomValidDirection);
+                });
             }
         }
+        else if(direction) {
+            // Turn and face the aggro player and attack them, if possible.
+            if(!directions.includes(monster.direction)) {
+                // Face towards towards the aggro player.
+                time = monster.directionTime;
+                monster.getServerScheduler().scheduleTask(undefined, 0, () => {
+                    monster.doChangeDirection(direction);
+                });
+            }
+            else if(this.isFacingAPlayer(monster, aggroPlayer)) {
+                // If any player is in front of us (aggro or not) attack them.
+                // This means that if another player is blocking the monster from the aggro player, they will be attacked.
+                time = monster.actionTime;
+                monster.getServerScheduler().scheduleTask(undefined, 0, () => {
+                    monster.doAction();
+                });
+            }
+        }
+
+        monster.getServerScheduler().scheduleTask(undefined, time, () => {
+            this.generateNextActivity(monster);
+        });
     }
 
     getRandomValidDirection(monster, directions) {

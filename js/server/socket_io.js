@@ -191,11 +191,16 @@ function attachAccountListeners(socket, accountManager, serverManager) {
 			}
 
 			clientMap.set(username, client);
-			client.player.spawnInWorld(world);
+
+			client.player.getServerScheduler().scheduleTask(undefined, 0, () => {
+                client.player.doSpawnInWorld(world);
+            });
 
 			socket.on("disconnect", (reason) => {
 				clientMap.delete(username);
-				client.player.despawn();
+				client.player.getServerScheduler().scheduleTask(undefined, 0, () => {
+					client.player.doDespawn();
+				});
 			});
 
 			attachGameListeners(socket, client);
@@ -346,6 +351,7 @@ function attachGameListeners(socket, client) {
 	});
 }
 
+// TODO Rename to say "rate" or "rate limit"
 function performAccountCreationTask(ip, task, rtask) {
 	let N = numAccountCreationsMap.get(ip) ?? 0;
 	if(N < numAllowedAccountOperations) {

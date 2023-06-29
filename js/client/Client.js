@@ -1,6 +1,8 @@
 const Keyboard = require("../input/Keyboard.js");
 const Mouse = require("../input/Mouse.js");
 const Controller = require("../input/Controller.js");
+const EntityFactory = require("../entity/EntityFactory");
+const MoveAnimation = require("../animation/MoveAnimation.js");
 
 class Client {
     keyboard = new Keyboard();
@@ -10,8 +12,8 @@ class Client {
     selectedEntity;
     selectedSlot = 0;
 
-    canInput = true;
-    inputTime = 0.1;
+    delayMap = new Map();
+    clientInputTime = 0.1;
 
     player;
 
@@ -33,29 +35,39 @@ class Client {
         
         if(inputs.includes("left")) {
             if(location === "screen") {
-                this.selectedEntity = this.player.screen.getHighestEntity(info[0], info[1]);
+                this.scheduleClientTask(undefined, 0, () => {
+                    this.selectedEntity = this.player.screen.getHighestEntity(info[0], info[1]);
+                });
             }
             else if(location === "inventory") {
                 if(this.player.inventory.itemMap.has(info[0])) {
-                    this.selectedSlot = info[0];
-                    this.selectedEntity = this.player.inventory.itemMap.get(info[0]);
+                    this.scheduleClientTask(undefined, 0, () => {
+                        this.selectedSlot = info[0];
+                        this.selectedEntity = this.player.inventory.itemMap.get(info[0]);
+                    });
                 }
             }
         }
         else if(inputs.includes("middle")) {
             if(location === "screen") {
-                this.player.teleport(this.player.screen, info[0], info[1]);
+                this.scheduleMoveTask(undefined, 0, () => {
+                    this.player.doTeleport(this.player.screen, info[0], info[1]);
+                });
             }
         }
         else if(inputs.includes("right")) {
             if(location === "inventory") {
                 if(!this.player.screen.isDynamic) {
-                    this.player.consumeFromInventory(info[0]);
+                    this.scheduleInventoryTask(undefined, 0, () => {
+                        this.player.doConsumeFromInventory(info[0]);
+                    });
                 }
             }
             else if(location === "purse") {
                 if(!this.player.screen.isDynamic) {
-                    this.player.dropFromPurse(100);
+                    this.schedulePurseTask(undefined, 0, () => {
+                        this.player.doDropFromPurse(100);
+                    });
                 }
             }
         }
@@ -68,21 +80,25 @@ class Client {
         if(inputs.includes("left")) {
             if(location1 === "inventory" && location2 === "inventory" && info1[0] !== info2[0]) {
                 // Swap two inventory slots (even if one or both of them are empty)
-                if(this.selectedSlot === info1[0]) {
-                    this.selectedEntity = this.player.inventory.itemMap.get(info1[0]);
-                    this.selectedSlot = info2[0];
-                }
-                else if(this.selectedSlot === info2[0]) {
-                    this.selectedEntity = this.player.inventory.itemMap.get(info2[0]);
-                    this.selectedSlot = info1[0];
-                }
-
-                this.player.swapInventorySlots(info1[0], info2[0]);
+                this.scheduleInventoryTask(undefined, 0, () => {
+                    if(this.selectedSlot === info1[0]) {
+                        this.selectedEntity = this.player.inventory.itemMap.get(info1[0]);
+                        this.selectedSlot = info2[0];
+                    }
+                    else if(this.selectedSlot === info2[0]) {
+                        this.selectedEntity = this.player.inventory.itemMap.get(info2[0]);
+                        this.selectedSlot = info1[0];
+                    }
+                    
+                    this.player.doSwapInventorySlots(info1[0], info2[0]);
+                });
             }
             else if(location1 === "inventory" && location2 === "screen") {
                 // Drop entire stack on the player's current location.
                 if(!this.player.screen.isDynamic) {
-                    this.player.dropFromInventory(info1[0], -1);
+                    this.scheduleInventoryTask(undefined, 0, () => {
+                        this.player.doDropFromInventory(info1[0], -1);
+                    });
                 }
             }
         }
@@ -93,103 +109,179 @@ class Client {
 
         // Inventory (only one will be executed)
         if(inputs.includes("inventory_previous")) {
-            this.performTask(() => {
+            this.scheduleClientTask(undefined, 0, () => {
                 this.selectedSlot = this.selectedSlot === 0 ? this.player.inventory.maxSlots - 1 : this.selectedSlot - 1;
                 this.selectedEntity = this.player.inventory.itemMap.get(this.selectedSlot);
             });
         }
         else if(inputs.includes("inventory_next")) {
-            this.performTask(() => {
+            this.scheduleClientTask(undefined, 0, () => {
                 this.selectedSlot = this.selectedSlot === this.player.inventory.maxSlots - 1 ? 0 : this.selectedSlot + 1;
                 this.selectedEntity = this.player.inventory.itemMap.get(this.selectedSlot);
             });
         }
         else if(inputs.includes("inventory_use")) {
             if(!this.player.screen.isDynamic) {
-                this.player.consumeFromInventory(this.selectedSlot);
+                this.scheduleInventoryTask(undefined, 0, () => {
+                    this.player.doConsumeFromInventory(this.selectedSlot);
+                });
             }
         }
 
         // Player Action
         if(inputs.includes("action")) {
-            this.player.action();
+            this.scheduleActionTask(undefined, 0, () => {
+                this.player.doAction();
+            });
         }
 
         // **** Player Teleport Home
         if(inputs.includes("teleport_home")) {
-            this.player.teleportHome();
+            this.scheduleMoveTask(undefined, 0, () => {
+                this.player.doTeleportHome();
+            });
         }
 
         // **** Player Kill
         if(inputs.includes("kill")) {
-            this.player.kill();
+            this.scheduleMoveTask(undefined, 0, () => {
+                this.player.doKill();
+            });
         }
 
         // **** Player Revive
         if(inputs.includes("revive")) {
-            this.player.revive();
+            this.scheduleMoveTask(undefined, 0, () => {
+                this.player.doRevive();
+            });
         }
 
         // **** Player Boosts
         if(inputs.includes("boost_experience")) {
-            this.player.addExperience(10);
+            this.scheduleActionTask(undefined, 0, () => {
+                this.player.doAddExperience(10);
+            });
         }
         if(inputs.includes("boost_health")) {
-            this.player.addHealth(10);
+            this.scheduleActionTask(undefined, 0, () => {
+                this.player.doAddHealth(10);
+            });
         }
         if(inputs.includes("boost_mana")) {
-            this.player.addMana(10);
+            this.scheduleActionTask(undefined, 0, () => {
+                this.player.doAddMana(10);
+            });
         }
         if(inputs.includes("add_gold")) {
-            let gold = require("../entity/EntityFactory").createInstance("gold", 1000);
-            gold.screen = this.player.screen;
-            gold.x = this.player.getMovementX();
-            gold.y = this.player.getMovementY();
-            this.player.createEntity(gold);
+            this.scheduleCreateTask(undefined, 0, () => {
+                let gold = EntityFactory.createInstance("gold", 1000);
+                gold.screen = this.player.screen;
+                gold.x = this.player.getMovementX();
+                gold.y = this.player.getMovementY();
+                this.player.doSpawnEntity(gold);
+            });
+        }
+        if(inputs.includes("make_invincible")) {
+            this.scheduleActionTask(undefined, 0, () => {
+                this.player.doMakeInvincible(10);
+            });
         }
 
         // Move Position (only one will be executed)
+        // Change player direction if needed, or take a step if we are already facing that way.
         if(inputs.includes("move_up")) {
-            this.player.move("up", 1);
+            if(this.player.direction === "up" && this.player.isNextStepAllowed("up")) {
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, () => {
+                    this.player.doMoveStep();
+                });
+            }
+            else {
+                this.scheduleDirectionTask(undefined, 0, () => {
+                    this.player.doChangeDirection("up");
+                });
+            }
         }
         else if(inputs.includes("move_down")) {
-            this.player.move("down", 1);
+            if(this.player.direction === "down" && this.player.isNextStepAllowed("down")) {
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, () => {
+                    this.player.doMoveStep();
+                });
+            }
+            else {
+                this.scheduleDirectionTask(undefined, 0, () => {
+                    this.player.doChangeDirection("down");
+                });
+            }
         }
         else if(inputs.includes("move_left")) {
-            this.player.move("left", 1);
+            if(this.player.direction === "left" && this.player.isNextStepAllowed("left")) {
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, () => {
+                    this.player.doMoveStep();
+                });
+            }
+            else {
+                this.scheduleDirectionTask(undefined, 0, () => {
+                    this.player.doChangeDirection("left");
+                });
+            }
         }
         else if(inputs.includes("move_right")) {
-            this.player.move("right", 1);
+            if(this.player.direction === "right" && this.player.isNextStepAllowed("right")) {
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, () => {
+                    this.player.doMoveStep();
+                });
+            }
+            else {
+                this.scheduleDirectionTask(undefined, 0, () => {
+                    this.player.doChangeDirection("right");
+                });
+            }
         }
 
         // **** Move Screens (only one will be executed)
         if(inputs.includes("screen_up")) {
-            this.player.moveScreen("up");
+            this.scheduleMoveTask(undefined, 0, () => {
+                this.player.doMoveScreen("up");
+            });
         }
         else if(inputs.includes("screen_down")) {
-            this.player.moveScreen("down");
+            this.scheduleMoveTask(undefined, 0, () => {
+                this.player.doMoveScreen("down");
+            });
         }
         else if(inputs.includes("screen_left")) {
-            this.player.moveScreen("left");
+            this.scheduleMoveTask(undefined, 0, () => {
+                this.player.doMoveScreen("left");
+            });
         }
         else if(inputs.includes("screen_right")) {
-            this.player.moveScreen("right");
+            this.scheduleMoveTask(undefined, 0, () => {
+                this.player.doMoveScreen("right");
+            });
         }
 
         // **** Move Maps (only one will be executed)
         if(inputs.includes("map_up")) {
-            this.player.moveMap("up");
+            this.scheduleMoveTask(undefined, 0, () => {
+                this.player.doMoveMap("up");
+            });
         }
         else if(inputs.includes("map_down")) {
-            this.player.moveMap("down");
+            this.scheduleMoveTask(undefined, 0, () => {
+                this.player.doMoveMap("down");
+            });
         }
 
         // **** Move Worlds (only one will be executed)
         if(inputs.includes("world_up")) {
-            this.player.moveWorld("up");
+            this.scheduleMoveTask(undefined, 0, () => {
+                this.player.doMoveWorld("up");
+            });
         }
         else if(inputs.includes("world_down")) {
-            this.player.moveWorld("down");
+            this.scheduleMoveTask(undefined, 0, () => {
+                this.player.doMoveWorld("down");
+            });
         }
     }
 
@@ -198,43 +290,84 @@ class Client {
 
         // Inventory (only one will be executed)
         if(inputs.includes("inventory_previous")) {
-            this.performTask(() => {
+            this.scheduleClientTask(undefined, 0, () => {
                 this.selectedSlot = this.selectedSlot === 0 ? this.player.inventory.maxSlots - 1 : this.selectedSlot - 1;
                 this.selectedEntity = this.player.inventory.itemMap.get(this.selectedSlot);
             });
         }
         else if(inputs.includes("inventory_next")) {
-            this.performTask(() => {
+            this.scheduleClientTask(undefined, 0, () => {
                 this.selectedSlot = this.selectedSlot === this.player.inventory.maxSlots - 1 ? 0 : this.selectedSlot + 1;
                 this.selectedEntity = this.player.inventory.itemMap.get(this.selectedSlot);
             });
         }
         else if(inputs.includes("inventory_use")) {
             if(!this.player.screen.isDynamic) {
-                this.player.consumeFromInventory(this.selectedSlot);
+                this.scheduleInventoryTask(undefined, 0, () => {
+                    this.player.doConsumeFromInventory(this.selectedSlot);
+                });
             }
         }
 
         // Player Action
         if(inputs.includes("action")) {
-            this.player.action();
+            this.scheduleActionTask(undefined, 0, () => {
+                this.player.doAction();
+            });
         }
 
         // Move Position (only one will be executed)
         if(inputs.includes("move_up")) {
-            this.player.move("up", 1);
+            if(this.player.direction === "up" && this.player.isNextStepAllowed("up")) {
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, () => {
+                    this.player.doMoveStep();
+                });
+            }
+            else {
+                this.scheduleDirectionTask(undefined, 0, () => {
+                    this.player.doChangeDirection("up");
+                });
+            }
         }
         else if(inputs.includes("move_down")) {
-            this.player.move("down", 1);
+            if(this.player.direction === "down" && this.player.isNextStepAllowed("down")) {
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, () => {
+                    this.player.doMoveStep();
+                });
+            }
+            else {
+                this.scheduleDirectionTask(undefined, 0, () => {
+                    this.player.doChangeDirection("down");
+                });
+            }
         }
         else if(inputs.includes("move_left")) {
-            this.player.move("left", 1);
+            if(this.player.direction === "left" && this.player.isNextStepAllowed("left")) {
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, () => {
+                    this.player.doMoveStep();
+                });
+            }
+            else {
+                this.scheduleDirectionTask(undefined, 0, () => {
+                    this.player.doChangeDirection("left");
+                });
+            }
         }
         else if(inputs.includes("move_right")) {
-            this.player.move("right", 1);
+            if(this.player.direction === "right" && this.player.isNextStepAllowed("right")) {
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, () => {
+                    this.player.doMoveStep();
+                });
+            }
+            else {
+                this.scheduleDirectionTask(undefined, 0, () => {
+                    this.player.doChangeDirection("right");
+                });
+            }
         }
     }
 
+    // This method is for demonstration purposes only and breaks the game logic.
     onControllerSticks(axes) {
         // axes is [leftStickX, leftStickY, rightStickX, rightStickY]
         let deadzone = 0.2;
@@ -251,20 +384,51 @@ class Client {
         }
     }
 
-    performTask(task) {
-        // Rate limit actions which don't rely on server ticking.
-        if(this.canInput) {
-            this.canInput = false;
+    scheduleClientTask(animation, time, task) {
+        this.scheduleTask("client", this.clientInputTime, animation, time, task);
+    }
 
-            this.player.getServerClock().addTask(this.inputTime, () => {
-                this.canInput = true;
-            });
+    scheduleCreateTask(animation, time, task) {
+        this.scheduleTask("create", this.player.createTime, animation, time, task);
+    }
 
-            this.player.getServerClock().addTask(0, () => {
-                task();
+    scheduleMoveTask(animation, time, task) {
+        this.scheduleTask("move", this.player.moveTime, animation, time, task);
+    }
+
+    scheduleDirectionTask(animation, time, task) {
+        // Use the move delay type with the direction time.
+        this.scheduleTask("move", this.player.directionTime, animation, time, task);
+    }
+
+    scheduleActionTask(animation, time, task) {
+        this.scheduleTask("action", this.player.actionTime, animation, time, task);
+    }
+
+    scheduleInventoryTask(animation, time, task) {
+        this.scheduleTask("inventory", this.player.inventoryTime, animation, time, task);
+    }
+
+    schedulePurseTask(animation, time, task) {
+        this.scheduleTask("purse", this.player.purseTime, animation, time, task);
+    }
+
+    scheduleTask(delayType, delayTime, animation, time, task) {
+        if(this.delayMap.get(delayType) === true || this.delayMap.get(delayType) === undefined) {
+            this.delayMap.set(delayType, false);
+
+            this.player.getServerScheduler().scheduleTask(animation, time, task);
+
+            this.player.getServerScheduler().scheduleTask(animation, delayTime, () => {
+                this.delayMap.set(delayType, true);
             });
         }
     }
+
+
+
+
+
 
     getClientData() {
         // Tiles
@@ -371,7 +535,7 @@ class Client {
     getDevData() {
         // Info
         let info = {};
-        info.currentTick = this.player.getServerClock().currentTick;
+        info.currentTick = this.player.getServerScheduler().currentTick;
         
         return {
             info: info

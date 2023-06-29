@@ -63,6 +63,7 @@ class Keyboard {
         this.inputMap.set(this._x, "boost_health");
         this.inputMap.set(this._c, "boost_mana");
         this.inputMap.set(this._q, "add_gold");
+        this.inputMap.set(this._e, "make_invincible");
 
         this.inputMap.set(this._w, "move_up");
         this.inputMap.set(this._s, "move_down");

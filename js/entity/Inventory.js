@@ -3,12 +3,8 @@ const EntityFactory = require("./EntityFactory.js");
 class Inventory {
     maxSlots = 45;
     itemMap = new Map();
-
-    owner;
-
-    constructor(owner) {
-        this.owner = owner;
-
+    
+    constructor() {
         // Prefill inventory with undefined so that 0 -> maxSlots count as having values in the map.
         for(let index = 0; index < this.maxSlots; index++) {
             this.itemMap.set(index, undefined)
@@ -58,7 +54,6 @@ class Inventory {
                 let item = EntityFactory.cloneInstance(entity, N);
 
                 this.itemMap.set(index, item);
-                this.owner.getServerCounter().register("inventory", 1);
             }
         }
     }
@@ -69,7 +64,6 @@ class Inventory {
             item.stackSize -= number;
             if(item.stackSize === 0) {
                 this.itemMap.set(slot, undefined);
-                this.owner.getServerCounter().deregister("inventory", 1);
             }
         }
     }

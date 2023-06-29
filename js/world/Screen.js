@@ -66,8 +66,10 @@ class Screen {
                     entity.screen = this;
                     entity.x = x;
                     entity.y = y;
-            
-                    entity.doSpawn();
+
+                    entity.getServerScheduler().scheduleTask(undefined, 0, () => {
+                        entity.doSpawn();
+                    });
                 }
             }
         }
@@ -85,13 +87,6 @@ class Screen {
         else {
             this.otherEntities.push(entity);
         }
-
-        if(this.isDynamic) {
-            this.getServerCounter().register("instance", 1);
-        }
-        else {
-            this.getServerCounter().register("persistent", 1);
-        }
     }
 
     removeEntity(entity) {
@@ -106,18 +101,6 @@ class Screen {
             if(index > -1) {
                 this.otherEntities.splice(index, 1);
             }
-        }
-
-        if(this.isDynamic) {
-            this.getServerCounter().deregister("instance", 1);
-
-            // If there are no more players in an instance screen, then the entire screen should be deregistered.
-            if(this.playerEntities.length === 0) {
-                this.getServerCounter().deregister("instance", this.otherEntities.length);
-            }
-        }
-        else {
-            this.getServerCounter().deregister("persistent", 1);
         }
     }
 
@@ -190,10 +173,6 @@ class Screen {
 
     getWorldInDirection(direction) {
         return this.map.world.getWorldInDirection(direction);
-    }
-
-    getServerCounter() {
-        return this.map.world.universe.server.serverCounter;
     }
 
     serialize() {
@@ -269,8 +248,10 @@ class Screen {
             otherEntity.screen = this;
             otherEntity.x = Number(otherEntity_j.x);
             otherEntity.y = Number(otherEntity_j.y);
-    
-            otherEntity.doSpawn();
+
+            otherEntity.getServerScheduler().scheduleTask(undefined, 0, () => {
+                otherEntity.doSpawn();
+            });
         }
 
         // Don't deserialize players here.

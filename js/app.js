@@ -5,8 +5,7 @@ const AccountManager = require("./account/AccountManager.js");
 const ServerManager = require("./server/ServerManager.js");
 const Util = require("./util/Util.js");
 
-// TODO All state changes must be done through the Server class. We need to enforce this somehow.
-// TODO Only The client and monster ai classes can schedule things on the server (and then there would be less getServer methods)
+// TODO client and ai could be in an "actor" package?
 
 // TODO Should server and accounts be saved separately?
 // TODO I should be able to save accounts/servers both all of them and some of them.

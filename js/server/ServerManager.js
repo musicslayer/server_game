@@ -70,7 +70,7 @@ class ServerManager {
         server.name = "origin";
 
         server.loadServerFromFolder("assets/server/");
-        server.serverClock.initServerTick();
+        server.serverScheduler.initServerTick();
 
         let serverManager = new ServerManager();
         serverManager.addServer(server);

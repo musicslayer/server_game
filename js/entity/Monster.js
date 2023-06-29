@@ -12,9 +12,14 @@ class Monster extends Entity {
     maxHealth = 100;
     experienceReward = 20;
 
+    mana = 20;
+    maxMana = 100;
+    manaRegen = 1; // per second
+
     isTangible = true;
 
-    movementTime = 1;
+    moveTime = 1;
+    actionTime = 1;
 
     ai = new MonsterAI();
 
@@ -22,6 +27,7 @@ class Monster extends Entity {
     maxAggro = 300;
     aggroGain = 1;
     aggroForgiveness = 10;
+    aggroForgivenessTime = 10;
 
     lastPlayer;
 
@@ -36,15 +42,16 @@ class Monster extends Entity {
     doSpawn() {
         super.doSpawn();
 
-        // Monster activities are controlled by an AI class.
-        this.getServerClock().addTask(0, () => {
-            this.ai.generateNextActivity(this);
-        });
-
         // Use this to gradually decrease aggro over time.
-        this.getServerClock().addRefreshTask(10, () => {
-            this.decreaseAggro();
-        });
+        let f = () => {
+            this.getServerScheduler().scheduleTask(undefined, this.aggroForgivenessTime, () => {
+                this.decreaseAggro();
+            });
+        };
+        f();
+
+        // Monster activities are controlled by an AI class.
+        this.ai.generateNextActivity(this);
     }
 
     doTakeDamage(entity, damage) {
@@ -71,9 +78,9 @@ class Monster extends Entity {
             gold.y = this.y;
     
             gold.doSpawnAsLoot();
-            this.doDespawn();
 
-            this.owner?.onMonsterDeath();
+            this.doDespawn();
+            this.owner?.onMonsterDespawn();
         }
     }
 
@@ -123,7 +130,7 @@ class Monster extends Entity {
         return players[0];
     }
 
-    doAttack() {
+    doAction() {
         // Spawn a "melee projectile" representing a melee attack.
         // If the monster is moving, fire the projectile ahead of the motion.
         let projectile = EntityFactory.createInstance("melee_projectile", 1, this.direction, 1, 40, false);
@@ -131,23 +138,13 @@ class Monster extends Entity {
         projectile.x = this.getMovementX();
         projectile.y = this.getMovementY();
 
-        this.doCreateEntity(projectile);
+        this.doSpawnEntity(projectile);
     }
 
-    doMoveStep(direction) {
-        let [shiftX, shiftY] = Util.getDirectionalShift(direction);
+    doMoveStep() {
+        let [shiftX, shiftY] = Util.getDirectionalShift(this.direction);
         this.x += shiftX;
         this.y += shiftY;
-
-        this.ai.generateNextActivity(this);
-    }
-
-    doChangeDirection() {
-        this.ai.generateNextActivity(this);
-    }
-
-    doWait() {
-        this.ai.generateNextActivity(this);
     }
 
     canCrossScreen() {

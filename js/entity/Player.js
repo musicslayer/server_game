@@ -2,13 +2,9 @@ const Entity = require("./Entity.js");
 const EntityFactory = require("./EntityFactory.js");
 const Purse = require("./Purse.js");
 const Inventory = require("./Inventory.js");
-const Util = require("../util/Util.js");
 
 class Player extends Entity {
     isSerializable = false;
-
-    isPlayer = true;
-    isTangible = true;
 
     health = 70;
     maxHealth = 100;
@@ -18,21 +14,17 @@ class Player extends Entity {
     maxMana = 100;
     manaRegen = 1; // per second
 
+    isPlayer = true;
+    isTangible = true;
+
     level = 1;
     experience = 0;
 
-    isDead = false;
-    isInvincible = false;
-
     actionTime = .2;
-    movementTime = .2;
+    moveTime = .2;
 
-    constructor() {
-        super();
-
-        this.inventory = new Inventory(this);
-        this.purse = new Purse(this);
-    }
+    inventory = new Inventory();
+    purse = new Purse();
 
     getName() {
         return "Player";
@@ -46,19 +38,19 @@ class Player extends Entity {
         super.doSpawn();
         
         // Register regen tasks.
-        this.getServerClock().addRefreshTask(1, () => {
-            if(!this.isDead) {
-                this.doAddHealth(this.healthRegen)
-            }
-        })
-
-        this.getServerClock().addRefreshTask(1, () => {
-            if(!this.isDead) {
-                this.doAddMana(this.manaRegen)
-            }
-        })
+        let f = () => {
+            this.getServerScheduler().scheduleTask(undefined, 1, () => {
+                if(!this.isDead) {
+                    this.doAddHealth(this.healthRegen)
+                    this.doAddMana(this.manaRegen)
+                }
+                f();
+            });
+        };
+        f();
     }
     
+    // TODO Can any entity have experience
     doAddExperience(experience) {
         this.experience += experience;
 
@@ -68,20 +60,7 @@ class Player extends Entity {
         }
     }
 
-    doAddHealth(health) {
-        this.health = Math.min(this.health + health, this.maxHealth);
-    }
 
-    doAddMana(mana) {
-        this.mana = Math.min(this.mana + mana, this.maxMana);
-    }
-
-    doMakeInvincible(invincibleSeconds) {
-        this.isInvincible = true;
-        this.getServerClock().addTask(invincibleSeconds, () => {
-            this.isInvincible = false;
-        });
-    }
 
     doTeleportHome() {
         // Teleport the player to their home location (in the current world) only if they are alive.
@@ -125,7 +104,7 @@ class Player extends Entity {
         projectile.x = this.getMovementX();
         projectile.y = this.getMovementY();
 
-        this.doCreateEntity(projectile);
+        this.doSpawnEntity(projectile);
     }
 }
 

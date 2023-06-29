@@ -1,19 +1,20 @@
 const fs = require("fs");
 
 const Universe = require("../world/Universe.js");
-const ServerClock = require("./ServerClock.js");
-const ServerCounter = require("./ServerCounter.js");
+const ServerScheduler = require("./ServerScheduler.js");
+
+const COMMA = ",";
+const CRLF = "\r\n";
+const PIPE = "|";
 
 class Server {
-    serverClock = new ServerClock();
-    serverCounter = new ServerCounter();
+    serverScheduler = new ServerScheduler();
 
     id;
     name;
 
-    universes = [];
-    universeMap = new Map();
-    universePosMap = new Map();
+    // A server should only have one universe.
+    universe
 
     loadServerFromFolder(serverFolder) {
         let serverData = fs.readFileSync(serverFolder + "_server.txt", "ascii");
@@ -40,27 +41,25 @@ class Server {
             this.addUniverse(universe);
         }
     }
-    
+
     addUniverse(universe) {
-        this.universes.push(universe);
-        this.universeMap.set(universe.name, universe);
-        this.universePosMap.set(universe.id, universe);
+        this.universe = universe;
     }
 
     save(stateFile) {
         // Save the server state to the file.
         // We save the current tick but none of the scheduled tasks.
-        this.serverClock.isPaused = true;
+        this.serverScheduler.isPaused = true;
 
         let s = this.serialize();
         fs.writeFileSync(stateFile, s, "ascii");
 
-        this.serverClock.isPaused = false;
+        this.serverScheduler.isPaused = false;
     }
 
     load(stateFile) {
         // Change the server state to the state recorded in the file.
-        this.serverClock.isPaused = true;
+        this.serverScheduler.isPaused = true;
 
         // Wipe the scheduled tasks.
         this.scheduledTaskMap = new Map();
@@ -68,7 +67,7 @@ class Server {
         let s = fs.readFileSync(stateFile, "ascii");
         this.deserialize(s);
 
-        this.serverClock.isPaused = false;
+        this.serverScheduler.isPaused = false;
     }
 
     serialize() {

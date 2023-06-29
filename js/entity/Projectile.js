@@ -1,15 +1,19 @@
 const Entity = require("./Entity.js");
+const ProjectileAI = require("../ai/ProjectileAI.js");
 const Util = require("../util/Util.js");
 
 class Projectile extends Entity {
     isSerializable = false;
 
+    ai = new ProjectileAI();
+
+    // TODO Don't all entities have a direction?
     direction;
     range;
     damage;
     isMulti;
 
-    movementTime = 0.05; // Move faster than most other entities.
+    moveTime = 0.05; // Move faster than most other entities.
 
     constructor(direction, range, damage, isMulti) {
         super();
@@ -24,18 +28,10 @@ class Projectile extends Entity {
         super.doSpawn();
 
         // Do this immediately so that projectiles can hit things overlapping the owner.
-        this.doCheckCollision();
+        this.doCheckFinished();
 
-        if(!this.isSpawned) {
-            return;
-        }
-        
-        if(this.range === 0 || !this.isNextStepAllowed(this.direction)) {
-            this.doDespawn();
-            return;
-        }
-
-        this.move(this.direction, this.range);
+        // Projectile activities are controlled by an AI class.
+        this.ai.generateNextActivity(this);
     }
 
     doInteract(entity) {
@@ -49,19 +45,20 @@ class Projectile extends Entity {
         }
     }
 
-    doMoveStep(direction) {
-        let [shiftX, shiftY] = Util.getDirectionalShift(direction);
+    doMoveStep() {
+        let [shiftX, shiftY] = Util.getDirectionalShift(this.direction);
         this.x += shiftX;
         this.y += shiftY;
 
-        this.doCheckCollision();
-
-        if(!this.isSpawned) {
-            return;
-        }
-
         this.range--;
-        if(this.range === 0 || !this.isNextStepAllowed(direction)) {
+
+        this.doCheckFinished();
+    }
+
+    doCheckFinished() {
+        this.doCheckCollision();
+        
+        if(this.isSpawned && (this.range === 0 || !this.isNextStepAllowed(this.direction))) {
             this.doDespawn();
         }
     }
