@@ -5,6 +5,11 @@ const EntityFactory = require("../entity/EntityFactory");
 const MoveAnimation = require("../animation/MoveAnimation.js");
 
 class Client {
+    ////////
+    static accountManager;
+    static serverManager;
+    ////////
+
     keyboard = new Keyboard();
     mouse = new Mouse();
     controller = new Controller();
@@ -283,7 +288,57 @@ class Client {
                 this.player.doMoveWorld("down");
             });
         }
+
+        // **** Save/load state (only one will be executed)
+        if(inputs.includes("account_save")) {
+            this.scheduleClientTask(undefined, 0, () => {
+                let accountStateFile = "save_states/account/STATE.txt";
+                Client.accountManager.save(accountStateFile);
+            });
+        }
+        else if(inputs.includes("account_load")) {
+            this.scheduleClientTask(undefined, 0, () => {
+                let accountStateFile = "save_states/account/STATE.txt";
+                Client.accountManager.load(accountStateFile);
+            });
+        }
+        if(inputs.includes("server_save")) {
+            this.scheduleClientTask(undefined, 0, () => {
+                let serverStateFile = "save_states/server/STATE.txt";
+                Client.serverManager.save(serverStateFile);
+            });
+        }
+        else if(inputs.includes("server_load")) {
+            this.scheduleClientTask(undefined, 0, () => {
+                let serverStateFile = "save_states/server/STATE.txt";
+                Client.serverManager.load(serverStateFile);
+            });
+        }
     }
+
+    /*
+    getStateFile(folder) {
+        // Return the most recent state file in this folder.
+        const fs = require("fs");
+        const path = require('path');
+
+        let files = fs.readdirSync(folder);
+
+        let recentFile;
+        let T = 0;
+        for(let file of files) {
+            let fullpath = path.join(folder, file);
+            let ctime = fs.statSync(fullpath).ctime;
+
+            if(ctime > T) {
+                recentFile = file;
+                T = ctime;
+            }
+        }
+
+        return recentFile;
+    }
+    */
 
     onControllerPress(buttons) {
         let inputs = this.controller.processButtonPress(buttons);
@@ -425,11 +480,6 @@ class Client {
         }
     }
 
-
-
-
-
-
     getClientData() {
         // Tiles
         let tiles = [];
@@ -489,8 +539,8 @@ class Client {
                 animationShiftY: entity.animationShiftY,
                 healthFraction: entity.health / entity.maxHealth,
                 manaFraction: entity.mana / entity.maxMana,
-                experienceFraction: entity.experience / 100,
-                level: entity.level,
+                experienceFraction: entity.progress.experience / 100,
+                level: entity.progress.level,
                 statuses: statuses
             });
         }

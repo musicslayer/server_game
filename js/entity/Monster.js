@@ -70,7 +70,6 @@ class Monster extends Entity {
 
         if(this.health === 0) {
             this.aggroMap.clear();
-            rootEntity.doAddExperience(this.experienceReward);
 
             let gold = EntityFactory.createInstance("gold", 100);
             gold.screen = this.screen;
@@ -81,6 +80,10 @@ class Monster extends Entity {
 
             this.doDespawn();
             this.owner?.onMonsterDespawn();
+
+            if(rootEntity.isPlayer) {
+                rootEntity.doAddExperience(this.experienceReward);
+            }
         }
     }
 
@@ -133,10 +136,11 @@ class Monster extends Entity {
     doAction() {
         // Spawn a "melee projectile" representing a melee attack.
         // If the monster is moving, fire the projectile ahead of the motion.
-        let projectile = EntityFactory.createInstance("melee_projectile", 1, this.direction, 1, 40, false);
+        let projectile = EntityFactory.createInstance("melee_projectile", 1, 1, 40, false);
         projectile.screen = this.screen;
         projectile.x = this.getMovementX();
         projectile.y = this.getMovementY();
+        projectile.direction = this.direction;
 
         this.doSpawnEntity(projectile);
     }

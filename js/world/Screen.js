@@ -238,7 +238,8 @@ class Screen {
         for(let tile_j of j.tiles) {
             let tile_s = JSON.stringify(tile_j);
 
-            let tile = Tile.deserialize(tile_s);
+            let tile = new Tile();
+            tile.deserialize(tile_s);
 
             this.addTile(tile);
         }

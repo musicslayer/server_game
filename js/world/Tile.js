@@ -40,17 +40,14 @@ class Tile {
         return s;
     }
 
-    static deserialize(s) {
+    deserialize(s) {
         let j = JSON.parse(s);
 
-        let tile = new Tile();
-        tile.x = Number(j.x);
-        tile.y = Number(j.y);
+        this.x = Number(j.x);
+        this.y = Number(j.y);
 
-        tile.imageFolders = j.imageFolders;
-        tile.imageFiles = j.imageFiles;
-
-        return tile;
+        this.imageFolders = j.imageFolders;
+        this.imageFiles = j.imageFiles;
     }
 }
 

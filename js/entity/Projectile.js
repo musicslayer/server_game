@@ -7,18 +7,15 @@ class Projectile extends Entity {
 
     ai = new ProjectileAI();
 
-    // TODO Don't all entities have a direction?
-    direction;
     range;
     damage;
     isMulti;
 
     moveTime = 0.05; // Move faster than most other entities.
 
-    constructor(direction, range, damage, isMulti) {
+    constructor(range, damage, isMulti) {
         super();
 
-        this.direction = direction;
         this.range = range;
         this.damage = damage;
         this.isMulti = isMulti;

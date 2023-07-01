@@ -61,7 +61,7 @@ function attachAccountListeners(socket, accountManager, serverManager) {
 
 	// Respond to account creation.
 	socket.on("on_account_creation", (username, password, callback) => {
-		performAccountCreationTask(ip, () => {
+		rateLimitAccountCreationTask(ip, () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -92,7 +92,7 @@ function attachAccountListeners(socket, accountManager, serverManager) {
 
 	// Respond to character creation.
 	socket.on("on_character_creation", (username, password, playerName, playerClass, callback) => {
-		performCharacterCreationTask(ip, () => {
+		rateLimitCharacterCreationTask(ip, () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -140,7 +140,7 @@ function attachAccountListeners(socket, accountManager, serverManager) {
 
 	// Respond to login.
 	socket.on("on_login", (username, password, playerName, serverName, worldName, callback) => {
-		performLoginTask(ip, () => {
+		rateLimitLoginTask(ip, () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -220,7 +220,7 @@ function attachGameListeners(socket, client) {
 
 	// Respond to key presses.
 	socket.on("on_key_press", (keys, callback) => {
-		performInputTask(ip, () => {
+		rateLimitInputTask(ip, () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -240,7 +240,7 @@ function attachGameListeners(socket, client) {
 
 	// Respond to controller button presses.
 	socket.on("on_controller_press", (buttons, callback) => {
-		performInputTask(ip, () => {
+		rateLimitInputTask(ip, () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -260,7 +260,7 @@ function attachGameListeners(socket, client) {
 
 	// Respond to controller analog sticks.
 	socket.on("on_controller_sticks", (axes, callback) => {
-		performInputTask(ip, () => {
+		rateLimitInputTask(ip, () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -280,7 +280,7 @@ function attachGameListeners(socket, client) {
 
 	// Respond to mouse clicks.
 	socket.on("on_mouse_click", (button, location, info, callback) => {
-		performInputTask(ip, () => {
+		rateLimitInputTask(ip, () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -300,7 +300,7 @@ function attachGameListeners(socket, client) {
 
 	// Respond to mouse drags.
 	socket.on("on_mouse_drag", (button, location1, info1, location2, info2, callback) => {
-		performInputTask(ip, () => {
+		rateLimitInputTask(ip, () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -323,7 +323,7 @@ function attachGameListeners(socket, client) {
 
 	// Send the client all the data needed to draw the player's screen.
 	socket.on("get_client_data", (callback) => {
-		performDataTask(ip, () => {
+		rateLimitDataTask(ip, () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -335,7 +335,7 @@ function attachGameListeners(socket, client) {
 
 	// Send certain developer data to the client.
 	socket.on("get_dev_data", (callback) => {
-		performDevTask(ip, () => {
+		rateLimitDevTask(ip, () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -351,8 +351,7 @@ function attachGameListeners(socket, client) {
 	});
 }
 
-// TODO Rename to say "rate" or "rate limit"
-function performAccountCreationTask(ip, task, rtask) {
+function rateLimitAccountCreationTask(ip, task, rtask) {
 	let N = numAccountCreationsMap.get(ip) ?? 0;
 	if(N < numAllowedAccountOperations) {
 		N++;
@@ -365,7 +364,7 @@ function performAccountCreationTask(ip, task, rtask) {
 	}
 }
 
-function performCharacterCreationTask(ip, task, rtask) {
+function rateLimitCharacterCreationTask(ip, task, rtask) {
 	let N = numCharacterCreationsMap.get(ip) ?? 0;
 	if(N < numAllowedAccountOperations) {
 		N++;
@@ -378,7 +377,7 @@ function performCharacterCreationTask(ip, task, rtask) {
 	}
 }
 
-function performLoginTask(ip, task, rtask) {
+function rateLimitLoginTask(ip, task, rtask) {
 	let N = numLoginsMap.get(ip) ?? 0;
 	if(N < numAllowedAccountOperations) {
 		N++;
@@ -391,7 +390,7 @@ function performLoginTask(ip, task, rtask) {
 	}
 }
 
-function performInputTask(ip, task, rtask) {
+function rateLimitInputTask(ip, task, rtask) {
 	let N = numInputsMap.get(ip) ?? 0;
 	if(N < numAllowedInputOperations) {
 		N++;
@@ -404,7 +403,7 @@ function performInputTask(ip, task, rtask) {
 	}
 }
 
-function performDataTask(ip, task, rtask) {
+function rateLimitDataTask(ip, task, rtask) {
 	let N = numDatasMap.get(ip) ?? 0;
 	if(N < numAllowedDataOperations) {
 		N++;
@@ -417,7 +416,7 @@ function performDataTask(ip, task, rtask) {
 	}
 }
 
-function performDevTask(ip, task, rtask) {
+function rateLimitDevTask(ip, task, rtask) {
 	let N = numDevsMap.get(ip) ?? 0;
 	if(N < numAllowedDevOperations) {
 		N++;

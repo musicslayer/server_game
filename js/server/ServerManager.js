@@ -23,10 +23,15 @@ class ServerManager {
         fs.writeFileSync(serverFile, s, "ascii");
     }
 
-    load(serverFile, server) {
+    load(serverFile) {
         // Change the server state to the state recorded in the file.
         let s = fs.readFileSync(serverFile, "ascii");
-        this.deserialize(s, server);
+
+        this.servers = [];
+        this.serverMap = new Map();
+        this.serverPosMap = new Map();
+
+        this.deserialize(s);
     }
 
     serialize() {
@@ -53,8 +58,12 @@ class ServerManager {
             let server_s = JSON.stringify(server_j);
 
             let server = new Server();
+            //server.id = 0;
+            //server.name = "origin";
 
             server.deserialize(server_s);
+            server.serverScheduler.initServerTick();
+
             this.addServer(server);
         }
     }

@@ -73,11 +73,6 @@ class Entity {
         These methods can change the state of the game and should always be scheduled on the server.
     */
 
-    // TODO Players should have an object to store progress.
-    doAddExperience(experience) {
-        // By default, do nothing.
-    }
-
     doAddHealth(health) {
         this.health = Math.min(this.health + health, this.maxHealth);
     }
@@ -368,7 +363,6 @@ class Entity {
         return true;
     }
 
-    // TODO Should we have another function to return only players.
     getRootEntity(entity) {
         let rootEntity = entity;
 

@@ -2,6 +2,7 @@ const Entity = require("./Entity.js");
 const EntityFactory = require("./EntityFactory.js");
 const Purse = require("./Purse.js");
 const Inventory = require("./Inventory.js");
+const Progress = require("../progress/Progress.js");
 
 class Player extends Entity {
     isSerializable = false;
@@ -17,14 +18,12 @@ class Player extends Entity {
     isPlayer = true;
     isTangible = true;
 
-    level = 1;
-    experience = 0;
-
     actionTime = .2;
     moveTime = .2;
 
     inventory = new Inventory();
     purse = new Purse();
+    progress = new Progress();
 
     getName() {
         return "Player";
@@ -50,14 +49,8 @@ class Player extends Entity {
         f();
     }
     
-    // TODO Can any entity have experience
     doAddExperience(experience) {
-        this.experience += experience;
-
-        if(this.experience >= 100) {
-            this.experience -= 100;
-            this.level++; 
-        }
+       this.progress.doAddExperience(experience);
     }
 
 
@@ -99,10 +92,11 @@ class Player extends Entity {
     doAction() {
         // Spawn a "magic projectile" representing a magical attack.
         // If the player is moving, fire the projectile ahead of the motion.
-        let projectile = EntityFactory.createInstance("magic_projectile", 1, this.direction, 8, 40, false);
+        let projectile = EntityFactory.createInstance("magic_projectile", 1, 8, 40, false);
         projectile.screen = this.screen;
         projectile.x = this.getMovementX();
         projectile.y = this.getMovementY();
+        projectile.direction = this.direction;
 
         this.doSpawnEntity(projectile);
     }

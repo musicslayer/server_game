@@ -22,10 +22,14 @@ class AccountManager {
         fs.writeFileSync(accountFile, s, "ascii");
     }
 
-    load(accountFile, server) {
+    load(accountFile) {
         // Change the account state to the state recorded in the file.
         let s = fs.readFileSync(accountFile, "ascii");
-        this.deserialize(s, server);
+
+        this.accounts = [];
+        this.accountMap = new Map();
+        
+        this.deserialize(s);
     }
 
     serialize() {

@@ -1,6 +1,5 @@
 const fs = require("fs");
 
-
 const GameMap = require("./GameMap.js");
 const VoidMap = require("./VoidMap.js");
 const DeathMap = require("./DeathMap.js");
