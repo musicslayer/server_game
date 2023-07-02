@@ -1,8 +1,6 @@
 const Entity = require("./Entity.js");
 
 class RevivePortal extends Entity {
-    id = "revive_portal";
-
     getName() {
         return "Revive Portal";
     }

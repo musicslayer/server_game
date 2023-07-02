@@ -69,25 +69,25 @@ class AccountManager {
 
     static createInitialAccountManager() {
         // Load players onto the given world.
-        let player1Mage = EntityFactory.createInstance("player_mage", 1);
+        let player1Mage = EntityFactory.createInstance("PlayerMage", 1);
         player1Mage.homeMapName = "city";
         player1Mage.homeScreenName = "field1";
         player1Mage.homeX = 0;
         player1Mage.homeY = 0;
 
-        let player1Warrior = EntityFactory.createInstance("player_warrior", 1);
+        let player1Warrior = EntityFactory.createInstance("PlayerWarrior", 1);
         player1Warrior.homeMapName = "city";
         player1Warrior.homeScreenName = "field1";
         player1Warrior.homeX = 0;
         player1Warrior.homeY = 0;
 
-        let player2Mage = EntityFactory.createInstance("player_mage", 1);
+        let player2Mage = EntityFactory.createInstance("PlayerMage", 1);
         player2Mage.homeMapName = "city";
         player2Mage.homeScreenName = "field1";
         player2Mage.homeX = 7;
         player2Mage.homeY = 0;
 
-        let player2Warrior = EntityFactory.createInstance("player_warrior", 1);
+        let player2Warrior = EntityFactory.createInstance("PlayerWarrior", 1);
         player2Warrior.homeMapName = "city";
         player2Warrior.homeScreenName = "field1";
         player2Warrior.homeX = 7;

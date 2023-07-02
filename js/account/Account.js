@@ -57,7 +57,7 @@ class Account {
             let value_s = JSON.stringify(j.characterMap.values[i]);
 
             let player_j = j.characterMap.values[i];
-            let player = EntityFactory.createInstance(player_j.id, Number(player_j.stackSize));
+            let player = EntityFactory.createInstance(player_j.getClassName(), Number(player_j.stackSize));
             //player.deserialize(value_s);
 
             this.characterMap.set(key, player);

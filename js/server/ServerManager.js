@@ -17,6 +17,19 @@ class ServerManager {
         return this.serverMap.get(name);
     }
 
+    spawnServer(server) {
+        // Spawn all non-player entities on this server.
+        for(let world of server.universe.worlds) {
+            for(let map of world.gameMaps) {
+                for(let screen of map.screens) {
+                    for(let entity of screen.otherEntities.slice()) {
+                        entity.doSpawn();
+                    }
+                }
+            }
+        }
+    }
+
     save(serverFile) {
         // Save the server state to the file.
         let s = this.serialize();
@@ -68,20 +81,20 @@ class ServerManager {
         }
     }
 
-
-
-
-
     static createInitialServerManager() {
         // Load one game server and start its server tick.
-        let server = new Server();
+        let serverManager = new ServerManager();
+
+        let server = Server.loadServerFromFolder("assets/server/");
         server.id = 0;
         server.name = "origin";
 
-        server.loadServerFromFolder("assets/server/");
+        server.serverScheduler.scheduleTask(undefined, 0, () => {
+            serverManager.spawnServer(server);
+        });
+
         server.serverScheduler.initServerTick();
 
-        let serverManager = new ServerManager();
         serverManager.addServer(server);
 
         return serverManager;

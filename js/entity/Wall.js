@@ -1,8 +1,6 @@
 const Entity = require("./Entity.js");
 
 class Wall extends Entity {
-    id = "wall";
-
     getName() {
         return "Wall";
     }

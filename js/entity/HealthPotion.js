@@ -1,7 +1,6 @@
 const Entity = require("./Entity.js");
 
 class HealthPotion extends Entity {
-    id = "health_potion";
     maxStackSize = 20;
     
     healthReward = 40;

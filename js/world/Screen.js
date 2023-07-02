@@ -1,6 +1,7 @@
 const fs = require("fs");
 
 const EntityFactory = require("../entity/EntityFactory.js");
+const WorldFactory = require("./WorldFactory.js");
 const Tile = require("./Tile.js");
 const Util = require("../util/Util.js");
 
@@ -23,7 +24,9 @@ class Screen {
     otherEntities = [];
     playerEntities = [];
 
-    loadScreenFromFile(screenFile) {
+    static loadScreenFromFile(className, screenFile) {
+        let screen = WorldFactory.createInstance(className);
+
         let tileData = fs.readFileSync(screenFile, "ascii");
         let lines = tileData ? tileData.split(CRLF) : [];
 
@@ -33,12 +36,12 @@ class Screen {
             let parts = line.split(PIPE);
 
             // First part is the x,y
-            let numPart = parts[0].split(COMMA);
+            let numPart = parts.shift().split(COMMA);
             let x = Number(numPart.shift());
             let y = Number(numPart.shift());
 
             // Second part is the tiles
-            let tilePart = parts[1].split(COMMA);
+            let tilePart = parts.shift().split(COMMA);
             if(tilePart[0]) {
                 let imageFolders = [];
                 let imageFiles = [];
@@ -52,28 +55,28 @@ class Screen {
                 tile.x = x;
                 tile.y = y;
         
-                this.addTile(tile);
+                screen.addTile(tile);
             }
 
             // Third part is the entities
-            let entityPart = parts[2].split(COMMA);
+            let entityPart = parts.shift().split(COMMA);
             if(entityPart[0]) {
                 while(entityPart.length > 0) {
                     let id = entityPart.shift();
                     let stackSize = Number(entityPart.shift());
 
                     let entity = EntityFactory.createInstance(id, stackSize);
-                    entity.screen = this;
+                    entity.screen = screen;
                     entity.x = x;
                     entity.y = y;
 
-                    entity.getServerScheduler().scheduleTask(undefined, 0, () => {
-                        entity.doSpawn();
-                    });
+                    // Don't spawn entities here. This will be done later.
+                    screen.addEntity(entity);
                 }
             }
         }
 
+        return screen;
     }
 
     addTile(tile) {
@@ -82,10 +85,16 @@ class Screen {
 
     addEntity(entity) {
         if(entity.isPlayer) {
-            this.playerEntities.push(entity);
+            const index = this.playerEntities.indexOf(entity);
+            if(index === -1) {
+                this.playerEntities.push(entity);
+            }
         }
         else {
-            this.otherEntities.push(entity);
+            const index = this.otherEntities.indexOf(entity);
+            if(index === -1) {
+                this.otherEntities.push(entity);
+            }
         }
     }
 
@@ -219,7 +228,7 @@ class Screen {
         if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
         s += "]";
 
-        // Don't serialize players here.
+        // Only serialize non-players here.
         s += "}";
 
         return s;
@@ -244,18 +253,16 @@ class Screen {
             this.addTile(tile);
         }
 
+        // Only deserialize non-players here.
         for(let otherEntity_j of j.otherEntities) {
-            let otherEntity = EntityFactory.createInstance(otherEntity_j.id, Number(otherEntity_j.stackSize));
+            let otherEntity = EntityFactory.createInstance(otherEntity_j.getClassName(), Number(otherEntity_j.stackSize));
             otherEntity.screen = this;
             otherEntity.x = Number(otherEntity_j.x);
             otherEntity.y = Number(otherEntity_j.y);
 
-            otherEntity.getServerScheduler().scheduleTask(undefined, 0, () => {
-                otherEntity.doSpawn();
-            });
+            // Don't spawn entities here. This will be done later.
+            this.addEntity(otherEntity);
         }
-
-        // Don't deserialize players here.
     }
 }
 

@@ -1,2 +1,2 @@
 2,2|floor,red|
-5,5||monster_spawner,1
+5,5||MonsterSpawner,1

@@ -115,11 +115,11 @@
 			});
 			
 			createAccount1MageButton.addEventListener('click', () => {
-				reactCharacterCreation("smith", "password123", "mage", "player_mage");
+				reactCharacterCreation("smith", "password123", "mage", "PlayerMage");
 			});
 			
 			createAccount1WarriorButton.addEventListener('click', () => {
-				reactCharacterCreation("smith", "password123", "warrior", "player_warrior");
+				reactCharacterCreation("smith", "password123", "warrior", "PlayerWarrior");
 			});
 			
 			createAccount2Button.addEventListener('click', () => {
@@ -127,11 +127,11 @@
 			});
 			
 			createAccount2MageButton.addEventListener('click', () => {
-				reactCharacterCreation("maria", "secret", "mage", "player_mage");
+				reactCharacterCreation("maria", "secret", "mage", "PlayerMage");
 			});
 			
 			createAccount2WarriorButton.addEventListener('click', () => {
-				reactCharacterCreation("maria", "secret", "warrior", "player_warrior");
+				reactCharacterCreation("maria", "secret", "warrior", "PlayerWarrior");
 			});
 			
 			loginAccount1MageButton.addEventListener('click', () => {
@@ -536,7 +536,7 @@
 				// Non-players
 				while(otherEntities.length > 0) {
 					let otherEntity = otherEntities.shift();
-					let image = imageCatalog.getImageByID(otherEntity.id, animationFrame);
+					let image = imageCatalog.getImageByClassName(otherEntity.className, animationFrame);
 					
 					let x = otherEntity.x + otherEntity.animationShiftX;
 					let y = otherEntity.y + otherEntity.animationShiftY;
@@ -567,7 +567,7 @@
 				// Players
 				while(playerEntities.length > 0) {
 					let playerEntity = playerEntities.shift();
-					let image = imageCatalog.getImageByID(playerEntity.id, animationFrame);
+					let image = imageCatalog.getImageByClassName(playerEntity.className, animationFrame);
 					
 					let x = playerEntity.x + playerEntity.animationShiftX;
 					let y = playerEntity.y + playerEntity.animationShiftY;
@@ -620,16 +620,16 @@
 				// Purse
 				let originPurseX = 17;
 				let originPurseY = 0;
-				let purseImage = imageCatalog.getImage("item", "gold");
+				let purseImage = imageCatalog.getImage("item", "gold"); // TODO Get image by id
 				ctxBuffer.drawImage(purseImage, originPurseX * IMAGE_SCALE_FACTOR, originPurseY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 				ctxBuffer.drawImage(getGoldTotalImage(purse.goldTotal), (originPurseX + 1) * IMAGE_SCALE_FACTOR, originPurseY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 				
 				// Info
-				if(info.id) {
+				if(info.className) {
 					const W = IMAGE_SCALE_FACTOR * 6;
 					let originInfoX = 17;
 					let originInfoY = 1;
-					let infoImage = imageCatalog.getImageByID(info.id, 0);
+					let infoImage = imageCatalog.getImageByClassName(info.className, 0);
 					ctxBuffer.drawImage(infoImage, originInfoX * IMAGE_SCALE_FACTOR, originInfoY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					ctxBuffer.drawImage(getInfoNameImage(info.name), (originInfoX + 1) * IMAGE_SCALE_FACTOR, originInfoY * IMAGE_SCALE_FACTOR, W, IMAGE_SCALE_FACTOR);
 					ctxBuffer.drawImage(getInfoTextImage(info.text), (originInfoX + 1) * IMAGE_SCALE_FACTOR, originInfoY * IMAGE_SCALE_FACTOR, W, IMAGE_SCALE_FACTOR);
@@ -821,7 +821,7 @@
 					let y = ySlots.shift();
 					
 					if(item) {
-						let itemImage = imageCatalog.getImageByID(item.id, 0);
+						let itemImage = imageCatalog.getImageByClassName(item.className, 0);
 						//for(let itemImage of itemImages) {
 							images.push({
 								x: x,

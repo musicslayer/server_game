@@ -1,2 +1,4 @@
-0|city
-1|town
+0|GameMap|city
+1|GameMap|town
+death|DeathMap|_death
+void|VoidMap|_void

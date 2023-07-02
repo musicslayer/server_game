@@ -1,7 +1,6 @@
 const Entity = require("./Entity.js");
 
 class FireTrap extends Entity {
-    id = "fire_trap";
     damage = 40;
 
     getName() {

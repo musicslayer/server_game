@@ -1,7 +1,6 @@
 const Entity = require("./Entity.js");
 
 class PVPToken extends Entity {
-    id = "pvp_token";
     maxStackNumber = 1;
     maxStackSize = 10000;
 

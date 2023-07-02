@@ -114,7 +114,7 @@ function attachAccountListeners(socket, accountManager, serverManager) {
 				return;
 			}
 			
-			if(!["player_mage", "player_warrior"].includes(playerClass)) {
+			if(!["PlayerMage", "PlayerWarrior"].includes(playerClass)) {
 				callback({"isSuccess": false});
 				return;
 			}

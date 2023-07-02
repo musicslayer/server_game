@@ -1,5 +1,6 @@
 const fs = require("fs");
 
+const WorldFactory = require("./WorldFactory.js");
 const GameMap = require("./GameMap.js");
 const VoidMap = require("./VoidMap.js");
 const DeathMap = require("./DeathMap.js");
@@ -16,10 +17,11 @@ class World {
 
     gameMaps = [];
     gameMapMap = new Map();
-    gameMapPosMap = new Map();
+    gameMapPosMap = new Map(); // TODO Why is pos and id treated the same?
 
-    loadWorldFromFolder(worldFolder) {
-        // Store the folder definining the special "void" map for this world.
+    static loadWorldFromFolder(className, worldFolder) {
+        let world = WorldFactory.createInstance(className);
+
         let worldData = fs.readFileSync(worldFolder + "_world.txt", "ascii");
         let lines = worldData ? worldData.split(CRLF) : [];
 
@@ -28,27 +30,30 @@ class World {
             let line = lines.shift();
             let parts = line.split(PIPE);
 
-            // First part is the id
-            let idPart = parts[0].split(COMMA);
+            // First part is the map id
+            let idPart = parts.shift().split(COMMA);
             let id = Number(idPart.shift());
 
-            // Second part is the map
-            let name = parts[1];
+            // Second part is the map class name
+            let className = parts.shift();
 
-            let map = new GameMap();
-            map.world = this;
+            // Third part is the map name
+            let name = parts.shift();
+
+            let map = GameMap.loadMapFromFolder(className, worldFolder + name + "/");
+            map.world = world;
             map.id = id;
             map.name = name;
 
-            map.loadMapFromFolder(worldFolder + name + "/");
-            this.addMap(map);
+            world.addMap(map);
         }
 
+        /*
         // Add special "death" map
         let deathMap = new DeathMap();
         deathMap.world = this;
         deathMap.id = "death";
-        deathMap.name = "death";
+        deathMap.name = "Death";
 
         deathMap.loadMapFromFolder(worldFolder + "_death/");
         this.addMap(deathMap);
@@ -57,10 +62,13 @@ class World {
         let voidMap = new VoidMap();
         voidMap.world = this;
         voidMap.id = "void";
-        voidMap.name = "void";
+        voidMap.name = "Void";
 
         voidMap.loadMapFromFolder(worldFolder + "_void/");
         this.addMap(voidMap);
+        */
+
+        return world;
     }
 
     addMap(map) {
@@ -90,6 +98,7 @@ class World {
         return map;
     }
 
+    // TODO Reduce a lot of these repeated methods.
     getWorldInDirection(direction) {
         return this.universe.getWorldInDirection(this, direction);
     }

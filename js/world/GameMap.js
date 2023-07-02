@@ -1,5 +1,6 @@
 const fs = require("fs");
 
+const WorldFactory = require("./WorldFactory.js");
 const Screen = require("./Screen.js");
 const Util = require("../util/Util.js");
 
@@ -16,7 +17,12 @@ class GameMap {
     screenMap = new Map();
     screenPosMap = new Map();
 
-    loadMapFromFolder(mapFolder) {
+    mapFolder;
+
+    static loadMapFromFolder(className, mapFolder) {
+        let map = WorldFactory.createInstance(className);
+        map.mapFolder = mapFolder;
+
         let mapData = fs.readFileSync(mapFolder + "_map.txt", "ascii");
         let lines = mapData ? mapData.split(CRLF) : [];
 
@@ -26,26 +32,30 @@ class GameMap {
             let parts = line.split(PIPE);
 
             // First part is the x,y
-            let numPart = parts[0].split(COMMA);
+            let numPart = parts.shift().split(COMMA);
             let x = Number(numPart.shift());
             let y = Number(numPart.shift());
 
-            // Second part is the screen
-            let name = parts[1];
+            // Second part is the screen class name
+            let className = parts.shift();
 
-            // Third part is whether the screen is safe or pvp
-            let pvpStatus = parts[2];
+            // Third part is the screen name
+            let name = parts.shift();
 
-            let screen = new Screen();
-            screen.map = this;
+            // Fourth part is whether the screen is safe or pvp
+            let pvpStatus = parts.shift();
+
+            let screen = Screen.loadScreenFromFile(className, mapFolder + name + ".txt");
+            screen.map = map;
             screen.name = name;
             screen.x = x;
             screen.y = y;
             screen.pvpStatus = pvpStatus;
 
-            screen.loadScreenFromFile(mapFolder + name + ".txt");
-            this.addScreen(screen);
+            map.addScreen(screen);
         }
+
+        return map;
     }
 
     addScreen(screen) {

@@ -179,7 +179,7 @@ class Client {
         }
         if(inputs.includes("add_gold")) {
             this.scheduleCreateTask(undefined, 0, () => {
-                let gold = EntityFactory.createInstance("gold", 1000);
+                let gold = EntityFactory.createInstance("Gold", 1000);
                 gold.screen = this.player.screen;
                 gold.x = this.player.getMovementX();
                 gold.y = this.player.getMovementY();
@@ -507,7 +507,7 @@ class Client {
         for(const entity of this.player.screen.otherEntities) {
             otherEntities.push({
                 stackSize: entity.stackSize,
-                id: entity.id,
+                className: entity.getClassName(),
                 x: entity.x,
                 y: entity.y,
                 animationShiftX: entity.animationShiftX,
@@ -531,7 +531,7 @@ class Client {
             }
 
             playerEntities.push({
-                id: entity.id,
+                className: entity.getClassName(),
                 stackSize: entity.stackSize,
                 x: entity.x,
                 y: entity.y,
@@ -553,7 +553,7 @@ class Client {
             let item = this.player.inventory.itemMap.get(index);
             if(item) {
                 inventory.items.push({
-                    id: item.id,
+                    className: item.getClassName(),
                     stackSize: item.stackSize
                 });
             }
@@ -568,7 +568,7 @@ class Client {
 
         // Info
         let info = {};
-        info.id = this.selectedEntity?.id;
+        info.className = this.selectedEntity?.getClassName();
         info.name = this.selectedEntity?.getName();
         info.text = this.selectedEntity?.getInfo();
 

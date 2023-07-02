@@ -14,9 +14,11 @@ class Server {
     name;
 
     // A server should only have one universe.
-    universe
+    universe;
 
-    loadServerFromFolder(serverFolder) {
+    static loadServerFromFolder(serverFolder) {
+        let server = new Server();
+
         let serverData = fs.readFileSync(serverFolder + "_server.txt", "ascii");
         let lines = serverData ? serverData.split(CRLF) : [];
 
@@ -25,21 +27,25 @@ class Server {
             let line = lines.shift();
             let parts = line.split(PIPE);
 
-            // First part is the id
-            let idPart = parts[0].split(COMMA);
+            // First part is the universe id
+            let idPart = parts.shift().split(COMMA);
             let id = Number(idPart.shift());
 
-            // Second part is the universe
-            let name = parts[1];
+            // Second part is the universe class name
+            let className = parts.shift();
 
-            let universe = new Universe();
-            universe.server = this;
+            // Third part is the universe name
+            let name = parts.shift();
+
+            let universe = Universe.loadUniverseFromFolder(className, serverFolder + name + "/");
+            universe.server = server;
             universe.id = id;
             universe.name = name;
 
-            universe.loadUniverseFromFolder(serverFolder + name + "/");
-            this.addUniverse(universe);
+            server.addUniverse(universe);
         }
+
+        return server;
     }
 
     addUniverse(universe) {

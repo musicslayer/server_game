@@ -2,13 +2,6 @@ const DeathScreen = require("./DeathScreen.js");
 const GameMap = require("./GameMap.js");
 
 class DeathMap extends GameMap {
-    deathMapFolder;
-
-    loadMapFromFolder(deathMapFolder) {
-        super.loadMapFromFolder(deathMapFolder);
-        this.deathMapFolder = deathMapFolder;
-    }
-
     getScreenByPosition(screenX, screenY) {
         // Always return a dynamically generated "death" screen.
         return this.createDeathScreen(this, screenX, screenY);
@@ -20,7 +13,7 @@ class DeathMap extends GameMap {
         deathScreen.x = screenX;
         deathScreen.y = screenY;
 
-        deathScreen.loadScreenFromFile(this.deathMapFolder + "death.txt");
+        deathScreen.loadScreenFromFile(this.mapFolder + "death.txt");
         
         return deathScreen;
     }

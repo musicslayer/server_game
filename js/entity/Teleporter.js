@@ -1,8 +1,6 @@
 const Entity = require("./Entity.js");
 
 class Teleporter extends Entity {
-    id = "teleporter";
-
     getName() {
         return "Teleporter";
     }

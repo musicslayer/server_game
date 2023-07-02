@@ -2,4 +2,4 @@
 7,0|letter,upperO|
 8,0|letter,upperI|
 9,0|letter,upperD|
-7,3||home_portal,1
+7,3||HomePortal,1

@@ -42,59 +42,59 @@ class ImageCatalog {
         return this.imageMap.get(folder + "#" + file);
     }
 	
-	getImageByID(id, animationFrame) {
+	getImageByClassName(className, animationFrame) {
 		let image;
 		
-		switch(id) {
-            case "death_trap":
+		switch(className) {
+            case "DeathTrap":
                 image = this.getImage("trap", "death");
                 break;
-            case "fire_trap":
+            case "FireTrap":
                 image = this.getImage("trap", "fire");
                 break;
-            case "gold":
+            case "Gold":
                 image = this.getImage("item", "gold");
                 break;
-            case "health_potion":
+            case "HealthPotion":
                 image = this.getImage("item", "health_potion_" + animationFrame);
                 break;
-			case "home_portal":
+			case "HomePortal":
                 image = this.getImage("portal", "teleporter");
                 break;
-            case "invincible_potion":
+            case "InvinciblePotion":
                 image = this.getImage("item", "invincible_potion");
                 break;
-			case "magic_projectile":
+			case "MagicProjectile":
                 image = this.getImage("magic", "orb");
                 break;
-            case "mana_potion":
+            case "ManaPotion":
                 image = this.getImage("item", "mana_potion");
                 break;
-			case "melee_projectile":
+			case "MeleeProjectile":
                 image = this.getImage("melee", "orb");
                 break;
-            case "monster":
+            case "Monster":
                 image = this.getImage("creature", "monster");
                 break;
-			case "monster_spawner":
+			case "MonsterSpawner":
                 image = this.getImage("creature", "monster_spawner");
                 break;
-            case "player_mage":
+            case "PlayerMage":
                 image = this.getImage("player", "mage");
                 break;
-			case "player_warrior":
+			case "PlayerWarrior":
                 image = this.getImage("player", "warrior");
                 break;
-            case "pvp_token":
+            case "PVPToken":
                 image = this.getImage("item", "pvp_token");
                 break;
-            case "revive_portal":
+            case "RevivePortal":
                 image = this.getImage("portal", "teleporter");
                 break;
-            case "teleporter":
+            case "Teleporter":
                 image = this.getImage("portal", "teleporter");
                 break;
-            case "wall":
+            case "Wall":
                 image = this.getImage("wall", "wall");
                 break;
             default:

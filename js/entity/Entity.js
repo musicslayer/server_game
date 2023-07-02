@@ -6,7 +6,6 @@ class Entity {
     isSerializable = true; // By default, entities can be serialized and saved.
     isSpawned = false; // Only true if this entity instance exists in the game world.
 
-    id; // Each subclass should have a unique ID.
     owner; // e.g. The entity that spawned a projectile is the owner.
 
     inventory;
@@ -56,6 +55,10 @@ class Entity {
     maxStackNumber = 1;
     maxStackSize = 1;
     stackSize = 1;
+
+    getClassName() {
+        return this.constructor.name;
+    }
 
     getName() {
         return undefined;
@@ -133,7 +136,6 @@ class Entity {
             this.doTeleport(screen, this.x, this.y);
         }
     }
-
 
     doSpawnAsLoot() {
         // Spawns this entity as loot (i.e. it will despawn after a certain amount of time).
@@ -265,7 +267,7 @@ class Entity {
             }
 
             if(goldAmount > 0) {
-                let gold = EntityFactory.createInstance("gold", goldAmount);
+                let gold = EntityFactory.createInstance("Gold", goldAmount);
                 gold.screen = this.screen;
                 gold.x = this.x;
                 gold.y = this.y;
@@ -308,7 +310,7 @@ class Entity {
                 }
 
                 if(number > 0) {
-                    let itemDrop = EntityFactory.createInstance(item.id, number);
+                    let itemDrop = EntityFactory.createInstance(item.getClassName(), number);
                     itemDrop.screen = this.screen;
                     itemDrop.x = this.x;
                     itemDrop.y = this.y;
@@ -374,8 +376,10 @@ class Entity {
     }
 
     clone(number) {
-        // By default, just create another instance.
-        return EntityFactory.createInstance(this.id, number);
+        // By default, just create another instance with the same screen and the provided stack size.
+        let clone = EntityFactory.createInstance(this.getClassName(), number);
+        clone.screen = this.screen;
+        return clone;
     }
 
     isBlockedBy(entity) {
@@ -407,11 +411,8 @@ class Entity {
 
     serialize() {
         let s = "{";
-        s += "\"classname\":";
-        s += "\"" + this.constructor.name + "\"";
-        s += ",";
-        s += "\"id\":";
-        s += "\"" + this.id + "\"";
+        s += "\"className\":";
+        s += "\"" + this.getClassName() + "\"";
         s += ",";
         s += "\"stackSize\":";
         s += "\"" + this.stackSize + "\"";

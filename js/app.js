@@ -1,9 +1,11 @@
 const http = require("./web/http.js");
 const socket_io = require("./web/socket_io.js");
 
+const Zip = require("./zip/Zip.js");
+const EntityFactory = require("./entity/EntityFactory.js");
+const WorldFactory = require("./world/WorldFactory.js");
 const AccountManager = require("./account/AccountManager.js");
 const ServerManager = require("./server/ServerManager.js");
-const Zip = require("./zip/Zip.js");
 
 // TODO Check all serialize/deserialize methods after all the recent changes.
 // TODO Should entity have a deserialize method?
@@ -17,6 +19,10 @@ const Zip = require("./zip/Zip.js");
 async function init() {
     // Recreate image zip file.
     await Zip.createZipFileFromFolder("assets/image.zip", "assets/image/");
+
+    // Initialize factory classes.
+    EntityFactory.init();
+    WorldFactory.init();
 
     // Create initial player accounts and servers.
     let accountManager = AccountManager.createInitialAccountManager();

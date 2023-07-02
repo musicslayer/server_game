@@ -1,7 +1,6 @@
 const Entity = require("./Entity.js");
 
 class Gold extends Entity {
-    id = "gold";
     maxStackSize = 100000;
 
     getName() {

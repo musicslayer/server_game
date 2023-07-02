@@ -3,8 +3,6 @@ const EntityFactory = require("./EntityFactory.js");
 const MonsterSpawnerAI = require("../ai/MonsterSpawnerAI.js");
 
 class MonsterSpawner extends Entity {
-    id = "monster_spawner";
-
     ai = new MonsterSpawnerAI();
 
     spawnTime = 3; // Seconds to spawn a new monster after one dies.
@@ -27,7 +25,7 @@ class MonsterSpawner extends Entity {
     }
 
     createMonsterInstance() {
-        let monster = EntityFactory.createInstance("monster", 1);
+        let monster = EntityFactory.createInstance("Monster", 1);
         monster.screen = this.screen;
         monster.x = this.x;
         monster.y = this.y;

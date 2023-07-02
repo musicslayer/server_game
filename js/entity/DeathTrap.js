@@ -1,8 +1,6 @@
 const Entity = require("./Entity.js");
 
 class DeathTrap extends Entity {
-    id = "death_trap";
-
     getName() {
         return "Death Trap";
     }

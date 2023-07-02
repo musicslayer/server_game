@@ -6,8 +6,6 @@ const Util = require("../util/Util.js");
 class Monster extends Entity {
     isSerializable = false;
 
-    id = "monster";
-
     health = 70;
     maxHealth = 100;
     experienceReward = 20;
@@ -46,6 +44,7 @@ class Monster extends Entity {
         let f = () => {
             this.getServerScheduler().scheduleTask(undefined, this.aggroForgivenessTime, () => {
                 this.decreaseAggro();
+                f();
             });
         };
         f();
@@ -71,7 +70,7 @@ class Monster extends Entity {
         if(this.health === 0) {
             this.aggroMap.clear();
 
-            let gold = EntityFactory.createInstance("gold", 100);
+            let gold = EntityFactory.createInstance("Gold", 100);
             gold.screen = this.screen;
             gold.x = this.x;
             gold.y = this.y;
@@ -136,7 +135,7 @@ class Monster extends Entity {
     doAction() {
         // Spawn a "melee projectile" representing a melee attack.
         // If the monster is moving, fire the projectile ahead of the motion.
-        let projectile = EntityFactory.createInstance("melee_projectile", 1, 1, 40, false);
+        let projectile = EntityFactory.createInstance("MeleeProjectile", 1, 1, 40, false);
         projectile.screen = this.screen;
         projectile.x = this.getMovementX();
         projectile.y = this.getMovementY();

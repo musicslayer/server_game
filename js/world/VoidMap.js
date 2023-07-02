@@ -2,13 +2,6 @@ const VoidScreen = require("./VoidScreen.js");
 const GameMap = require("./GameMap.js");
 
 class VoidMap extends GameMap {
-    voidMapFolder;
-    
-    loadMapFromFolder(voidMapFolder) {
-        super.loadMapFromFolder(voidMapFolder);
-        this.voidMapFolder = voidMapFolder;
-    }
-
     getScreenByPosition(screenX, screenY) {
         // Always return a dynamically generated "void" screen.
         return this.createVoidScreen(this, screenX, screenY);
@@ -20,7 +13,7 @@ class VoidMap extends GameMap {
         voidScreen.x = screenX;
         voidScreen.y = screenY;
 
-        voidScreen.loadScreenFromFile(this.voidMapFolder + "void.txt");
+        voidScreen.loadScreenFromFile(this.mapFolder + "void.txt");
         
         return voidScreen;
     }
@@ -32,7 +25,7 @@ class VoidMap extends GameMap {
         voidMap.id = id;
         voidMap.name = this.name;
 
-        voidMap.loadMapFromFolder(this.voidMapFolder)
+        voidMap.loadMapFromFolder(this.mapFolder)
 
         return voidMap;
     }

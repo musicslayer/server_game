@@ -1,7 +1,6 @@
 const Entity = require("./Entity.js");
 
 class InvinciblePotion extends Entity {
-    id = "invincible_potion";
     maxStackNumber = 1;
     maxStackSize = 20;
     

@@ -1,7 +1,6 @@
 const Entity = require("./Entity.js");
 
 class ManaPotion extends Entity {
-    id = "mana_potion";
     maxStackNumber = 1;
     maxStackSize = 20;
 

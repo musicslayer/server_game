@@ -1,5 +1,6 @@
 const fs = require("fs");
 
+const WorldFactory = require("./WorldFactory.js");
 const World = require("./World.js");
 const Util = require("../util/Util.js");
 
@@ -16,7 +17,9 @@ class Universe {
     worldMap = new Map();
     worldPosMap = new Map();
 
-    loadUniverseFromFolder(universeFolder) {
+    static loadUniverseFromFolder(className, universeFolder) {
+        let universe = WorldFactory.createInstance(className);
+
         let universeData = fs.readFileSync(universeFolder + "_universe.txt", "ascii");
         let lines = universeData ? universeData.split(CRLF) : [];
 
@@ -25,21 +28,25 @@ class Universe {
             let line = lines.shift();
             let parts = line.split(PIPE);
 
-            // First part is the id
-            let idPart = parts[0].split(COMMA);
+            // First part is the world id
+            let idPart = parts.shift().split(COMMA);
             let id = Number(idPart.shift());
 
-            // Second part is the world
-            let name = parts[1];
+            // Second part is the world class name
+            let className = parts.shift();
 
-            let world = new World();
-            world.universe = this;
+            // Third part is the world name
+            let name = parts.shift();
+
+            let world = World.loadWorldFromFolder(className, universeFolder + name + "/");
+            world.universe = universe;
             world.id = id;
             world.name = name;
 
-            world.loadWorldFromFolder(universeFolder + name + "/");
-            this.addWorld(world);
+            universe.addWorld(world);
         }
+
+        return universe;
     }
 
     addWorld(world) {
