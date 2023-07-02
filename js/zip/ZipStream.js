@@ -1,4 +1,5 @@
 const fs = require("fs");
+const stream = require("stream");
 const zlib = require("zlib");
 
 class ZipStream {
@@ -11,7 +12,7 @@ class ZipStream {
         this.outputStream = fs.createWriteStream(zipFilePath);
     }
 
-    addFile(name, absolute, time) {
+    async addFile(name, absolute, time) {
         // Add a single file to the zip file.
         let fileData = {
             name: name,
@@ -24,39 +25,20 @@ class ZipStream {
             fileOffset: this.offset
         };
 
-        // TODO Could we use a stream for this somehow...?
-        let content = fs.readFileSync(absolute);
-        let compressed = zlib.deflateRawSync(content, { level:9 });
-
-        fileData.crc = crc32(compressed);
-        fileData.size = content.length;
-        fileData.csize = compressed.length;
         this.fileDataArray.push(fileData);
 
+        fileData.crc = 0;
+        fileData.size = 0;
+        fileData.csize = 0;
+
+        // Write data from this file into the zip file.
         this._writeLocalFileHeader(fileData);
-        this.writeToStream(compressed);
+        await this.createZipPipeline(absolute, fileData);
         this._writeDataDescriptor(fileData);
     }
 
-    finish() {
-        // Write the final data for the zip file and then close the stream.
-        this.centralOffset = this.offset;
-
-        for(let fileData of this.fileDataArray) {
-            this._writeCentralFileHeader(fileData);
-        }
-      
-        this.centralLength = this.offset - this.centralOffset;
-      
-        this._writeCentralDirectoryEnd();
-
-        this.outputStream.end();
-    }
-
-    _writeCentralDirectoryEnd() {
+    _writeCentralDirectoryEnd(size, offset) {
         let records = this.fileDataArray.length;
-        let size = this.centralLength;
-        let offset = this.centralOffset;
       
         // signature
         this.writeToStream(getLongBytes(0x06054b50)); // SIG_EOCD
@@ -160,9 +142,10 @@ class ZipStream {
         this.writeToStream(getLongBytes(fileData.time));
       
         // crc32 checksum and sizes
-        this.writeToStream(getLongBytes(fileData.crc));
-        this.writeToStream(getLongBytes(fileData.csize));
-        this.writeToStream(getLongBytes(fileData.size));
+        // Use zeroes here and write the real values in the data descriptor later.
+        this.writeToStream(Buffer.from(Array(4)));
+        this.writeToStream(Buffer.from(Array(4)));
+        this.writeToStream(Buffer.from(Array(4)));
       
         // name length
         this.writeToStream(getShortBytes(fileData.name.length));
@@ -183,6 +166,51 @@ class ZipStream {
         }
 
         this.outputStream.write(chunk);
+    }
+
+    finish() {
+        // Write the final data for the zip file and then close the stream.
+        let centralOffset = this.offset;
+
+        for(let fileData of this.fileDataArray) {
+            this._writeCentralFileHeader(fileData);
+        }
+
+        let centralLength = this.offset - centralOffset;
+
+        this._writeCentralDirectoryEnd(centralLength, centralOffset);
+
+        this.outputStream.end();
+    }
+
+    createZipPipeline(absolute, fileData) {
+        // Create the stream pipeline that will stream data from the file into a zlib compressor and then into the zip file.
+
+        // Read file.
+        let inputStream = fs.createReadStream(absolute);
+        
+        // Intercept uncompressed data.
+        let contentPassThroughStream = new stream.PassThrough();
+        contentPassThroughStream.on("data", (chunk) => {
+            if(chunk) {
+                fileData.size += chunk.length;
+            }
+        })
+
+        // Compress data with zlib
+        let compressedStream = zlib.createDeflateRaw({ level: 9 });
+        
+        // Intercept compressed data.
+        let compressedPassThroughStream = new stream.PassThrough();
+        compressedPassThroughStream.on("data", (chunk) => {
+            if(chunk) {
+                fileData.crc = crc32(chunk, fileData.crc);
+                fileData.csize += chunk.length;
+            }
+            this.writeToStream(chunk);
+        })
+
+        return stream.promises.pipeline(inputStream, contentPassThroughStream, compressedStream, compressedPassThroughStream);
     }
 }
 
@@ -255,8 +283,8 @@ const CRC_TABLE = new Int32Array([
     0x2d02ef8d
 ]);
 
-function crc32(buf) {
-    let crc = -1;
+function crc32(buf, previous) {
+    let crc = ~~previous ^ -1;
     for(let n = 0; n < buf.length; n++) {
         crc = CRC_TABLE[(crc ^ buf[n]) & 0xff] ^ (crc >>> 8);
     }

@@ -16,7 +16,7 @@ const Zip = require("./zip/Zip.js");
 
 async function init() {
     // Recreate image zip file.
-    Zip.createZipFileFromFolder("assets/image.zip", "assets/image/");
+    await Zip.createZipFileFromFolder("assets/image.zip", "assets/image/");
 
     // Create initial player accounts and servers.
     let accountManager = AccountManager.createInitialAccountManager();
