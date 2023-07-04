@@ -1,6 +1,7 @@
 const Client = require("../client/Client.js");
 const Account = require("../account/Account.js");
 const EntityFactory = require("../entity/EntityFactory.js");
+const ServerTask2 = require("../server/ServerTask2.js");
 
 // Used to limit the amount of socket connections that an IP can form at once.
 const numAllowedSockets = 10;
@@ -191,15 +192,32 @@ function attachAppListeners(socket, appState) {
 
 			AppState.instance.clientMap.set(key, client);
 
+			/*
 			client.player.getServerScheduler().scheduleTask(undefined, 0, () => {
                 client.player.doSpawnInWorld(world);
             });
+			*/
+
+			let serverTask = new ServerTask2((player, world) => {
+				player.doSpawnInWorld(world);
+			}, client.player, world);
+	
+			client.player.getServerScheduler().scheduleTask2(undefined, 0, serverTask);
 
 			socket.on("disconnect", (reason) => {
 				AppState.instance.clientMap.delete(key);
+
+				/*
 				client.player.getServerScheduler().scheduleTask(undefined, 0, () => {
 					client.player.doDespawn();
 				});
+				*/
+
+				let serverTask = new ServerTask2((player) => {
+					player.doDespawn();
+				}, client.player);
+
+				client.player.getServerScheduler().scheduleTask2(undefined, 0, serverTask);
 			});
 
 			attachClientListeners(socket, client);

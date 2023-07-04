@@ -1,11 +1,11 @@
 const { Worker } = require("worker_threads");
 
 const Performance = require("../server/Performance.js");
+const ServerTaskList = require("./ServerTaskList.js");
 
 class ServerScheduler {
     scheduledTaskMap = new Map();
     currentTick = 0;
-    isPaused = true;
     worker;
 
     scheduleTask(animation, time, task) {
@@ -16,17 +16,35 @@ class ServerScheduler {
         });
     }
 
+    scheduleTask2(animation, time, serverTask) {
+        animation?.scheduleAnimation(this);
+
+        this.addTask2(time, serverTask);
+    }
+
+    // TODO Implement?
+    scheduleRefreshTask2(animation, time, serverTask) {
+        animation?.scheduleAnimation(this);
+
+        this.addTask2(time, serverTask);
+    }
+
     addTask(time, task) {
         let tick = Math.floor(this.currentTick + time * Performance.TICK_RATE);
-        let tasks = this.scheduledTaskMap.get(tick) ?? [];
-        tasks.push(task);
-        this.scheduledTaskMap.set(tick, tasks);
+        let serverTaskList = this.scheduledTaskMap.get(tick) ?? new ServerTaskList();
+        serverTaskList.addTask(task);
+        this.scheduledTaskMap.set(tick, serverTaskList);
+    }
+
+    addTask2(time, serverTask) {
+        let tick = Math.floor(this.currentTick + time * Performance.TICK_RATE);
+        let serverTaskList = this.scheduledTaskMap.get(tick) ?? new ServerTaskList();
+        serverTaskList.addTask2(serverTask);
+        this.scheduledTaskMap.set(tick, serverTaskList);
     }
 
     initServerTick() {
         // Start a timer thread that will alert the main thread after every tick.
-        this.isPaused = false;
-
         const shared = new Int32Array(new SharedArrayBuffer(4));
         this.doWork(shared);
     
@@ -50,26 +68,22 @@ class ServerScheduler {
 
     async doWork(shared) {
         await Atomics.waitAsync(shared, 0, 0).value;
-        if(!this.isPaused) {
-            let tasks = this.scheduledTaskMap.get(this.currentTick) ?? [];
-            this.scheduledTaskMap.delete(this.currentTick);
 
-            // Increment the current tick now so that new tasks added during a task won't be executed until the next tick.
-            this.currentTick++;
+        let serverTaskList = this.scheduledTaskMap.get(this.currentTick) ?? new ServerTaskList();
+        this.scheduledTaskMap.delete(this.currentTick);
 
-            for(let task of tasks) {
-                task();
-            }
-        }
+        // Increment the current tick now so that new tasks added during a task won't be executed until the next tick.
+        this.currentTick++;
+
+        serverTaskList.execute();
     
         this.doWork(shared)
     }
 
     serialize(writer) {
-        // Don't serialize isPaused because we want deserialized servers to always start out paused.
-        // Don't serialize worker because the deserialized server will create a new worker.
+        // Don't serialize the worker because the deserialized server will create a new one.
         writer.beginObject()
-            .serialize("scheduledTaskMap", this.scheduledTaskMap)
+            .serializeMap("scheduledTaskMap", this.scheduledTaskMap)
             .serialize("currentTick", this.currentTick)
         .endObject();
     }
@@ -78,8 +92,7 @@ class ServerScheduler {
         let serverScheduler = new ServerScheduler();
 
         reader.beginObject();
-        // TODO How do we deserialize a map with values that are arrays?
-        let scheduledTaskMap = reader.deserializeMap("scheduledTaskMap", "Number", "Function");
+        let scheduledTaskMap = reader.deserializeMap("scheduledTaskMap", "Number", "ServerTaskList");
         let currentTick = reader.deserialize("currentTick", "Number");
         reader.endObject();
 

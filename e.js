@@ -1,4 +1,12 @@
-let arr = [1,2,3];
-arr.at(-1) = 9;
+let map = new Map();
 
-console.log(arr.at(-1));
+let f = (m) => {
+    console.log(m);
+}
+
+let s = f.toString();
+
+let f2 = new Function('return ' + s);
+let f3 = f2()
+
+f3(map);

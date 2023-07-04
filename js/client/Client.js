@@ -289,13 +289,13 @@ class Client {
 
         // **** Save/load state (only one will be executed)
         if(inputs.includes("save_state")) {
-            this.scheduleRealtimeTask(undefined, 0, () => {
+            this.scheduleRealtimeTask(() => {
                 const AppState = require("../AppState.js");
                 AppState.instance.save();
             });
         }
         else if(inputs.includes("load_state")) {
-            this.scheduleRealtimeTask(undefined, 0, () => {
+            this.scheduleRealtimeTask(() => {
                 const AppState = require("../AppState.js");
                 AppState.instance.load();
             });
@@ -401,11 +401,12 @@ class Client {
         }
     }
 
-    scheduleRealtimeTask(animation, time, task) {
+    scheduleRealtimeTask(task) {
+        // Don't schedule these on the server.
         if(this.delayMap.get("realtime") === true || this.delayMap.get("realtime") === undefined) {
             this.delayMap.set("realtime", false);
 
-            this.player.getServerScheduler().scheduleTask(animation, time, task);
+            task();
 
             setTimeout(() => {
                 this.delayMap.set("realtime", true);

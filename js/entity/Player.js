@@ -4,6 +4,7 @@ const EntityFactory = require("./EntityFactory.js");
 const Purse = require("./Purse.js");
 const Inventory = require("./Inventory.js");
 const Progress = require("../progress/Progress.js");
+const ServerTask2 = require("../server/ServerTask2.js");
 
 class Player extends Entity {
     isSerializable = false;
@@ -38,6 +39,7 @@ class Player extends Entity {
         super.doSpawn();
         
         // Register regen tasks.
+        /*
         let f = () => {
             this.getServerScheduler().scheduleTask(undefined, 1, () => {
                 if(!this.isDead) {
@@ -48,6 +50,16 @@ class Player extends Entity {
             });
         };
         f();
+        */
+
+        let serverTask = new ServerTask2((player) => {
+            if(!player.isDead) {
+                player.doAddHealth(player.healthRegen)
+                player.doAddMana(player.manaRegen)
+            }
+        }, this);
+
+        this.getServerScheduler().scheduleRefreshTask2(undefined, 1, serverTask);
     }
     
     doAddExperience(experience) {

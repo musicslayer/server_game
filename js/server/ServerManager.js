@@ -32,13 +32,6 @@ class ServerManager {
         }
     }
 
-    // TODO Rename to have "servers"? or only allow one server to do this at a time?
-    setServerIsPaused(bool) {
-        for(let server of this.servers) {
-            server.serverScheduler.isPaused = bool;
-        }
-    }
-
     startServerTicks() {
         for(let server of this.servers) {
             server.serverScheduler.initServerTick();
@@ -67,9 +60,6 @@ class ServerManager {
         for(let server of servers) {
             serverManager.addServer(server);
         }
-
-        // TODO When to do this?
-        //server.serverScheduler.initServerTick();
 
         return serverManager;
     }

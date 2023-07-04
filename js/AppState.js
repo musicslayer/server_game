@@ -43,8 +43,6 @@ class AppState {
     }
 
     save() {
-        this.serverManager.setServerIsPaused(true); ////????
-
         let dateString = new Date().toISOString().replaceAll(":", "_").replace(".", "_");
 
         this.accountFile = "save_states/account/" + dateString + ".txt";
@@ -55,8 +53,6 @@ class AppState {
 
         let serverManagerString = DataBridge.serializeObject(this.serverManager);
         fs.writeFileSync(this.serverFile, serverManagerString, "ascii");
-
-        this.serverManager.setServerIsPaused(false); ////????
     }
 
     load() {

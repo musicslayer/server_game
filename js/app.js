@@ -11,12 +11,10 @@ const AppState = require("./AppState.js");
 
 // TODO Make sure that ALL properties are serialized, even those that are constant today but may change tomorrow.
 
-// TODO server tasks need to be serialized, so we have to come up with a unified format.
-/////// This causes player to freeze sometimes after loading state, because the task to reset the delay map was cancelled.
-/////// What if there are many tasks on the same tick as the load, and we are in the middle of executing the task list?
-
 // TODO Copy the java strategy of wrapping classes.
 // TODO Allow undefined to be serialized and deserialized properly?
+
+// TODO Rename task to fcn
 
 async function init() {
     let appState = new AppState();
