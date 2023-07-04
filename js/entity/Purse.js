@@ -1,9 +1,9 @@
 class Purse {
-    maxGoldTotel = 100000;
+    maxGoldTotal = 100000;
     goldTotal = 0;
 
     addToPurse(gold) {
-        let N = Math.min(gold.stackSize, this.maxGoldTotel - this.goldTotal);
+        let N = Math.min(gold.stackSize, this.maxGoldTotal - this.goldTotal);
 
         gold.stackSize -= N;
         this.goldTotal += N;
@@ -11,6 +11,27 @@ class Purse {
 
     removeFromPurse(goldAmount) {
         this.goldTotal -= goldAmount;
+    }
+
+    serialize(writer) {
+        writer.beginObject()
+            .serialize("maxGoldTotal", this.maxGoldTotal)
+            .serialize("goldTotal", this.goldTotal)
+        .endObject();
+    }
+
+    static deserialize(reader) {
+        let purse = new Purse();
+
+        reader.beginObject();
+        let maxGoldTotal = reader.deserialize("maxGoldTotal", "Number");
+        let goldTotal = reader.deserialize("goldTotal", "Number");
+        reader.endObject();
+
+        purse.maxGoldTotal = maxGoldTotal;
+        purse.goldTotal = goldTotal;
+
+        return purse;
     }
 }
 

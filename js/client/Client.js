@@ -5,11 +5,6 @@ const EntityFactory = require("../entity/EntityFactory");
 const MoveAnimation = require("../animation/MoveAnimation.js");
 
 class Client {
-    ////////
-    static accountManager;
-    static serverManager;
-    ////////
-
     keyboard = new Keyboard();
     mouse = new Mouse();
     controller = new Controller();
@@ -19,10 +14,13 @@ class Client {
 
     delayMap = new Map();
     clientInputTime = 0.1;
+    realtimeInputTime = 0.1; // Make this large to avoid issues with loading state.
 
+    playerName;
     player;
 
-    constructor(player) {
+    constructor(playerName, player) {
+        this.playerName = playerName;
         this.player = player;
     }
 
@@ -290,55 +288,19 @@ class Client {
         }
 
         // **** Save/load state (only one will be executed)
-        if(inputs.includes("account_save")) {
-            this.scheduleClientTask(undefined, 0, () => {
-                let accountStateFile = "save_states/account/STATE.txt";
-                Client.accountManager.save(accountStateFile);
+        if(inputs.includes("save_state")) {
+            this.scheduleRealtimeTask(undefined, 0, () => {
+                const AppState = require("../AppState.js");
+                AppState.instance.save();
             });
         }
-        else if(inputs.includes("account_load")) {
-            this.scheduleClientTask(undefined, 0, () => {
-                let accountStateFile = "save_states/account/STATE.txt";
-                Client.accountManager.load(accountStateFile);
-            });
-        }
-        if(inputs.includes("server_save")) {
-            this.scheduleClientTask(undefined, 0, () => {
-                let serverStateFile = "save_states/server/STATE.txt";
-                Client.serverManager.save(serverStateFile);
-            });
-        }
-        else if(inputs.includes("server_load")) {
-            this.scheduleClientTask(undefined, 0, () => {
-                let serverStateFile = "save_states/server/STATE.txt";
-                Client.serverManager.load(serverStateFile);
+        else if(inputs.includes("load_state")) {
+            this.scheduleRealtimeTask(undefined, 0, () => {
+                const AppState = require("../AppState.js");
+                AppState.instance.load();
             });
         }
     }
-
-    /*
-    getStateFile(folder) {
-        // Return the most recent state file in this folder.
-        const fs = require("fs");
-        const path = require('path');
-
-        let files = fs.readdirSync(folder);
-
-        let recentFile;
-        let T = 0;
-        for(let file of files) {
-            let fullpath = path.join(folder, file);
-            let ctime = fs.statSync(fullpath).ctime;
-
-            if(ctime > T) {
-                recentFile = file;
-                T = ctime;
-            }
-        }
-
-        return recentFile;
-    }
-    */
 
     onControllerPress(buttons) {
         let inputs = this.controller.processButtonPress(buttons);
@@ -436,6 +398,18 @@ class Client {
         else if(Math.abs(axes[2]) > deadzone || Math.abs(axes[3]) > deadzone) {
             this.player.x += axes[2] / speedFactor;
             this.player.y += axes[3] / speedFactor;
+        }
+    }
+
+    scheduleRealtimeTask(animation, time, task) {
+        if(this.delayMap.get("realtime") === true || this.delayMap.get("realtime") === undefined) {
+            this.delayMap.set("realtime", false);
+
+            this.player.getServerScheduler().scheduleTask(animation, time, task);
+
+            setTimeout(() => {
+                this.delayMap.set("realtime", true);
+            }, this.realtimeInputTime * 1000)
         }
     }
 

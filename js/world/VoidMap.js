@@ -1,4 +1,4 @@
-const VoidScreen = require("./VoidScreen.js");
+const Screen = require("./Screen.js");
 const GameMap = require("./GameMap.js");
 
 class VoidMap extends GameMap {
@@ -8,24 +8,22 @@ class VoidMap extends GameMap {
     }
 
     createVoidScreen(map, screenX, screenY) {
-        let voidScreen = new VoidScreen();
+        let voidScreen = Screen.loadScreenFromFile("VoidScreen", this.mapFolder + "void.txt");
         voidScreen.map = map;
+        voidScreen.name = "_void";
         voidScreen.x = screenX;
         voidScreen.y = screenY;
-
-        voidScreen.loadScreenFromFile(this.mapFolder + "void.txt");
+        voidScreen.pvpStatus = "safe";
         
         return voidScreen;
     }
 
     createVoidMapClone(id) {
         // Creates a clone of this VoidMap with the specified ID.
-        let voidMap = new VoidMap();
+        let voidMap = GameMap.loadMapFromFolder("VoidMap", this.mapFolder)
         voidMap.world = this.world;
         voidMap.id = id;
         voidMap.name = this.name;
-
-        voidMap.loadMapFromFolder(this.mapFolder)
 
         return voidMap;
     }

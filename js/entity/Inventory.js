@@ -1,5 +1,3 @@
-const EntityFactory = require("./EntityFactory.js");
-
 class Inventory {
     maxSlots = 45;
     itemMap = new Map();
@@ -76,6 +74,27 @@ class Inventory {
             this.itemMap.set(slot1, item2);
             this.itemMap.set(slot2, item1);
         }
+    }
+
+    serialize(writer) {
+        writer.beginObject()
+            .serialize("maxSlots", this.maxSlots)
+            .serializeMap("itemMap", this.itemMap)
+        .endObject();
+    }
+
+    static deserialize(reader) {
+        let inventory = new Inventory();
+
+        reader.beginObject();
+        let maxSlots = reader.deserialize("maxSlots", "Number");
+        let itemMap = reader.deserializeMap("itemMap", "Number", "Entity");
+        reader.endObject();
+
+        inventory.maxSlots = maxSlots;
+        inventory.itemMap = itemMap;
+
+        return inventory;
     }
 }
 

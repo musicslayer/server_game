@@ -23,7 +23,7 @@ class Zip {
     }
 
     static async processDirectory(zipStream, path, dir) {
-        let files = fs.readdirSync(path + dir, {withFileTypes: true});
+        let files = fs.readdirSync(path + dir, {withFileTypes: true}); // TODO Do we need withFileTypes?
         for(const file of files) {
             const filename = dir + '/' + file.name;
             const relative = filename.slice(1); // Remove the leading /

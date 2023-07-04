@@ -1,5 +1,6 @@
 const fs = require("fs");
 
+const Reflection = require("../reflection/Reflection.js");
 const WorldFactory = require("./WorldFactory.js");
 const Screen = require("./Screen.js");
 const Util = require("../util/Util.js");
@@ -103,45 +104,47 @@ class GameMap {
         return this.world.getMapInDirection(this, direction);
     }
 
-    serialize() {
-        let s = "{";
-        s += "\"classname\":";
-        s += "\"" + this.constructor.name + "\"";
-        s += ",";
-        s += "\"id\":";
-        s += "\"" + this.id + "\"";
-        s += ",";
-        s += "\"name\":";
-        s += "\"" + this.name + "\"";
-        s += ",";
-        s += "\"screens\":";
-        s += "[";
-        for(let screen of this.screens) {
-            s += screen.serialize();
-            s += ",";
-        }
-        if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
-        s += "]";
-        s += "}";
-
-        return s;
+    serialize(writer) {
+        writer.beginObject()
+            .serialize("className", this.constructor.name)
+            .serialize("id", this.id)
+            .serialize("name", this.name)
+            .serializeArray("screens", this.screens)
+            .serialize("mapFolder", this.mapFolder)
+        .endObject();
     }
 
-    deserialize(s) {
-        let j = JSON.parse(s);
+    static deserialize(reader) {
+        let map;
 
-        this.id = j.id;
-        this.name = j.name;
-        
-        for(let screen_j of j.screens) {
-            let screen_s = JSON.stringify(screen_j);
+        reader.beginObject();
+        let className = reader.deserialize("className", "String");
+        let id_string = reader.deserialize("id", "String");
+        let name = reader.deserialize("name", "String");
+        let screens = reader.deserializeArray("screens", "Screen");
+        let mapFolder = reader.deserialize("mapFolder", "String");
+        reader.endObject();
 
-            let screen = new Screen();
-            screen.map = this;
+        map = Reflection.createInstance(className);
 
-            screen.deserialize(screen_s);
-            this.addScreen(screen);
+        let id;
+        if(id_string === "death" || id_string === "void") {
+            id = id_string;
         }
+        else {
+            id = Number(id_string);
+        }
+
+        map.id = id;
+        map.name = name;
+        map.mapFolder = mapFolder;
+
+        for(let screen of screens) {
+            screen.map = map;
+            map.addScreen(screen);
+        }
+
+        return map;
     }
 }
 

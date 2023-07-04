@@ -1,56 +1,25 @@
-const http = require("./web/http.js");
-const socket_io = require("./web/socket_io.js");
+const AppState = require("./AppState.js");
 
-const Zip = require("./zip/Zip.js");
-const EntityFactory = require("./entity/EntityFactory.js");
-const WorldFactory = require("./world/WorldFactory.js");
-const AccountManager = require("./account/AccountManager.js");
-const ServerManager = require("./server/ServerManager.js");
-
-// TODO Check all serialize/deserialize methods after all the recent changes.
-// TODO Should entity have a deserialize method?
-// TODO The purse and inventory need to be serialized?
+// TODO Complete entity serialize/deserialize methods.
 
 // TODO Any code that makes files should also make folders.
 // TODO Move existing save states into an archive...?
 
-// TODO When deserializing, we keep parsing and stringifying the string...
+// TODO Do we need EntityFactory and WorldFactory?
+
+// TODO serializing needs version numbers
+
+// TODO Make sure that ALL properties are serialized, even those that are constant today but may change tomorrow.
+
+// TODO server tasks need to be serialized, so we have to come up with a unified format.
+/////// This causes player to freeze sometimes after loading state, because the task to reset the delay map was cancelled.
+/////// What if there are many tasks on the same tick as the load, and we are in the middle of executing the task list?
+
+// TODO Copy the java strategy of wrapping classes.
+// TODO Allow undefined to be serialized and deserialized properly?
 
 async function init() {
-    // Recreate image zip file.
-    await Zip.createZipFileFromFolder("assets/image.zip", "assets/image/");
-
-    // Initialize factory classes.
-    EntityFactory.init();
-    WorldFactory.init();
-
-    // Create initial player accounts and servers.
-    let accountManager = AccountManager.createInitialAccountManager();
-    //let accountManager = new AccountManager();
-    let serverManager = ServerManager.createInitialServerManager();
-
-    ///////////
-    const Client = require("./client/Client.js");
-    Client.accountManager = accountManager;
-    Client.serverManager = serverManager;
-    ///////////
-
-    // Start an interval to periodically save account and server state.
-    setInterval(() => {
-        let dateString = new Date().toISOString().replaceAll(":", "_").replace(".", "_");
-
-        let accountFile = "save_states/account/" + dateString + ".txt";
-        let serverFile = "save_states/server/" + dateString + ".txt";
-
-        //accountManager.save(accountFile);
-        //serverManager.save(serverFile);
-    }, 10000);
-
-    // Create servers to serve the web pages and communicate between front and back ends.
-    let httpServer = http.createHTTPServer();
-    //let httpsServer = https.createHTTPSServer();
-    socket_io.createSocketIOServer(httpServer, accountManager, serverManager);
-
-    console.log("Server initialized successfully.");
+    let appState = new AppState();
+    await appState.init();
 }
 init();

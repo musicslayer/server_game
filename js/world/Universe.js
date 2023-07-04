@@ -8,6 +8,8 @@ const COMMA = ",";
 const CRLF = "\r\n";
 const PIPE = "|";
 
+// TODO Is the layer of Universe really needed?
+
 class Universe {
     server;
     id;
@@ -69,33 +71,32 @@ class Universe {
         return this.worldPosMap.get(p);
     }
 
-    serialize() {
-        let s = "{";
-        s += "\"worlds\":";
-        s += "[";
-        for(let world of this.worlds) {
-            s += world.serialize();
-            s += ",";
-        }
-        if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
-        s += "]";
-        s += "}";
-
-        return s;
+    serialize(writer) {
+        writer.beginObject()
+            .serialize("id", this.id)
+            .serialize("name", this.name)
+            .serializeArray("worlds", this.worlds)
+        .endObject();
     }
 
-    deserialize(s) {
-        let j = JSON.parse(s);
+    static deserialize(reader) {
+        let universe = new Universe();
 
-        for(let world_j of j.worlds) {
-            let world_s = JSON.stringify(world_j);
+        reader.beginObject();
+        let id = reader.deserialize("id", "Number");
+        let name = reader.deserialize("name", "String");
+        let worlds = reader.deserializeArray("worlds", "World");
+        reader.endObject();
 
-            let world = new World();
-            world.universe = this;
+        universe.id = id;
+        universe.name = name;
 
-            world.deserialize(world_s);
-            this.addWorld(world);
+        for(let world of worlds) {
+            world.universe = universe;
+            universe.addWorld(world);
         }
+
+        return universe;
     }
 }
 

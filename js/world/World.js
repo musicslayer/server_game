@@ -2,8 +2,6 @@ const fs = require("fs");
 
 const WorldFactory = require("./WorldFactory.js");
 const GameMap = require("./GameMap.js");
-const VoidMap = require("./VoidMap.js");
-const DeathMap = require("./DeathMap.js");
 const Util = require("../util/Util.js");
 
 const COMMA = ",";
@@ -32,7 +30,14 @@ class World {
 
             // First part is the map id
             let idPart = parts.shift().split(COMMA);
-            let id = Number(idPart.shift());
+            let id_string = idPart.shift();
+            let id;
+            if(id_string === "death" || id_string === "void") {
+                id = id_string;
+            }
+            else {
+                id = Number(id_string);
+            }
 
             // Second part is the map class name
             let className = parts.shift();
@@ -47,26 +52,6 @@ class World {
 
             world.addMap(map);
         }
-
-        /*
-        // Add special "death" map
-        let deathMap = new DeathMap();
-        deathMap.world = this;
-        deathMap.id = "death";
-        deathMap.name = "Death";
-
-        deathMap.loadMapFromFolder(worldFolder + "_death/");
-        this.addMap(deathMap);
-
-        // Add special "void" map
-        let voidMap = new VoidMap();
-        voidMap.world = this;
-        voidMap.id = "void";
-        voidMap.name = "Void";
-
-        voidMap.loadMapFromFolder(worldFolder + "_void/");
-        this.addMap(voidMap);
-        */
 
         return world;
     }
@@ -103,52 +88,32 @@ class World {
         return this.universe.getWorldInDirection(this, direction);
     }
 
-    serialize() {
-        let s = "{";
-        s += "\"id\":";
-        s += "\"" + this.id + "\"";
-        s += ",";
-        s += "\"name\":";
-        s += "\"" + this.name + "\"";
-        s += ",";
-        s += "\"maps\":";
-        s += "[";
-        for(let map of this.gameMaps) {
-            s += map.serialize();
-            s += ",";
-        }
-        if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
-        s += "]";
-        s += "}";
-
-        return s;
+    serialize(writer) {
+        writer.beginObject()
+            .serialize("id", this.id)
+            .serialize("name", this.name)
+            .serializeArray("maps", this.gameMaps)
+        .endObject();
     }
 
-    deserialize(s) {
-        let j = JSON.parse(s);
+    static deserialize(reader) {
+        let world = new World();
 
-        this.id = j.id;
-        this.name = j.name;
-        
-        for(let map_j of j.maps) {
-            let map_s = JSON.stringify(map_j);
+        reader.beginObject();
+        let id = reader.deserialize("id", "Number");
+        let name = reader.deserialize("name", "String");
+        let maps = reader.deserializeArray("maps", "GameMap");
+        reader.endObject();
 
-            let map;
-            if(map_j.classname === "DeathMap") {
-                map = new DeathMap();
-            }
-            else if(map_j.classname === "VoidMap") {
-                map = new VoidMap();
-            }
-            else {
-                map = new GameMap();
-            }
+        world.id = id;
+        world.name = name;
 
-            map.world = this;
-
-            map.deserialize(map_s);
-            this.addMap(map);
+        for(let map of maps) {
+            map.world = world;
+            world.addMap(map);
         }
+
+        return world;
     }
 }
 

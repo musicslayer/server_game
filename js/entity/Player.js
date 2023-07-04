@@ -1,3 +1,4 @@
+const Reflection = require("../reflection/Reflection.js");
 const Entity = require("./Entity.js");
 const EntityFactory = require("./EntityFactory.js");
 const Purse = require("./Purse.js");
@@ -6,6 +7,7 @@ const Progress = require("../progress/Progress.js");
 
 class Player extends Entity {
     isSerializable = false;
+    isPlayer = true;
 
     health = 70;
     maxHealth = 100;
@@ -15,7 +17,6 @@ class Player extends Entity {
     maxMana = 100;
     manaRegen = 1; // per second
 
-    isPlayer = true;
     isTangible = true;
 
     actionTime = .2;
@@ -99,6 +100,80 @@ class Player extends Entity {
         projectile.direction = this.direction;
 
         this.doSpawnEntity(projectile);
+    }
+
+    serialize(writer) {
+        // To avoid a circular loop, only serialize the name of the screen, map, etc...
+        writer.beginObject()
+            .serialize("className", this.getClassName())
+            .serialize("stackSize", this.stackSize)
+            .serialize("x", this.x)
+            .serialize("y", this.y)
+            .serialize("inventory", this.inventory)
+            .serialize("purse", this.purse)
+            .serialize("progress", this.progress)
+
+            .serialize("homeMapName", this.homeMapName)
+            .serialize("homeScreenName", this.homeScreenName)
+            .serialize("homeX", this.homeX)
+            .serialize("homeY", this.homeY)
+
+            .serialize("screenX", this.screen.x)
+            .serialize("screenY", this.screen.y)
+            .serialize("mapName", this.screen.map.name)
+            .serialize("worldName", this.screen.map.world.name)
+            .serialize("universeName", this.screen.map.world.universe.name)
+            .serialize("serverName", this.screen.map.world.universe.server.name)
+        .endObject();
+    }
+
+    static deserialize(reader) {
+        let player;
+
+        reader.beginObject();
+        let className = reader.deserialize("className", "String");
+        let stackSize = reader.deserialize("stackSize", "Number");
+        let x = reader.deserialize("x", "Number");
+        let y = reader.deserialize("y", "Number");
+        let inventory = reader.deserialize("inventory", "Inventory");
+        let purse = reader.deserialize("purse", "Purse");
+        let progress = reader.deserialize("progress", "Progress");
+
+        let homeMapName = reader.deserialize("homeMapName", "String");
+        let homeScreenName = reader.deserialize("homeScreenName", "String");
+        let homeX = reader.deserialize("homeX", "Number");
+        let homeY = reader.deserialize("homeY", "Number");
+
+        let screenX = reader.deserialize("screenX", "Number");
+        let screenY = reader.deserialize("screenY", "Number");
+        let mapName = reader.deserialize("mapName", "String");
+        let worldName = reader.deserialize("worldName", "String");
+        let universeName = reader.deserialize("universeName", "String");
+        let serverName = reader.deserialize("serverName", "String");
+        reader.endObject();
+
+        player = Reflection.createInstance(className);
+
+        player.stackSize = stackSize;
+        player.x = x;
+        player.y = y;
+        player.inventory = inventory;
+        player.purse = purse;
+        player.progress = progress;
+
+        player.homeMapName = homeMapName;
+        player.homeScreenName = homeScreenName;
+        player.homeX = homeX;
+        player.homeY = homeY;
+
+        player.screenX = screenX;
+        player.screenY = screenY;
+        player.mapName = mapName;
+        player.worldName = worldName;
+        player.universeName = universeName;
+        player.serverName = serverName;
+
+        return player;
     }
 }
 

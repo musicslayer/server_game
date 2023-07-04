@@ -52,66 +52,33 @@ class Server {
         this.universe = universe;
     }
 
-    save(stateFile) {
-        // Save the server state to the file.
-        // We save the current tick but none of the scheduled tasks.
-        this.serverScheduler.isPaused = true;
-
-        let s = this.serialize();
-        fs.writeFileSync(stateFile, s, "ascii");
-
-        this.serverScheduler.isPaused = false;
+    serialize(writer) {
+        writer.beginObject()
+            .serialize("serverScheduler", this.serverScheduler)
+            .serialize("id", this.id)
+            .serialize("name", this.name)
+            .serialize("universe", this.universe)
+        .endObject();
     }
 
-    load(stateFile) {
-        // Change the server state to the state recorded in the file.
-        this.serverScheduler.isPaused = true;
+    static deserialize(reader) {
+        let server = new Server();
 
-        // Wipe the scheduled tasks.
-        this.scheduledTaskMap = new Map();
+        reader.beginObject();
+        let serverScheduler = reader.deserialize("serverScheduler", "ServerScheduler");
+        let id = reader.deserialize("id", "Number");
+        let name = reader.deserialize("name", "String");
+        let universe = reader.deserialize("universe", "Universe");
+        reader.endObject();
 
-        let s = fs.readFileSync(stateFile, "ascii");
-        this.deserialize(s);
+        server.serverScheduler = serverScheduler;
+        server.id = id;
+        server.name = name;
 
-        this.serverScheduler.isPaused = false;
-    }
+        universe.server = server;
+        server.universe = universe;
 
-    serialize() {
-        let s = "{";
-        s += "\"currentTick\":";
-        s += "\"" + this.currentTick + "\"";
-        s += ",";
-        s += "\"universe\":";
-        s += this.universe.serialize();
-        s += "}";
-
-        /*
-        s += ",";
-        s += "\"worldCounter\":";
-        s += this.worldCounter.serialize();
-        */
-
-        return s;
-    }
-
-    deserialize(s) {
-        let j = JSON.parse(s);
-        let universe_s = JSON.stringify(j.universe);
-
-        this.currentTick = j.currentTick;
-
-        let universe = new Universe();
-        universe.server = this;
-
-        universe.deserialize(universe_s);
-        this.addUniverse(universe);
-
-        /*
-        let entityCounter_s = JSON.stringify(j.worldCounter);
-        this.worldCounter = EntityCounter.deserialize(entityCounter_s);
-        */
-
-        // Don't deserialize the scheduled tasks here.
+        return server;
     }
 }
 

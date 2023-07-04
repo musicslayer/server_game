@@ -1,4 +1,4 @@
-const DeathScreen = require("./DeathScreen.js");
+const Screen = require("./Screen.js");
 const GameMap = require("./GameMap.js");
 
 class DeathMap extends GameMap {
@@ -8,12 +8,12 @@ class DeathMap extends GameMap {
     }
 
     createDeathScreen(map, screenX, screenY) {
-        let deathScreen = new DeathScreen();
+        let deathScreen = Screen.loadScreenFromFile("DeathScreen", this.mapFolder + "death.txt");
         deathScreen.map = map;
+        deathScreen.name = "_death";
         deathScreen.x = screenX;
         deathScreen.y = screenY;
-
-        deathScreen.loadScreenFromFile(this.mapFolder + "death.txt");
+        deathScreen.pvpStatus = "safe";
         
         return deathScreen;
     }

@@ -10,44 +10,31 @@ class Tile {
         this.imageFiles = imageFiles;
     }
 
-    serialize() {
-        let s = "{";
-        s += "\"x\":";
-        s += "\"" + this.x + "\"";
-        s += ",";
-        s += "\"y\":";
-        s += "\"" + this.y + "\"";
-        s += ",";
-        s += "\"imageFolders\":";
-        s += "[";
-        for(let imageFolder of this.imageFolders) {
-            s += "\"" + imageFolder + "\"";
-            s += ",";
-        }
-        if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
-        s += "]";
-        s += ",";
-        s += "\"imageFiles\":";
-        s += "[";
-        for(let imageFile of this.imageFiles) {
-            s += "\"" + imageFile + "\"";
-            s += ",";
-        }
-        if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
-        s += "]";
-        s += "}";
-
-        return s;
+    serialize(writer) {
+        writer.beginObject()
+            .serialize("x", this.x)
+            .serialize("y", this.y)
+            .serializeArray("imageFolders", this.imageFolders)
+            .serializeArray("imageFiles", this.imageFiles)
+        .endObject();
     }
 
-    deserialize(s) {
-        let j = JSON.parse(s);
+    static deserialize(reader) {
+        let tile = new Tile();
 
-        this.x = Number(j.x);
-        this.y = Number(j.y);
+        reader.beginObject();
+        let x = reader.deserialize("x", "Number");
+        let y = reader.deserialize("y", "Number");
+        let imageFolders = reader.deserializeArray("imageFolders", "String");
+        let imageFiles = reader.deserializeArray("imageFiles", "String");
+        reader.endObject();
 
-        this.imageFolders = j.imageFolders;
-        this.imageFiles = j.imageFiles;
+        tile.x = x;
+        tile.y = y;
+        tile.imageFolders = imageFolders;
+        tile.imageFiles = imageFiles;
+
+        return tile;
     }
 }
 

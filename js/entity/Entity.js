@@ -1,3 +1,4 @@
+const Reflection = require("../reflection/Reflection.js");
 const EntityFactory = require("./EntityFactory.js");
 const Util = require("../util/Util.js");
 const Performance = require("../server/Performance.js");
@@ -5,11 +6,9 @@ const Performance = require("../server/Performance.js");
 class Entity {
     isSerializable = true; // By default, entities can be serialized and saved.
     isSpawned = false; // Only true if this entity instance exists in the game world.
+    isPlayer = false;
 
     owner; // e.g. The entity that spawned a projectile is the owner.
-
-    inventory;
-    purse;
 
     health = 0;
     maxHealth = 0;
@@ -28,13 +27,13 @@ class Entity {
 
     // Certain entities (i.e. players) can teleport home, so store the desired location here.
     homeMapName;
-    homeScreenName;
-    homeX = 1;
-    homeY = 1;
+    homeScreenName; // Cannot be a dynamic screen
+    homeX;
+    homeY;
     
 
 
-    isPlayer = false;
+    
     isTangible = false; // Tangible objects block movement and can interact with projectiles.
     isActionBlocker = false; // Action blockers block projectiles without interacting with them.
 
@@ -56,6 +55,13 @@ class Entity {
     maxStackSize = 1;
     stackSize = 1;
 
+    // Used by subclasses.
+    healthRegen;
+    manaRegen;
+    inventory;
+    purse;
+    progress;
+
     getClassName() {
         return this.constructor.name;
     }
@@ -76,6 +82,7 @@ class Entity {
         These methods can change the state of the game and should always be scheduled on the server.
     */
 
+    // TODO We can rename these to get rid of the "do" prefix
     doAddHealth(health) {
         this.health = Math.min(this.health + health, this.maxHealth);
     }
@@ -409,22 +416,35 @@ class Entity {
         return this.isMoveInProgress ? this.y + shiftY : this.y;
     }
 
-    serialize() {
-        let s = "{";
-        s += "\"className\":";
-        s += "\"" + this.getClassName() + "\"";
-        s += ",";
-        s += "\"stackSize\":";
-        s += "\"" + this.stackSize + "\"";
-        s += ",";
-        s += "\"x\":";
-        s += "\"" + this.x + "\"";
-        s += ",";
-        s += "\"y\":";
-        s += "\"" + this.y + "\"";
-        s += "}";
+    // TODO how to serialize owner? Or do we not need to because all the ones with owners aren't saved?
 
-        return s;
+    serialize(writer) {
+        // To avoid a circular loop, don't serialize the screen.
+        writer.beginObject()
+            .serialize("className", this.getClassName())
+            .serialize("stackSize", this.stackSize)
+            .serialize("x", this.x)
+            .serialize("y", this.y)
+        .endObject();
+    }
+
+    static deserialize(reader) {
+        let entity;
+
+        reader.beginObject();
+        let className = reader.deserialize("className", "String");
+        let stackSize = reader.deserialize("stackSize", "Number");
+        let x = reader.deserialize("x", "Number");
+        let y = reader.deserialize("y", "Number");
+        reader.endObject();
+
+        entity = Reflection.createInstance(className);
+
+        entity.stackSize = stackSize;
+        entity.x = x;
+        entity.y = y;
+
+        return entity;
     }
 }
 

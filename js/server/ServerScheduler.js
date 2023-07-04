@@ -6,6 +6,7 @@ class ServerScheduler {
     scheduledTaskMap = new Map();
     currentTick = 0;
     isPaused = true;
+    worker;
 
     scheduleTask(animation, time, task) {
         animation?.scheduleAnimation(this);
@@ -29,17 +30,23 @@ class ServerScheduler {
         const shared = new Int32Array(new SharedArrayBuffer(4));
         this.doWork(shared);
     
-        const worker = new Worker("./js/server/server_tick.js", {
+        this.worker = new Worker("./js/server/server_tick.js", {
             workerData: {
                 shared: shared,
                 interval: 1000000000 / Performance.TICK_RATE // In nanoseconds
             }
         });
-        worker.on("error", (err) => {
+        this.worker.on("error", (err) => {
             console.error(err);
             console.error(err.stack);
         });
     };
+
+    async endServerTick() {
+        // This is needed to make sure we can end worker threads when a server is no longer in use.
+        this.worker.terminate();
+        this.worker = undefined;
+    }
 
     async doWork(shared) {
         await Atomics.waitAsync(shared, 0, 0).value;
@@ -56,6 +63,30 @@ class ServerScheduler {
         }
     
         this.doWork(shared)
+    }
+
+    serialize(writer) {
+        // Don't serialize isPaused because we want deserialized servers to always start out paused.
+        // Don't serialize worker because the deserialized server will create a new worker.
+        writer.beginObject()
+            .serialize("scheduledTaskMap", this.scheduledTaskMap)
+            .serialize("currentTick", this.currentTick)
+        .endObject();
+    }
+
+    static deserialize(reader) {
+        let serverScheduler = new ServerScheduler();
+
+        reader.beginObject();
+        // TODO How do we deserialize a map with values that are arrays?
+        let scheduledTaskMap = reader.deserializeMap("scheduledTaskMap", "Number", "Function");
+        let currentTick = reader.deserialize("currentTick", "Number");
+        reader.endObject();
+
+        serverScheduler.scheduledTaskMap = scheduledTaskMap;
+        serverScheduler.currentTick = currentTick;
+
+        return serverScheduler;
     }
 }
 

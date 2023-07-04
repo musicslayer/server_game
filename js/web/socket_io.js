@@ -19,10 +19,7 @@ const numInputsMap = new Map();
 const numDatasMap = new Map();
 const numDevsMap = new Map();
 
-// Map of all currently logged in users.
-const clientMap = new Map();
-
-function createSocketIOServer(httpServer, accountManager, serverManager) {
+function createSocketIOServer(httpServer, appState) {
 	setInterval(() => {
 		numAccountCreationsMap.clear();
 		numCharacterCreationsMap.clear();
@@ -50,13 +47,13 @@ function createSocketIOServer(httpServer, accountManager, serverManager) {
 			numSocketsMap.set(ip, numSockets);
 		});
 
-		attachAccountListeners(socket, accountManager, serverManager);
+		attachAppListeners(socket, appState);
 	});
 
 	return io;
 }
 
-function attachAccountListeners(socket, accountManager, serverManager) {
+function attachAppListeners(socket, appState) {
 	let ip = socket.handshake.address;
 
 	// Respond to account creation.
@@ -70,7 +67,7 @@ function attachAccountListeners(socket, accountManager, serverManager) {
 			}
 
 			let key = username + "-" + password;
-			if(accountManager.getAccount(key)) {
+			if(appState.accountManager.getAccount(key)) {
 				// The account already exists.
 				callback({"isSuccess": false});
 				return;
@@ -79,7 +76,7 @@ function attachAccountListeners(socket, accountManager, serverManager) {
 			// Create a new account.
 			let account = new Account();
 			account.key = key;
-			accountManager.addAccount(account);
+			appState.accountManager.addAccount(account);
 
 			callback({"isSuccess": true});
 		}, () => {
@@ -101,7 +98,7 @@ function attachAccountListeners(socket, accountManager, serverManager) {
 			}
 
 			let key = username + "-" + password;
-			let account = accountManager.getAccount(key);
+			let account = appState.accountManager.getAccount(key);
 			if(!account) {
 				// The account does not exist.
 				callback({"isSuccess": false});
@@ -141,6 +138,8 @@ function attachAccountListeners(socket, accountManager, serverManager) {
 	// Respond to login.
 	socket.on("on_login", (username, password, playerName, serverName, worldName, callback) => {
 		rateLimitLoginTask(ip, () => {
+			const AppState = require("../AppState.js");
+
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -148,7 +147,7 @@ function attachAccountListeners(socket, accountManager, serverManager) {
 				return;
 			}
 
-			if(clientMap.has(username)) {
+			if(AppState.instance.clientMap.has(username)) {
 				// User is already logged in.
 				callback({"isSuccess": false});
 				return;
@@ -156,7 +155,7 @@ function attachAccountListeners(socket, accountManager, serverManager) {
 
 			let key = username + "-" + password;
 
-			let account = accountManager.getAccount(key);
+			let account = appState.accountManager.getAccount(key);
 			if(!account) {
 				// The account does not exist.
 				callback({"isSuccess": false});
@@ -170,7 +169,7 @@ function attachAccountListeners(socket, accountManager, serverManager) {
 				return;
 			}
 
-			let server = serverManager.getServerByName(serverName);
+			let server = appState.serverManager.getServerByName(serverName);
 			let world = server?.universe.getWorldByName(worldName);
 			if(!world) {
 				callback({"isSuccess": false});
@@ -178,7 +177,7 @@ function attachAccountListeners(socket, accountManager, serverManager) {
 			}
 
 			// If the player has never logged in before then default to their home screen on this world.
-			let client = new Client(player);
+			let client = new Client(playerName, player);
 			if(!client.player.screen) {
 				let screen = world.getMapByName(client.player.homeMapName).getScreenByName(client.player.homeScreenName);
 				if(!screen) {
@@ -190,20 +189,20 @@ function attachAccountListeners(socket, accountManager, serverManager) {
 				client.player.y = client.player.homeY;
 			}
 
-			clientMap.set(username, client);
+			AppState.instance.clientMap.set(key, client);
 
 			client.player.getServerScheduler().scheduleTask(undefined, 0, () => {
                 client.player.doSpawnInWorld(world);
             });
 
 			socket.on("disconnect", (reason) => {
-				clientMap.delete(username);
+				AppState.instance.clientMap.delete(key);
 				client.player.getServerScheduler().scheduleTask(undefined, 0, () => {
 					client.player.doDespawn();
 				});
 			});
 
-			attachGameListeners(socket, client);
+			attachClientListeners(socket, client);
 
 			callback({"isSuccess": true});
 		}, () => {
@@ -215,7 +214,7 @@ function attachAccountListeners(socket, accountManager, serverManager) {
 	});
 }
 
-function attachGameListeners(socket, client) {
+function attachClientListeners(socket, client) {
 	let ip = socket.handshake.address;
 
 	// Respond to key presses.
@@ -476,7 +475,7 @@ function validateStrings(...args) {
 }
 
 function isFunction(value) {
-	return typeof value === "function" || value instanceof Function;
+	return typeof value === "function" || (typeof value === "object" && value instanceof Function);
 }
 
 function isNumber(value) {

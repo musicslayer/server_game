@@ -1,21 +1,16 @@
+const Reader = require("./Reader.js");
+const Writer = require("./Writer.js");
+
 class DataBridge {
-    static serializeValue(obj, classname) {
-        let s;
+    static serializeObject(obj) {
+        let writer = new Writer();
+        writer.serialize(undefined, obj);
+        return writer.toString();
+    }
 
-        if(obj.serialize) {
-            // Ignore class name and just call the serialize method.
-            s = obj.serialize();
-        }
-        else {
-            switch(classname) {
-                case "":
-                    s = 1;
-                    break;
-                default:
-            }
-        }
-
-        return s;
+    static deserializeObject(s, className) {
+        let reader = new Reader(s);
+        return reader.deserialize(undefined, className);
     }
 }
 

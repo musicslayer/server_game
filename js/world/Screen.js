@@ -184,85 +184,58 @@ class Screen {
         return this.map.world.getWorldInDirection(direction);
     }
 
-    serialize() {
-        let s = "{";
-        s += "\"name\":";
-        s += "\"" + this.name + "\"";
-        s += ",";
-        s += "\"x\":";
-        s += "\"" + this.x + "\"";
-        s += ",";
-        s += "\"y\":";
-        s += "\"" + this.y + "\"";
-        s += ",";
-        s += "\"numTilesX\":";
-        s += "\"" + this.numTilesX + "\"";
-        s += ",";
-        s += "\"numTilesY\":";
-        s += "\"" + this.numTilesY + "\"";
-        s += ",";
-        s += "\"pvpStatus\":";
-        s += "\"" + this.pvpStatus + "\"";
-        s += ",";
-
-
-
-        s += "\"tiles\":";
-        s += "[";
-        for(let tile of this.tiles) {
-            s += tile.serialize();
-            s += ",";
-        }
-        if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
-        s += "]";
-        s += ",";
-
-        s += "\"otherEntities\":";
-        s += "[";
-        for(let otherEntity of this.otherEntities) {
-            if(otherEntity.isSerializable) {
-                s += otherEntity.serialize();
-                s += ",";
+    serialize(writer) {
+        // Only serialize entities that are serializable and non-players here.
+        let serializableEntities = [];
+        for(let entity of this.otherEntities) {
+            if(entity.isSerializable) {
+                serializableEntities.push(entity);
             }
         }
-        if(s[s.length - 1] === ",") {s = s.slice(0, s.length - 1)}
-        s += "]";
 
-        // Only serialize non-players here.
-        s += "}";
-
-        return s;
+        writer.beginObject()
+            .serialize("name", this.name)
+            .serialize("x", this.x)
+            .serialize("y", this.y)
+            .serialize("numTilesX", this.numTilesX)
+            .serialize("numTilesY", this.numTilesY)
+            .serialize("pvpStatus", this.pvpStatus)
+            .serializeArray("tiles", this.tiles)
+            .serializeArray("otherEntities", serializableEntities)
+        .endObject();
     }
 
-    deserialize(s) {
-        let j = JSON.parse(s);
+    static deserialize(reader) {
+        let screen = new Screen();
 
-        this.name = j.name;
-        this.x = Number(j.x);
-        this.y = Number(j.y);
-        this.numTilesX = Number(j.numTilesX);
-        this.numTilesY = Number(j.numTilesY);
-        this.pvpStatus = j.pvpStatus;
+        reader.beginObject();
+        let name = reader.deserialize("name", "String");
+        let x = reader.deserialize("x", "Number");
+        let y = reader.deserialize("y", "Number");
+        let numTilesX = reader.deserialize("numTilesX", "Number");
+        let numTilesY = reader.deserialize("numTilesY", "Number");
+        let pvpStatus = reader.deserialize("pvpStatus", "String");
+        let tiles = reader.deserializeArray("tiles", "Tile");
+        let otherEntities = reader.deserializeArray("otherEntities", "Entity");
+        reader.endObject();
 
-        for(let tile_j of j.tiles) {
-            let tile_s = JSON.stringify(tile_j);
+        screen.name = name;
+        screen.x = x;
+        screen.y = y;
+        screen.numTilesX = numTilesX;
+        screen.numTilesY = numTilesY;
+        screen.pvpStatus = pvpStatus;
 
-            let tile = new Tile();
-            tile.deserialize(tile_s);
-
-            this.addTile(tile);
+        for(let tile of tiles) {
+            screen.addTile(tile);
         }
 
-        // Only deserialize non-players here.
-        for(let otherEntity_j of j.otherEntities) {
-            let otherEntity = EntityFactory.createInstance(otherEntity_j.getClassName(), Number(otherEntity_j.stackSize));
-            otherEntity.screen = this;
-            otherEntity.x = Number(otherEntity_j.x);
-            otherEntity.y = Number(otherEntity_j.y);
-
-            // Don't spawn entities here. This will be done later.
-            this.addEntity(otherEntity);
+        for(let entity of otherEntities) {
+            entity.screen = screen;
+            screen.addEntity(entity);
         }
+
+        return screen;
     }
 }
 

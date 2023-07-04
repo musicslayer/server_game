@@ -1,145 +1,231 @@
-const JsonReader = require("./JsonReader.js");
-const StringReader = require("./StringReader.js");
+const Reflection = require("../reflection/Reflection.js");
+
+const NAME = Symbol("NAME");
+const VALUE = Symbol("VALUE");
+const BEGIN_OBJECT = Symbol("BEGIN_OBJECT");
+const END_OBJECT = Symbol("END_OBJECT");
+const BEGIN_ARRAY = Symbol("BEGIN_ARRAY");
+const END_ARRAY = Symbol("END_ARRAY");
 
 class Reader {
-    jsonReader;
-    stringReader;
+    data;
 
-    Reader(s) {
-        this.stringReader = new StringReader(s);
-        this.jsonReader = new JsonReader(stringReader);
+    constructor(s) {
+        this.data = this.fromString(s);
     }
 
     getName() {
-        return jsonReader.nextName();
+        let dataElement = this.data.shift();
+        // check if it is NAME
+        return this.data.shift();
     }
 
-    getString() {
-        return jsonReader.nextString();
-    }
+    getValue() {
+        let dataElement = this.data.shift();
+        // check if it is VALUE
+        let value = this.data.shift();
+        if(value === "null") {
+            value = undefined;
+        }
 
-    getNull() {
-        jsonReader.nextNull();
-        return null;
+        return value;
     }
 
     beginObject() {
-        jsonReader.beginObject();
+        let dataElement = this.data.shift();
+        // TODO Throw error? dataElement === BEGIN_OBJECT
         return this;
     }
 
     endObject() {
-        jsonReader.endObject();
+        let dataElement = this.data.shift();
+        // TODO Throw error? dataElement === END_OBJECT
         return this;
     }
 
     beginArray() {
-        jsonReader.beginArray();
+        let dataElement = this.data.shift();
+        // TODO Throw error? dataElement === BEGIN_ARRAY
         return this;
     }
 
     endArray() {
-        jsonReader.endArray();
+        let dataElement = this.data.shift();
+        // TODO Throw error? dataElement === END_ARRAY
         return this;
     }
 
-    deserialize(key, classname) {
-        if(key != null) {
-            nextKey = getName();
-            if(!key.equals(nextKey)) {
-                // Expected key was not found.
-                //throw new IllegalStateException("class = " + clazzT.getSimpleName() + " key = " + key + " nextKey = " + nextKey);
+    deserialize(name, className) {
+        if(name !== undefined) {
+            let nextName = this.getName(name);
+            if(name !== nextName) {
+                throw("Key mismatch. Expected: " + name + " Actual: " + nextName.toString());
             }
         }
 
-        if(jsonReader.peek() == JsonToken.NULL) {
-            return getNull();
+        let value;
+
+        if(this.data[0] !== "null") {
+            if(className === "String" || this.data[1] === "null") {
+                value = this.getValue();
+            }
+            else if(className === "Number" || this.data[1] === "null") {
+                value = Number(this.getValue());
+            }
+            else {
+                value = Reflection.callStaticMethod(className, "deserialize", this);
+            }
         }
-        else {
-            wrappedClass = wrapSerializableClass(clazzT);
-            return ReflectUtil.callStaticMethod(wrappedClass, "deserializeFromJSON", this);
-        }
+
+        return value;
     }
 
-    deserializeArray(key, classname) {
-        if(key != null) {
-            nextKey = getName();
-            if(!key.equals(nextKey)) {
-                // Expected key was not found.
-                //throw new IllegalStateException("class = " + clazzT.getSimpleName() + " key = " + key + " nextKey = " + nextKey);
+    deserializeArray(name, className) {
+        if(name !== undefined) {
+            let nextName = this.getName(name);
+            if(name !== nextName) {
+                throw("Key mismatch. Expected: " + name + " Actual: " + nextName.toString());
             }
         }
 
-        if(jsonReader.peek() == JsonToken.NULL) {
-            return getNull();
-        }
-        else {
-            arrayList = new ArrayList();
+        let arr;
 
-            jsonReader.beginArray();
-            while(jsonReader.hasNext()) {
-                arrayList.add(deserialize(null, clazzT));
+        if(this.data[0] !== "null") {
+            arr = [];
+
+            this.beginArray();
+            while(this.data[0] !== END_ARRAY) {
+                arr.push(this.deserialize(undefined, className));
             }
-            jsonReader.endArray();
-
-            // Give an empty array as the input to ensure we return the right type.
-            return arrayList.toArray(Array.newInstance(clazzT, 0));
+            this.endArray();
         }
+
+        return arr;
     }
 
-    deserializeArrayList(key, classname) {
-        if(key != null) {
-            nextKey = getName();
-            if(!key.equals(nextKey)) {
-                // Expected key was not found.
-                //throw new IllegalStateException("class = " + clazzT.getSimpleName() + " key = " + key + " nextKey = " + nextKey);
+    deserializeMap(name, classNameKeys, classNameValues) {
+        // Serialize a map as an object containing arrays.
+        if(name !== undefined) {
+            let nextName = this.getName(name);
+            if(name !== nextName) {
+                throw("Key mismatch. Expected: " + name + " Actual: " + nextName.toString());
             }
         }
 
-        if(jsonReader.peek() == JsonToken.NULL) {
-            return getNull();
-        }
-        else {
-            arrayList = new ArrayList();
+        let map;
 
-            jsonReader.beginArray();
-            while(jsonReader.hasNext()) {
-                arrayList.add(deserialize(null, clazzT));
+        if(this.data[0] !== "null") {
+            this.beginObject();
+            let keys = this.deserializeArray("keys", classNameKeys);
+            let values = this.deserializeArray("values", classNameValues);
+            this.endObject();
+
+            if(keys !== undefined && values !== undefined && keys.length === values.length) {
+                map = new Map();
+                for(let i = 0; i < keys.length; i++) {
+                    map.set(keys[i], values[i]);
+                }
             }
-            jsonReader.endArray();
-
-            return arrayList;
         }
+        
+        return map;
     }
 
-    deserializeHashMap(key, classnameA, classnameB) {
-        if(key != null) {
-            nextKey = getName();
-            if(!key.equals(nextKey)) {
-                // Expected key was not found.
-                //throw new IllegalStateException("class = " + clazzT.getSimpleName() + " key = " + key + " nextKey = " + nextKey);
+    fromString(s) {
+        let data = [];
+        let lastPhrase = "";
+
+        const iterator = s[Symbol.iterator]();
+
+        for(let theChar = iterator.next(); !theChar.done; theChar = iterator.next()) {
+            let theCharValue = theChar.value;
+
+            switch(theCharValue) {
+                case " ":
+                case "\n":
+                case "\r":
+                    // Skip over common whitespace characters.
+                    break;
+
+                case ":":
+                    data.push(NAME);
+                    data.push(lastPhrase);
+
+                    lastPhrase = "";
+
+                    break;
+
+                case ",":
+                    if(lastPhrase !== "") {
+                        data.push(VALUE);
+                        data.push(lastPhrase);
+
+                        lastPhrase = "";
+                    }
+
+                    break;
+
+                case "n":
+                    let nullPhrase = theCharValue + iterator.next().value + iterator.next().value + iterator.next().value;
+                    if(nullPhrase !== "null") {
+                        throw("Invalid phrase: " + nullPhrase);
+                    } 
+
+                    lastPhrase = nullPhrase;
+
+                    break;
+
+                case "\"":
+                    let quotePhrase = "";
+                    for(let theQuoteChar = iterator.next(); theQuoteChar.value !== "\""; theQuoteChar = iterator.next()) {
+                        quotePhrase += theQuoteChar.value;
+                    }
+
+                    lastPhrase = quotePhrase;
+
+                    break;
+
+                case "{":
+                    data.push(BEGIN_OBJECT);
+
+                    break;
+
+                case "}":
+                    if(lastPhrase !== "") {
+                        data.push(VALUE);
+                        data.push(lastPhrase);
+
+                        lastPhrase = "";
+                    }
+
+                    data.push(END_OBJECT);
+
+                    break;
+
+                case "[":
+                    data.push(BEGIN_ARRAY);
+                    
+                    break;
+
+                case "]":
+                    if(lastPhrase !== "") {
+                        data.push(VALUE);
+                        data.push(lastPhrase);
+
+                        lastPhrase = "";
+                    }
+
+                    data.push(END_ARRAY);
+
+                    break;
+
+                default:
+                    throw("Invalid string: " + theCharValue);
             }
         }
 
-        if(jsonReader.peek() == JsonToken.NULL) {
-            return getNull();
-        }
-        else {
-            jsonReader.beginObject();
-            arrayListT = deserializeArrayList("keys", clazzT);
-            arrayListU = deserializeArrayList("values", clazzU);
-            jsonReader.endObject();
-
-            if(arrayListT == null || arrayListU == null || arrayListT.size() != arrayListU.size()) {
-                return null;
-            }
-
-            hashMap = new HashMap();
-            for(let i = 0; i < arrayListT.size(); i++) {
-                hashMap.put(arrayListT.get(i), arrayListU.get(i));
-            }
-
-            return hashMap;
-        }
+        return data;
     }
 }
+
+module.exports = Reader;
