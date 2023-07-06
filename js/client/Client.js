@@ -18,7 +18,7 @@ class Client {
 
     delayMap = new Map();
     clientInputTime = 0.1;
-    realtimeInputTime = 0.1;
+    realtimeInputTime = 1;
 
     serverName;
     worldName;
@@ -458,13 +458,13 @@ class Client {
 
             let serverTask = new ServerTask(task, ...args);
 
-            this.player.getServerScheduler().scheduleTask(animation, time, serverTask);
+            this.player.getServer().scheduleTask(animation, time, serverTask);
 
             let serverTask2 = new ServerTask((client, delayType) => {
                 client.delayMap.set(delayType, true);
             }, this, delayType);
 
-            this.player.getServerScheduler().scheduleTask(animation, delayTime, serverTask2);
+            this.player.getServer().scheduleTask(animation, delayTime, serverTask2);
         }
     }
 
@@ -573,7 +573,7 @@ class Client {
     getDevData() {
         // Info
         let info = {};
-        info.currentTick = this.player.getServerScheduler().currentTick;
+        info.currentTick = this.player.getServer().currentTick;
         
         return {
             info: info

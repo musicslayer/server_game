@@ -191,7 +191,7 @@ function attachAppListeners(socket, appState) {
 				player.doSpawnInWorld(world);
 			}, client.player, world);
 	
-			client.player.getServerScheduler().scheduleTask(undefined, 0, serverTask);
+			client.player.getServer().scheduleTask(undefined, 0, serverTask);
 
 			socket.on("disconnect", (reason) => {
 				ClientFactory.clientIDMap.delete(client.id);
@@ -201,7 +201,7 @@ function attachAppListeners(socket, appState) {
 					player.doDespawn();
 				}, client.player);
 
-				client.player.getServerScheduler().scheduleTask(undefined, 0, serverTask);
+				client.player.getServer().scheduleTask(undefined, 0, serverTask);
 			});
 
 			attachClientListeners(socket, client);

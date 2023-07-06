@@ -40,6 +40,23 @@ class AppState {
         socket_io.createSocketIOServer(httpServer, this);
     }
 
+    dataMap = new Map();
+    setMap(clientKey, clientMap) {
+        let data = {};
+        for(let key of clientMap.keys()) {
+            data[key] = clientMap.get(key);
+        }
+        this.dataMap.set(clientKey, data)
+    }
+    getMap(clientKey) {
+        let map = new Map();
+        let data = this.dataMap.get(clientKey);
+        for(let key in data) {
+            map.set(key, data[key]);
+        }
+        return map;
+    }
+
     save() {
         let dateString = new Date().toISOString().replaceAll(":", "_").replace(".", "_");
 
@@ -52,7 +69,11 @@ class AppState {
         let serverManagerString = DataBridge.serializeObject(this.serverManager);
         fs.writeFileSync(this.serverFile, serverManagerString, "ascii");
 
-        console.log("SAVE");
+        // Save client delay maps.
+        for(let key of ClientFactory.clientKeyMap.keys()) {
+            let client = ClientFactory.clientKeyMap.get(key);
+            this.setMap(key, client.delayMap);
+        }
     }
 
     load() {
@@ -69,16 +90,12 @@ class AppState {
 
         // Schedule the task to spawn all the entities and then start the new servers' ticks.
         this.serverManager.startServerTicks();
-
-        console.log("LOAD");
-
-        this.save();
     }
 
     refreshClients() {
         for(let key of ClientFactory.clientKeyMap.keys()) {
             let client = ClientFactory.clientKeyMap.get(key);
-            client.delayMap = new Map();
+            client.delayMap = this.getMap(key);
 
             let newPlayer = this.accountManager.getAccount(key).getCharacter(client.playerName);
             let newServer = this.serverManager.getServerByName(newPlayer.screenInfo.serverName);

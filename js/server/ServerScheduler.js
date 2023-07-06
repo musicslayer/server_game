@@ -8,20 +8,12 @@ class ServerScheduler {
     currentTick = 0;
     worker;
 
-    scheduleTask(animation, time, serverTask) {
-        animation?.scheduleAnimation(this);
-        this.addTask(time, serverTask);
-    }
-
-    // TODO Implement?
-    scheduleRefreshTask(animation, time, serverTask) {
-        animation?.scheduleAnimation(this);
-
-        this.addTask(time, serverTask);
+    getTick(time) {
+        return Math.floor(this.currentTick + time * Performance.TICK_RATE);
     }
 
     addTask(time, serverTask) {
-        let tick = Math.floor(this.currentTick + time * Performance.TICK_RATE);
+        let tick = this.getTick(time);
         let serverTaskList = this.scheduledTaskMap.get(tick) ?? new ServerTaskList();
         serverTaskList.addTask(serverTask);
         this.scheduledTaskMap.set(tick, serverTaskList);
@@ -45,7 +37,7 @@ class ServerScheduler {
     };
 
     async endServerTick() {
-        // This is needed to make sure we can end worker threads when a server is no longer in use.
+        // We need to manually end worker threads when a server is no longer in use.
         this.worker.terminate();
     }
 

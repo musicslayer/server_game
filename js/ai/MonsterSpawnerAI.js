@@ -11,14 +11,14 @@ class MonsterSpawnerAI extends AI {
                 monsterSpawner.onMonsterSpawn();
             }, monsterSpawner);
     
-            monsterSpawner.getServerScheduler().scheduleTask(undefined, 0, serverTask);
+            monsterSpawner.getServer().scheduleTask(undefined, 0, serverTask);
         }
 
         let serverTask2 = new ServerTask((monsterSpawner) => {
             monsterSpawner.ai.generateNextActivity(monsterSpawner);
         }, monsterSpawner);
 
-        monsterSpawner.getServerScheduler().scheduleTask(undefined, monsterSpawner.spawnTime, serverTask2);
+        monsterSpawner.getServer().scheduleTask(undefined, monsterSpawner.spawnTime, serverTask2);
     }
 }
 

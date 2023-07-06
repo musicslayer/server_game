@@ -12,7 +12,7 @@ class ServerRNG {
         let m = 1;
         let f = 2;
         let t = 0;
-        //for(let a of arr) {
+        //for(let a of arr) {  // The seed cannot be too large because javascript doesn't support long integers.
         for(let i = 0; i < 16; i++) {
             t += m * arr[i];
             m *= f;
@@ -21,8 +21,8 @@ class ServerRNG {
         return t;
     }
 
-    getRandomInteger(n, arr, max) {
-        this.seed += this.reduce(arr) + n;
+    getRandomInteger(arr, max) {
+        this.seed += this.reduce(arr);
         return this.nextInt(max);
     }
 
@@ -35,7 +35,7 @@ class ServerRNG {
         let bits;
         let val;
         do {
-            bits = this.next(3);
+            bits = this.next(31);
             val = bits % n;
         }
         while(bits - val + (n - 1) < 0);
@@ -44,6 +44,9 @@ class ServerRNG {
     }
 
     next(bits) {
+        // To avoid negative values for the seed, use BigInt to do the calculation and then revert back to a regular Number.
+        //this.seed = Number(BigInt(this.seed * 0x5DEECE66D + 0xB) & BigInt(281474976710655));
+
         this.seed = (this.seed * 0x5DEECE66D + 0xB) & 281474976710655;
         return this.seed >>> (48 - bits);
     }

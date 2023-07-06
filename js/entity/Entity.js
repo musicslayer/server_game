@@ -85,15 +85,10 @@ class Entity {
         return this.screen.map.world.universe.server;
     }
 
-    getServerScheduler() {
-        return this.screen.map.world.universe.server.serverScheduler;
-    }
-
     /*
-        These methods can change the state of the game and should always be scheduled on the server.
+        These "doX" methods can change the state of the server and thus should always be scheduled.
     */
 
-    // TODO We can rename these to get rid of the "do" prefix
     doAddHealth(health) {
         this.health = Math.min(this.health + health, this.maxHealth);
     }
@@ -109,7 +104,7 @@ class Entity {
             entity.isInvincible = false;
         }, this);
 
-        this.getServerScheduler().scheduleTask(undefined, invincibleSeconds, serverTask);
+        this.getServer().scheduleTask(undefined, invincibleSeconds, serverTask);
     }
 
     doCheckCollision() {
@@ -167,7 +162,7 @@ class Entity {
             entity.doDespawn();
         }, this);
 
-        this.getServerScheduler().scheduleTask(undefined, Performance.LOOT_TIME, serverTask);
+        this.getServer().scheduleTask(undefined, Performance.LOOT_TIME, serverTask);
     }
 
     doTakeDamage(entity, damage) {

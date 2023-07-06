@@ -31,7 +31,7 @@ class ServerManager {
                 }
             }, server);
             
-            server.serverScheduler.scheduleTask(undefined, 0, serverTask);
+            server.scheduleTask(undefined, 0, serverTask);
         }
     }
 

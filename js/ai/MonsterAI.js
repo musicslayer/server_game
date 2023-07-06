@@ -52,7 +52,7 @@ class MonsterAI extends AI {
                     monster.doChangeDirection(direction);
                 }, monster, randomValidDirection);
         
-                monster.getServerScheduler().scheduleTask(undefined, 0, serverTask);
+                monster.getServer().scheduleTask(undefined, 0, serverTask);
             }
             else {
                 this.randomDirectionFlag = false;
@@ -63,7 +63,7 @@ class MonsterAI extends AI {
                     monster.doMoveStep();
                 }, monster);
         
-                monster.getServerScheduler().scheduleTask(new MoveAnimation(monster, time), time, serverTask);
+                monster.getServer().scheduleTask(new MoveAnimation(monster, time), time, serverTask);
             }
         }
         else if(directions.length > 0) {
@@ -76,7 +76,7 @@ class MonsterAI extends AI {
                     monster.doChangeDirection(direction);
                 }, monster, directions[0]);
         
-                monster.getServerScheduler().scheduleTask(undefined, 0, serverTask);
+                monster.getServer().scheduleTask(undefined, 0, serverTask);
             }
             else if(this.isFacingAPlayer(monster)) {
                 // If any player is in front of us (aggro or not) attack them.
@@ -87,7 +87,7 @@ class MonsterAI extends AI {
                     monster.doAction();
                 }, monster);
         
-                monster.getServerScheduler().scheduleTask(undefined, 0, serverTask);
+                monster.getServer().scheduleTask(undefined, 0, serverTask);
             }
         }
 
@@ -95,7 +95,7 @@ class MonsterAI extends AI {
             monster.ai.generateNextActivity(monster);
         }, monster);
 
-        monster.getServerScheduler().scheduleTask(undefined, time, serverTask2);
+        monster.getServer().scheduleTask(undefined, time, serverTask2);
     }
 
     getRandomValidDirection(monster, directions) {

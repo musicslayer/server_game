@@ -1,22 +1,36 @@
 class ServerTask {
     fcnString;
     args;
+    isRefreshTask = false;
 
     constructor(fcn, ...args) {
         this.fcnString = fcn.toString();
         this.args = args;
     }
 
+    static createRefreshTask(fcn, ...args) {
+        let serverTask = new ServerTask(fcn, ...args);
+        serverTask.isRefreshTask = true;
+        return serverTask;
+    }
+
     execute() {
         let fcn = new Function('return ' + this.fcnString)();
-        fcn(...this.args);
+        if(this.isRefreshTask) {
+            fcn(this, ...this.args);
+        }
+        else {
+            fcn(...this.args);
+        }
     }
 
     serialize(writer) {
         const Client = require("../client/Client.js");
         const Entity = require("../entity/Entity.js");
+        const Server = require("../server/Server.js");
 
         writer.beginObject()
+            .serialize("isRefreshTask", this.isRefreshTask)
             .serialize("fcnString", this.fcnString)
             .serialize("numArgs", this.args.length);
 
@@ -31,6 +45,10 @@ class ServerTask {
                 writer.serialize("arg_class_" + i, "Client");
                 writer.serialize("arg_" + i, arg.id);
             }
+            else if(arg instanceof Server) {
+                writer.serialize("arg_class_" + i, "Server");
+                writer.serialize("arg_" + i, arg.uid);
+            }
             else {
                 writer.serialize("arg_class_" + i, getClassName(arg));
                 writer.serialize("arg_" + i, arg);
@@ -43,8 +61,10 @@ class ServerTask {
     static deserialize(reader) {
         const ClientFactory = require("../client/ClientFactory.js");
         const EntityFactory = require("../entity/EntityFactory.js");
+        const ServerFactory = require("../server/ServerFactory.js");
         
-        reader.beginObject();
+        reader.beginObject()
+        let isRefreshTask = reader.deserialize("isRefreshTask", "Boolean");
         let fcnString = reader.deserialize("fcnString", "String");
         let numArgs = reader.deserialize("numArgs", "Number");
 
@@ -61,6 +81,10 @@ class ServerTask {
                 let id = reader.deserialize("arg_" + i, "Number");
                 arg = ClientFactory.clientIDMap.get(id);
             }
+            else if(className === "Server") {
+                let uid = reader.deserialize("arg_" + i, "Number");
+                arg = ServerFactory.serverMap.get(uid);
+            }
             else {
                 arg = reader.deserialize("arg_" + i, className);
             }
@@ -71,15 +95,17 @@ class ServerTask {
         reader.endObject();
 
         let serverTask = new ServerTask(fcnString, ...args);
+        serverTask.isRefreshTask = isRefreshTask;
         return serverTask;
     }
 }
 
 function getClassName(value) {
-    // Everything is either an entity, a string, or a number.
+    // Everything is either a ServerTask, an entity, a string, or a number.
     let className;
 
     if(isFunction(value, "getClassName")) {
+        // This "getClassName" function itself is not part of the class, so it will not cause any circular loops.
         className = value.getClassName();
     }
     else if(isNumber(value)) {
@@ -87,6 +113,9 @@ function getClassName(value) {
     }
     else if(isString(value)) {
         className = "String";
+    }
+    else if(value instanceof ServerTask) {
+        className = "ServerTask";
     }
     else {
         throw("Unknown object.");

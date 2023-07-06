@@ -45,7 +45,7 @@ class Player extends Entity {
             }
         }, this);
 
-        this.getServerScheduler().scheduleRefreshTask(undefined, 1, serverTask);
+        this.getServer().scheduleRefreshTask(undefined, 1, serverTask);
     }
     
     doAddExperience(experience) {
@@ -66,9 +66,9 @@ class Player extends Entity {
         // Also, invincible/dead players cannot take damage.
         let rootEntity = this.getRootEntity(entity);
 
-        let canTakePlayerDamage = !rootEntity.isPlayer || this.screen.pvpStatus === "pvp";
+        let canTakePVPDamage = !rootEntity.isPlayer || this.screen.pvpStatus === "pvp";
         let canTakeNormalDamage = !this.isInvincible && !this.isDead;
-        if(canTakePlayerDamage && canTakeNormalDamage) {
+        if(canTakePVPDamage && canTakeNormalDamage) {
             this.health = Math.max(this.health - damage, 0);
             if(this.health === 0) {
                 // If another player did the final damage, spawn a PVP Token and drop some of your gold.

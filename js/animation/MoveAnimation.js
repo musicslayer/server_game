@@ -1,17 +1,21 @@
+const Animation = require("./Animation.js");
 const Performance = require("../constants/Performance.js");
 const Util = require("../util/Util.js");
 const ServerTask = require("../server/ServerTask.js");
 
-class MoveAnimation {
+class MoveAnimation extends Animation {
     entity;
     time;
 
     constructor(entity, time) {
+        super();
         this.entity = entity;
         this.time = time;
     }
 
-    scheduleAnimation(serverScheduler) {
+    getAnimationServerTasks() {
+        let dataArray = [];
+
         this.entity.isMoveInProgress = true;
         
         let frames = Performance.MOVEMENT_FRAMES;
@@ -24,8 +28,8 @@ class MoveAnimation {
                 entity.animationShiftX = (shiftX * fraction);
                 entity.animationShiftY = (shiftY * fraction);
             }, this.entity, fraction, shiftX, shiftY);
-    
-            serverScheduler.scheduleTask(undefined, this.time * fraction, serverTask);
+
+            dataArray.push({"animation": undefined, "time": this.time * fraction, "serverTask": serverTask});
         }
 
         let serverTask2 = new ServerTask((entity) => {
@@ -35,7 +39,9 @@ class MoveAnimation {
             entity.animationShiftY = 0;
         }, this.entity);
 
-        serverScheduler.scheduleTask(undefined, this.time, serverTask2);
+        dataArray.push({"animation": undefined, "time": this.time, "serverTask": serverTask2});
+
+        return dataArray;
     }
 }
 

@@ -9,9 +9,13 @@ const AppState = require("./AppState.js");
 
 // TODO Copy the java strategy of wrapping classes.
 
-// TODO When I load mid-move, I am able to immediately do another input, which shouldn't happen until the movement is done.
+// TODO The player stored in the EntityFactory map and the Account map could be desynced...
 
-// The player stored in the EntityFactory map and the Account map could be desynced...
+// TODO Instead of scheduleTask and scheduleRefreshTask, maybe have an integer for the number of times something gets scheudled
+///////// For example, a potion that heals 5 health every second, but only for 10 seconds.
+
+// TODO The reader/writer classes should really be streaming classes.
+// TODO We should define "reference" methods that take care of all the accessing objects from a factory map.
 
 async function init() {
     await new AppState().init();
