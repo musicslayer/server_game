@@ -49,6 +49,9 @@ class ImageCatalog {
             case "DeathTrap":
                 image = this.getImage("trap", "death");
                 break;
+			case "FallbackPortal":
+                image = this.getImage("portal", "teleporter");
+                break;
             case "FireTrap":
                 image = this.getImage("trap", "fire");
                 break;

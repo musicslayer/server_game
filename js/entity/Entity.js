@@ -1,12 +1,17 @@
+
 const Reflection = require("../reflection/Reflection.js");
 const EntityFactory = require("./EntityFactory.js");
 const Util = require("../util/Util.js");
-const Performance = require("../server/Performance.js");
+const Fallback = require("../constants/Fallback.js");
+const Performance = require("../constants/Performance.js");
+const ServerTask = require("../server/ServerTask.js");
 
 class Entity {
-    isSerializable = true; // By default, entities can be serialized and saved.
+    id;
+
     isSpawned = false; // Only true if this entity instance exists in the game world.
     isPlayer = false;
+    isAI = false;
 
     owner; // e.g. The entity that spawned a projectile is the owner.
 
@@ -62,6 +67,8 @@ class Entity {
     purse;
     progress;
 
+    aggroMap = new Map();
+
     getClassName() {
         return this.constructor.name;
     }
@@ -72,6 +79,10 @@ class Entity {
 
     getInfo() {
         return undefined;
+    }
+
+    getServer() {
+        return this.screen.map.world.universe.server;
     }
 
     getServerScheduler() {
@@ -93,9 +104,12 @@ class Entity {
 
     doMakeInvincible(invincibleSeconds) {
         this.isInvincible = true;
-        this.getServerScheduler().scheduleTask(undefined, invincibleSeconds, () => {
-            this.isInvincible = false;
-        });
+
+        let serverTask = new ServerTask((entity) => {
+            entity.isInvincible = false;
+        }, this);
+
+        this.getServerScheduler().scheduleTask(undefined, invincibleSeconds, serverTask);
     }
 
     doCheckCollision() {
@@ -124,6 +138,7 @@ class Entity {
 
     doSpawnEntity(entity) {
         entity.owner = this;
+        entity.ownerID = this.id;
         entity.doSpawn();
     }
 
@@ -148,9 +163,11 @@ class Entity {
         // Spawns this entity as loot (i.e. it will despawn after a certain amount of time).
         this.doSpawn();
 
-        this.getServerScheduler().scheduleTask(undefined, Performance.LOOT_TIME, () => {
-            this.doDespawn();
-        })
+        let serverTask = new ServerTask((entity) => {
+            entity.doDespawn();
+        }, this);
+
+        this.getServerScheduler().scheduleTask(undefined, Performance.LOOT_TIME, serverTask);
     }
 
     doTakeDamage(entity, damage) {
@@ -179,12 +196,28 @@ class Entity {
         }
     }
 
+    doTeleportFallback() {
+        // If the fallback screen cannot be found, then do nothing.
+        // Players will remain trapped on the fallback map until this is fixed.
+        let fallbackMap = this.screen.map.world.getMapByName(Fallback.FALLBACK_MAP_NAME);
+        let fallbackScreen = fallbackMap?.getScreenByName(Fallback.FALLBACK_SCREEN_NAME);
+        let fallbackX = Fallback.FALLBACK_X;
+        let fallbackY = Fallback.FALLBACK_Y;
+
+        if(fallbackScreen) {
+            this.doTeleport(fallbackScreen, fallbackX, fallbackY);
+        }
+    }
+
     doTeleportHome() {
         let homeMap = this.screen.map.world.getMapByName(this.homeMapName);
         let homeScreen = homeMap?.getScreenByName(this.homeScreenName);
 
         if(homeScreen) {
             this.doTeleport(homeScreen, this.homeX, this.homeY);
+        }
+        else {
+            this.doTeleportFallback();
         }
     }
 
@@ -375,11 +408,19 @@ class Entity {
     getRootEntity(entity) {
         let rootEntity = entity;
 
-        while(rootEntity.owner) {
-            rootEntity = rootEntity.owner;
+        while(rootEntity.getOwner()) {
+            rootEntity = rootEntity.getOwner();
         }
 
         return rootEntity;
+    }
+
+    getOwner() {
+        if(this.ownerID) {
+            this.owner = EntityFactory.entityMap.get(this.ownerID);
+            this.ownerID = undefined;
+        }
+        return this.owner;
     }
 
     clone(number) {
@@ -416,16 +457,75 @@ class Entity {
         return this.isMoveInProgress ? this.y + shiftY : this.y;
     }
 
-    // TODO how to serialize owner? Or do we not need to because all the ones with owners aren't saved?
-
     serialize(writer) {
-        // To avoid a circular loop, don't serialize the screen.
+        // To avoid a circular loop, only write a reference to the screen.
         writer.beginObject()
             .serialize("className", this.getClassName())
-            .serialize("stackSize", this.stackSize)
+            .serialize("id", this.id)
+            .serialize("isSpawned", this.isSpawned)
+            .serialize("isPlayer", this.isPlayer)
+            .serialize("isAI", this.isAI)
+            .serialize("health", this.health)
+            .serialize("maxHealth", this.maxHealth)
+            .serialize("mana", this.mana)
+            .serialize("maxMana", this.maxMana)
+            .serialize("isDead", this.isDead)
+            .serialize("isInvincible", this.isInvincible)
             .serialize("x", this.x)
             .serialize("y", this.y)
-        .endObject();
+            .serialize("homeMapName", this.homeMapName)
+            .serialize("homeScreenName", this.homeScreenName)
+            .serialize("homeX", this.homeX)
+            .serialize("homeY", this.homeY)
+            .serialize("isTangible", this.isTangible)
+            .serialize("isActionBlocker", this.isActionBlocker)
+            .serialize("moveTime", this.moveTime)
+            .serialize("directionTime", this.directionTime)
+            .serialize("actionTime", this.actionTime)
+            .serialize("inventoryTime", this.inventoryTime)
+            .serialize("purseTime", this.purseTime)
+            .serialize("createTime", this.createTime)
+            .serialize("direction", this.direction)
+            .serialize("maxStackNumber", this.maxStackNumber)
+            .serialize("maxStackSize", this.maxStackSize)
+            .serialize("stackSize", this.stackSize)
+            .serialize("animationShiftX", this.animationShiftX)
+            .serialize("animationShiftY", this.animationShiftY)
+            .serialize("isMoveInProgress", this.isMoveInProgress)
+
+        if(this.isPlayer) {
+            writer.serialize("healthRegen", this.healthRegen)
+                .serialize("manaRegen", this.manaRegen)
+                .serialize("inventory", this.inventory)
+                .serialize("purse", this.purse)
+                .serialize("progress", this.progress)
+        }
+
+        if(this.isAI) {
+            writer.serialize("ai", this.ai)
+        }
+
+        // Projectile
+        writer.serialize("range", this.range);
+        writer.serialize("damage", this.damage);
+        writer.serialize("isMulti", this.isMulti);
+
+        // Monster Spawner
+        writer.serialize("spawnTime", this.spawnTime);
+        writer.serialize("monsterCount", this.monsterCount);
+        writer.serialize("maxMonsterCount", this.maxMonsterCount);
+
+        // Monster
+        writer.serializeMap("aggroMap", this.aggroMap);
+        writer.serialize("maxAggro", this.maxAggro);
+        writer.serialize("aggroGain", this.aggroGain);
+        writer.serialize("aggroForgiveness", this.aggroForgiveness);
+        writer.serialize("aggroForgivenessTime", this.aggroForgivenessTime);
+        writer.serialize("lastPlayerID", this.lastPlayerID);
+
+        writer.serialize("ownerID", this.owner?.id ?? this.ownerID)
+            .reference("screen", this.screen)
+            .endObject();
     }
 
     static deserialize(reader) {
@@ -433,16 +533,138 @@ class Entity {
 
         reader.beginObject();
         let className = reader.deserialize("className", "String");
-        let stackSize = reader.deserialize("stackSize", "Number");
+        let id = reader.deserialize("id", "Number");
+        let isSpawned = reader.deserialize("isSpawned", "Boolean");
+        let isPlayer = reader.deserialize("isPlayer", "Boolean");
+        let isAI = reader.deserialize("isAI", "Boolean");
+        let health = reader.deserialize("health", "Number");
+        let maxHealth = reader.deserialize("maxHealth", "Number");
+        let mana = reader.deserialize("mana", "Number");
+        let maxMana = reader.deserialize("maxMana", "Number");
+        let isDead = reader.deserialize("isDead", "Boolean");
+        let isInvincible = reader.deserialize("isInvincible", "Boolean");
         let x = reader.deserialize("x", "Number");
         let y = reader.deserialize("y", "Number");
+        let homeMapName = reader.deserialize("homeMapName", "String");
+        let homeScreenName = reader.deserialize("homeScreenName", "String");
+        let homeX = reader.deserialize("homeX", "Number");
+        let homeY = reader.deserialize("homeY", "Number");
+        let isTangible = reader.deserialize("isTangible", "Boolean");
+        let isActionBlocker = reader.deserialize("isActionBlocker", "Boolean");
+        let moveTime = reader.deserialize("moveTime", "Number");
+        let directionTime = reader.deserialize("directionTime", "Number");
+        let actionTime = reader.deserialize("actionTime", "Number");
+        let inventoryTime = reader.deserialize("inventoryTime", "Number");
+        let purseTime = reader.deserialize("purseTime", "Number");
+        let createTime = reader.deserialize("createTime", "Number");
+        let direction = reader.deserialize("direction", "String");
+        let maxStackNumber = reader.deserialize("maxStackNumber", "Number");
+        let maxStackSize = reader.deserialize("maxStackSize", "Number");
+        let stackSize = reader.deserialize("stackSize", "Number");
+        let animationShiftX = reader.deserialize("animationShiftX", "Number");
+        let animationShiftY = reader.deserialize("animationShiftY", "Number");
+        let isMoveInProgress = reader.deserialize("isMoveInProgress", "Boolean");
+
+        let healthRegen;
+        let manaRegen;
+        let inventory;
+        let purse;
+        let progress;
+        if(isPlayer) {
+            healthRegen = reader.deserialize("healthRegen", "Number");
+            manaRegen = reader.deserialize("manaRegen", "Number");
+            inventory = reader.deserialize("inventory", "Inventory");
+            purse = reader.deserialize("purse", "Purse");
+            progress = reader.deserialize("progress", "Progress");
+        }
+
+        let ai;
+        if(isAI) {
+            ai = reader.deserialize("ai", "AI");
+        }
+
+        let range = reader.deserialize("range", "Number");
+        let damage = reader.deserialize("damage", "Number");
+        let isMulti = reader.deserialize("isMulti", "Boolean");
+
+        let spawnTime = reader.deserialize("spawnTime", "Number");
+        let monsterCount = reader.deserialize("monsterCount", "Number");
+        let maxMonsterCount = reader.deserialize("maxMonsterCount", "Number");
+
+        let aggroMap = reader.deserializeMap("aggroMap", "Number", "Number");
+        let maxAggro = reader.deserialize("maxAggro", "Number");
+        let aggroGain = reader.deserialize("aggroGain", "Number");
+        let aggroForgiveness = reader.deserialize("aggroForgiveness", "Number");
+        let aggroForgivenessTime = reader.deserialize("aggroForgivenessTime", "Number");
+        let lastPlayerID = reader.deserialize("lastPlayerID", "Number");
+
+        let ownerID = reader.deserialize("ownerID", "Number");
+        let screenInfo = reader.dereference("screen", "Screen");
         reader.endObject();
 
         entity = Reflection.createInstance(className);
 
-        entity.stackSize = stackSize;
+        entity.id = id;
+        entity.isSpawned = isSpawned;
+        entity.isPlayer = isPlayer;
+        entity.isAI = isAI;
+        entity.health = health;
+        entity.maxHealth = maxHealth;
+        entity.mana = mana;
+        entity.maxMana = maxMana;
+        entity.isDead = isDead;
+        entity.isInvincible = isInvincible;
         entity.x = x;
         entity.y = y;
+        entity.homeMapName = homeMapName;
+        entity.homeScreenName = homeScreenName;
+        entity.homeX = homeX;
+        entity.homeY = homeY;
+        entity.isTangible = isTangible;
+        entity.isActionBlocker = isActionBlocker;
+        entity.moveTime = moveTime;
+        entity.directionTime = directionTime;
+        entity.actionTime = actionTime;
+        entity.inventoryTime = inventoryTime;
+        entity.purseTime = purseTime;
+        entity.createTime = createTime;
+        entity.direction = direction;
+        entity.maxStackNumber = maxStackNumber;
+        entity.maxStackSize = maxStackSize;
+        entity.stackSize = stackSize;
+        entity.animationShiftX = animationShiftX;
+        entity.animationShiftY = animationShiftY;
+        entity.isMoveInProgress = isMoveInProgress;
+
+        entity.healthRegen = healthRegen;
+        entity.manaRegen = manaRegen;
+        entity.inventory = inventory;
+        entity.purse = purse;
+        entity.progress = progress;
+
+        entity.ai = ai;
+
+        entity.range = range;
+        entity.damage = damage;
+        entity.isMulti = isMulti;
+
+        entity.spawnTime = spawnTime;
+        entity.monsterCount = monsterCount;
+        entity.maxMonsterCount = maxMonsterCount;
+
+        entity.aggroMap = aggroMap;
+        entity.maxAggro = maxAggro;
+        entity.aggroGain = aggroGain;
+        entity.aggroForgiveness = aggroForgiveness;
+        entity.aggroForgivenessTime = aggroForgivenessTime;
+        entity.lastPlayerID = lastPlayerID;
+        
+        // This information will be used later.
+        entity.ownerID = ownerID;
+        entity.screenInfo = screenInfo;
+
+        // Update the EntityFactory mapping.
+        EntityFactory.entityMap.set(entity.id, entity);
 
         return entity;
     }

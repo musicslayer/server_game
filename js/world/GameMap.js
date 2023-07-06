@@ -1,7 +1,6 @@
 const fs = require("fs");
 
 const Reflection = require("../reflection/Reflection.js");
-const WorldFactory = require("./WorldFactory.js");
 const Screen = require("./Screen.js");
 const Util = require("../util/Util.js");
 
@@ -21,7 +20,7 @@ class GameMap {
     mapFolder;
 
     static loadMapFromFolder(className, mapFolder) {
-        let map = WorldFactory.createInstance(className);
+        let map = Reflection.createInstance(className);
         map.mapFolder = mapFolder;
 
         let mapData = fs.readFileSync(mapFolder + "_map.txt", "ascii");
@@ -128,7 +127,7 @@ class GameMap {
         map = Reflection.createInstance(className);
 
         let id;
-        if(id_string === "death" || id_string === "void") {
+        if(id_string === "death" || id_string === "fallback" || id_string === "void") {
             id = id_string;
         }
         else {

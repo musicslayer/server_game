@@ -2,9 +2,11 @@ const Entity = require("./Entity.js");
 const EntityFactory = require("./EntityFactory.js");
 const MonsterAI = require("../ai/MonsterAI.js");
 const Util = require("../util/Util.js");
+const ServerTask = require("../server/ServerTask.js");
 
 class Monster extends Entity {
-    isSerializable = false;
+    isAI = true;
+    ai = new MonsterAI();
 
     health = 70;
     maxHealth = 100;
@@ -19,15 +21,13 @@ class Monster extends Entity {
     moveTime = 1;
     actionTime = 1;
 
-    ai = new MonsterAI();
-
     aggroMap = new Map();
     maxAggro = 300;
     aggroGain = 1;
     aggroForgiveness = 10;
     aggroForgivenessTime = 10;
 
-    lastPlayer;
+    lastPlayerID;
 
     getName() {
         return "Monster";
@@ -41,13 +41,11 @@ class Monster extends Entity {
         super.doSpawn();
 
         // Use this to gradually decrease aggro over time.
-        let f = () => {
-            this.getServerScheduler().scheduleTask(undefined, this.aggroForgivenessTime, () => {
-                this.decreaseAggro();
-                f();
-            });
-        };
-        f();
+        let serverTask = new ServerTask((monster) => {
+            monster.decreaseAggro();
+        }, this);
+
+        this.getServerScheduler().scheduleRefreshTask(undefined, this.aggroForgivenessTime, serverTask);
 
         // Monster activities are controlled by an AI class.
         this.ai.generateNextActivity(this);
@@ -60,11 +58,11 @@ class Monster extends Entity {
 
         // If damage came from a player, increase aggro.
         if(rootEntity.isPlayer) {
-            this.lastPlayer = rootEntity;
+            this.lastPlayerID = rootEntity.id;
 
-            let aggro = this.aggroMap.get(rootEntity) ?? 0;
+            let aggro = this.aggroMap.get(rootEntity.id) ?? 0;
             aggro = Math.min(aggro + this.aggroGain, this.maxAggro);
-            this.aggroMap.set(rootEntity, aggro);
+            this.aggroMap.set(rootEntity.id, aggro);
         }
 
         if(this.health === 0) {
@@ -78,7 +76,7 @@ class Monster extends Entity {
             gold.doSpawnAsLoot();
 
             this.doDespawn();
-            this.owner?.onMonsterDespawn();
+            this.getOwner()?.onMonsterDespawn();
 
             if(rootEntity.isPlayer) {
                 rootEntity.doAddExperience(this.experienceReward);
@@ -88,16 +86,17 @@ class Monster extends Entity {
 
     decreaseAggro() {
         // If a player is no longer on the screen, decrease the aggro for that player.
-        for(let player of this.aggroMap.keys()) {
+        for(let playerID of this.aggroMap.keys()) {
+            let player = EntityFactory.entityMap.get(playerID);
             if(!this.screen.playerEntities.includes(player)) {
-                let aggro = this.aggroMap.get(player) ?? 0;
+                let aggro = this.aggroMap.get(playerID) ?? 0;
                 let newAggro = Math.max(aggro - this.aggroForgiveness, 0);
 
                 if(newAggro === 0) {
-                    this.aggroMap.delete(player);
+                    this.aggroMap.delete(playerID);
                 }
                 else {
-                    this.aggroMap.set(player, newAggro);
+                    this.aggroMap.set(playerID, newAggro);
                 }
             }
         }
@@ -105,31 +104,31 @@ class Monster extends Entity {
 
     getAggroPlayer() {
         // Returns the player that currently has the aggro.
-        let players = [];
+        let playerIDs = [];
 
         // First find max aggro.
         let max = 0;
         for(let player of this.screen.playerEntities) {
-            let aggro = this.aggroMap.get(player) ?? 0;
+            let aggro = this.aggroMap.get(player.id) ?? 0;
             max = Math.max(max, aggro);
 
             if(max === aggro) {
-                players.push(player);
+                playerIDs.push(player.id);
             }
         }
 
-        if(max === 0 || players.length === 0) {
+        if(max === 0 || playerIDs.length === 0) {
             // If no players have non-zero aggro, than don't target anyone.
             return undefined;
         }
 
         // If the last player to hit the monster is tied for first, choose that one.
-        if(players.includes(this.lastPlayer)) {
-            return this.lastPlayer;
+        if(playerIDs.includes(this.lastPlayerID)) {
+            return this.lastPlayerID;
         }
 
         // Otherwise, just return the first player in the array.
-        return players[0];
+        return playerIDs[0];
     }
 
     doAction() {

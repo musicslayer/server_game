@@ -1,6 +1,6 @@
 const fs = require("fs");
 
-const WorldFactory = require("./WorldFactory.js");
+const Reflection = require("../reflection/Reflection.js");
 const World = require("./World.js");
 const Util = require("../util/Util.js");
 
@@ -20,7 +20,7 @@ class Universe {
     worldPosMap = new Map();
 
     static loadUniverseFromFolder(className, universeFolder) {
-        let universe = WorldFactory.createInstance(className);
+        let universe = Reflection.createInstance(className);
 
         let universeData = fs.readFileSync(universeFolder + "_universe.txt", "ascii");
         let lines = universeData ? universeData.split(CRLF) : [];

@@ -3,6 +3,7 @@ const fs = require("fs");
 const http = require("./web/http.js");
 const socket_io = require("./web/socket_io.js");
 
+const ClientFactory = require("./client/ClientFactory.js");
 const Zip = require("./zip/Zip.js");
 const Reflection = require("./reflection/Reflection.js");
 const DataBridge = require("./data/DataBridge.js");
@@ -17,9 +18,6 @@ class AppState {
 
     accountFile;
     serverFile;
-
-    // Map of all currently logged in users.
-    clientMap = new Map();
 
     constructor() {
         AppState.instance = this;
@@ -53,6 +51,8 @@ class AppState {
 
         let serverManagerString = DataBridge.serializeObject(this.serverManager);
         fs.writeFileSync(this.serverFile, serverManagerString, "ascii");
+
+        console.log("SAVE");
     }
 
     load() {
@@ -68,25 +68,35 @@ class AppState {
         this.refreshClients();
 
         // Schedule the task to spawn all the entities and then start the new servers' ticks.
-        this.serverManager.addSpawnServerTask();
         this.serverManager.startServerTicks();
+
+        console.log("LOAD");
+
+        this.save();
     }
 
     refreshClients() {
-        for(let key of this.clientMap.keys()) {
-            let client = this.clientMap.get(key);
-
-            // Reset this manually because server tasks to do this may have been cancelled.
-            client.delayMap = new Map(); // TODO remove?
+        for(let key of ClientFactory.clientKeyMap.keys()) {
+            let client = ClientFactory.clientKeyMap.get(key);
+            client.delayMap = new Map();
 
             let newPlayer = this.accountManager.getAccount(key).getCharacter(client.playerName);
+            let newServer = this.serverManager.getServerByName(newPlayer.screenInfo.serverName);
+            let newWorld = newServer?.universe?.getWorldByName(newPlayer.screenInfo.worldName);
+            let newMap = newWorld?.getMapByName(newPlayer.screenInfo.mapName);
+            let newScreen = newMap?.getScreenByPosition(newPlayer.screenInfo.screenX, newPlayer.screenInfo.screenY);
 
-            let newServer = this.serverManager.getServerByName(newPlayer.serverName);
-            let newWorld = newServer?.universe?.getWorldByName(newPlayer.worldName);
-            let newMap = newWorld?.getMapByName(newPlayer.mapName);
-            let newScreen = newMap?.getScreenByPosition(newPlayer.screenX, newPlayer.screenY);
+            if(!newScreen) {
+                // Teleport the entity to the fallback map.
+                // Since the client is still logged in, we know its serverName and worldName actually exist.
+                let clientServer = this.serverManager.getServerByName(client.serverName);
+                let clientWorld = clientServer.universe.getWorldByName(client.worldName);
+                let fallbackMap = clientWorld.getMapByPosition("fallback");
+                newScreen = fallbackMap.getScreenByPosition(0, 0);
 
-            // TODO If the player moves onto a screen that didn't exist when the server was saved, we need a fallback strategy.
+                newPlayer.x = 7;
+                newPlayer.y = 11;
+            }
 
             newPlayer.screen = newScreen;
             newScreen.addEntity(newPlayer);

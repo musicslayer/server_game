@@ -1,4 +1,5 @@
 const Server = require("./Server.js");
+const ServerTask = require("./ServerTask.js");
 
 class ServerManager {
     servers = [];
@@ -18,7 +19,7 @@ class ServerManager {
     addSpawnServerTask() {
         // Spawn all non-player entities.
         for(let server of this.servers) {
-            server.serverScheduler.scheduleTask(undefined, 0, () => {
+            let serverTask = new ServerTask((server) => {
                 for(let world of server.universe.worlds) {
                     for(let map of world.gameMaps) {
                         for(let screen of map.screens) {
@@ -28,7 +29,9 @@ class ServerManager {
                         }
                     }
                 }
-            });
+            }, server);
+            
+            server.serverScheduler.scheduleTask(undefined, 0, serverTask);
         }
     }
 
@@ -71,6 +74,10 @@ class ServerManager {
         let server = Server.loadServerFromFolder("assets/server/");
         server.id = 0;
         server.name = "origin";
+
+        // Set server rng seed based on the server name.
+        server.serverRNG.setInitialSeed(server.name);
+        server.serverRNG.server = server;
 
         serverManager.addServer(server);
         serverManager.addSpawnServerTask();

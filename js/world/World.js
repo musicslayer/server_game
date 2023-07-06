@@ -1,6 +1,6 @@
 const fs = require("fs");
 
-const WorldFactory = require("./WorldFactory.js");
+const Reflection = require("../reflection/Reflection.js");
 const GameMap = require("./GameMap.js");
 const Util = require("../util/Util.js");
 
@@ -18,7 +18,7 @@ class World {
     gameMapPosMap = new Map(); // TODO Why is pos and id treated the same?
 
     static loadWorldFromFolder(className, worldFolder) {
-        let world = WorldFactory.createInstance(className);
+        let world = Reflection.createInstance(className);
 
         let worldData = fs.readFileSync(worldFolder + "_world.txt", "ascii");
         let lines = worldData ? worldData.split(CRLF) : [];
@@ -32,7 +32,7 @@ class World {
             let idPart = parts.shift().split(COMMA);
             let id_string = idPart.shift();
             let id;
-            if(id_string === "death" || id_string === "void") {
+            if(id_string === "death" || id_string === "fallback" || id_string === "void") {
                 id = id_string;
             }
             else {

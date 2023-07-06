@@ -3,10 +3,9 @@ const ProjectileAI = require("../ai/ProjectileAI.js");
 const Util = require("../util/Util.js");
 
 class Projectile extends Entity {
-    isSerializable = false;
-
+    isAI = true;
     ai = new ProjectileAI();
-
+    
     range;
     damage;
     isMulti;
@@ -33,7 +32,7 @@ class Projectile extends Entity {
 
     doInteract(entity) {
         // Do some damage to the other entity unless it is the owner.
-        if(entity !== this.owner && entity.isTangible) {
+        if(entity !== this.getOwner() && entity.isTangible) {
             entity.doTakeDamage(this, this.damage);
 
             if(!this.isMulti) {

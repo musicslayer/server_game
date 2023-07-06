@@ -16,42 +16,49 @@ class Reader {
 
     getName() {
         let dataElement = this.data.shift();
-        // check if it is NAME
+        if(dataElement !== NAME) {
+            throw("Invalid Element: " + dataElement.toString());
+        }
         return this.data.shift();
     }
 
     getValue() {
         let dataElement = this.data.shift();
-        // check if it is VALUE
-        let value = this.data.shift();
-        if(value === "null") {
-            value = undefined;
+        if(dataElement !== VALUE) {
+            throw("Invalid Element: " + dataElement.toString());
         }
-
-        return value;
+        return this.data.shift();
     }
 
     beginObject() {
         let dataElement = this.data.shift();
-        // TODO Throw error? dataElement === BEGIN_OBJECT
+        if(dataElement !== BEGIN_OBJECT) {
+            throw("Invalid Element: " + dataElement.toString());
+        }
         return this;
     }
 
     endObject() {
         let dataElement = this.data.shift();
-        // TODO Throw error? dataElement === END_OBJECT
+        if(dataElement !== END_OBJECT) {
+            throw("Invalid Element: " + dataElement.toString());
+        }
         return this;
     }
 
     beginArray() {
         let dataElement = this.data.shift();
-        // TODO Throw error? dataElement === BEGIN_ARRAY
+        if(dataElement !== BEGIN_ARRAY) {
+            throw("Invalid Element: " + dataElement.toString());
+        }
         return this;
     }
 
     endArray() {
         let dataElement = this.data.shift();
-        // TODO Throw error? dataElement === END_ARRAY
+        if(dataElement !== END_ARRAY) {
+            throw("Invalid Element: " + dataElement.toString());
+        }
         return this;
     }
 
@@ -65,12 +72,24 @@ class Reader {
 
         let value;
 
-        if(this.data[0] !== "null") {
-            if(className === "String" || this.data[1] === "null") {
-                value = this.getValue();
+        if(this.data[0] === BEGIN_OBJECT) {
+            value = Reflection.callStaticMethod(className, "deserialize", this);
+        }
+        else {
+            value = this.getValue();
+
+            if(value === "null") {
+                // The class doesn't matter, just return undefined.
+                value = undefined;
             }
-            else if(className === "Number" || this.data[1] === "null") {
-                value = Number(this.getValue());
+            else if(className === "String") {
+                value = unescape(value);
+            }
+            else if(className === "Number") {
+                value = Number(value);
+            }
+            else if(className === "Boolean") {
+                value = value === "true";
             }
             else {
                 value = Reflection.callStaticMethod(className, "deserialize", this);
@@ -131,6 +150,43 @@ class Reader {
         return map;
     }
 
+    dereference(name, className) {
+        if(name !== undefined) {
+            let nextName = this.getName(name);
+            if(name !== nextName) {
+                throw("Key mismatch. Expected: " + name + " Actual: " + nextName.toString());
+            }
+        }
+
+        let value;
+
+        if(this.data[0] === BEGIN_OBJECT) {
+            value = Reflection.callStaticMethod(className, "dereference", this);
+        }
+        else {
+            value = this.getValue();
+
+            if(value === "null") {
+                // The class doesn't matter, just return undefined.
+                value = undefined;
+            }
+            else if(className === "String") {
+                value = unescape(value);
+            }
+            else if(className === "Number") {
+                value = Number(value);
+            }
+            else if(className === "Boolean") {
+                value = value === "true";
+            }
+            else {
+                value = Reflection.callStaticMethod(className, "dereference", this);
+            }
+        }
+
+        return value;
+    }
+
     fromString(s) {
         let data = [];
         let lastPhrase = "";
@@ -141,12 +197,6 @@ class Reader {
             let theCharValue = theChar.value;
 
             switch(theCharValue) {
-                case " ":
-                case "\n":
-                case "\r":
-                    // Skip over common whitespace characters.
-                    break;
-
                 case ":":
                     data.push(NAME);
                     data.push(lastPhrase);
@@ -166,22 +216,12 @@ class Reader {
                     break;
 
                 case "n":
-                    let nullPhrase = theCharValue + iterator.next().value + iterator.next().value + iterator.next().value;
-                    if(nullPhrase !== "null") {
-                        throw("Invalid phrase: " + nullPhrase);
-                    } 
-
-                    lastPhrase = nullPhrase;
+                    lastPhrase = findNullPhrase(iterator);
 
                     break;
 
                 case "\"":
-                    let quotePhrase = "";
-                    for(let theQuoteChar = iterator.next(); theQuoteChar.value !== "\""; theQuoteChar = iterator.next()) {
-                        quotePhrase += theQuoteChar.value;
-                    }
-
-                    lastPhrase = quotePhrase;
+                    lastPhrase = findQuotePhrase(iterator);
 
                     break;
 
@@ -220,12 +260,61 @@ class Reader {
                     break;
 
                 default:
-                    throw("Invalid string: " + theCharValue);
+                    throw("Invalid character: " + theCharValue);
             }
         }
 
         return data;
     }
+}
+
+function findNullPhrase(iterator) {
+    // The "n" has already been consumed, so just consume the "ull" part.
+    let phrase = "n" + iterator.next().value + iterator.next().value + iterator.next().value;
+
+    if(phrase !== "null") {
+        throw("Invalid phrase: " + phrase);
+    }
+
+    return phrase;
+}
+
+function findQuotePhrase(iterator) {
+    // The first quote has already been consumed, so keep searching until we consume the second quote.
+    let phrase = "";
+    //let backslashFlag = false;
+
+    for(let theChar = iterator.next();; theChar = iterator.next()) {
+        let theCharValue = theChar.value;
+
+        if(theCharValue === "\"") {
+            break;
+        }
+        
+        phrase += theCharValue;
+    }
+
+    return phrase;
+}
+
+function unescape(e) {
+    let s = "";
+    for(let i = 0; i < e.length; i++) {
+        let c = e.charAt(i);
+
+        // Only unescape \uXXXX
+        if(c === "\\" && e.charAt(i + 1) === "u") {
+            s += String.fromCharCode(parseInt(e.substring(i + 2, i + 6), 16));
+
+            // Skip 5 more characters
+            i += 5
+        }
+        else {
+            s += c;
+        }
+    }
+
+    return s;
 }
 
 module.exports = Reader;

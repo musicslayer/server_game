@@ -1,16 +1,22 @@
+const AI = require("./AI.js");
 const MoveAnimation = require("../animation/MoveAnimation.js");
+const ServerTask = require("../server/ServerTask.js");
 
-class ProjectileAI {
+class ProjectileAI extends AI {
     generateNextActivity(projectile) {
         // Just keep moving in the same direction until the projectile despawns.
         if(projectile.isSpawned) {
-            projectile.getServerScheduler().scheduleTask(new MoveAnimation(projectile, projectile.moveTime), projectile.moveTime, () => {
+            let serverTask = new ServerTask((projectile) => {
                 projectile.doMoveStep();
-            });
+            }, projectile);
+    
+            projectile.getServerScheduler().scheduleTask(new MoveAnimation(projectile, projectile.moveTime), projectile.moveTime, serverTask);
 
-            projectile.getServerScheduler().scheduleTask(undefined, projectile.moveTime, () => {
-                this.generateNextActivity(projectile);
-            });
+            let serverTask2 = new ServerTask((projectile) => {
+                projectile.ai.generateNextActivity(projectile);
+            }, projectile);
+    
+            projectile.getServerScheduler().scheduleTask(undefined, projectile.moveTime, serverTask2);
         }
     }
 }

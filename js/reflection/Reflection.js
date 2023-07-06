@@ -5,21 +5,13 @@ class Reflection {
     static classMap = {};
 
     static init() {
-        /*
-        const modulesPaths = fs.readdirSync("js/");
-        modulesPaths.forEach((modulePath) => {
-            let className = modulePath.substring(0, modulePath.length - 3);
-            EntityFactory.classMap[className] = require("./" + modulePath)
-        });
-        */
-
         Reflection.processDirectory(path.resolve("js/"), "");
     }
 
     static processDirectory(path, dir) {
-        let files = fs.readdirSync(path + dir, {withFileTypes: true});
+        let files = fs.readdirSync(path + dir);
         for(const file of files) {
-            const filename = dir + '/' + file.name;
+            const filename = dir + '/' + file;
             const relative = filename.slice(1); // Remove the leading /
             const absolute = path + '/' + relative;
     
@@ -29,7 +21,7 @@ class Reflection {
             }
             else {
                 if(!isExcluded(relative)) {
-                    let modulePath = file.name;
+                    let modulePath = file;
                     let className = modulePath.substring(0, modulePath.length - 3);
                     Reflection.classMap[className] = require("../" + relative)
                 }

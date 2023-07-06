@@ -1,42 +1,88 @@
-const NAME = Symbol("NAME");
-const VALUE = Symbol("VALUE");
-const BEGIN_OBJECT = Symbol("BEGIN_OBJECT");
-const END_OBJECT = Symbol("END_OBJECT");
-const BEGIN_ARRAY = Symbol("BEGIN_ARRAY");
-const END_ARRAY = Symbol("END_ARRAY");
-
 class Writer {
-    data = [];
+    s = "";
+    commaFlags = [];
+
+    isNameComma() {
+        // For named values, commas are placed before additional names.
+        return this.commaFlags[this.commaFlags.length - 1] === "name";
+    }
+
+    isValueComma() {
+        // For unnamed values, commas are placed before additional values. This includes simple values, objects, and arrays.
+        return this.commaFlags[this.commaFlags.length - 1] === "value";
+    }
 
     putName(name) {
-        this.data.push(NAME);
-        this.data.push(name);
+        if(this.isNameComma()) {
+            this.s += ",";
+        }
+
+        this.s += normalize(name) + ":";
+
+        if(!this.isNameComma()) {
+            this.commaFlags[this.commaFlags.length - 1] = "name";
+        }
+
         return this;
     }
 
     putValue(value) {
-        this.data.push(VALUE);
-        this.data.push(value);
+        if(this.isValueComma()) {
+            this.s += ",";
+        }
+
+        this.s += normalize(value);
+
+        if(!this.isNameComma()) {
+            this.commaFlags[this.commaFlags.length - 1] = "value";
+        }
+
         return this;
     }
 
     beginObject() {
-        this.data.push(BEGIN_OBJECT);
+        if(this.isValueComma()) {
+            this.s += ",";
+        }
+
+        this.s += "{";
+
+        if(!this.isNameComma()) {
+            this.commaFlags[this.commaFlags.length - 1] = "value";
+        }
+
+        this.commaFlags.push("");
+
         return this;
     }
 
     endObject() {
-        this.data.push(END_OBJECT);
+        this.s += "}";
+        this.commaFlags.pop();
+
         return this;
     }
 
     beginArray() {
-        this.data.push(BEGIN_ARRAY);
+        if(this.isValueComma()) {
+            this.s += ",";
+        }
+
+        this.s += "[";
+
+        if(!this.isNameComma()) {
+            this.commaFlags[this.commaFlags.length - 1] = "value";
+        }
+
+        this.commaFlags.push("");
+
         return this;
     }
 
     endArray() {
-        this.data.push(END_ARRAY);
+        this.s += "]";
+        this.commaFlags.pop();
+
         return this;
     }
 
@@ -83,102 +129,75 @@ class Writer {
         return this;
     }
 
-    toString() {
-        let s = "";
-
-        let commaFlags = [];
-
-        while(this.data.length > 0) {
-            let dataElement = this.data.shift();
-
-            switch(dataElement) {
-                case NAME:
-                    if(commaFlags[commaFlags.length - 1] === "name") {
-                        s += ",";
-                    }
-
-                    let name = this.data.shift();
-                    if(name === undefined) {
-                        s += "null"
-                    }
-                    else {
-                        s += "\"" + name + "\":"
-                    }
-
-                    if(commaFlags[commaFlags.length - 1] === "") {
-                        commaFlags[commaFlags.length - 1] = "name";
-                    }
-
-                    break;
-
-                case VALUE:
-                    if(commaFlags[commaFlags.length - 1] !== "name" && commaFlags[commaFlags.length - 1] !== "") {
-                        s += ",";
-                    }
-
-                    let value = this.data.shift();
-                    if(value === undefined) {
-                        s += "null"
-                    }
-                    else {
-                        s += "\"" + value + "\""
-                    }
-
-                    if(commaFlags[commaFlags.length - 1] === "") {
-                        commaFlags[commaFlags.length - 1] = "value";
-                    }
-
-                    break;
-
-                case BEGIN_OBJECT:
-                    if(commaFlags[commaFlags.length - 1] === "object") {
-                        s += ",";
-                    }
-
-                    s += "{"
-
-                    if(commaFlags[commaFlags.length - 1] === "") {
-                        commaFlags[commaFlags.length - 1] = "object";
-                    }
-
-                    commaFlags.push("");
-
-                    break;
-
-                case END_OBJECT:
-                    s += "}"
-                    commaFlags.pop();
-
-                    break;
-
-                case BEGIN_ARRAY:
-                    if(commaFlags[commaFlags.length - 1] === "array") {
-                        s += ",";
-                    }
-
-                    s += "["
-
-                    if(commaFlags[commaFlags.length - 1] === "") {
-                        commaFlags[commaFlags.length - 1] = "array";
-                    }
-
-                    commaFlags.push("");
-
-                    break;
-
-                case END_ARRAY:
-                    s += "]"
-                    commaFlags.pop();
-
-                    break;
-
-                default:
-                    throw("Invalid data element: " + dataElement.toString());
-            }
+    reference(name, value) {
+        if(name !== undefined) {
+            this.putName(name);
         }
 
-        return s;
+        if(isFunction(value, "reference")) {
+            value.reference(this);
+        }
+        else {
+            this.putValue(value);
+        }
+
+        return this;
     }
+
+    toString() {
+        return this.s;
+    }
+}
+
+function normalize(value) {
+    let s;
+
+    if(value === undefined) {
+        s = "null"
+    }
+    else if(isNumber(value) || isBoolean(value)) {
+        // Don't bother escaping, just wrap in quotes and rely on implicit string conversion.
+        s = "\"" + value + "\"";
+    }
+    else if(isString(value)){
+        s = "\"" + escape(value) + "\"";
+    }
+    else {
+        // Anything else could be trickier, so just error for now.
+        throw("Invalid JSON value of type: " + (typeof value));
+    }
+
+    return s;
+}
+
+function escape(s) {
+    let e = "";
+
+    for(let i = 0; i < s.length; i++) {
+        let c = s.charCodeAt(i);
+
+        // Escape ", \, and all control characters as \uXXXX
+        if(c === 34 || c === 92 || c <= 31) {
+            e += "\\u" + c.toString(16, 4).padStart(4, "0");
+        }
+        else {
+            e += s.charAt(i);
+        }
+    }
+
+    return e;
+}
+
+function isNumber(value) {
+	return typeof value === "number" || value instanceof Number;
+}
+
+function isBoolean(value) {
+	return typeof value === "boolean" || value instanceof Boolean;
+}
+
+function isString(value) {
+	return typeof value === "string" || value instanceof String;
 }
 
 function isFunction(value, fcnName) {

@@ -1,13 +1,17 @@
 const fs = require("fs");
 
-const Universe = require("../world/Universe.js");
+const ServerEntropy = require("./ServerEntropy.js");
+const ServerRNG = require("./ServerRNG.js");
 const ServerScheduler = require("./ServerScheduler.js");
+const Universe = require("../world/Universe.js");
 
 const COMMA = ",";
 const CRLF = "\r\n";
 const PIPE = "|";
 
 class Server {
+    serverEntropy = new ServerEntropy();
+    serverRNG = new ServerRNG();
     serverScheduler = new ServerScheduler();
 
     id;
@@ -52,12 +56,29 @@ class Server {
         this.universe = universe;
     }
 
+    getRandomInteger(max) {
+        // Feed the current tick and any accumulated entropy into the RNG to produce a random number.
+        let currentTick = this.serverScheduler.currentTick;
+        let entropyArray = this.serverEntropy.entropyArray;
+        
+        //return this.serverRNG.getRandomInteger(currentTick, entropyArray, max);
+        let R = this.serverRNG.getRandomInteger(currentTick, entropyArray, max);
+        //console.log("R = " + R);
+
+        console.log("c = " + currentTick + " e = " + this.serverRNG.reduce(entropyArray) + " s = " + this.serverRNG.seed + " R = " + R);
+
+        return R;
+    }
+
     serialize(writer) {
+        // The ServerScheduler must be handled last because all of the server entities must already be processed first.
         writer.beginObject()
-            .serialize("serverScheduler", this.serverScheduler)
             .serialize("id", this.id)
             .serialize("name", this.name)
             .serialize("universe", this.universe)
+            .serialize("serverEntropy", this.serverEntropy)
+            .serialize("serverRNG", this.serverRNG)
+            .serialize("serverScheduler", this.serverScheduler)
         .endObject();
     }
 
@@ -65,12 +86,16 @@ class Server {
         let server = new Server();
 
         reader.beginObject();
-        let serverScheduler = reader.deserialize("serverScheduler", "ServerScheduler");
         let id = reader.deserialize("id", "Number");
         let name = reader.deserialize("name", "String");
         let universe = reader.deserialize("universe", "Universe");
+        let serverEntropy = reader.deserialize("serverEntropy", "ServerEntropy");
+        let serverRNG = reader.deserialize("serverRNG", "ServerRNG");
+        let serverScheduler = reader.deserialize("serverScheduler", "ServerScheduler");
         reader.endObject();
 
+        server.serverEntropy = serverEntropy;
+        server.serverRNG = serverRNG;
         server.serverScheduler = serverScheduler;
         server.id = id;
         server.name = name;

@@ -1,7 +1,7 @@
-const Client = require("../client/Client.js");
+const ClientFactory = require("../client/ClientFactory.js");
 const Account = require("../account/Account.js");
 const EntityFactory = require("../entity/EntityFactory.js");
-const ServerTask2 = require("../server/ServerTask2.js");
+const ServerTask = require("../server/ServerTask.js");
 
 // Used to limit the amount of socket connections that an IP can form at once.
 const numAllowedSockets = 10;
@@ -139,8 +139,6 @@ function attachAppListeners(socket, appState) {
 	// Respond to login.
 	socket.on("on_login", (username, password, playerName, serverName, worldName, callback) => {
 		rateLimitLoginTask(ip, () => {
-			const AppState = require("../AppState.js");
-
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -148,13 +146,12 @@ function attachAppListeners(socket, appState) {
 				return;
 			}
 
-			if(AppState.instance.clientMap.has(username)) {
+			let key = username + "-" + password;
+			if(ClientFactory.clientKeyMap.has(key)) {
 				// User is already logged in.
 				callback({"isSuccess": false});
 				return;
 			}
-
-			let key = username + "-" + password;
 
 			let account = appState.accountManager.getAccount(key);
 			if(!account) {
@@ -178,7 +175,7 @@ function attachAppListeners(socket, appState) {
 			}
 
 			// If the player has never logged in before then default to their home screen on this world.
-			let client = new Client(playerName, player);
+			let client = ClientFactory.createInstance(server.name, world.name, playerName, player, key);
 			if(!client.player.screen) {
 				let screen = world.getMapByName(client.player.homeMapName).getScreenByName(client.player.homeScreenName);
 				if(!screen) {
@@ -190,34 +187,21 @@ function attachAppListeners(socket, appState) {
 				client.player.y = client.player.homeY;
 			}
 
-			AppState.instance.clientMap.set(key, client);
-
-			/*
-			client.player.getServerScheduler().scheduleTask(undefined, 0, () => {
-                client.player.doSpawnInWorld(world);
-            });
-			*/
-
-			let serverTask = new ServerTask2((player, world) => {
+			let serverTask = new ServerTask((player, world) => {
 				player.doSpawnInWorld(world);
 			}, client.player, world);
 	
-			client.player.getServerScheduler().scheduleTask2(undefined, 0, serverTask);
+			client.player.getServerScheduler().scheduleTask(undefined, 0, serverTask);
 
 			socket.on("disconnect", (reason) => {
-				AppState.instance.clientMap.delete(key);
+				ClientFactory.clientIDMap.delete(client.id);
+				ClientFactory.clientKeyMap.delete(client.key);
 
-				/*
-				client.player.getServerScheduler().scheduleTask(undefined, 0, () => {
-					client.player.doDespawn();
-				});
-				*/
-
-				let serverTask = new ServerTask2((player) => {
+				let serverTask = new ServerTask((player) => {
 					player.doDespawn();
 				}, client.player);
 
-				client.player.getServerScheduler().scheduleTask2(undefined, 0, serverTask);
+				client.player.getServerScheduler().scheduleTask(undefined, 0, serverTask);
 			});
 
 			attachClientListeners(socket, client);

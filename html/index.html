@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-US">	
+<html lang="en-US" id="html">	
 	<head>
 		<title>Canvas</title>
 	</head>
@@ -52,8 +52,7 @@
 			const loginAccount2MageButton = document.querySelector('#loginAccount2MageButton');
 			const loginAccount2WarriorButton = document.querySelector('#loginAccount2WarriorButton');
 			
-			//const SOCKET_TIMEOUT = 10000;
-			const SOCKET_TIMEOUT = 1000;
+			const SOCKET_TIMEOUT = 10000;
 			const INPUT_FPS_RATE = 60; // times per second inputs are queried
 			const ANIMATION_TIME = 4; // seconds per animation cycle
 			const ANIMATION_FRAMES = 8; // frames per animation cycle
@@ -73,6 +72,8 @@
 			canvas.height = canvas_height;
 			
 			const ctx = canvas.getContext("2d");
+			
+			const html = document.getElementById("html");
 			
 			
 			
@@ -152,23 +153,19 @@
 			
 			async function reactAccountCreation(username, password) {
 				if(socket && isSocketConnected) {
-					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_account_creation", username, password);
-					console.log(R);
+					await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_account_creation", username, password);
 				}
 			}
 			
 			async function reactCharacterCreation(username, password, playerName, playerClass) {
 				if(socket && isSocketConnected) {
-					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_character_creation", username, password, playerName, playerClass);
-					console.log(R);
+					await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_character_creation", username, password, playerName, playerClass);
 				}
 			}
 			
 			async function reactLogin(username, password, playerName, serverName, worldName) {
 				if(socket&& isSocketConnected) {
 					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login", username, password, playerName, serverName, worldName);
-					console.log(R);
-					
 					if(R.isSuccess) {
 						startInterval();
 						startDevInterval();
@@ -224,11 +221,6 @@
 				if(downButton !== undefined) {
 					deltaSpace++;
 				}
-			});
-			
-			canvas.addEventListener('mouseleave', function (e) {
-				// Reset without allowing any action.
-				downButton = undefined;
 			});
 
 			canvas.addEventListener('mouseup', function (e) {
@@ -309,8 +301,10 @@
 			let isKeyPressed = {};
 			
 			document.onkeydown = (evt) => {
-				evt.preventDefault();
-				isKeyPressed[evt.keyCode] = true;
+				if(inputsEnabled) {
+					evt.preventDefault();
+					isKeyPressed[evt.keyCode] = true;
+				}
 			}
 			
 			document.onkeyup = (evt) => {
@@ -387,32 +381,54 @@
 				}
 			}
 			
+			let inputsEnabled = true;
+			
+			window.addEventListener('blur', function (e) {
+				inputsEnabled = false;
+				isKeyPressed = {};
+			});
+			
+			window.addEventListener('focus', function (e) {
+				inputsEnabled = true;
+			});
+			
+			/*
+			html.addEventListener('mouseleave', function (e) {
+				inputsEnabled = false;
+				isKeyPressed = {};
+			});
+			
+			html.addEventListener('mouseenter', function (e) {
+				inputsEnabled = true;
+			});
+			*/
+			
 			async function reactControllerPress(buttons) {
-				if(socket && isSocketLoggedIn) {
+				if(socket && isSocketLoggedIn && inputsEnabled) {
 					await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_controller_press", buttons);
 				}
 			}
 			
 			async function reactControllerSticks(axes) {
-				if(socket && isSocketLoggedIn) {
+				if(socket && isSocketLoggedIn && inputsEnabled) {
 					await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_controller_sticks", axes);
 				}
 			}
 
 			async function reactKeyPress(keys) {
-				if(socket && isSocketLoggedIn) {
+				if(socket && isSocketLoggedIn && inputsEnabled) {
 					await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_key_press", keys);
 				}
 			}
 			
 			async function reactButtonClick(button, location, info) {
-				if(socket && isSocketLoggedIn) {
+				if(socket && isSocketLoggedIn && inputsEnabled) {
 					await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_mouse_click", button, location, info);
 				}
 			}
 			
 			async function reactButtonDrag(button, location1, info1, location2, info2) {
-				if(socket && isSocketLoggedIn) {
+				if(socket && isSocketLoggedIn && inputsEnabled) {
 					await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_mouse_drag", button, location1, info1, location2, info2);
 				}
 			}
@@ -481,7 +497,6 @@
 					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("get_dev_data");
 					
 					let currentTick = Math.floor(Number(R.info.currentTick) / 60);
-					//console.log(message);
 					devText.innerHTML = currentTick;
 				}
 			}

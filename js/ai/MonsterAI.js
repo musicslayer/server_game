@@ -1,7 +1,10 @@
+const AI = require("./AI.js");
 const Util = require("../util/Util.js");
 const MoveAnimation = require("../animation/MoveAnimation.js");
+const ServerTask = require("../server/ServerTask.js");
+const EntityFactory = require("../entity/EntityFactory.js");
 
-class MonsterAI {
+class MonsterAI extends AI {
     // This is the time to do any non-standard action (waiting, changing direction).
     // This should be quick so the monster does not appear to be stalled.
     defaultTime = .1;
@@ -11,7 +14,8 @@ class MonsterAI {
         // Look for the player with the highest agro and move towards them.
         let time = this.defaultTime;
 
-        let aggroPlayer = monster.getAggroPlayer();
+        let aggroPlayerID = monster.getAggroPlayer();
+        let aggroPlayer = EntityFactory.entityMap.get(aggroPlayerID);
 
         let directions;
         if(!aggroPlayer) {
@@ -43,17 +47,23 @@ class MonsterAI {
                 this.randomDirectionFlag = true;
 
                 time = monster.directionTime;
-                monster.getServerScheduler().scheduleTask(undefined, 0, () => {
-                    monster.doChangeDirection(randomValidDirection);
-                });
+
+                let serverTask = new ServerTask((monster, direction) => {
+                    monster.doChangeDirection(direction);
+                }, monster, randomValidDirection);
+        
+                monster.getServerScheduler().scheduleTask(undefined, 0, serverTask);
             }
             else {
                 this.randomDirectionFlag = false;
 
                 time = monster.moveTime;
-                monster.getServerScheduler().scheduleTask(new MoveAnimation(monster, time), time, () => {
+
+                let serverTask = new ServerTask((monster) => {
                     monster.doMoveStep();
-                });
+                }, monster);
+        
+                monster.getServerScheduler().scheduleTask(new MoveAnimation(monster, time), time, serverTask);
             }
         }
         else if(directions.length > 0) {
@@ -61,23 +71,31 @@ class MonsterAI {
             if(!directions.includes(monster.direction)) {
                 // Face towards the aggro player, picking a direction deterministically to avoid jittering.
                 time = monster.directionTime;
-                monster.getServerScheduler().scheduleTask(undefined, 0, () => {
-                    monster.doChangeDirection(directions[0]);
-                });
+
+                let serverTask = new ServerTask((monster, direction) => {
+                    monster.doChangeDirection(direction);
+                }, monster, directions[0]);
+        
+                monster.getServerScheduler().scheduleTask(undefined, 0, serverTask);
             }
             else if(this.isFacingAPlayer(monster)) {
                 // If any player is in front of us (aggro or not) attack them.
                 // This means that if another player is blocking the monster from the aggro player, they will be attacked instead.
                 time = monster.actionTime;
-                monster.getServerScheduler().scheduleTask(undefined, 0, () => {
+
+                let serverTask = new ServerTask((monster) => {
                     monster.doAction();
-                });
+                }, monster);
+        
+                monster.getServerScheduler().scheduleTask(undefined, 0, serverTask);
             }
         }
 
-        monster.getServerScheduler().scheduleTask(undefined, time, () => {
-            this.generateNextActivity(monster);
-        });
+        let serverTask2 = new ServerTask((monster) => {
+            monster.ai.generateNextActivity(monster);
+        }, monster);
+
+        monster.getServerScheduler().scheduleTask(undefined, time, serverTask2);
     }
 
     getRandomValidDirection(monster, directions) {
@@ -90,7 +108,7 @@ class MonsterAI {
             }
         }
     
-        let R = Util.getRandomInt(validDirections.length);
+        let R = monster.getServer().getRandomInteger(validDirections.length);
         return validDirections[R];
     }
 

@@ -1,5 +1,6 @@
-const Performance = require("../server/Performance.js");
+const Performance = require("../constants/Performance.js");
 const Util = require("../util/Util.js");
+const ServerTask = require("../server/ServerTask.js");
 
 class MoveAnimation {
     entity;
@@ -17,19 +18,24 @@ class MoveAnimation {
             
         for(let a = 0; a < frames; a++) {
             let fraction = a / frames;
-            serverScheduler.scheduleTask(undefined, this.time * fraction, () => {
-                let [shiftX, shiftY] = Util.getDirectionalShift(this.entity.direction);
-                this.entity.animationShiftX = (shiftX * fraction);
-                this.entity.animationShiftY = (shiftY * fraction);
-            });
+            let [shiftX, shiftY] = Util.getDirectionalShift(this.entity.direction);
+
+            let serverTask = new ServerTask((entity, fraction, shiftX, shiftY) => {
+                entity.animationShiftX = (shiftX * fraction);
+                entity.animationShiftY = (shiftY * fraction);
+            }, this.entity, fraction, shiftX, shiftY);
+    
+            serverScheduler.scheduleTask(undefined, this.time * fraction, serverTask);
         }
 
-        serverScheduler.scheduleTask(undefined, this.time, () => {
-            this.entity.isMoveInProgress = false;
+        let serverTask2 = new ServerTask((entity) => {
+            entity.isMoveInProgress = false;
             
-            this.entity.animationShiftX = 0;
-            this.entity.animationShiftY = 0;
-        });
+            entity.animationShiftX = 0;
+            entity.animationShiftY = 0;
+        }, this.entity);
+
+        serverScheduler.scheduleTask(undefined, this.time, serverTask2);
     }
 }
 

@@ -1,6 +1,6 @@
 const { Worker } = require("worker_threads");
 
-const Performance = require("../server/Performance.js");
+const Performance = require("../constants/Performance.js");
 const ServerTaskList = require("./ServerTaskList.js");
 
 class ServerScheduler {
@@ -8,38 +8,22 @@ class ServerScheduler {
     currentTick = 0;
     worker;
 
-    scheduleTask(animation, time, task) {
+    scheduleTask(animation, time, serverTask) {
         animation?.scheduleAnimation(this);
-
-        this.addTask(time, () => {
-            task();
-        });
-    }
-
-    scheduleTask2(animation, time, serverTask) {
-        animation?.scheduleAnimation(this);
-
-        this.addTask2(time, serverTask);
+        this.addTask(time, serverTask);
     }
 
     // TODO Implement?
-    scheduleRefreshTask2(animation, time, serverTask) {
+    scheduleRefreshTask(animation, time, serverTask) {
         animation?.scheduleAnimation(this);
 
-        this.addTask2(time, serverTask);
+        this.addTask(time, serverTask);
     }
 
-    addTask(time, task) {
+    addTask(time, serverTask) {
         let tick = Math.floor(this.currentTick + time * Performance.TICK_RATE);
         let serverTaskList = this.scheduledTaskMap.get(tick) ?? new ServerTaskList();
-        serverTaskList.addTask(task);
-        this.scheduledTaskMap.set(tick, serverTaskList);
-    }
-
-    addTask2(time, serverTask) {
-        let tick = Math.floor(this.currentTick + time * Performance.TICK_RATE);
-        let serverTaskList = this.scheduledTaskMap.get(tick) ?? new ServerTaskList();
-        serverTaskList.addTask2(serverTask);
+        serverTaskList.addTask(serverTask);
         this.scheduledTaskMap.set(tick, serverTaskList);
     }
 
@@ -63,21 +47,20 @@ class ServerScheduler {
     async endServerTick() {
         // This is needed to make sure we can end worker threads when a server is no longer in use.
         this.worker.terminate();
-        this.worker = undefined;
     }
 
     async doWork(shared) {
-        await Atomics.waitAsync(shared, 0, 0).value;
+        while(true) {
+            await Atomics.waitAsync(shared, 0, 0).value;
 
-        let serverTaskList = this.scheduledTaskMap.get(this.currentTick) ?? new ServerTaskList();
-        this.scheduledTaskMap.delete(this.currentTick);
+            let serverTaskList = this.scheduledTaskMap.get(this.currentTick) ?? new ServerTaskList();
+            this.scheduledTaskMap.delete(this.currentTick);
 
-        // Increment the current tick now so that new tasks added during a task won't be executed until the next tick.
-        this.currentTick++;
+            // Increment the current tick now so that new tasks added during a task won't be executed until the next tick.
+            this.currentTick++;
 
-        serverTaskList.execute();
-    
-        this.doWork(shared)
+            serverTaskList.execute();
+        }
     }
 
     serialize(writer) {

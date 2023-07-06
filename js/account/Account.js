@@ -22,7 +22,7 @@ class Account {
 
         reader.beginObject();
         let key = reader.deserialize("key", "String");
-        let characterMap = reader.deserializeMap("characterMap", "String", "Player");
+        let characterMap = reader.deserializeMap("characterMap", "String", "Entity");
         reader.endObject();
 
         account.key = key;

@@ -1,7 +1,7 @@
 const fs = require("fs");
 
+const Reflection = require("../reflection/Reflection.js");
 const EntityFactory = require("../entity/EntityFactory.js");
-const WorldFactory = require("./WorldFactory.js");
 const Tile = require("./Tile.js");
 const Util = require("../util/Util.js");
 
@@ -25,7 +25,7 @@ class Screen {
     playerEntities = [];
 
     static loadScreenFromFile(className, screenFile) {
-        let screen = WorldFactory.createInstance(className);
+        let screen = Reflection.createInstance(className);
 
         let tileData = fs.readFileSync(screenFile, "ascii");
         let lines = tileData ? tileData.split(CRLF) : [];
@@ -188,9 +188,7 @@ class Screen {
         // Only serialize entities that are serializable and non-players here.
         let serializableEntities = [];
         for(let entity of this.otherEntities) {
-            if(entity.isSerializable) {
-                serializableEntities.push(entity);
-            }
+            serializableEntities.push(entity);
         }
 
         writer.beginObject()
@@ -236,6 +234,39 @@ class Screen {
         }
 
         return screen;
+    }
+
+    reference(writer) {
+        // Write enough information so the screen can be found later.
+        writer.beginObject()
+            .serialize("screenX", this.x)
+            .serialize("screenY", this.y)
+            .serialize("mapName", this.map.name)
+            .serialize("worldName", this.map.world.name)
+            .serialize("universeName", this.map.world.universe.name)
+            .serialize("serverName", this.map.world.universe.server.name)
+        .endObject();
+    }
+
+    static dereference(reader) {
+        // Only return the information here, not an actual Screen instance.
+        reader.beginObject();
+        let screenX = reader.deserialize("screenX", "Number");
+        let screenY = reader.deserialize("screenY", "Number");
+        let mapName = reader.deserialize("mapName", "String");
+        let worldName = reader.deserialize("worldName", "String");
+        let universeName = reader.deserialize("universeName", "String");
+        let serverName = reader.deserialize("serverName", "String");
+        reader.endObject();
+
+        return {
+            screenX: screenX,
+            screenY: screenY,
+            mapName: mapName,
+            worldName: worldName,
+            universeName: universeName,
+            serverName: serverName
+        };
     }
 }
 

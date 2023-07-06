@@ -1,15 +1,7 @@
-const ServerTask = require("./ServerTask.js");
-
 class ServerTaskList {
     serverTasks = [];
 
-    addTask(task, ...args) {
-        // Convert to a server task first.
-        let serverTask = new ServerTask(task, ...args);
-        this.serverTasks.push(serverTask);
-    }
-
-    addTask2(serverTask) {
+    addTask(serverTask) {
         this.serverTasks.push(serverTask);
     }
 

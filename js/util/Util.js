@@ -17,11 +17,6 @@ class Util {
     
         return shiftArray;
     }
-
-    static getRandomInt(max) {
-        // Returns a random int [0, max)
-        return Math.floor(Math.random() * max);
-    }
 }
 
 module.exports = Util;
