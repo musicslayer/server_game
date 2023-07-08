@@ -115,7 +115,7 @@ class Client {
         }
     }
 
-    onKeyPress(keys) {
+    async onKeyPress(keys) {
         let inputs = this.keyboard.processKeyPress(keys);
 
         // Inventory (only one will be executed)
@@ -298,15 +298,15 @@ class Client {
 
         // **** Save/load state (only one will be executed)
         if(inputs.includes("save_state")) {
-            this.scheduleRealtimeTask(() => {
+            await this.scheduleRealtimeTask(async () => {
                 const AppState = require("../AppState.js");
-                AppState.instance.save();
+                await AppState.instance.save();
             });
         }
         else if(inputs.includes("load_state")) {
-            this.scheduleRealtimeTask(() => {
+            await this.scheduleRealtimeTask(async () => {
                 const AppState = require("../AppState.js");
-                AppState.instance.load();
+                await AppState.instance.load();
             });
         }
     }
@@ -410,12 +410,12 @@ class Client {
         }
     }
 
-    scheduleRealtimeTask(task) {
+    async scheduleRealtimeTask(task) {
         // Don't schedule these on the server.
         if(this.delayMap.get("realtime") === true || this.delayMap.get("realtime") === undefined) {
             this.delayMap.set("realtime", false);
 
-            task();
+            await task();
 
             setTimeout(() => {
                 this.delayMap.set("realtime", true);
@@ -580,8 +580,10 @@ class Client {
         }
     }
 
+    // TODO This doesn't actually get called. Should it?
     serialize(writer) {
         writer.beginObject()
+            .serialize("!V!", 1)
             .serialize("id", this.id)
             .serialize("key", this.key)
             .serialize("selectedEntity", this.selectedEntity.id)
@@ -597,39 +599,37 @@ class Client {
     }
 
     static deserialize(reader) {
-        let client = new Client();
-
+        let client;
         reader.beginObject();
-        let id = reader.deserialize("id", "Number");
-        let key = reader.deserialize("key", "String");
-        let selectedEntityID = reader.deserialize("selectedEntity", "Number");
-        let selectedSlot = reader.deserialize("selectedSlot", "Number");
-        let delayMap = reader.deserializeMap("delayMap", "Boolean");
-        let clientInputTime = reader.deserialize("clientInputTime", "Number");
-        let realtimeInputTime = reader.deserialize("realtimeInputTime", "Number");
-        let serverName = reader.deserialize("serverName", "String");
-        let worldName = reader.deserialize("worldName", "String");
-        let playerName = reader.deserialize("playerName", "String");
-        let playerID = reader.deserialize("player", "Number");
-        reader.endObject();
 
-        client.id = id;
-        client.key = key;
-        client.selectedEntity = EntityFactory.entityMap.get(selectedEntityID);
-        client.selectedSlot = selectedSlot;
-        client.delayMap = delayMap;
-        client.clientInputTime = clientInputTime;
-        client.realtimeInputTime = realtimeInputTime;
-        client.serverName = serverName;
-        client.worldName = worldName;
-        client.playerName = playerName;
-        client.player = EntityFactory.entityMap.get(playerID);
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            client = new Client();
+            client.id = reader.deserialize("id", "Number");
+            client.key = reader.deserialize("key", "String");
+            let selectedEntityID = reader.deserialize("selectedEntity", "Number");
+            client.selectedSlot = reader.deserialize("selectedSlot", "Number");
+            client.delayMap = reader.deserializeMap("delayMap", "Boolean");
+            client.clientInputTime = reader.deserialize("clientInputTime", "Number");
+            client.realtimeInputTime = reader.deserialize("realtimeInputTime", "Number");
+            client.serverName = reader.deserialize("serverName", "String");
+            client.worldName = reader.deserialize("worldName", "String");
+            client.playerName = reader.deserialize("playerName", "String");
+            let playerID = reader.deserialize("player", "Number");
 
-        // Update the ClientFactory mapping.
-        const ClientFactory = require("./ClientFactory");
-        ClientFactory.clientIDMap.set(client.id, client);
-        ClientFactory.clientKeyMap.set(client.key, client);
+            client.selectedEntity = EntityFactory.entityMap.get(selectedEntityID);
+            client.player = EntityFactory.entityMap.get(playerID);
+
+            // Update the ClientFactory mapping.
+            const ClientFactory = require("./ClientFactory");
+            ClientFactory.clientIDMap.set(client.id, client);
+            ClientFactory.clientKeyMap.set(client.key, client);
+        }
+        else {
+            throw("Unknown version number: " + version);
+        }
         
+        reader.endObject();
         return client;
     }
 }

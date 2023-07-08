@@ -7,8 +7,10 @@ class AI {
 
     serialize(writer) {
         writer.beginObject()
+            .serialize("!V!", 1)
             .serialize("className", this.getClassName());
 
+        // TODO Get rid of.
         if(this.getClassName() === "MonsterAI") {
             writer.serialize("defaultTime", this.defaultTime)
                 .serialize("randomDirectionFlag", this.randomDirectionFlag)
@@ -19,24 +21,23 @@ class AI {
 
     static deserialize(reader) {
         let ai;
-
         reader.beginObject();
-        let className = reader.deserialize("className", "String");
 
-        let defaultTime;
-        let randomDirectionFlag;
-        if(className === "MonsterAI") {
-            defaultTime = reader.deserialize("defaultTime", "Number");
-            randomDirectionFlag = reader.deserialize("randomDirectionFlag", "Boolean");
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            let className = reader.deserialize("className", "String");
+            ai = Reflection.createInstance(className);
+
+            if(className === "MonsterAI") {
+                ai.defaultTime = reader.deserialize("defaultTime", "Number");
+                ai.randomDirectionFlag = reader.deserialize("randomDirectionFlag", "Boolean");
+            }
+        }
+        else {
+            throw("Unknown version number: " + version);
         }
 
         reader.endObject();
-
-        ai = Reflection.createInstance(className);
-
-        ai.defaultTime = defaultTime;
-        ai.randomDirectionFlag = randomDirectionFlag;
-
         return ai;
     }
 }

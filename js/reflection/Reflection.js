@@ -40,10 +40,25 @@ class Reflection {
         return instance;
     }
 
+    static isStaticMethod(className, methodName) {
+        let parts = className.split(".");
+        let classData = Reflection.classMap[parts.shift()];
+        while(parts.length > 0) {
+            classData = classData[parts.shift()];
+        }
+
+        return classData && isFunction(classData, methodName);
+    }
+
     static callStaticMethod(className, methodName, ...args) {
         let returnValue;
 
-        let classData = Reflection.classMap[className];
+        let parts = className.split(".");
+        let classData = Reflection.classMap[parts.shift()];
+        while(parts.length > 0) {
+            classData = classData[parts.shift()];
+        }
+
         if(classData && isFunction(classData, methodName)) {
             returnValue = classData[methodName](...args);
         }

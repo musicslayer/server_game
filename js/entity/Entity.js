@@ -455,25 +455,31 @@ class Entity {
     serialize(writer) {
         // To avoid a circular loop, only write a reference to the screen.
         writer.beginObject()
+            .serialize("!V!", 1)
             .serialize("className", this.getClassName())
             .serialize("id", this.id)
             .serialize("isSpawned", this.isSpawned)
             .serialize("isPlayer", this.isPlayer)
             .serialize("isAI", this.isAI)
+            .serialize("ownerID", this.owner?.id ?? this.ownerID)
             .serialize("health", this.health)
             .serialize("maxHealth", this.maxHealth)
             .serialize("mana", this.mana)
             .serialize("maxMana", this.maxMana)
             .serialize("isDead", this.isDead)
             .serialize("isInvincible", this.isInvincible)
+            .reference("screen", this.screen)
             .serialize("x", this.x)
             .serialize("y", this.y)
+            .serialize("animationShiftX", this.animationShiftX)
+            .serialize("animationShiftY", this.animationShiftY)
             .serialize("homeMapName", this.homeMapName)
             .serialize("homeScreenName", this.homeScreenName)
             .serialize("homeX", this.homeX)
             .serialize("homeY", this.homeY)
             .serialize("isTangible", this.isTangible)
             .serialize("isActionBlocker", this.isActionBlocker)
+            .serialize("isMoveInProgress", this.isMoveInProgress)
             .serialize("moveTime", this.moveTime)
             .serialize("directionTime", this.directionTime)
             .serialize("actionTime", this.actionTime)
@@ -484,9 +490,6 @@ class Entity {
             .serialize("maxStackNumber", this.maxStackNumber)
             .serialize("maxStackSize", this.maxStackSize)
             .serialize("stackSize", this.stackSize)
-            .serialize("animationShiftX", this.animationShiftX)
-            .serialize("animationShiftY", this.animationShiftY)
-            .serialize("isMoveInProgress", this.isMoveInProgress)
 
         if(this.isPlayer) {
             writer.serialize("healthRegen", this.healthRegen)
@@ -518,149 +521,88 @@ class Entity {
         writer.serialize("aggroForgivenessTime", this.aggroForgivenessTime);
         writer.serialize("lastPlayerID", this.lastPlayerID);
 
-        writer.serialize("ownerID", this.owner?.id ?? this.ownerID)
-            .reference("screen", this.screen)
-            .endObject();
+        writer.endObject();
     }
 
     static deserialize(reader) {
         let entity;
-
         reader.beginObject();
-        let className = reader.deserialize("className", "String");
-        let id = reader.deserialize("id", "Number");
-        let isSpawned = reader.deserialize("isSpawned", "Boolean");
-        let isPlayer = reader.deserialize("isPlayer", "Boolean");
-        let isAI = reader.deserialize("isAI", "Boolean");
-        let health = reader.deserialize("health", "Number");
-        let maxHealth = reader.deserialize("maxHealth", "Number");
-        let mana = reader.deserialize("mana", "Number");
-        let maxMana = reader.deserialize("maxMana", "Number");
-        let isDead = reader.deserialize("isDead", "Boolean");
-        let isInvincible = reader.deserialize("isInvincible", "Boolean");
-        let x = reader.deserialize("x", "Number");
-        let y = reader.deserialize("y", "Number");
-        let homeMapName = reader.deserialize("homeMapName", "String");
-        let homeScreenName = reader.deserialize("homeScreenName", "String");
-        let homeX = reader.deserialize("homeX", "Number");
-        let homeY = reader.deserialize("homeY", "Number");
-        let isTangible = reader.deserialize("isTangible", "Boolean");
-        let isActionBlocker = reader.deserialize("isActionBlocker", "Boolean");
-        let moveTime = reader.deserialize("moveTime", "Number");
-        let directionTime = reader.deserialize("directionTime", "Number");
-        let actionTime = reader.deserialize("actionTime", "Number");
-        let inventoryTime = reader.deserialize("inventoryTime", "Number");
-        let purseTime = reader.deserialize("purseTime", "Number");
-        let createTime = reader.deserialize("createTime", "Number");
-        let direction = reader.deserialize("direction", "String");
-        let maxStackNumber = reader.deserialize("maxStackNumber", "Number");
-        let maxStackSize = reader.deserialize("maxStackSize", "Number");
-        let stackSize = reader.deserialize("stackSize", "Number");
-        let animationShiftX = reader.deserialize("animationShiftX", "Number");
-        let animationShiftY = reader.deserialize("animationShiftY", "Number");
-        let isMoveInProgress = reader.deserialize("isMoveInProgress", "Boolean");
 
-        let healthRegen;
-        let manaRegen;
-        let inventory;
-        let purse;
-        let progress;
-        if(isPlayer) {
-            healthRegen = reader.deserialize("healthRegen", "Number");
-            manaRegen = reader.deserialize("manaRegen", "Number");
-            inventory = reader.deserialize("inventory", "Inventory");
-            purse = reader.deserialize("purse", "Purse");
-            progress = reader.deserialize("progress", "Progress");
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            let className = reader.deserialize("className", "String");
+            entity = Reflection.createInstance(className);
+
+            // Note that "ownerID" and "screenInfo" will be used later.
+            entity.id = reader.deserialize("id", "Number");
+            entity.isSpawned = reader.deserialize("isSpawned", "Boolean");
+            entity.isPlayer = reader.deserialize("isPlayer", "Boolean");
+            entity.isAI = reader.deserialize("isAI", "Boolean");
+            entity.ownerID = reader.deserialize("ownerID", "Number");
+            entity.health = reader.deserialize("health", "Number");
+            entity.maxHealth = reader.deserialize("maxHealth", "Number");
+            entity.mana = reader.deserialize("mana", "Number");
+            entity.maxMana = reader.deserialize("maxMana", "Number");
+            entity.isDead = reader.deserialize("isDead", "Boolean");
+            entity.isInvincible = reader.deserialize("isInvincible", "Boolean");
+            entity.screenInfo = reader.dereference("screen", "Screen");
+            entity.x = reader.deserialize("x", "Number");
+            entity.y = reader.deserialize("y", "Number");
+            entity.animationShiftX = reader.deserialize("animationShiftX", "Number");
+            entity.animationShiftY = reader.deserialize("animationShiftY", "Number");
+            entity.homeMapName = reader.deserialize("homeMapName", "String");
+            entity.homeScreenName = reader.deserialize("homeScreenName", "String");
+            entity.homeX = reader.deserialize("homeX", "Number");
+            entity.homeY = reader.deserialize("homeY", "Number");
+            entity.isTangible = reader.deserialize("isTangible", "Boolean");
+            entity.isActionBlocker = reader.deserialize("isActionBlocker", "Boolean");
+            entity.isMoveInProgress = reader.deserialize("isMoveInProgress", "Boolean");
+            entity.moveTime = reader.deserialize("moveTime", "Number");
+            entity.directionTime = reader.deserialize("directionTime", "Number");
+            entity.actionTime = reader.deserialize("actionTime", "Number");
+            entity.inventoryTime = reader.deserialize("inventoryTime", "Number");
+            entity.purseTime = reader.deserialize("purseTime", "Number");
+            entity.createTime = reader.deserialize("createTime", "Number");
+            entity.direction = reader.deserialize("direction", "String");
+            entity.maxStackNumber = reader.deserialize("maxStackNumber", "Number");
+            entity.maxStackSize = reader.deserialize("maxStackSize", "Number");
+            entity.stackSize = reader.deserialize("stackSize", "Number");
+
+            if(entity.isPlayer) {
+                entity.healthRegen = reader.deserialize("healthRegen", "Number");
+                entity.manaRegen = reader.deserialize("manaRegen", "Number");
+                entity.inventory = reader.deserialize("inventory", "Inventory");
+                entity.purse = reader.deserialize("purse", "Purse");
+                entity.progress = reader.deserialize("progress", "Progress");
+            }
+
+            if(entity.isAI) {
+                entity.ai = reader.deserialize("ai", "AI");
+            }
+
+            entity.range = reader.deserialize("range", "Number");
+            entity.damage = reader.deserialize("damage", "Number");
+            entity.isMulti = reader.deserialize("isMulti", "Boolean");
+
+            entity.spawnTime = reader.deserialize("spawnTime", "Number");
+            entity.monsterCount = reader.deserialize("monsterCount", "Number");
+            entity.maxMonsterCount = reader.deserialize("maxMonsterCount", "Number");
+
+            entity.aggroMap = reader.deserializeMap("aggroMap", "Number", "Number");
+            entity.maxAggro = reader.deserialize("maxAggro", "Number");
+            entity.aggroGain = reader.deserialize("aggroGain", "Number");
+            entity.aggroForgiveness = reader.deserialize("aggroForgiveness", "Number");
+            entity.aggroForgivenessTime = reader.deserialize("aggroForgivenessTime", "Number");
+            entity.lastPlayerID = reader.deserialize("lastPlayerID", "Number");
+
+            // Update the EntityFactory mapping.
+            EntityFactory.entityMap.set(entity.id, entity);
+        }
+        else {
+            throw("Unknown version number: " + version);
         }
 
-        let ai;
-        if(isAI) {
-            ai = reader.deserialize("ai", "AI");
-        }
-
-        let range = reader.deserialize("range", "Number");
-        let damage = reader.deserialize("damage", "Number");
-        let isMulti = reader.deserialize("isMulti", "Boolean");
-
-        let spawnTime = reader.deserialize("spawnTime", "Number");
-        let monsterCount = reader.deserialize("monsterCount", "Number");
-        let maxMonsterCount = reader.deserialize("maxMonsterCount", "Number");
-
-        let aggroMap = reader.deserializeMap("aggroMap", "Number", "Number");
-        let maxAggro = reader.deserialize("maxAggro", "Number");
-        let aggroGain = reader.deserialize("aggroGain", "Number");
-        let aggroForgiveness = reader.deserialize("aggroForgiveness", "Number");
-        let aggroForgivenessTime = reader.deserialize("aggroForgivenessTime", "Number");
-        let lastPlayerID = reader.deserialize("lastPlayerID", "Number");
-
-        let ownerID = reader.deserialize("ownerID", "Number");
-        let screenInfo = reader.dereference("screen", "Screen");
         reader.endObject();
-
-        entity = Reflection.createInstance(className);
-
-        entity.id = id;
-        entity.isSpawned = isSpawned;
-        entity.isPlayer = isPlayer;
-        entity.isAI = isAI;
-        entity.health = health;
-        entity.maxHealth = maxHealth;
-        entity.mana = mana;
-        entity.maxMana = maxMana;
-        entity.isDead = isDead;
-        entity.isInvincible = isInvincible;
-        entity.x = x;
-        entity.y = y;
-        entity.homeMapName = homeMapName;
-        entity.homeScreenName = homeScreenName;
-        entity.homeX = homeX;
-        entity.homeY = homeY;
-        entity.isTangible = isTangible;
-        entity.isActionBlocker = isActionBlocker;
-        entity.moveTime = moveTime;
-        entity.directionTime = directionTime;
-        entity.actionTime = actionTime;
-        entity.inventoryTime = inventoryTime;
-        entity.purseTime = purseTime;
-        entity.createTime = createTime;
-        entity.direction = direction;
-        entity.maxStackNumber = maxStackNumber;
-        entity.maxStackSize = maxStackSize;
-        entity.stackSize = stackSize;
-        entity.animationShiftX = animationShiftX;
-        entity.animationShiftY = animationShiftY;
-        entity.isMoveInProgress = isMoveInProgress;
-
-        entity.healthRegen = healthRegen;
-        entity.manaRegen = manaRegen;
-        entity.inventory = inventory;
-        entity.purse = purse;
-        entity.progress = progress;
-
-        entity.ai = ai;
-
-        entity.range = range;
-        entity.damage = damage;
-        entity.isMulti = isMulti;
-
-        entity.spawnTime = spawnTime;
-        entity.monsterCount = monsterCount;
-        entity.maxMonsterCount = maxMonsterCount;
-
-        entity.aggroMap = aggroMap;
-        entity.maxAggro = maxAggro;
-        entity.aggroGain = aggroGain;
-        entity.aggroForgiveness = aggroForgiveness;
-        entity.aggroForgivenessTime = aggroForgivenessTime;
-        entity.lastPlayerID = lastPlayerID;
-        
-        // This information will be used later.
-        entity.ownerID = ownerID;
-        entity.screenInfo = screenInfo;
-
-        // Update the EntityFactory mapping.
-        EntityFactory.entityMap.set(entity.id, entity);
-
         return entity;
     }
 }

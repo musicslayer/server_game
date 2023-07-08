@@ -14,19 +14,25 @@ class ServerTaskList {
 
     serialize(writer) {
         writer.beginObject()
+            .serialize("!V!", 1)
             .serializeArray("serverTasks", this.serverTasks)
         .endObject();
     }
 
     static deserialize(reader) {
-        let serverTaskList = new ServerTaskList();
-
+        let serverTaskList;
         reader.beginObject();
-        let serverTasks = reader.deserializeArray("serverTasks", "ServerTask");
+
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            serverTaskList = new ServerTaskList();
+            serverTaskList.serverTasks = reader.deserializeArray("serverTasks", "ServerTask");
+        }
+        else {
+            throw("Unknown version number: " + version);
+        }
+
         reader.endObject();
-
-        serverTaskList.serverTasks = serverTasks;
-
         return serverTaskList;
     }
 }

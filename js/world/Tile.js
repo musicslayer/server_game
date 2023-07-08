@@ -12,6 +12,7 @@ class Tile {
 
     serialize(writer) {
         writer.beginObject()
+            .serialize("!V!", 1)
             .serialize("x", this.x)
             .serialize("y", this.y)
             .serializeArray("imageFolders", this.imageFolders)
@@ -20,20 +21,22 @@ class Tile {
     }
 
     static deserialize(reader) {
-        let tile = new Tile();
-
+        let tile;
         reader.beginObject();
-        let x = reader.deserialize("x", "Number");
-        let y = reader.deserialize("y", "Number");
-        let imageFolders = reader.deserializeArray("imageFolders", "String");
-        let imageFiles = reader.deserializeArray("imageFiles", "String");
+
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            tile = new Tile()
+            tile.x = reader.deserialize("x", "Number");
+            tile.y = reader.deserialize("y", "Number");
+            tile.imageFolders = reader.deserializeArray("imageFolders", "String");
+            tile.imageFiles = reader.deserializeArray("imageFiles", "String");
+        }
+        else {
+            throw("Unknown version number: " + version);
+        }
+
         reader.endObject();
-
-        tile.x = x;
-        tile.y = y;
-        tile.imageFolders = imageFolders;
-        tile.imageFiles = imageFiles;
-
         return tile;
     }
 }

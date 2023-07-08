@@ -53,19 +53,25 @@ class ServerRNG {
 
     serialize(writer) {
         writer.beginObject()
+            .serialize("!V!", 1)
             .serialize("seed", this.seed)
         .endObject();
     }
 
     static deserialize(reader) {
-        let serverRNG = new ServerRNG();
-
+        let serverRNG;
         reader.beginObject();
-        let seed = reader.deserialize("seed", "Number");
+
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            serverRNG = new ServerRNG();
+            serverRNG.seed = reader.deserialize("seed", "Number");
+        }
+        else {
+            throw("Unknown version number: " + version);
+        }
+
         reader.endObject();
-
-        serverRNG.seed = seed;
-
         return serverRNG;
     }
 }

@@ -15,8 +15,10 @@ class Animation {
 
     serialize(writer) {
         writer.beginObject()
+            .serialize("!V!", 1)
             .serialize("className", this.getClassName());
 
+        // TODO Get rid of.
         if(this.getClassName() === "MoveAnimation") {
             writer.serialize("entity", this.entity.id)
                 .serialize("time", this.time)
@@ -27,25 +29,24 @@ class Animation {
 
     static deserialize(reader) {
         let animation;
-
         reader.beginObject();
-        let className = reader.deserialize("className", "String");
 
-        let entity;
-        let time;
-        if(className === "MoveAnimation") {
-            entityID = reader.deserialize("entity", "Number");
-            time = reader.deserialize("time", "Number");
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            let className = reader.deserialize("className", "String");
+            animation = Reflection.createInstance(className);
 
-            entity = EntityFactory.entityMap.get(entityID);
+            if(className === "MoveAnimation") {
+                let entityID = reader.deserialize("entity", "Number");
+                animation.time = reader.deserialize("time", "Number");
+                animation.entity = EntityFactory.entityMap.get(entityID);
+            }
+        }
+        else {
+            throw("Unknown version number: " + version);
         }
 
         reader.endObject();
-
-        animation = Reflection.createInstance(className);
-        animation.entity = entity;
-        animation.time = time;
-
         return animation;
     }
 }

@@ -78,22 +78,27 @@ class Inventory {
 
     serialize(writer) {
         writer.beginObject()
+            .serialize("!V!", 1)
             .serialize("maxSlots", this.maxSlots)
             .serializeMap("itemMap", this.itemMap)
         .endObject();
     }
 
     static deserialize(reader) {
-        let inventory = new Inventory();
-
+        let inventory;
         reader.beginObject();
-        let maxSlots = reader.deserialize("maxSlots", "Number");
-        let itemMap = reader.deserializeMap("itemMap", "Number", "Entity");
+
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            inventory = new Inventory();
+            inventory.maxSlots = reader.deserialize("maxSlots", "Number");
+            inventory.itemMap = reader.deserializeMap("itemMap", "Number", "Entity");
+        }
+        else {
+            throw("Unknown version number: " + version);
+        }
+
         reader.endObject();
-
-        inventory.maxSlots = maxSlots;
-        inventory.itemMap = itemMap;
-
         return inventory;
     }
 }

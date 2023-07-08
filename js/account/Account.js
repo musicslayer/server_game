@@ -12,22 +12,27 @@ class Account {
 
     serialize(writer) {
         writer.beginObject()
+            .serialize("!V!", 1)
             .serialize("key", this.key)
             .serializeMap("characterMap", this.characterMap)
         .endObject();
     }
 
     static deserialize(reader) {
-        let account = new Account();
-
+        let account;
         reader.beginObject();
-        let key = reader.deserialize("key", "String");
-        let characterMap = reader.deserializeMap("characterMap", "String", "Entity");
+
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            account = new Account();
+            account.key = reader.deserialize("key", "String");
+            account.characterMap = reader.deserializeMap("characterMap", "String", "Entity");
+        }
+        else {
+            throw("Unknown version number: " + version);
+        }
+
         reader.endObject();
-
-        account.key = key;
-        account.characterMap = characterMap;
-
         return account;
     }
 }

@@ -13,22 +13,27 @@ class Progress {
 
     serialize(writer) {
         writer.beginObject()
+            .serialize("!V!", 1)
             .serialize("level", this.level)
             .serialize("experience", this.experience)
         .endObject();
     }
 
     static deserialize(reader) {
-        let progress = new Progress();
-
+        let progress;
         reader.beginObject();
-        let level = reader.deserialize("level", "Number");
-        let experience = reader.deserialize("experience", "Number");
+
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            progress = new Progress();
+            progress.level = reader.deserialize("level", "Number");
+            progress.experience = reader.deserialize("experience", "Number");
+        }
+        else {
+            throw("Unknown version number: " + version);
+        }
+
         reader.endObject();
-
-        progress.level = level;
-        progress.experience = experience;
-
         return progress;
     }
 }

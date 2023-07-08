@@ -105,6 +105,7 @@ class GameMap {
 
     serialize(writer) {
         writer.beginObject()
+            .serialize("!V!", 1)
             .serialize("className", this.constructor.name)
             .serialize("id", this.id)
             .serialize("name", this.name)
@@ -115,34 +116,38 @@ class GameMap {
 
     static deserialize(reader) {
         let map;
-
         reader.beginObject();
-        let className = reader.deserialize("className", "String");
-        let id_string = reader.deserialize("id", "String");
-        let name = reader.deserialize("name", "String");
-        let screens = reader.deserializeArray("screens", "Screen");
-        let mapFolder = reader.deserialize("mapFolder", "String");
-        reader.endObject();
 
-        map = Reflection.createInstance(className);
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            let className = reader.deserialize("className", "String");
+            map = Reflection.createInstance(className);
 
-        let id;
-        if(id_string === "death" || id_string === "fallback" || id_string === "void") {
-            id = id_string;
+            let id_string = reader.deserialize("id", "String");
+            map.name = reader.deserialize("name", "String");
+            let screens = reader.deserializeArray("screens", "Screen");
+            map.mapFolder = reader.deserialize("mapFolder", "String");
+
+            let id;
+            if(id_string === "death" || id_string === "fallback" || id_string === "void") {
+                id = id_string;
+            }
+            else {
+                id = Number(id_string);
+            }
+
+            map.id = id;
+
+            for(let screen of screens) {
+                screen.map = map;
+                map.addScreen(screen);
+            }
         }
         else {
-            id = Number(id_string);
+            throw("Unknown version number: " + version);
         }
 
-        map.id = id;
-        map.name = name;
-        map.mapFolder = mapFolder;
-
-        for(let screen of screens) {
-            screen.map = map;
-            map.addScreen(screen);
-        }
-
+        reader.endObject();
         return map;
     }
 }

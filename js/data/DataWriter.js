@@ -1,6 +1,16 @@
-class Writer {
-    s = "";
+const DataWrapper = require("./DataWrapper.js");
+
+class DataWriter {
+    writer;
     commaFlags = [];
+
+    constructor(writer) {
+        this.writer = writer;
+    }
+
+    write(s) {
+        this.writer.write(s);
+    }
 
     isNameComma() {
         // For named values, commas are placed before additional names.
@@ -13,11 +23,12 @@ class Writer {
     }
 
     putName(name) {
+        // Names are always strings.
         if(this.isNameComma()) {
-            this.s += ",";
+            this.writer.write(",");
         }
 
-        this.s += normalize(name) + ":";
+        this.writer.write("\"" + name + "\":");
 
         if(!this.isNameComma()) {
             this.commaFlags[this.commaFlags.length - 1] = "name";
@@ -26,12 +37,26 @@ class Writer {
         return this;
     }
 
-    putValue(value) {
+    putString(value) {
         if(this.isValueComma()) {
-            this.s += ",";
+            this.writer.write(",");
         }
 
-        this.s += normalize(value);
+        this.writer.write("\"" + value + "\"");
+
+        if(!this.isNameComma()) {
+            this.commaFlags[this.commaFlags.length - 1] = "value";
+        }
+
+        return this;
+    }
+
+    putNull() {
+        if(this.isValueComma()) {
+            this.writer.write(",");
+        }
+
+        this.writer.write("null");
 
         if(!this.isNameComma()) {
             this.commaFlags[this.commaFlags.length - 1] = "value";
@@ -42,10 +67,10 @@ class Writer {
 
     beginObject() {
         if(this.isValueComma()) {
-            this.s += ",";
+            this.writer.write(",");
         }
 
-        this.s += "{";
+        this.writer.write("{");
 
         if(!this.isNameComma()) {
             this.commaFlags[this.commaFlags.length - 1] = "value";
@@ -57,7 +82,7 @@ class Writer {
     }
 
     endObject() {
-        this.s += "}";
+        this.writer.write("}");
         this.commaFlags.pop();
 
         return this;
@@ -65,10 +90,10 @@ class Writer {
 
     beginArray() {
         if(this.isValueComma()) {
-            this.s += ",";
+            this.writer.write(",");
         }
 
-        this.s += "[";
+        this.writer.write("[");
 
         if(!this.isNameComma()) {
             this.commaFlags[this.commaFlags.length - 1] = "value";
@@ -80,7 +105,7 @@ class Writer {
     }
 
     endArray() {
-        this.s += "]";
+        this.writer.write("]");
         this.commaFlags.pop();
 
         return this;
@@ -91,11 +116,11 @@ class Writer {
             this.putName(name);
         }
 
-        if(isFunction(value, "serialize")) {
-            value.serialize(this);
+        if(value === undefined) {
+            this.putNull();
         }
         else {
-            this.putValue(value);
+            wrapValue("serialize", value).serialize(this);
         }
 
         return this;
@@ -106,11 +131,16 @@ class Writer {
             this.putName(name);
         }
 
-        this.beginArray();
-        for(let a of arr) {
-            this.serialize(undefined, a);
+        if(arr === undefined) {
+            this.putNull();
         }
-        this.endArray();
+        else {
+            this.beginArray();
+            for(let a of arr) {
+                this.serialize(undefined, a);
+            }
+            this.endArray();
+        }
 
         return this;
     }
@@ -121,10 +151,15 @@ class Writer {
             this.putName(name);
         }
 
-        this.beginObject();
-        this.serializeArray("keys", map.keys());
-        this.serializeArray("values", map.values());
-        this.endObject();
+        if(map === undefined) {
+            this.putNull();
+        }
+        else {
+            this.beginObject();
+            this.serializeArray("keys", map.keys());
+            this.serializeArray("values", map.values());
+            this.endObject();
+        }
         
         return this;
     }
@@ -134,66 +169,23 @@ class Writer {
             this.putName(name);
         }
 
-        if(isFunction(value, "reference")) {
-            value.reference(this);
+        if(value === undefined) {
+            this.putNull();
         }
         else {
-            this.putValue(value);
+            wrapValue("reference", value).reference(this);
         }
 
         return this;
     }
-
-    toString() {
-        return this.s;
-    }
-}
-
-function normalize(value) {
-    let s;
-
-    if(value === undefined) {
-        s = "null"
-    }
-    else if(isNumber(value) || isBoolean(value)) {
-        // Don't bother escaping, just wrap in quotes and rely on implicit string conversion.
-        s = "\"" + value + "\"";
-    }
-    else if(isString(value)){
-        s = "\"" + escape(value) + "\"";
-    }
-    else {
-        // Anything else could be trickier, so just error for now.
-        throw("Invalid JSON value of type: " + (typeof value));
-    }
-
-    return s;
-}
-
-function escape(s) {
-    let e = "";
-
-    for(let i = 0; i < s.length; i++) {
-        let c = s.charCodeAt(i);
-
-        // Escape ", \, and all control characters as \uXXXX
-        if(c === 34 || c === 92 || c <= 31) {
-            e += "\\u" + c.toString(16, 4).padStart(4, "0");
-        }
-        else {
-            e += s.charAt(i);
-        }
-    }
-
-    return e;
-}
-
-function isNumber(value) {
-	return typeof value === "number" || value instanceof Number;
 }
 
 function isBoolean(value) {
 	return typeof value === "boolean" || value instanceof Boolean;
+}
+
+function isNumber(value) {
+	return typeof value === "number" || value instanceof Number;
 }
 
 function isString(value) {
@@ -205,4 +197,24 @@ function isFunction(value, fcnName) {
         (typeof value[fcnName] === "function" || (typeof value[fcnName] === "object" && value[fcnName] instanceof Function));
 }
 
-module.exports = Writer;
+function wrapValue(fcnName, value) {
+    // Note that value will always be non-undefined.
+    if(isFunction(value, fcnName)) {
+        return value;
+    }
+    else if(isBoolean(value)) {
+        return new DataWrapper.BooleanWrapper(value);
+    }
+    else if(isNumber(value)) {
+        return new DataWrapper.NumberWrapper(value);
+    }
+    else if(isString(value)) {
+        return new DataWrapper.StringWrapper(value);
+    }
+    else {
+        // Anything else is unsupported.
+        throw("Unsupported value: " + fcnName + " " + (typeof value));
+    }
+}
+
+module.exports = DataWriter;

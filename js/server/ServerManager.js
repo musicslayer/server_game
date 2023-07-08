@@ -49,21 +49,29 @@ class ServerManager {
 
     serialize(writer) {
         writer.beginObject()
+            .serialize("!V!", 1)
             .serializeArray("servers", this.servers)
         .endObject();
     }
 
     static deserialize(reader) {
-        let serverManager = new ServerManager();
-
+        let serverManager;
         reader.beginObject();
-        let servers = reader.deserializeArray("servers", "Server");
-        reader.endObject();
 
-        for(let server of servers) {
-            serverManager.addServer(server);
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            serverManager = new ServerManager();
+            
+            let servers = reader.deserializeArray("servers", "Server");
+            for(let server of servers) {
+                serverManager.addServer(server);
+            }
+        }
+        else {
+            throw("Unknown version number: " + version);
         }
 
+        reader.endObject();
         return serverManager;
     }
 

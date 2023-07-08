@@ -16,21 +16,29 @@ class AccountManager {
 
     serialize(writer) {
         writer.beginObject()
+            .serialize("!V!", 1)
             .serializeArray("accounts", this.accounts)
         .endObject();
     }
 
     static deserialize(reader) {
-        let accountManager = new AccountManager();
-
+        let accountManager;
         reader.beginObject();
-        let accounts = reader.deserializeArray("accounts", "Account");
-        reader.endObject();
 
-        for(let account of accounts) {
-            accountManager.addAccount(account);
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            accountManager = new AccountManager();
+
+            let accounts = reader.deserializeArray("accounts", "Account");
+            for(let account of accounts) {
+                accountManager.addAccount(account);
+            }
+        }
+        else {
+            throw("Unknown version number: " + version);
         }
         
+        reader.endObject();
         return accountManager;
     }
 

@@ -31,19 +31,25 @@ class ServerEntropy {
 
     serialize(writer) {
         writer.beginObject()
+            .serialize("!V!", 1)
             .serializeArray("entropyArray", this.entropyArray)
         .endObject();
     }
 
     static deserialize(reader) {
-        let serverEntropy = new ServerEntropy();
-
+        let serverEntropy;
         reader.beginObject();
-        let entropyArray = reader.deserializeArray("entropyArray", "Number");
+
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            serverEntropy = new ServerEntropy();
+            serverEntropy.entropyArray = reader.deserializeArray("entropyArray", "Number");
+        }
+        else {
+            throw("Unknown version number: " + version);
+        }
+
         reader.endObject();
-
-        serverEntropy.entropyArray = entropyArray;
-
         return serverEntropy;
     }
 }

@@ -57,17 +57,16 @@ class AppState {
         return map;
     }
 
-    save() {
+    async save() {
         let dateString = new Date().toISOString().replaceAll(":", "_").replace(".", "_");
 
         this.accountFile = "save_states/account/" + dateString + ".txt";
+        let accountFileWriter = fs.createWriteStream(this.accountFile, "ascii");
+        await DataBridge.serializeObject(this.accountManager, accountFileWriter);
+
         this.serverFile = "save_states/server/" + dateString + ".txt";
-
-        let accountManagerString = DataBridge.serializeObject(this.accountManager);
-        fs.writeFileSync(this.accountFile, accountManagerString, "ascii");
-
-        let serverManagerString = DataBridge.serializeObject(this.serverManager);
-        fs.writeFileSync(this.serverFile, serverManagerString, "ascii");
+        let serverFileWriter = fs.createWriteStream(this.serverFile, "ascii");
+        await DataBridge.serializeObject(this.serverManager, serverFileWriter);
 
         // Save client delay maps.
         for(let key of ClientFactory.clientKeyMap.keys()) {
@@ -76,14 +75,14 @@ class AppState {
         }
     }
 
-    load() {
+    async load() {
         this.serverManager.endServerTicks();
 
-        let accountManagerString = fs.readFileSync(this.accountFile, "ascii");
-        this.accountManager = DataBridge.deserializeObject(accountManagerString, "AccountManager");
+        let accountFileReader = fs.createReadStream(this.accountFile, "ascii");
+        this.accountManager = await DataBridge.deserializeObject("AccountManager", accountFileReader);
 
-        let serverManagerString = fs.readFileSync(this.serverFile, "ascii");
-        this.serverManager = DataBridge.deserializeObject(serverManagerString, "ServerManager");
+        let serverFileReader = fs.createReadStream(this.serverFile, "ascii");
+        this.serverManager = await DataBridge.deserializeObject("ServerManager", serverFileReader);
 
         // Update logged in players to be on the same screens but in the new servers.
         this.refreshClients();

@@ -14,11 +14,12 @@ class Screen {
     name;
     x;
     y;
-    pvpStatus;
 
     // For now, these are just fixed numbers.
     numTilesX = 16;
     numTilesY = 12;
+
+    pvpStatus;
 
     tiles = [];
     otherEntities = [];
@@ -185,13 +186,9 @@ class Screen {
     }
 
     serialize(writer) {
-        // Only serialize entities that are serializable and non-players here.
-        let serializableEntities = [];
-        for(let entity of this.otherEntities) {
-            serializableEntities.push(entity);
-        }
-
+        // Only serialize non-players here.
         writer.beginObject()
+            .serialize("!V!", 1)
             .serialize("name", this.name)
             .serialize("x", this.x)
             .serialize("y", this.y)
@@ -199,40 +196,40 @@ class Screen {
             .serialize("numTilesY", this.numTilesY)
             .serialize("pvpStatus", this.pvpStatus)
             .serializeArray("tiles", this.tiles)
-            .serializeArray("otherEntities", serializableEntities)
+            .serializeArray("otherEntities", this.otherEntities)
         .endObject();
     }
 
     static deserialize(reader) {
-        let screen = new Screen();
-
+        let screen;
         reader.beginObject();
-        let name = reader.deserialize("name", "String");
-        let x = reader.deserialize("x", "Number");
-        let y = reader.deserialize("y", "Number");
-        let numTilesX = reader.deserialize("numTilesX", "Number");
-        let numTilesY = reader.deserialize("numTilesY", "Number");
-        let pvpStatus = reader.deserialize("pvpStatus", "String");
-        let tiles = reader.deserializeArray("tiles", "Tile");
-        let otherEntities = reader.deserializeArray("otherEntities", "Entity");
+
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            screen = new Screen();
+            screen.name = reader.deserialize("name", "String");
+            screen.x = reader.deserialize("x", "Number");
+            screen.y = reader.deserialize("y", "Number");
+            screen.numTilesX = reader.deserialize("numTilesX", "Number");
+            screen.numTilesY = reader.deserialize("numTilesY", "Number");
+            screen.pvpStatus = reader.deserialize("pvpStatus", "String");
+            let tiles = reader.deserializeArray("tiles", "Tile");
+            let otherEntities = reader.deserializeArray("otherEntities", "Entity");
+
+            for(let tile of tiles) {
+                screen.addTile(tile);
+            }
+
+            for(let entity of otherEntities) {
+                entity.screen = screen;
+                screen.addEntity(entity);
+            }
+        }
+        else {
+            throw("Unknown version number: " + version);
+        }
+
         reader.endObject();
-
-        screen.name = name;
-        screen.x = x;
-        screen.y = y;
-        screen.numTilesX = numTilesX;
-        screen.numTilesY = numTilesY;
-        screen.pvpStatus = pvpStatus;
-
-        for(let tile of tiles) {
-            screen.addTile(tile);
-        }
-
-        for(let entity of otherEntities) {
-            entity.screen = screen;
-            screen.addEntity(entity);
-        }
-
         return screen;
     }
 

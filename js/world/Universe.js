@@ -73,6 +73,7 @@ class Universe {
 
     serialize(writer) {
         writer.beginObject()
+            .serialize("!V!", 1)
             .serialize("id", this.id)
             .serialize("name", this.name)
             .serializeArray("worlds", this.worlds)
@@ -80,22 +81,26 @@ class Universe {
     }
 
     static deserialize(reader) {
-        let universe = new Universe();
-
+        let universe;
         reader.beginObject();
-        let id = reader.deserialize("id", "Number");
-        let name = reader.deserialize("name", "String");
-        let worlds = reader.deserializeArray("worlds", "World");
-        reader.endObject();
 
-        universe.id = id;
-        universe.name = name;
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            universe = new Universe();
+            universe.id = reader.deserialize("id", "Number");
+            universe.name = reader.deserialize("name", "String");
+            let worlds = reader.deserializeArray("worlds", "World");
 
-        for(let world of worlds) {
-            world.universe = universe;
-            universe.addWorld(world);
+            for(let world of worlds) {
+                world.universe = universe;
+                universe.addWorld(world);
+            }
+        }
+        else {
+            throw("Unknown version number: " + version);
         }
 
+        reader.endObject();
         return universe;
     }
 }

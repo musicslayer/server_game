@@ -58,22 +58,27 @@ class ServerScheduler {
     serialize(writer) {
         // Don't serialize the worker because the deserialized server will create a new one.
         writer.beginObject()
+            .serialize("!V!", 1)
             .serializeMap("scheduledTaskMap", this.scheduledTaskMap)
             .serialize("currentTick", this.currentTick)
         .endObject();
     }
 
     static deserialize(reader) {
-        let serverScheduler = new ServerScheduler();
-
+        let serverScheduler;
         reader.beginObject();
-        let scheduledTaskMap = reader.deserializeMap("scheduledTaskMap", "Number", "ServerTaskList");
-        let currentTick = reader.deserialize("currentTick", "Number");
+
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            serverScheduler = new ServerScheduler();
+            serverScheduler.scheduledTaskMap = reader.deserializeMap("scheduledTaskMap", "Number", "ServerTaskList");
+            serverScheduler.currentTick = reader.deserialize("currentTick", "Number");
+        }
+        else {
+            throw("Unknown version number: " + version);
+        }
+
         reader.endObject();
-
-        serverScheduler.scheduledTaskMap = scheduledTaskMap;
-        serverScheduler.currentTick = currentTick;
-
         return serverScheduler;
     }
 }

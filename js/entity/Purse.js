@@ -15,22 +15,27 @@ class Purse {
 
     serialize(writer) {
         writer.beginObject()
+            .serialize("!V!", 1)
             .serialize("maxGoldTotal", this.maxGoldTotal)
             .serialize("goldTotal", this.goldTotal)
         .endObject();
     }
 
     static deserialize(reader) {
-        let purse = new Purse();
-
+        let purse;
         reader.beginObject();
-        let maxGoldTotal = reader.deserialize("maxGoldTotal", "Number");
-        let goldTotal = reader.deserialize("goldTotal", "Number");
+
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            purse = new Purse();
+            purse.maxGoldTotal = reader.deserialize("maxGoldTotal", "Number");
+            purse.goldTotal = reader.deserialize("goldTotal", "Number");
+        }
+        else {
+            throw("Unknown version number: " + version);
+        }
+
         reader.endObject();
-
-        purse.maxGoldTotal = maxGoldTotal;
-        purse.goldTotal = goldTotal;
-
         return purse;
     }
 }

@@ -88,7 +88,9 @@ class Server {
 
     serialize(writer) {
         // The ServerScheduler must be handled last because all of the server entities must already be processed first.
+        // TODO Is this comment still true?
         writer.beginObject()
+            .serialize("!V!", 1)
             .serialize("uid", this.uid)
             .serialize("id", this.id)
             .serialize("name", this.name)
@@ -100,33 +102,32 @@ class Server {
     }
 
     static deserialize(reader) {
-        let server = new Server();
-
+        let server;
         reader.beginObject();
-        let uid = reader.deserialize("uid", "Number");
 
-        // Update the server map now before we deserialize anything else that may access it.
-        server.uid = uid;
-        ServerFactory.serverMap.set(uid, server);
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            let uid = reader.deserialize("uid", "Number");
 
-        let id = reader.deserialize("id", "Number");
-        let name = reader.deserialize("name", "String");
-        let universe = reader.deserialize("universe", "Universe");
-        let serverEntropy = reader.deserialize("serverEntropy", "ServerEntropy");
-        let serverRNG = reader.deserialize("serverRNG", "ServerRNG");
-        let serverScheduler = reader.deserialize("serverScheduler", "ServerScheduler");
+            // Update the server map now before we deserialize anything else that may access it.
+            server = new Server();
+            server.uid = uid;
+            ServerFactory.serverMap.set(uid, server);
+
+            server.id = reader.deserialize("id", "Number");
+            server.name = reader.deserialize("name", "String");
+            server.universe = reader.deserialize("universe", "Universe");
+            server.serverEntropy = reader.deserialize("serverEntropy", "ServerEntropy");
+            server.serverRNG = reader.deserialize("serverRNG", "ServerRNG");
+            server.serverScheduler = reader.deserialize("serverScheduler", "ServerScheduler");
+            
+            server.universe.server = server;
+        }
+        else {
+            throw("Unknown version number: " + version);
+        }
+
         reader.endObject();
-
-        server.serverEntropy = serverEntropy;
-        server.serverRNG = serverRNG;
-        server.serverScheduler = serverScheduler;
-        server.uid = uid;
-        server.id = id;
-        server.name = name;
-
-        universe.server = server;
-        server.universe = universe;
-
         return server;
     }
 }

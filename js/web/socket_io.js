@@ -220,8 +220,8 @@ function attachClientListeners(socket, client) {
 	let ip = socket.handshake.address;
 
 	// Respond to key presses.
-	socket.on("on_key_press", (keys, callback) => {
-		rateLimitInputTask(ip, () => {
+	socket.on("on_key_press", async (keys, callback) => {
+		await rateLimitInputTask(ip, async () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -229,9 +229,9 @@ function attachClientListeners(socket, client) {
 				return;
 			}
 
-			client.onKeyPress(keys);
+			await client.onKeyPress(keys);
 			callback();
-		}, () => {
+		}, async () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -241,7 +241,7 @@ function attachClientListeners(socket, client) {
 
 	// Respond to controller button presses.
 	socket.on("on_controller_press", (buttons, callback) => {
-		rateLimitInputTask(ip, () => {
+		rateLimitInputTask(ip, async () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -251,7 +251,7 @@ function attachClientListeners(socket, client) {
 
 			client.onControllerPress(buttons);
 			callback();
-		}, () => {
+		}, async () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -261,7 +261,7 @@ function attachClientListeners(socket, client) {
 
 	// Respond to controller analog sticks.
 	socket.on("on_controller_sticks", (axes, callback) => {
-		rateLimitInputTask(ip, () => {
+		rateLimitInputTask(ip, async () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -271,7 +271,7 @@ function attachClientListeners(socket, client) {
 
 			client.onControllerSticks(axes);
 			callback();
-		}, () => {
+		}, async () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -281,7 +281,7 @@ function attachClientListeners(socket, client) {
 
 	// Respond to mouse clicks.
 	socket.on("on_mouse_click", (button, location, info, callback) => {
-		rateLimitInputTask(ip, () => {
+		rateLimitInputTask(ip, async () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -291,7 +291,7 @@ function attachClientListeners(socket, client) {
 
 			client.onClick(button, location, info);
 			callback();
-		}, () => {
+		}, async () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -301,7 +301,7 @@ function attachClientListeners(socket, client) {
 
 	// Respond to mouse drags.
 	socket.on("on_mouse_drag", (button, location1, info1, location2, info2, callback) => {
-		rateLimitInputTask(ip, () => {
+		rateLimitInputTask(ip, async () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -314,7 +314,7 @@ function attachClientListeners(socket, client) {
 
 			client.onDrag(button, location1, info1, location2, info2);
 			callback();
-		}, () => {
+		}, async () => {
 			if(!validateCallback(callback)) {
 				return;
 			}
@@ -391,16 +391,16 @@ function rateLimitLoginTask(ip, task, rtask) {
 	}
 }
 
-function rateLimitInputTask(ip, task, rtask) {
+async function rateLimitInputTask(ip, task, rtask) {
 	let N = numInputsMap.get(ip) ?? 0;
 	if(N < numAllowedInputOperations) {
 		N++;
 		numInputsMap.set(ip, N);
 
-		task();
+		await task();
 	}
 	else {
-		rtask();
+		await rtask();
 	}
 }
 

@@ -1,7 +1,7 @@
 class ServerTask {
+    isRefreshTask = false;
     fcnString;
     args;
-    isRefreshTask = false;
 
     constructor(fcn, ...args) {
         this.fcnString = fcn.toString();
@@ -30,6 +30,7 @@ class ServerTask {
         const Server = require("../server/Server.js");
 
         writer.beginObject()
+            .serialize("!V!", 1)
             .serialize("isRefreshTask", this.isRefreshTask)
             .serialize("fcnString", this.fcnString)
             .serialize("numArgs", this.args.length);
@@ -37,7 +38,11 @@ class ServerTask {
         for(let i = 0; i < this.args.length; i++) {
             let arg = this.args[i];
 
-            if(arg instanceof Entity) {
+            if(arg instanceof ServerTask) {
+                writer.serialize("arg_class_" + i, "ServerTask");
+                writer.serialize("arg_" + i, arg);
+            }
+            else if(arg instanceof Entity) {
                 writer.serialize("arg_class_" + i, "Entity");
                 writer.serialize("arg_" + i, arg.id);
             }
@@ -63,45 +68,57 @@ class ServerTask {
         const EntityFactory = require("../entity/EntityFactory.js");
         const ServerFactory = require("../server/ServerFactory.js");
         
+        let serverTask;
         reader.beginObject()
-        let isRefreshTask = reader.deserialize("isRefreshTask", "Boolean");
-        let fcnString = reader.deserialize("fcnString", "String");
-        let numArgs = reader.deserialize("numArgs", "Number");
 
-        let args = [];
-        for(let i = 0; i < numArgs; i++) {
-            let className = reader.deserialize("arg_class_" + i, "String");
+        let version = reader.deserialize("!V!", "String");
+        if(version === "1") {
+            let isRefreshTask = reader.deserialize("isRefreshTask", "Boolean");
+            let fcnString = reader.deserialize("fcnString", "String");
+            let numArgs = reader.deserialize("numArgs", "Number");
 
-            let arg;
-            if(className === "Entity") {
-                let id = reader.deserialize("arg_" + i, "Number");
-                arg = EntityFactory.entityMap.get(id);
-            }
-            else if(className === "Client") {
-                let id = reader.deserialize("arg_" + i, "Number");
-                arg = ClientFactory.clientIDMap.get(id);
-            }
-            else if(className === "Server") {
-                let uid = reader.deserialize("arg_" + i, "Number");
-                arg = ServerFactory.serverMap.get(uid);
-            }
-            else {
-                arg = reader.deserialize("arg_" + i, className);
+            let args = [];
+            for(let i = 0; i < numArgs; i++) {
+                let className = reader.deserialize("arg_class_" + i, "String");
+
+                let arg;
+                if(className === "ServerTask") {
+                    arg = reader.deserialize("arg_" + i, className);
+                }
+                else if(className === "Client") {
+                    let id = reader.deserialize("arg_" + i, "Number");
+                    arg = ClientFactory.clientIDMap.get(id);
+                }
+                else if(className === "Entity") {
+                    let id = reader.deserialize("arg_" + i, "Number");
+                    arg = EntityFactory.entityMap.get(id);
+                }
+                else if(className === "Server") {
+                    let uid = reader.deserialize("arg_" + i, "Number");
+                    arg = ServerFactory.serverMap.get(uid);
+                }
+                else {
+                    arg = reader.deserialize("arg_" + i, className);
+                }
+
+                args.push(arg);
             }
 
-            args.push(arg);
+            serverTask = new ServerTask(fcnString, ...args);
+            serverTask.isRefreshTask = isRefreshTask;
+        }
+        else {
+            throw("Unknown version number: " + version);
         }
 
         reader.endObject();
-
-        let serverTask = new ServerTask(fcnString, ...args);
-        serverTask.isRefreshTask = isRefreshTask;
         return serverTask;
     }
 }
 
 function getClassName(value) {
-    // Everything is either a ServerTask, an entity, a string, or a number.
+    // At this point, value is either a string, a number, or something else with a "getClassName" method.
+    // Other objects are not allowed because we don't know for sure that we can deal with them.
     let className;
 
     if(isFunction(value, "getClassName")) {
@@ -114,26 +131,11 @@ function getClassName(value) {
     else if(isString(value)) {
         className = "String";
     }
-    else if(value instanceof ServerTask) {
-        className = "ServerTask";
-    }
     else {
         throw("Unknown object.");
     }
 
     return className;
-}
-
-function addScreen(entity) {
-    const AppState = require("../AppState.js");
-
-    let newServer = AppState.instance.serverManager.getServerByName(entity.screenInfo.serverName);
-    let newWorld = newServer?.universe?.getWorldByName(entity.screenInfo.worldName);
-    let newMap = newWorld?.getMapByName(entity.screenInfo.mapName);
-    let newScreen = newMap?.getScreenByPosition(entity.screenInfo.screenX, entity.screenInfo.screenY);
-
-    entity.screen = newScreen;
-    newScreen.addEntity(entity);
 }
 
 function isFunction(value, fcnName) {
