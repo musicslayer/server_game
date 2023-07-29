@@ -14,8 +14,6 @@ const AppState = require("./AppState.js");
 // TODO When players despawn and respawn because of a client logout, the refreshTasks are added again without any removal, 
 // so health/mana regens twice as fast!
 
-// TODO If player dies, monster aggro should zero out?
-
 async function init() {
     await new AppState().init();
 }

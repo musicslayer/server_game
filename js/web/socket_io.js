@@ -1,3 +1,5 @@
+const IO = require("socket.io");
+
 const Account = require("../account/Account.js");
 const Client = require("../client/Client.js");
 const Entity = require("../entity/Entity.js");
@@ -30,8 +32,7 @@ function createSocketIOServer(httpServer, appState) {
 		numDevsMap.clear();
 	}, 1000);
 
-	// TODO Move require?
-	const io = new require("socket.io")(httpServer);
+	const io = IO(httpServer);
 
 	io.on("connection", (socket) => {
 		let ip = socket.handshake.address;
