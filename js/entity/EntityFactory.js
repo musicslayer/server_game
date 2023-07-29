@@ -1,3 +1,5 @@
+const Reflection = require("../reflection/Reflection.js");
+
 class EntityFactory {
     static id = 0;
     static entityMap = new Map();
@@ -5,10 +7,7 @@ class EntityFactory {
     static createInstance(className, number, ...args) {
         let id = EntityFactory.id++;
 
-        const Reflection = require("../reflection/Reflection.js");
-        const UnknownEntity = require("./UnknownEntity.js");
-
-        let entity = Reflection.createInstance(className, ...args) ?? new UnknownEntity(...args);
+        let entity = Reflection.createInstance(className, ...args) ?? Reflection.createInstance("UnknownEntity", ...args);
         entity.stackSize = number;
         entity.id = id;
 
