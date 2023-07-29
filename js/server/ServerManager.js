@@ -1,6 +1,6 @@
-const EntityFactory = require("../entity/EntityFactory.js");
 const Server = require("./Server.js");
 const ServerTask = require("./ServerTask.js");
+const UID = require("../uid/UID.js");
 
 class ServerManager {
     servers = [];
@@ -18,10 +18,9 @@ class ServerManager {
     }
 
     addSpawnServerTasks() {
-        // Spawn all non-player entities. To find them all, use EntityFactory's map.
-        let entityMap = EntityFactory.entityMap;
-        for(let key of entityMap.keys()) {
-            let entity = entityMap.get(key);
+        // Spawn all non-player entities.
+        let entities = UID.getValues("Entity");
+        for(let entity of entities) {
             if(entity.isPlayer) {
                 continue;
             }

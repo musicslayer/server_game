@@ -1,5 +1,4 @@
 const Reflection = require("../reflection/Reflection.js");
-const EntityFactory = require("./EntityFactory.js");
 const Util = require("../util/Util.js");
 const Fallback = require("../constants/Fallback.js");
 const Performance = require("../constants/Performance.js");
@@ -69,6 +68,13 @@ class Entity extends UID {
 
     aggroMap = new Map();
 
+    static createInstance(className, stackSize, ...args) {
+        // Use this factory method to create subclass instances.
+        let entity = Reflection.createInstance(className, ...args) ?? Reflection.createInstance("UnknownEntity", ...args);
+        entity.stackSize = stackSize;
+        return entity;
+    }
+
     constructor(uid) {
         super(uid);
     }
@@ -137,7 +143,6 @@ class Entity extends UID {
 
     doSpawnEntity(entity) {
         entity.owner = this;
-        entity.ownerID = this.id;
         entity.doSpawn();
     }
 
@@ -294,7 +299,7 @@ class Entity extends UID {
             }
 
             if(goldAmount > 0) {
-                let gold = EntityFactory.createInstance("Gold", goldAmount);
+                let gold = Entity.createInstance("Gold", goldAmount);
                 gold.screen = this.screen;
                 gold.x = this.x;
                 gold.y = this.y;
@@ -337,7 +342,7 @@ class Entity extends UID {
                 }
 
                 if(number > 0) {
-                    let itemDrop = EntityFactory.createInstance(Util.getClassName(item), number);
+                    let itemDrop = Entity.createInstance(Util.getClassName(item), number);
                     itemDrop.screen = this.screen;
                     itemDrop.x = this.x;
                     itemDrop.y = this.y;
@@ -395,24 +400,16 @@ class Entity extends UID {
     getRootEntity(entity) {
         let rootEntity = entity;
 
-        while(rootEntity.getOwner()) {
-            rootEntity = rootEntity.getOwner();
+        while(rootEntity.owner) {
+            rootEntity = rootEntity.owner;
         }
 
         return rootEntity;
     }
 
-    getOwner() {
-        if(this.ownerID) {
-            this.owner = EntityFactory.entityMap.get(this.ownerID);
-            this.ownerID = undefined;
-        }
-        return this.owner;
-    }
-
     clone(number) {
         // By default, just create another instance with the same screen and the provided stack size.
-        let clone = EntityFactory.createInstance(Util.getClassName(this), number);
+        let clone = Entity.createInstance(Util.getClassName(this), number);
         clone.screen = this.screen;
         return clone;
     }
@@ -450,11 +447,10 @@ class Entity extends UID {
             .serialize("!V!", 1)
             .serialize("uid", this.uid)
             .serialize("className", Util.getClassName(this))
-            .serialize("id", this.id)
             .serialize("isSpawned", this.isSpawned)
             .serialize("isPlayer", this.isPlayer)
             .serialize("isAI", this.isAI)
-            .serialize("ownerID", this.owner?.id ?? this.ownerID)
+            .reference("owner", this.owner)
             .serialize("health", this.health)
             .serialize("maxHealth", this.maxHealth)
             .serialize("mana", this.mana)
@@ -512,7 +508,7 @@ class Entity extends UID {
         writer.serialize("aggroGain", this.aggroGain);
         writer.serialize("aggroForgiveness", this.aggroForgiveness);
         writer.serialize("aggroForgivenessTime", this.aggroForgivenessTime);
-        writer.serialize("lastPlayerID", this.lastPlayerID);
+        writer.serialize("lastPlayerID", this.lastPlayerID); // TODO Can we reference "lastPlayer" instead?
 
         writer.endObject();
     }
@@ -528,12 +524,11 @@ class Entity extends UID {
             let className = reader.deserialize("className", "String");
             entity = Reflection.createInstance(className, uid);
 
-            // Note that "ownerID" and "screenInfo" will be used later.
-            entity.id = reader.deserialize("id", "Number");
+            // Note that "screenInfo" will be used later.
             entity.isSpawned = reader.deserialize("isSpawned", "Boolean");
             entity.isPlayer = reader.deserialize("isPlayer", "Boolean");
             entity.isAI = reader.deserialize("isAI", "Boolean");
-            entity.ownerID = reader.deserialize("ownerID", "Number");
+            entity.owner = reader.dereference("owner", "Entity");
             entity.health = reader.deserialize("health", "Number");
             entity.maxHealth = reader.deserialize("maxHealth", "Number");
             entity.mana = reader.deserialize("mana", "Number");
@@ -589,9 +584,6 @@ class Entity extends UID {
             entity.aggroForgiveness = reader.deserialize("aggroForgiveness", "Number");
             entity.aggroForgivenessTime = reader.deserialize("aggroForgivenessTime", "Number");
             entity.lastPlayerID = reader.deserialize("lastPlayerID", "Number");
-
-            // Update the EntityFactory mapping.
-            EntityFactory.entityMap.set(entity.id, entity);
         }
         else {
             throw("Unknown version number: " + version);

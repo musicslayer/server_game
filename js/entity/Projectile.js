@@ -32,7 +32,7 @@ class Projectile extends Entity {
 
     doInteract(entity) {
         // Do some damage to the other entity unless it is the owner.
-        if(entity !== this.getOwner() && entity.isTangible) {
+        if(entity !== this.owner && entity.isTangible) {
             entity.doTakeDamage(this, this.damage);
 
             if(!this.isMulti) {

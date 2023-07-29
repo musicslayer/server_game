@@ -1,5 +1,4 @@
 const Entity = require("./Entity.js");
-const EntityFactory = require("./EntityFactory.js");
 const Purse = require("./Purse.js");
 const Inventory = require("./Inventory.js");
 const Progress = require("../progress/Progress.js");
@@ -73,7 +72,7 @@ class Player extends Entity {
             if(this.health === 0) {
                 // If another player did the final damage, spawn a PVP Token and drop some of your gold.
                 if(rootEntity.isPlayer) {
-                    let pvpToken = EntityFactory.createInstance("PVPToken", 1);
+                    let pvpToken = Entity.createInstance("PVPToken", 1);
                     pvpToken.screen = this.screen;
                     pvpToken.x = this.x;
                     pvpToken.y = this.y;
@@ -91,7 +90,7 @@ class Player extends Entity {
     doAction() {
         // Spawn a "magic projectile" representing a magical attack.
         // If the player is moving, fire the projectile ahead of the motion.
-        let projectile = EntityFactory.createInstance("MagicProjectile", 1, 8, 40, false);
+        let projectile = Entity.createInstance("MagicProjectile", 1, 8, 40, false);
         projectile.screen = this.screen;
         projectile.x = this.getMovementX();
         projectile.y = this.getMovementY();

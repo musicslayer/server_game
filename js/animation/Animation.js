@@ -1,4 +1,3 @@
-const EntityFactory = require("../entity/EntityFactory.js");
 const Reflection = require("../reflection/Reflection.js");
 const Util = require("../util/Util.js");
 
@@ -14,7 +13,7 @@ class Animation {
         writer.beginObject()
             .serialize("!V!", 1)
             .serialize("className", Util.getClassName(this))
-            .serialize("entity", this.entity?.id)
+            .reference("entity", this.entity)
             .serialize("time", this.time)
             .endObject();
     }
@@ -27,10 +26,9 @@ class Animation {
         if(version === "1") {
             let className = reader.deserialize("className", "String");
             animation = Reflection.createInstance(className);
-            
-            let entityID = reader.deserialize("entity", "Number");
+            animation.entity = reader.dereference("entity", "Entity");
             animation.time = reader.deserialize("time", "Number");
-            animation.entity = EntityFactory.entityMap.get(entityID);
+            
         }
         else {
             throw("Unknown version number: " + version);

@@ -1,5 +1,4 @@
 const Entity = require("./Entity.js");
-const EntityFactory = require("./EntityFactory.js");
 const MonsterSpawnerAI = require("../ai/MonsterSpawnerAI.js");
 
 class MonsterSpawner extends Entity {
@@ -26,7 +25,7 @@ class MonsterSpawner extends Entity {
     }
 
     createMonsterInstance() {
-        let monster = EntityFactory.createInstance("Monster", 1);
+        let monster = Entity.createInstance("Monster", 1);
         monster.screen = this.screen;
         monster.x = this.x;
         monster.y = this.y;

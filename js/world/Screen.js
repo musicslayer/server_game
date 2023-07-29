@@ -1,7 +1,7 @@
 const fs = require("fs");
 
 const Reflection = require("../reflection/Reflection.js");
-const EntityFactory = require("../entity/EntityFactory.js");
+const Entity = require("../entity/Entity.js");
 const Tile = require("./Tile.js");
 const Util = require("../util/Util.js");
 
@@ -66,7 +66,7 @@ class Screen {
                     let id = entityPart.shift();
                     let stackSize = Number(entityPart.shift());
 
-                    let entity = EntityFactory.createInstance(id, stackSize);
+                    let entity = Entity.createInstance(id, stackSize);
                     entity.screen = screen;
                     entity.x = x;
                     entity.y = y;

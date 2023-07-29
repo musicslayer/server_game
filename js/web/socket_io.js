@@ -1,6 +1,6 @@
 const Account = require("../account/Account.js");
 const Client = require("../client/Client.js");
-const EntityFactory = require("../entity/EntityFactory.js");
+const Entity = require("../entity/Entity.js");
 const ServerTask = require("../server/ServerTask.js");
 
 // Used to limit the amount of socket connections that an IP can form at once.
@@ -30,6 +30,7 @@ function createSocketIOServer(httpServer, appState) {
 		numDevsMap.clear();
 	}, 1000);
 
+	// TODO Move require?
 	const io = new require("socket.io")(httpServer);
 
 	io.on("connection", (socket) => {
@@ -119,7 +120,7 @@ function attachAppListeners(socket, appState) {
 
 			// Don't attach the screen here. This will be done on first login.
 			// All new players will be spawned on a special tutorial map.
-			let player = EntityFactory.createInstance(playerClass, 1);
+			let player = Entity.createInstance(playerClass, 1);
 			player.homeMapName = "city";
 			player.homeScreenName = "field1";
 			player.homeX = 0;

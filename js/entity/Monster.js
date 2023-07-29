@@ -1,5 +1,4 @@
 const Entity = require("./Entity.js");
-const EntityFactory = require("./EntityFactory.js");
 const MonsterAI = require("../ai/MonsterAI.js");
 const Util = require("../util/Util.js");
 const ServerTask = require("../server/ServerTask.js");
@@ -58,17 +57,17 @@ class Monster extends Entity {
 
         // If damage came from a player, increase aggro.
         if(rootEntity.isPlayer) {
-            this.lastPlayerID = rootEntity.id;
+            this.lastPlayerID = rootEntity.uid;
 
-            let aggro = this.aggroMap.get(rootEntity.id) ?? 0;
+            let aggro = this.aggroMap.get(rootEntity.uid) ?? 0;
             aggro = Math.min(aggro + this.aggroGain, this.maxAggro);
-            this.aggroMap.set(rootEntity.id, aggro);
+            this.aggroMap.set(rootEntity.uid, aggro);
         }
 
         if(this.health === 0) {
             this.aggroMap.clear();
 
-            let gold = EntityFactory.createInstance("Gold", 100);
+            let gold = Entity.createInstance("Gold", 100);
             gold.screen = this.screen;
             gold.x = this.x;
             gold.y = this.y;
@@ -76,7 +75,7 @@ class Monster extends Entity {
             gold.doSpawnAsLoot();
 
             this.doDespawn();
-            this.getOwner()?.onMonsterDespawn();
+            this.owner?.onMonsterDespawn();
 
             if(rootEntity.isPlayer) {
                 rootEntity.doAddExperience(this.experienceReward);
@@ -87,6 +86,8 @@ class Monster extends Entity {
     decreaseAggro() {
         // If a player is no longer on the screen, decrease the aggro for that player.
         for(let playerID of this.aggroMap.keys()) {
+            // TODO
+            /*
             let player = EntityFactory.entityMap.get(playerID);
             if(!this.screen.playerEntities.includes(player)) {
                 let aggro = this.aggroMap.get(playerID) ?? 0;
@@ -99,6 +100,7 @@ class Monster extends Entity {
                     this.aggroMap.set(playerID, newAggro);
                 }
             }
+            */
         }
     }
 
@@ -109,11 +111,11 @@ class Monster extends Entity {
         // First find max aggro.
         let max = 0;
         for(let player of this.screen.playerEntities) {
-            let aggro = this.aggroMap.get(player.id) ?? 0;
+            let aggro = this.aggroMap.get(player.uid) ?? 0;
             max = Math.max(max, aggro);
 
             if(max === aggro) {
-                playerIDs.push(player.id);
+                playerIDs.push(player.uid);
             }
         }
 
@@ -134,7 +136,7 @@ class Monster extends Entity {
     doAction() {
         // Spawn a "melee projectile" representing a melee attack.
         // If the monster is moving, fire the projectile ahead of the motion.
-        let projectile = EntityFactory.createInstance("MeleeProjectile", 1, 1, 40, false);
+        let projectile = Entity.createInstance("MeleeProjectile", 1, 1, 40, false);
         projectile.screen = this.screen;
         projectile.x = this.getMovementX();
         projectile.y = this.getMovementY();

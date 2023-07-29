@@ -8,6 +8,21 @@ class UID {
         UID.uidMap = new Map();
     }
 
+    static getValues(name) {
+        let arr = [];
+
+        let map = UID.uidMap.get(name);
+        for(let key of map.keys()) {
+            if(key === "currentUID") {
+                continue;
+            }
+
+            arr.push(map.get(key));
+        }
+
+        return arr;
+    }
+
     constructor(uid) {
         let key = this.getUIDMapName();
 

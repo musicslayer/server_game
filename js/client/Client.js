@@ -1,7 +1,7 @@
 const Keyboard = require("../input/Keyboard.js");
 const Mouse = require("../input/Mouse.js");
 const Controller = require("../input/Controller.js");
-const EntityFactory = require("../entity/EntityFactory");
+const Entity = require("../entity/Entity");
 const MoveAnimation = require("../animation/MoveAnimation.js");
 const ServerTask = require("../server/ServerTask.js");
 const Util = require("../util/Util.js");
@@ -183,7 +183,7 @@ class Client {
             }, this.player);
         }
         if(inputs.includes("add_gold")) {
-            let gold = EntityFactory.createInstance("Gold", 1000);
+            let gold = Entity.createInstance("Gold", 1000);
             gold.screen = this.player.screen;
             gold.x = this.player.getMovementX();
             gold.y = this.player.getMovementY();
