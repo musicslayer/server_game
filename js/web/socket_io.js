@@ -183,8 +183,8 @@ function attachAppListeners(socket, appState) {
 				
 				if(!screen) {
 					// Use the fallback map.
-					let fallbackMap = world.getMapByPosition("fallback");
-					screen = fallbackMap.getScreenByPosition(0, 0);
+					let fallbackMap = world.getMapByID("fallback");
+					screen = fallbackMap.getScreenByID(0, 0);
 					player.x = 7;
 					player.y = 11;
 				}
@@ -198,8 +198,8 @@ function attachAppListeners(socket, appState) {
 
 				if(!screen) {
 					// Use the fallback map.
-					let fallbackMap = world.getMapByPosition("fallback");
-					screen = fallbackMap.getScreenByPosition(0, 0);
+					let fallbackMap = world.getMapByID("fallback");
+					screen = fallbackMap.getScreenByID(0, 0);
 					player.x = 7;
 					player.y = 11;	
 				}
@@ -216,6 +216,7 @@ function attachAppListeners(socket, appState) {
 			let client = new Client(playerName, player);
         	client.key = key;
 			client.socket = socket;
+			client.appState = appState;
 			appState.clientManager.addClient(client);
 
 			player.client = client;

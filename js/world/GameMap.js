@@ -14,8 +14,8 @@ class GameMap {
     name;
 
     screens = [];
-    screenMap = new Map();
-    screenPosMap = new Map();
+    screenNameMap = new Map();
+    screenIDMap = new Map();
 
     mapFolder;
 
@@ -60,14 +60,15 @@ class GameMap {
 
     addScreen(screen) {
         this.screens.push(screen);
-        this.screenMap.set(screen.name, screen);
+        this.screenNameMap.set(screen.name, screen);
 
+        // The ID of a screen is made from its coordinates.
         let key = [screen.x, screen.y].join(",");
-        this.screenPosMap.set(key, screen);
+        this.screenIDMap.set(key, screen);
     }
 
     getScreenByName(name) {
-        return this.screenMap.get(name);
+        return this.screenNameMap.get(name);
     }
 
     isScreenInDirection(screen, direction) {
@@ -78,21 +79,21 @@ class GameMap {
 
     isScreenByPosition(screenX, screenY) {
         let key = [screenX, screenY].join(",");
-        return this.screenPosMap.has(key);
+        return this.screenIDMap.has(key);
     }
 
     getScreenInDirection(screen, direction) {
         let [shiftX, shiftY] = Util.getDirectionalShift(direction);
-        return this.getScreenByPosition(screen.x + shiftX, screen.y + shiftY);
+        return this.getScreenByID(screen.x + shiftX, screen.y + shiftY);
     }
 
-    getScreenByPosition(screenX, screenY) {
+    getScreenByID(screenX, screenY) {
         let key = [screenX, screenY].join(",");
-        let screen = this.screenPosMap.get(key);
+        let screen = this.screenIDMap.get(key);
 
         // If this screen does not exist, return a dynamically generated "void" screen.
         if(!screen) {
-            let voidMap = this.world.getMapByPosition("void");
+            let voidMap = this.world.getMapByID("void");
             screen = voidMap.createVoidScreen(this, screenX, screenY)
         }
         

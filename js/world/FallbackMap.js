@@ -2,7 +2,7 @@ const Screen = require("./Screen.js");
 const GameMap = require("./GameMap.js");
 
 class FallbackMap extends GameMap {
-    getScreenByPosition(screenX, screenY) {
+    getScreenByID(screenX, screenY) {
         // Always return a dynamically generated "fallback" screen.
         return this.createFallbackScreen(this, screenX, screenY);
     }

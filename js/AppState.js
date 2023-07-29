@@ -11,18 +11,12 @@ const ServerTask = require("./server/ServerTask.js");
 const UID = require("./uid/UID.js");
 
 class AppState {
-    static instance;
-
     accountManager;
     clientManager;
     serverManager;
 
     accountFile;
     serverFile;
-
-    constructor() {
-        AppState.instance = this;
-    }
     
     async init() {
         // Recreate image zip file.
@@ -104,9 +98,11 @@ class AppState {
                 let newServer = this.serverManager.getServerByName(player.screenInfo.serverName);
                 let newWorld = newServer.universe.getWorldByName(player.screenInfo.worldName);
                 let newMap = newWorld.getMapByName(player.screenInfo.mapName);
-                let newScreen = newMap.getScreenByPosition(player.screenInfo.screenX, player.screenInfo.screenY);
+                let newScreen = newMap.getScreenByID(player.screenInfo.screenX, player.screenInfo.screenY);
 
                 player.screen = newScreen;
+                player.screenInfo = undefined;
+
                 newScreen.addEntity(player);
             }
         }

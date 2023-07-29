@@ -8,6 +8,7 @@ const Util = require("../util/Util.js");
 
 class Client {
     socket;
+    appState;
     
     key;
 
@@ -297,14 +298,12 @@ class Client {
         // **** Save/load state (only one will be executed)
         if(inputs.includes("save_state")) {
             this.scheduleRealtimeTask(() => {
-                const AppState = require("../AppState.js");
-                AppState.instance.save();
+                this.appState.save();
             });
         }
         else if(inputs.includes("load_state")) {
             this.scheduleRealtimeTask(() => {
-                const AppState = require("../AppState.js");
-                AppState.instance.load();
+                this.appState.load();
             });
         }
     }

@@ -2,7 +2,7 @@ const Screen = require("./Screen.js");
 const GameMap = require("./GameMap.js");
 
 class DeathMap extends GameMap {
-    getScreenByPosition(screenX, screenY) {
+    getScreenByID(screenX, screenY) {
         // Always return a dynamically generated "death" screen.
         return this.createDeathScreen(this, screenX, screenY);
     }

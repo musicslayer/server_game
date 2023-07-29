@@ -1,4 +1,3 @@
-
 const Reflection = require("../reflection/Reflection.js");
 const EntityFactory = require("./EntityFactory.js");
 const Util = require("../util/Util.js");
@@ -72,6 +71,10 @@ class Entity extends UID {
 
     constructor(uid) {
         super(uid);
+    }
+
+    getUIDMapName() {
+        return "Entity";
     }
 
     getName() {
@@ -207,8 +210,8 @@ class Entity extends UID {
 
     doTeleportDeath() {
         // Teleport the entity to the death plane.
-        let deathMap = this.screen.map.world.getMapByPosition("death");
-        let deathScreen = deathMap.getScreenByPosition(0, 0);
+        let deathMap = this.screen.map.world.getMapByID("death");
+        let deathScreen = deathMap.getScreenByID(0, 0);
         this.doTeleport(deathScreen, 7, 11);
     }
 
@@ -263,14 +266,14 @@ class Entity extends UID {
 
     doMoveMap(direction) {
         let newMap = this.screen.map.getMapInDirection(direction);
-        let newScreen = newMap.getScreenByPosition(this.screen.x, this.screen.y);
+        let newScreen = newMap.getScreenByID(this.screen.x, this.screen.y);
         this.doTeleport(newScreen, this.x, this.y);
     }
 
     doMoveWorld(direction) {
         let newWorld = this.screen.map.world.getWorldInDirection(direction);
-        let newMap = newWorld.getMapByPosition(this.screen.map.id);
-        let newScreen = newMap.getScreenByPosition(this.screen.x, this.screen.y);
+        let newMap = newWorld.getMapByID(this.screen.map.id);
+        let newScreen = newMap.getScreenByID(this.screen.x, this.screen.y);
         this.doTeleport(newScreen, this.x, this.y);
     }
 

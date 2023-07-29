@@ -17,8 +17,6 @@ const AppState = require("./AppState.js");
 
 // TODO Error with Permissions-Policy header: Origin trial controlled feature not enabled: 'browsing-topics'.
 
-// TODO When I load state, sometimes one of the monsters doesn't move.
-
 // TODO When players despawn and respawn because of a client logout, the refreshTasks are added again without any removal, 
 // so health/mana regens twice as fast!
 

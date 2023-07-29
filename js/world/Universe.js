@@ -14,8 +14,8 @@ class Universe {
     name;
 
     worlds = [];
-    worldMap = new Map();
-    worldPosMap = new Map();
+    worldNameMap = new Map();
+    worldIDMap = new Map();
 
     static loadUniverseFromFolder(className, universeFolder) {
         let universe = Reflection.createInstance(className);
@@ -51,22 +51,22 @@ class Universe {
 
     addWorld(world) {
         this.worlds.push(world);
-        this.worldMap.set(world.name, world);
-        this.worldPosMap.set(world.id, world);
+        this.worldNameMap.set(world.name, world);
+        this.worldIDMap.set(world.id, world);
     }
 
     getWorldByName(name) {
-        return this.worldMap.get(name);
+        return this.worldNameMap.get(name);
     }
 
     getWorldInDirection(world, direction) {
         // If the new world does not exist, return the original world so nothing changes.
         let [, shiftY] = Util.getDirectionalShift(direction);
-        return this.getWorldByPosition(world.id - shiftY) ?? world; // Use opposite of shift for world position.
+        return this.getWorldByID(world.id - shiftY) ?? world; // Use opposite of shift for world position.
     }
 
-    getWorldByPosition(p) {
-        return this.worldPosMap.get(p);
+    getWorldByID(p) {
+        return this.worldIDMap.get(p);
     }
 
     serialize(writer) {

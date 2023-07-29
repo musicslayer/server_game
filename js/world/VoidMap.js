@@ -2,7 +2,7 @@ const Screen = require("./Screen.js");
 const GameMap = require("./GameMap.js");
 
 class VoidMap extends GameMap {
-    getScreenByPosition(screenX, screenY) {
+    getScreenByID(screenX, screenY) {
         // Always return a dynamically generated "void" screen.
         return this.createVoidScreen(this, screenX, screenY);
     }

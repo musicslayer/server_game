@@ -1,4 +1,5 @@
 const Util = require("../util/Util.js");
+const UID = require("../uid/UID.js");
 
 class ServerTask {
     server;
@@ -29,8 +30,6 @@ class ServerTask {
     }
 
     serialize(writer) {
-        const UID = require("../uid/UID.js");
-
         writer.beginObject()
             .serialize("!V!", 1)
             .serialize("isRefreshTask", this.isRefreshTask)

@@ -14,8 +14,8 @@ class World {
     name;
 
     gameMaps = [];
-    gameMapMap = new Map();
-    gameMapPosMap = new Map(); // TODO Why is pos and id treated the same?
+    gameMapNameMap = new Map();
+    gameMapIDMap = new Map();
 
     static loadWorldFromFolder(className, worldFolder) {
         let world = Reflection.createInstance(className);
@@ -58,25 +58,25 @@ class World {
 
     addMap(map) {
         this.gameMaps.push(map);
-        this.gameMapMap.set(map.name, map);
-        this.gameMapPosMap.set(map.id, map);
+        this.gameMapNameMap.set(map.name, map);
+        this.gameMapIDMap.set(map.id, map);
     }
 
     getMapByName(name) {
-        return this.gameMapMap.get(name);
+        return this.gameMapNameMap.get(name);
     }
 
     getMapInDirection(map, direction) {
         let [, shiftY] = Util.getDirectionalShift(direction);
-        return this.getMapByPosition(map.id - shiftY); // Use opposite of shift for map position.
+        return this.getMapByID(map.id - shiftY); // Use opposite of shift for map position.
     }
 
-    getMapByPosition(p) {
-        let map = this.gameMapPosMap.get(p);
+    getMapByID(p) {
+        let map = this.gameMapIDMap.get(p);
 
         // If this map does not exist, return a dynamically generated "void" map.
         if(!map) {
-            let voidMap = this.getMapByPosition("void");
+            let voidMap = this.getMapByID("void");
             map = voidMap.createVoidMapClone(p);
         }
 
