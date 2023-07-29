@@ -1,4 +1,6 @@
 class ServerTask {
+    server;
+    
     isRefreshTask = false;
     fcnString;
     args;
@@ -25,9 +27,7 @@ class ServerTask {
     }
 
     serialize(writer) {
-        const Client = require("../client/Client.js");
-        const Entity = require("../entity/Entity.js");
-        const Server = require("../server/Server.js");
+        const UID = require("../uid/UID.js");
 
         writer.beginObject()
             .serialize("!V!", 1)
@@ -38,24 +38,14 @@ class ServerTask {
         for(let i = 0; i < this.args.length; i++) {
             let arg = this.args[i];
 
-            if(arg instanceof ServerTask) {
-                writer.serialize("arg_class_" + i, "ServerTask");
-                writer.serialize("arg_" + i, arg);
-            }
-            else if(arg instanceof Entity) {
-                writer.serialize("arg_class_" + i, "Entity");
-                writer.serialize("arg_" + i, arg.id);
-            }
-            else if(arg instanceof Client) {
-                writer.serialize("arg_class_" + i, "Client");
-                writer.serialize("arg_" + i, arg.id);
-            }
-            else if(arg instanceof Server) {
-                writer.serialize("arg_class_" + i, "Server");
-                writer.serialize("arg_" + i, arg.uid);
+            if(arg instanceof UID) {
+                writer.serialize("arg_isUID_" + i, true);
+                writer.serialize("arg_class_" + i, arg.constructor.name);
+                writer.reference("arg_" + i, arg);
             }
             else {
-                writer.serialize("arg_class_" + i, getClassName(arg));
+                writer.serialize("arg_isUID_" + i, false);
+                writer.serialize("arg_class_" + i, arg.constructor.name);
                 writer.serialize("arg_" + i, arg);
             }
         }
@@ -64,10 +54,6 @@ class ServerTask {
     }
 
     static deserialize(reader) {
-        const ClientFactory = require("../client/ClientFactory.js");
-        const EntityFactory = require("../entity/EntityFactory.js");
-        const ServerFactory = require("../server/ServerFactory.js");
-        
         let serverTask;
         reader.beginObject()
 
@@ -79,23 +65,12 @@ class ServerTask {
 
             let args = [];
             for(let i = 0; i < numArgs; i++) {
+                let isUID = reader.deserialize("arg_isUID_" + i, "Boolean");
                 let className = reader.deserialize("arg_class_" + i, "String");
 
                 let arg;
-                if(className === "ServerTask") {
-                    arg = reader.deserialize("arg_" + i, className);
-                }
-                else if(className === "Client") {
-                    let id = reader.deserialize("arg_" + i, "Number");
-                    arg = ClientFactory.clientIDMap.get(id);
-                }
-                else if(className === "Entity") {
-                    let id = reader.deserialize("arg_" + i, "Number");
-                    arg = EntityFactory.entityMap.get(id);
-                }
-                else if(className === "Server") {
-                    let uid = reader.deserialize("arg_" + i, "Number");
-                    arg = ServerFactory.serverMap.get(uid);
+                if(isUID) {
+                    arg = reader.dereference("arg_" + i, className);
                 }
                 else {
                     arg = reader.deserialize("arg_" + i, className);
@@ -114,41 +89,6 @@ class ServerTask {
         reader.endObject();
         return serverTask;
     }
-}
-
-function getClassName(value) {
-    // At this point, value is either a string, a number, or something else with a "getClassName" method.
-    // Other objects are not allowed because we don't know for sure that we can deal with them.
-    let className;
-
-    if(isFunction(value, "getClassName")) {
-        // This "getClassName" function itself is not part of the class, so it will not cause any circular loops.
-        className = value.getClassName();
-    }
-    else if(isNumber(value)) {
-        className = "Number";
-    }
-    else if(isString(value)) {
-        className = "String";
-    }
-    else {
-        throw("Unknown object.");
-    }
-
-    return className;
-}
-
-function isFunction(value, fcnName) {
-	return value !== undefined && 
-        (typeof value[fcnName] === "function" || (typeof value[fcnName] === "object" && value[fcnName] instanceof Function));
-}
-
-function isNumber(value) {
-	return typeof value === "number" || value instanceof Number;
-}
-
-function isString(value) {
-	return typeof value === "string" || value instanceof String;
 }
 
 module.exports = ServerTask;

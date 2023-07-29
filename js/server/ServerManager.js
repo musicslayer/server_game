@@ -1,3 +1,4 @@
+const EntityFactory = require("../entity/EntityFactory.js");
 const Server = require("./Server.js");
 const ServerTask = require("./ServerTask.js");
 
@@ -16,22 +17,20 @@ class ServerManager {
         return this.serverMap.get(name);
     }
 
-    addSpawnServerTask() {
-        // Spawn all non-player entities.
-        for(let server of this.servers) {
-            let serverTask = new ServerTask((server) => {
-                for(let world of server.universe.worlds) {
-                    for(let map of world.gameMaps) {
-                        for(let screen of map.screens) {
-                            for(let entity of screen.otherEntities.slice()) {
-                                entity.doSpawn();
-                            }
-                        }
-                    }
-                }
-            }, server);
-            
-            server.scheduleTask(undefined, 0, serverTask);
+    addSpawnServerTasks() {
+        // Spawn all non-player entities. To find them all, use EntityFactory's map.
+        let entityMap = EntityFactory.entityMap;
+        for(let key of entityMap.keys()) {
+            let entity = entityMap.get(key);
+            if(entity.isPlayer) {
+                continue;
+            }
+
+            let serverTask = new ServerTask((entity) => {
+                entity.doSpawn();
+            }, entity);
+
+            entity.getServer().scheduleTask(undefined, 0, serverTask);
         }
     }
 
@@ -88,7 +87,7 @@ class ServerManager {
         server.serverRNG.server = server;
 
         serverManager.addServer(server);
-        serverManager.addSpawnServerTask();
+        serverManager.addSpawnServerTasks();
         serverManager.startServerTicks();
 
         return serverManager;

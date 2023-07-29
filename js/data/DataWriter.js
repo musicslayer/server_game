@@ -1,15 +1,16 @@
 const DataWrapper = require("./DataWrapper.js");
 
 class DataWriter {
-    writer;
+    writeFcn;
     commaFlags = [];
 
-    constructor(writer) {
-        this.writer = writer;
+    constructor(writeFcn) {
+        this.writeFcn = writeFcn;
     }
 
-    write(s) {
-        this.writer.write(s);
+    writeData(s) {
+        // Just call the write function directly.
+        this.writeFcn(s);
     }
 
     isNameComma() {
@@ -25,10 +26,10 @@ class DataWriter {
     putName(name) {
         // Names are always strings.
         if(this.isNameComma()) {
-            this.writer.write(",");
+            this.writeData(",");
         }
 
-        this.writer.write("\"" + name + "\":");
+        this.writeData("\"" + name + "\":");
 
         if(!this.isNameComma()) {
             this.commaFlags[this.commaFlags.length - 1] = "name";
@@ -39,10 +40,10 @@ class DataWriter {
 
     putString(value) {
         if(this.isValueComma()) {
-            this.writer.write(",");
+            this.writeData(",");
         }
 
-        this.writer.write("\"" + value + "\"");
+        this.writeData("\"" + value + "\"");
 
         if(!this.isNameComma()) {
             this.commaFlags[this.commaFlags.length - 1] = "value";
@@ -53,10 +54,10 @@ class DataWriter {
 
     putNull() {
         if(this.isValueComma()) {
-            this.writer.write(",");
+            this.writeData(",");
         }
 
-        this.writer.write("null");
+        this.writeData("null");
 
         if(!this.isNameComma()) {
             this.commaFlags[this.commaFlags.length - 1] = "value";
@@ -67,10 +68,10 @@ class DataWriter {
 
     beginObject() {
         if(this.isValueComma()) {
-            this.writer.write(",");
+            this.writeData(",");
         }
 
-        this.writer.write("{");
+        this.writeData("{");
 
         if(!this.isNameComma()) {
             this.commaFlags[this.commaFlags.length - 1] = "value";
@@ -82,7 +83,7 @@ class DataWriter {
     }
 
     endObject() {
-        this.writer.write("}");
+        this.writeData("}");
         this.commaFlags.pop();
 
         return this;
@@ -90,10 +91,10 @@ class DataWriter {
 
     beginArray() {
         if(this.isValueComma()) {
-            this.writer.write(",");
+            this.writeData(",");
         }
 
-        this.writer.write("[");
+        this.writeData("[");
 
         if(!this.isNameComma()) {
             this.commaFlags[this.commaFlags.length - 1] = "value";
@@ -105,7 +106,7 @@ class DataWriter {
     }
 
     endArray() {
-        this.writer.write("]");
+        this.writeData("]");
         this.commaFlags.pop();
 
         return this;
@@ -180,28 +181,33 @@ class DataWriter {
     }
 }
 
-function isBoolean(value) {
-	return typeof value === "boolean" || value instanceof Boolean;
-}
-
-function isNumber(value) {
-	return typeof value === "number" || value instanceof Number;
-}
-
-function isString(value) {
-	return typeof value === "string" || value instanceof String;
-}
-
 function isFunction(value, fcnName) {
 	return value !== undefined && 
         (typeof value[fcnName] === "function" || (typeof value[fcnName] === "object" && value[fcnName] instanceof Function));
 }
 
 function wrapValue(fcnName, value) {
-    // Note that value will always be non-undefined.
+    // Note that value will never be undefined.
     if(isFunction(value, fcnName)) {
         return value;
     }
+
+    let className = value.constructor.name;
+    if(className === "Boolean") {
+        return new DataWrapper.BooleanWrapper(value);
+    }
+    else if(className === "Number") {
+        return new DataWrapper.NumberWrapper(value);
+    }
+    else if(className === "String") {
+        return new DataWrapper.StringWrapper(value);
+    }
+    else {
+        // Anything else is unsupported.
+        throw("Unsupported value: " + fcnName + " " + (typeof value));
+    }
+
+    /*
     else if(isBoolean(value)) {
         return new DataWrapper.BooleanWrapper(value);
     }
@@ -215,6 +221,7 @@ function wrapValue(fcnName, value) {
         // Anything else is unsupported.
         throw("Unsupported value: " + fcnName + " " + (typeof value));
     }
+    */
 }
 
 module.exports = DataWriter;

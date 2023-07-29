@@ -6,7 +6,8 @@ const MoveAnimation = require("../animation/MoveAnimation.js");
 const ServerTask = require("../server/ServerTask.js");
 
 class Client {
-    id;
+    socket;
+    
     key;
 
     keyboard = new Keyboard();
@@ -298,15 +299,15 @@ class Client {
 
         // **** Save/load state (only one will be executed)
         if(inputs.includes("save_state")) {
-            await this.scheduleRealtimeTask(async () => {
+            this.scheduleRealtimeTask(() => {
                 const AppState = require("../AppState.js");
-                await AppState.instance.save();
+                AppState.instance.save();
             });
         }
         else if(inputs.includes("load_state")) {
-            await this.scheduleRealtimeTask(async () => {
+            this.scheduleRealtimeTask(() => {
                 const AppState = require("../AppState.js");
-                await AppState.instance.load();
+                AppState.instance.load();
             });
         }
     }
@@ -410,12 +411,12 @@ class Client {
         }
     }
 
-    async scheduleRealtimeTask(task) {
+    scheduleRealtimeTask(task) {
         // Don't schedule these on the server.
         if(this.delayMap.get("realtime") === true || this.delayMap.get("realtime") === undefined) {
             this.delayMap.set("realtime", false);
 
-            await task();
+            task();
 
             setTimeout(() => {
                 this.delayMap.set("realtime", true);
@@ -460,11 +461,19 @@ class Client {
 
             this.player.getServer().scheduleTask(animation, time, serverTask);
 
+            // TOOD Should this go back to being scheduled?
+            setTimeout(() => {
+                this.delayMap.set(delayType, true);
+            }, delayTime * 1000)
+
+
+            /*
             let serverTask2 = new ServerTask((client, delayType) => {
                 client.delayMap.set(delayType, true);
             }, this, delayType);
 
             this.player.getServer().scheduleTask(animation, delayTime, serverTask2);
+            */
         }
     }
 
@@ -495,7 +504,7 @@ class Client {
         for(const entity of this.player.screen.otherEntities) {
             otherEntities.push({
                 stackSize: entity.stackSize,
-                className: entity.getClassName(),
+                className: entity.constructor.name,
                 x: entity.x,
                 y: entity.y,
                 animationShiftX: entity.animationShiftX,
@@ -519,7 +528,7 @@ class Client {
             }
 
             playerEntities.push({
-                className: entity.getClassName(),
+                className: entity.constructor.name,
                 stackSize: entity.stackSize,
                 x: entity.x,
                 y: entity.y,
@@ -541,7 +550,7 @@ class Client {
             let item = this.player.inventory.itemMap.get(index);
             if(item) {
                 inventory.items.push({
-                    className: item.getClassName(),
+                    className: item.constructor.name,
                     stackSize: item.stackSize
                 });
             }
@@ -556,7 +565,7 @@ class Client {
 
         // Info
         let info = {};
-        info.className = this.selectedEntity?.getClassName();
+        info.className = this.selectedEntity?.constructor.name;
         info.name = this.selectedEntity?.getName();
         info.text = this.selectedEntity?.getInfo();
 
@@ -573,64 +582,12 @@ class Client {
     getDevData() {
         // Info
         let info = {};
-        info.currentTick = this.player.getServer().currentTick;
+
+        info.currentTick = this.player.getServer().serverScheduler.currentTick;
         
         return {
             info: info
         }
-    }
-
-    // TODO This doesn't actually get called. Should it?
-    serialize(writer) {
-        writer.beginObject()
-            .serialize("!V!", 1)
-            .serialize("id", this.id)
-            .serialize("key", this.key)
-            .serialize("selectedEntity", this.selectedEntity.id)
-            .serialize("selectedSlot", this.selectedSlot)
-            .serializeMap("delayMap", this.delayMap)
-            .serialize("clientInputTime", this.clientInputTime)
-            .serialize("realtimeInputTime", this.realtimeInputTime)
-            .serialize("serverName", this.serverName)
-            .serialize("worldName", this.worldName)
-            .serialize("playerName", this.playerName)
-            .serialize("player", this.player.id)
-        .endObject();
-    }
-
-    static deserialize(reader) {
-        let client;
-        reader.beginObject();
-
-        let version = reader.deserialize("!V!", "String");
-        if(version === "1") {
-            client = new Client();
-            client.id = reader.deserialize("id", "Number");
-            client.key = reader.deserialize("key", "String");
-            let selectedEntityID = reader.deserialize("selectedEntity", "Number");
-            client.selectedSlot = reader.deserialize("selectedSlot", "Number");
-            client.delayMap = reader.deserializeMap("delayMap", "Boolean");
-            client.clientInputTime = reader.deserialize("clientInputTime", "Number");
-            client.realtimeInputTime = reader.deserialize("realtimeInputTime", "Number");
-            client.serverName = reader.deserialize("serverName", "String");
-            client.worldName = reader.deserialize("worldName", "String");
-            client.playerName = reader.deserialize("playerName", "String");
-            let playerID = reader.deserialize("player", "Number");
-
-            client.selectedEntity = EntityFactory.entityMap.get(selectedEntityID);
-            client.player = EntityFactory.entityMap.get(playerID);
-
-            // Update the ClientFactory mapping.
-            const ClientFactory = require("./ClientFactory");
-            ClientFactory.clientIDMap.set(client.id, client);
-            ClientFactory.clientKeyMap.set(client.key, client);
-        }
-        else {
-            throw("Unknown version number: " + version);
-        }
-        
-        reader.endObject();
-        return client;
     }
 }
 

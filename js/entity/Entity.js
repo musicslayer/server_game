@@ -5,8 +5,9 @@ const Util = require("../util/Util.js");
 const Fallback = require("../constants/Fallback.js");
 const Performance = require("../constants/Performance.js");
 const ServerTask = require("../server/ServerTask.js");
+const UID = require("../uid/UID.js");
 
-class Entity {
+class Entity extends UID {
     id;
 
     isSpawned = false; // Only true if this entity instance exists in the game world.
@@ -69,8 +70,8 @@ class Entity {
 
     aggroMap = new Map();
 
-    getClassName() {
-        return this.constructor.name;
+    constructor(uid) {
+        super(uid);
     }
 
     getName() {
@@ -140,18 +141,6 @@ class Entity {
     doSpawn() {
         this.isSpawned = true;
         this.screen.addEntity(this);
-    }
-
-    doSpawnInWorld(world) {
-        // Spawns into the same map/screen/x/y that the entity is already located at but in the given world.
-        this.doSpawn();
-
-        let map = world.getMapByName(this.screen.map.name);
-        let screen = map?.getScreenByName(this.screen.name);
-
-        if(screen) {
-            this.doTeleport(screen, this.x, this.y);
-        }
     }
 
     doSpawnAsLoot() {
@@ -345,7 +334,7 @@ class Entity {
                 }
 
                 if(number > 0) {
-                    let itemDrop = EntityFactory.createInstance(item.getClassName(), number);
+                    let itemDrop = EntityFactory.createInstance(item.constructor.name, number);
                     itemDrop.screen = this.screen;
                     itemDrop.x = this.x;
                     itemDrop.y = this.y;
@@ -420,7 +409,7 @@ class Entity {
 
     clone(number) {
         // By default, just create another instance with the same screen and the provided stack size.
-        let clone = EntityFactory.createInstance(this.getClassName(), number);
+        let clone = EntityFactory.createInstance(this.constructor.name, number);
         clone.screen = this.screen;
         return clone;
     }
@@ -456,7 +445,8 @@ class Entity {
         // To avoid a circular loop, only write a reference to the screen.
         writer.beginObject()
             .serialize("!V!", 1)
-            .serialize("className", this.getClassName())
+            .serialize("uid", this.uid)
+            .serialize("className", this.constructor.name)
             .serialize("id", this.id)
             .serialize("isSpawned", this.isSpawned)
             .serialize("isPlayer", this.isPlayer)
@@ -530,8 +520,10 @@ class Entity {
 
         let version = reader.deserialize("!V!", "String");
         if(version === "1") {
+            let uid = reader.deserialize("uid", "Number");
+
             let className = reader.deserialize("className", "String");
-            entity = Reflection.createInstance(className);
+            entity = Reflection.createInstance(className, uid);
 
             // Note that "ownerID" and "screenInfo" will be used later.
             entity.id = reader.deserialize("id", "Number");

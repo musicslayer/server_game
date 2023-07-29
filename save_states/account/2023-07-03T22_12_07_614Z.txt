@@ -1,1 +1,0 @@
-{"accounts":[{"characterMap":{"keys":["mage","warrior"],"values":[{"className":"PlayerMage","stackSize":"1","x":"9","y":"5"},{"className":"PlayerWarrior","stackSize":"1","x":null,"y":null}]}},{"characterMap":{"keys":["mage","warrior"],"values":[{"className":"PlayerMage","stackSize":"1","x":null,"y":null},{"className":"PlayerWarrior","stackSize":"1","x":null,"y":null}]}}]}

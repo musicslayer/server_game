@@ -50,7 +50,6 @@ class AccountManager {
         player1Mage.homeX = 0;
         player1Mage.homeY = 0;
 
-        /*
         let player1Warrior = EntityFactory.createInstance("PlayerWarrior", 1);
         player1Warrior.homeMapName = "city";
         player1Warrior.homeScreenName = "field1";
@@ -68,30 +67,21 @@ class AccountManager {
         player2Warrior.homeScreenName = "field1";
         player2Warrior.homeX = 7;
         player2Warrior.homeY = 0;
-        */
 
         
         let account1 = new Account();
         account1.key = "smith-password123";
         account1.addCharacter("mage", player1Mage);
-
-        /*
         account1.addCharacter("warrior", player1Warrior);
-        */
 
-        /*
         let account2 = new Account();
         account2.key = "maria-secret";
         account2.addCharacter("mage", player2Mage);
         account2.addCharacter("warrior", player2Warrior);
-        */
 
         let accountManager = new AccountManager();
         accountManager.addAccount(account1);
-
-        /*
         accountManager.addAccount(account2);
-        */
 
         return accountManager;
     }

@@ -1,20 +1,20 @@
-const fs = require("fs");
-
 const http = require("./web/http.js");
 const socket_io = require("./web/socket_io.js");
 
-const ClientFactory = require("./client/ClientFactory.js");
 const Zip = require("./zip/Zip.js");
 const Reflection = require("./reflection/Reflection.js");
 const DataBridge = require("./data/DataBridge.js");
 const AccountManager = require("./account/AccountManager.js");
+const ClientManager = require("./client/ClientManager.js");
 const ServerManager = require("./server/ServerManager.js");
+const UID = require("./uid/UID.js");
 
 class AppState {
     static instance;
 
-    serverManager;
     accountManager;
+    clientManager;
+    serverManager;
 
     accountFile;
     serverFile;
@@ -30,8 +30,9 @@ class AppState {
         // Initialize factory classes.
         Reflection.init();
 
-        // Create initial player accounts and servers.
+        // Create initial managers.
         this.accountManager = AccountManager.createInitialAccountManager();
+        this.clientManager = ClientManager.createInitialClientManager();
         this.serverManager = ServerManager.createInitialServerManager();
 
         // Create servers to serve the web pages and communicate between front and back ends.
@@ -40,84 +41,104 @@ class AppState {
         socket_io.createSocketIOServer(httpServer, this);
     }
 
-    dataMap = new Map();
-    setMap(clientKey, clientMap) {
-        let data = {};
-        for(let key of clientMap.keys()) {
-            data[key] = clientMap.get(key);
-        }
-        this.dataMap.set(clientKey, data)
-    }
-    getMap(clientKey) {
-        let map = new Map();
-        let data = this.dataMap.get(clientKey);
-        for(let key in data) {
-            map.set(key, data[key]);
-        }
-        return map;
-    }
-
-    async save() {
+    save() {
         let dateString = new Date().toISOString().replaceAll(":", "_").replace(".", "_");
 
         this.accountFile = "save_states/account/" + dateString + ".txt";
-        let accountFileWriter = fs.createWriteStream(this.accountFile, "ascii");
-        await DataBridge.serializeObject(this.accountManager, accountFileWriter);
+        DataBridge.serializeObject(this.accountManager, this.accountFile);
 
         this.serverFile = "save_states/server/" + dateString + ".txt";
-        let serverFileWriter = fs.createWriteStream(this.serverFile, "ascii");
-        await DataBridge.serializeObject(this.serverManager, serverFileWriter);
-
-        // Save client delay maps.
-        for(let key of ClientFactory.clientKeyMap.keys()) {
-            let client = ClientFactory.clientKeyMap.get(key);
-            this.setMap(key, client.delayMap);
-        }
+        DataBridge.serializeObject(this.serverManager, this.serverFile);
     }
 
-    async load() {
+    load() {
+        // Load from the most recently created files.
+
+        // Before loading data:
+        // - Halt all existing servers.
+        // - Reset all the UID maps.
         this.serverManager.endServerTicks();
+        UID.reset();
 
-        let accountFileReader = fs.createReadStream(this.accountFile, "ascii");
-        this.accountManager = await DataBridge.deserializeObject("AccountManager", accountFileReader);
+        // Load data from the files.
+        this.accountManager = DataBridge.deserializeObject("AccountManager", this.accountFile);
+        this.serverManager = DataBridge.deserializeObject("ServerManager", this.serverFile);
 
-        let serverFileReader = fs.createReadStream(this.serverFile, "ascii");
-        this.serverManager = await DataBridge.deserializeObject("ServerManager", serverFileReader);
-
-        // Update logged in players to be on the same screens but in the new servers.
+        // After loading data:
+        // - Refresh all clients that are currently logged in.
+        // - Refresh all players' screens.
+        // - Log out all of the clients.
+        // - Log out all of the players.
         this.refreshClients();
+        this.refreshPlayers();
+        this.logOutClients();
+        this.logOutPlayers();
 
-        // Schedule the task to spawn all the entities and then start the new servers' ticks.
+        // Start the new servers' ticks.
         this.serverManager.startServerTicks();
     }
 
     refreshClients() {
-        for(let key of ClientFactory.clientKeyMap.keys()) {
-            let client = ClientFactory.clientKeyMap.get(key);
-            client.delayMap = this.getMap(key);
-
+        // Each client needs to point to an updated player.
+        for(let key of this.clientManager.clientMap.keys()) {
+            let client = this.clientManager.getClient(key);
             let newPlayer = this.accountManager.getAccount(key).getCharacter(client.playerName);
-            let newServer = this.serverManager.getServerByName(newPlayer.screenInfo.serverName);
-            let newWorld = newServer?.universe?.getWorldByName(newPlayer.screenInfo.worldName);
-            let newMap = newWorld?.getMapByName(newPlayer.screenInfo.mapName);
-            let newScreen = newMap?.getScreenByPosition(newPlayer.screenInfo.screenX, newPlayer.screenInfo.screenY);
-
-            if(!newScreen) {
-                // Teleport the entity to the fallback map.
-                // Since the client is still logged in, we know its serverName and worldName actually exist.
-                let clientServer = this.serverManager.getServerByName(client.serverName);
-                let clientWorld = clientServer.universe.getWorldByName(client.worldName);
-                let fallbackMap = clientWorld.getMapByPosition("fallback");
-                newScreen = fallbackMap.getScreenByPosition(0, 0);
-
-                newPlayer.x = 7;
-                newPlayer.y = 11;
-            }
-
-            newPlayer.screen = newScreen;
-            newScreen.addEntity(newPlayer);
-
             client.player = newPlayer;
+        }
+    }
+
+    refreshPlayers() {
+        // Each player needs to point to an updated screen.
+        for(let account of this.accountManager.accounts) {
+            for(let key of account.characterMap.keys()) {
+                let player = account.getCharacter(key);
+                if(!player.screenInfo) {
+                    // The player has never logged in so it was never spawned on any screen.
+                    continue;
+                }
+
+                let newServer = this.serverManager.getServerByName(player.screenInfo.serverName);
+                let newWorld = newServer?.universe?.getWorldByName(player.screenInfo.worldName);
+                let newMap = newWorld?.getMapByName(player.screenInfo.mapName);
+                let newScreen = newMap?.getScreenByPosition(player.screenInfo.screenX, player.screenInfo.screenY);
+
+                if(!newScreen) {
+                    // Teleport the entity to the fallback map.
+                    // Since the client is still logged in, we know its serverName and worldName actually exist.
+                    let clientServer = this.serverManager.getServerByName(client.serverName);
+                    let clientWorld = clientServer.universe.getWorldByName(client.worldName);
+                    let fallbackMap = clientWorld.getMapByPosition("fallback");
+
+                    newScreen = fallbackMap.getScreenByPosition(0, 0);
+                    player.x = 7;
+                    player.y = 11;
+                }
+
+                player.screen = newScreen;
+                newScreen.addEntity(player);
+            }
+        }
+    }
+
+    logOutClients() {
+        for(let key of this.clientManager.clientMap.keys()) {
+            let client = this.clientManager.getClient(key);
+            client.socket.disconnect(true);
+        }
+
+        this.clientManager.clientMap = new Map();
+    }
+
+    logOutPlayers() {
+        for(let account of this.accountManager.accounts) {
+            for(let key of account.characterMap.keys()) {
+                let player = account.getCharacter(key);
+
+                if(player.isSpawned) {
+                    // TODO Should this be scheduled? If there was a client, it would have been scheduled!
+                    player.doDespawn();
+                }
+            }
         }
     }
 }

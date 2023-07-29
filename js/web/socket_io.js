@@ -1,5 +1,5 @@
-const ClientFactory = require("../client/ClientFactory.js");
 const Account = require("../account/Account.js");
+const Client = require("../client/Client.js");
 const EntityFactory = require("../entity/EntityFactory.js");
 const ServerTask = require("../server/ServerTask.js");
 
@@ -147,7 +147,7 @@ function attachAppListeners(socket, appState) {
 			}
 
 			let key = username + "-" + password;
-			if(ClientFactory.clientKeyMap.has(key)) {
+			if(appState.clientManager.clientMap.has(key)) {
 				// User is already logged in.
 				callback({"isSuccess": false});
 				return;
@@ -174,28 +174,47 @@ function attachAppListeners(socket, appState) {
 				return;
 			}
 
-			// If the player has never logged in before then default to their home screen on this world.
-			let client = ClientFactory.createInstance(server.name, world.name, playerName, player, key);
-			if(!client.player.screen) {
-				let screen = world.getMapByName(client.player.homeMapName).getScreenByName(client.player.homeScreenName);
+			if(!player.screen) {
+				// If the player has never logged in before then default to their home screen on this world.
+				let map = world.getMapByName(player.homeMapName);
+				let screen = map?.getScreenByName(player.homeScreenName);
+				
 				if(!screen) {
 					callback({"isSuccess": false});
 					return;
 				}
-				client.player.screen = screen;
-				client.player.x = client.player.homeX;
-				client.player.y = client.player.homeY;
+
+				player.screen = screen;
+				player.x = player.homeX;
+				player.y = player.homeY;
+			}
+			else {
+				// Log into the same map/screen/x/y that the player is already located at but in the given world.
+				let map = world.getMapByName(player.screen.map.name);
+        		let screen = map?.getScreenByName(player.screen.name);
+
+				if(!screen) {
+					callback({"isSuccess": false});	
+					return;
+				}
+
+				player.screen = screen;
 			}
 
-			let serverTask = new ServerTask((player, world) => {
-				player.doSpawnInWorld(world);
-			}, client.player, world);
+			let serverTask = new ServerTask((player) => {
+				player.doSpawn();
+			}, player);
 	
-			client.player.getServer().scheduleTask(undefined, 0, serverTask);
+			player.getServer().scheduleTask(undefined, 0, serverTask);
+
+			let client = new Client(server.name, world.name, playerName, player);
+        	client.key = key;
+			client.socket = socket;
+			appState.clientManager.addClient(client);
 
 			socket.on("disconnect", (reason) => {
-				ClientFactory.clientIDMap.delete(client.id);
-				ClientFactory.clientKeyMap.delete(client.key);
+				let client = appState.clientManager.getClient(key);
+				appState.clientManager.removeClient(client);
 
 				let serverTask = new ServerTask((player) => {
 					player.doDespawn();
@@ -334,7 +353,7 @@ function attachClientListeners(socket, client) {
 		});
 	});
 
-	// Send certain developer data to the client.
+	// Send developer data to the client.
 	socket.on("get_dev_data", (callback) => {
 		rateLimitDevTask(ip, () => {
 			if(!validateCallback(callback)) {

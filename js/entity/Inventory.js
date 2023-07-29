@@ -29,7 +29,7 @@ class Inventory {
         // See if this item is already in the inventory and there is room in the stack to add it.
         for(let index = 0; index < this.maxSlots && entity.stackSize > 0; index++) {
             let item = this.itemMap.get(index);
-            if(item && item.getClassName() === entity.getClassName()) {
+            if(item && item.constructor.name === entity.constructor.name) {
                 // Item is already in the inventory. Add as much of the entity's stack as we can to this stack.
                 numStacks++;
 

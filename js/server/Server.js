@@ -1,6 +1,5 @@
 const fs = require("fs");
 
-const ServerFactory = require("./ServerFactory.js");
 const ServerEntropy = require("./ServerEntropy.js");
 const ServerRNG = require("./ServerRNG.js");
 const ServerScheduler = require("./ServerScheduler.js");
@@ -24,8 +23,7 @@ class Server {
     universe;
 
     static loadServerFromFolder(serverFolder) {
-        //let server = new Server();
-        let server = ServerFactory.createInstance();
+        let server = new Server();
 
         let serverData = fs.readFileSync(serverFolder + "_server.txt", "ascii");
         let lines = serverData ? serverData.split(CRLF) : [];
@@ -67,6 +65,8 @@ class Server {
     }
 
     scheduleTask(animation, time, serverTask) {
+        serverTask.server = this;
+
         animation?.scheduleTasks(this);
         this.serverScheduler.addTask(time, serverTask);
 
@@ -78,10 +78,12 @@ class Server {
 
     scheduleRefreshTask(animation, time, serverTask) {
         // The refresh server task executes the original server task and then reschedules itself to start the entire process again.
-        let refreshServerTask = ServerTask.createRefreshTask((_this, server, animation, time, serverTask) => {
+        let refreshServerTask = ServerTask.createRefreshTask((_this, animation, time, serverTask) => {
             serverTask.execute();
-            server.scheduleTask(animation, time, _this);
-        }, this, animation ?? new NullAnimation(), time, serverTask);
+            _this.server.scheduleTask(animation, time, _this);
+        }, animation ?? new NullAnimation(), time, serverTask);
+
+        // TODO Can "NullAnimation" just be undefined?
 
         this.scheduleTask(animation, time, refreshServerTask);
     }
@@ -108,11 +110,7 @@ class Server {
         let version = reader.deserialize("!V!", "String");
         if(version === "1") {
             let uid = reader.deserialize("uid", "Number");
-
-            // Update the server map now before we deserialize anything else that may access it.
-            server = new Server();
-            server.uid = uid;
-            ServerFactory.serverMap.set(uid, server);
+            server = new Server(uid);
 
             server.id = reader.deserialize("id", "Number");
             server.name = reader.deserialize("name", "String");
@@ -122,6 +120,16 @@ class Server {
             server.serverScheduler = reader.deserialize("serverScheduler", "ServerScheduler");
             
             server.universe.server = server;
+
+            // For all of the scheduled tasks, we need to reattach the server.
+            let scheduledTaskMap = server.serverScheduler.scheduledTaskMap;
+            for(let key of scheduledTaskMap.keys()) {
+                let serverTaskList = scheduledTaskMap.get(key);
+                for(let serverTask of serverTaskList.serverTasks) {
+                    serverTask.server = server;
+                }
+                scheduledTaskMap.get(key, serverTaskList);
+            }
         }
         else {
             throw("Unknown version number: " + version);

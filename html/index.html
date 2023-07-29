@@ -106,6 +106,8 @@
 				socket.on("disconnect", (err) => {
 					socket.disconnect(true);
 					isSocketConnected = false;
+					
+					drawDisconnectScreen();
 				});
 			}
 			
@@ -162,7 +164,7 @@
 			}
 			
 			async function reactLogin(username, password, playerName, serverName, worldName) {
-				if(socket&& isSocketConnected) {
+				if(socket && isSocketConnected) {
 					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login", username, password, playerName, serverName, worldName);
 					if(R.isSuccess) {
 						startInterval();
@@ -172,7 +174,6 @@
 						isSocketLoggedIn = true;
 						
 						socket.on("disconnect", (err) => {
-							socket.disconnect(true);
 							isSocketLoggedIn = false;
 							
 							clearInterval(interval);
@@ -473,7 +474,6 @@
 			}
 			
 			function startDevInterval() {
-				// Continuously check for client inputs to send to the server.
 				let intervalDev = setInterval(() => {
 					checkDevInfo();
 				}, 1000 / INPUT_FPS_RATE);
@@ -483,8 +483,10 @@
 				if(socket && isSocketLoggedIn) {
 					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("get_dev_data");
 					
-					let currentTick = Math.floor(Number(R.info.currentTick) / 60);
-					devText.innerHTML = currentTick;
+					if(R !== null) {
+						let currentTick = Math.floor(Number(R.info.currentTick) / 60);
+						devText.innerHTML = currentTick;
+					}
 				}
 			}
 			
@@ -496,26 +498,41 @@
 				if(socket && isSocketLoggedIn) {
 					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("get_client_data");
 					
-					let canvasBuffer = document.createElement('canvas');
-					canvasBuffer.width = canvas_width;
-					canvasBuffer.height = canvas_height;
-					
-					let ctxBuffer = canvasBuffer.getContext("2d");
-					
-					if(canvas_showGrid) {
-						drawScreenGrid(ctxBuffer);
-						drawInventoryGrid(ctxBuffer);
+					if(R !== null) { 
+						let canvasBuffer = document.createElement('canvas');
+						canvasBuffer.width = canvas_width;
+						canvasBuffer.height = canvas_height;
+						
+						let ctxBuffer = canvasBuffer.getContext("2d");
+						
+						if(canvas_showGrid) {
+							drawScreenGrid(ctxBuffer);
+							drawInventoryGrid(ctxBuffer);
+						}
+						
+						let animationFrame = Math.floor(ANIMATION_FRAMES * time / (1000 * ANIMATION_TIME)) % ANIMATION_FRAMES;
+						drawScreen(ctxBuffer, animationFrame, R.tiles, R.otherEntities, R.playerEntities, R.inventory, R.purse, R.info);
+						
+						// Clear current screen and draw new screen quickly to prevent flickering.
+						ctx.clearRect(0, 0, canvas.width, canvas.height);
+						ctx.drawImage(canvasBuffer, 0, 0);
 					}
-					
-					let animationFrame = Math.floor(ANIMATION_FRAMES * time / (1000 * ANIMATION_TIME)) % ANIMATION_FRAMES;
-					drawScreen(ctxBuffer, animationFrame, R.tiles, R.otherEntities, R.playerEntities, R.inventory, R.purse, R.info);
-					
-					// Clear current screen and draw new screen quickly to prevent flickering.
-					ctx.clearRect(0, 0, canvas.width, canvas.height);
-					ctx.drawImage(canvasBuffer, 0, 0);
 					
 					requestAnimationFrame(drawClient);
 				}
+			}
+			
+			function drawDisconnectScreen() {
+				let canvasBuffer = document.createElement('canvas');
+				canvasBuffer.width = canvas_width;
+				canvasBuffer.height = canvas_height;
+				
+				let ctxBuffer = canvasBuffer.getContext("2d");
+				ctxBuffer.font = "30px Arial";
+				ctxBuffer.fillText("You have been disconnected. Refresh the page to reconnect.", 5, 25);
+				
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.drawImage(canvasBuffer, 0, 0);
 			}
 			
 			function drawScreen(ctxBuffer, animationFrame, tiles, otherEntities, playerEntities, inventory, purse, info) {

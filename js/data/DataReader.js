@@ -9,66 +9,84 @@ const BEGIN_ARRAY = Symbol("BEGIN_ARRAY");
 const END_ARRAY = Symbol("END_ARRAY");
 
 class DataReader {
-    data = [];
+    readFcn;
+
+    s = "";
+    lastPhrase = "";
+    inProgressPhrase;
+
+    constructor(readFcn) {
+        this.readFcn = readFcn;
+    }
+
+    readData() {
+        // Just use the output of the read function directly.
+        return this.readFcn();
+    }
+
+    peekNull() {
+        let arr = this.process(false);
+        return arr[0] === VALUE && arr[1] === NULL;
+    }
+
+    peekEndArray() {
+        let arr = this.process(false);
+        return arr[0] === END_ARRAY;
+    }
 
     getName() {
-        let dataElement = this.data.shift();
-        if(dataElement !== NAME) {
-            throw("Invalid Element: " + dataElement?.toString());
+        let arr = this.process(true);
+        if(arr[0] !== NAME) {
+            throw("Invalid Element: " + arr[0]?.toString());
         }
-        return this.data.shift();
+        return arr[1];
     }
 
     getString() {
-        let dataElement = this.data.shift();
-        if(dataElement !== VALUE) {
-            throw("Invalid Element: " + dataElement?.toString());
+        let arr = this.process(true);
+        if(arr[0] !== VALUE) {
+            throw("Invalid Element: " + arr[0]?.toString());
         }
-        return this.data.shift();
+        return arr[1];
     }
 
     getNull() {
-        let dataElement = this.data.shift();
-        if(dataElement !== VALUE) {
-            throw("Invalid Element: " + dataElement?.toString());
+        let arr = this.process(true);
+        if(arr[0] !== VALUE) {
+            throw("Invalid Element: " + arr[0]?.toString());
         }
-        let nullElement = this.data.shift();
-        if(nullElement !== NULL) {
-            throw("Expecting null element, but instead found: " + nullElement.toString());
+        if(arr[1] !== NULL) {
+            throw("Expecting null element, but instead found: " + arr[1]?.toString());
         }
         return undefined;
     }
 
     beginObject() {
-        let dataElement = this.data.shift();
-        if(dataElement !== BEGIN_OBJECT) {
-            throw("Invalid Element: " + dataElement?.toString());
+        let arr = this.process(true);
+        if(arr[0] !== BEGIN_OBJECT) {
+            throw("Invalid Element: " + arr[0]?.toString());
         }
-        return this;
     }
 
     endObject() {
-        let dataElement = this.data.shift();
-        if(dataElement !== END_OBJECT) {
-            throw("Invalid Element: " + dataElement?.toString());
+        let arr = this.process(true);
+        if(arr[0] !== END_OBJECT) {
+            throw("Invalid Element: " + arr[0]?.toString());
         }
-        return this;
     }
 
     beginArray() {
-        let dataElement = this.data.shift();
-        if(dataElement !== BEGIN_ARRAY) {
-            throw("Invalid Element: " + dataElement?.toString());
+        let arr = this.process(true);
+        if(arr[0] !== BEGIN_ARRAY) {
+            throw("Invalid Element: " + arr[0]?.toString());
         }
-        return this;
     }
 
     endArray() {
-        let dataElement = this.data.shift();
-        if(dataElement !== END_ARRAY) {
-            throw("Invalid Element: " + dataElement?.toString());
+        let arr = this.process(true);
+        if(arr[0] !== END_ARRAY) {
+            throw("Invalid Element: " + arr[0]?.toString());
         }
-        return this;
     }
 
     deserialize(name, className) {
@@ -81,7 +99,7 @@ class DataReader {
 
         let value;
 
-        if(this.data[1] === NULL) {
+        if(this.peekNull()) {
             value = this.getNull();
         }
         else {
@@ -101,14 +119,14 @@ class DataReader {
 
         let arr;
 
-        if(this.data[1] === NULL) {
+        if(this.peekNull()) {
             arr = this.getNull();
         }
         else {
             arr = [];
 
             this.beginArray();
-            while(this.data[0] !== END_ARRAY) {
+            while(!(this.peekEndArray())) {
                 arr.push(this.deserialize(undefined, className));
             }
             this.endArray();
@@ -128,7 +146,7 @@ class DataReader {
 
         let map;
 
-        if(this.data[1] === NULL) {
+        if(this.peekNull()) {
             map = this.getNull();
         }
         else {
@@ -158,7 +176,7 @@ class DataReader {
 
         let value;
 
-        if(this.data[1] === NULL) {
+        if(this.peekNull()) {
             value = this.getNull();
         }
         else {
@@ -168,160 +186,190 @@ class DataReader {
         return value;
     }
 
-    async process(reader) {
-        return new Promise((resolve) => {
-            let lastPhrase = "";
-            let inProgressPhrase;
+    process(shouldConsume) {
+        let chunk = "";
+        let numCharsRead = 0;
+        let numCharsReadPhrase;
+        let storage = "";
+        
+        while(this.s.length > 0 || null !== (chunk = this.readData())) {
+            this.s += chunk;
 
-            reader.on("readable", () => {
-                let chunk;
-                while (null !== (chunk = reader.read())) {
-                    const iterator = chunk[Symbol.iterator]();
-                    for(let theChar = iterator.next(); !theChar.done; theChar = iterator.next()) {
-                        let theCharValue = theChar.value;
+            const iterator = this.s[Symbol.iterator]();
+            for(let theChar = iterator.next(); !theChar.done; theChar = iterator.next()) {
+                numCharsRead++;
+                let theCharValue = theChar.value;
 
-                        if(inProgressPhrase === "null") {
-                            [inProgressPhrase, lastPhrase] = findNullPhrase(iterator, lastPhrase, theCharValue);
-                        }
-                        else if(inProgressPhrase === "quote") {
-                            [inProgressPhrase, lastPhrase] = findQuotePhrase(iterator, lastPhrase, theCharValue);
-                        }
-                        else {
-                            switch(theCharValue) {
-                                case ":":
-                                    this.data.push(NAME);
-                                    this.data.push(lastPhrase);
+                if(this.inProgressPhrase === "null") {
+                    [this.inProgressPhrase, this.lastPhrase, numCharsReadPhrase] = findNullPhrase(iterator, this.lastPhrase, theCharValue);
+                    numCharsRead += numCharsReadPhrase;
+                }
+                else if(this.inProgressPhrase === "quote") {
+                    [this.inProgressPhrase, this.lastPhrase, numCharsReadPhrase] = findQuotePhrase(iterator, this.lastPhrase, theCharValue);
+                    numCharsRead += numCharsReadPhrase;
+                }
+                else {
+                    switch(theCharValue) {
+                        case ":":
+                            let returnPhrase = this.lastPhrase;
+                            this.lastPhrase = "";
+                            this.s = storage + this.s;
 
-                                    lastPhrase = "";
-
-                                    break;
-
-                                case ",":
-                                    if(lastPhrase !== "") {
-                                        this.data.push(VALUE);
-                                        this.data.push(lastPhrase);
-
-                                        lastPhrase = "";
-                                    }
-
-                                    break;
-
-                                case "n":
-                                    // Add the "n" to the phase
-                                    [inProgressPhrase, lastPhrase] = findNullPhrase(iterator, lastPhrase, "n");
-
-                                    break;
-
-                                case "\"":
-                                    // Throw away the opening quote.
-                                    [inProgressPhrase, lastPhrase] = findQuotePhrase(iterator, lastPhrase, "");
-
-                                    break;
-
-                                case "{":
-                                    this.data.push(BEGIN_OBJECT);
-
-                                    break;
-
-                                case "}":
-                                    if(lastPhrase !== "") {
-                                        this.data.push(VALUE);
-                                        this.data.push(lastPhrase);
-
-                                        lastPhrase = "";
-                                    }
-
-                                    this.data.push(END_OBJECT);
-
-                                    break;
-
-                                case "[":
-                                    this.data.push(BEGIN_ARRAY);
-                                    
-                                    break;
-
-                                case "]":
-                                    if(lastPhrase !== "") {
-                                        this.data.push(VALUE);
-                                        this.data.push(lastPhrase);
-
-                                        lastPhrase = "";
-                                    }
-
-                                    this.data.push(END_ARRAY);
-
-                                    break;
-
-                                default:
-                                    throw("Invalid character: " + theCharValue);
+                            if(shouldConsume) {
+                                this.s = this.s.slice(numCharsRead);
                             }
-                        }
+
+                            return [NAME, returnPhrase];
+
+                        case ",":
+                            if(this.lastPhrase !== "") {
+                                let returnPhrase = this.lastPhrase;
+                                this.lastPhrase = "";
+                                this.s = storage + this.s;
+
+                                if(shouldConsume) {
+                                    this.s = this.s.slice(numCharsRead);
+                                }
+
+                                return [VALUE, returnPhrase];
+                            }
+
+                            break;
+
+                        case "n":
+                            // Add the "n" to the phase
+                            [this.inProgressPhrase, this.lastPhrase, numCharsReadPhrase] = findNullPhrase(iterator, this.lastPhrase, "n");
+                            numCharsRead += numCharsReadPhrase;
+
+                            break;
+
+                        case "\"":
+                            // Throw away the opening quote.
+                            [this.inProgressPhrase, this.lastPhrase, numCharsReadPhrase] = findQuotePhrase(iterator, this.lastPhrase, "");
+                            numCharsRead += numCharsReadPhrase;
+
+                            break;
+
+                        case "{":
+                            this.s = storage + this.s;
+                            if(shouldConsume) {
+                                this.s = this.s.slice(numCharsRead);
+                            }
+
+                            return [BEGIN_OBJECT];
+
+                        case "}":
+                            if(this.lastPhrase !== "") {
+                                let returnPhrase = this.lastPhrase;
+                                this.lastPhrase = "";
+                                this.s = storage + this.s;
+
+                                if(shouldConsume) {
+                                    this.s = this.s.slice(numCharsRead - 1); // Don't consume ]
+                                }
+
+                                return [VALUE, returnPhrase];
+                            }
+
+                            this.s = storage + this.s;
+
+                            if(shouldConsume) {
+                                this.s = this.s.slice(numCharsRead);
+                            }
+
+                            return [END_OBJECT];
+
+                        case "[":
+                            this.s = storage + this.s;
+
+                            if(shouldConsume) {
+                                this.s = this.s.slice(numCharsRead);
+                            }
+
+                            return [BEGIN_ARRAY];
+
+                        case "]":
+                            if(this.lastPhrase !== "") {
+                                let returnPhrase = this.lastPhrase;
+                                this.lastPhrase = "";
+                                this.s = storage + this.s;
+
+                                if(shouldConsume) {
+                                    this.s = this.s.slice(numCharsRead - 1); // Don't consume ]
+                                }
+
+                                return [VALUE, returnPhrase];
+                            }
+
+                            this.s = storage + this.s;
+
+                            if(shouldConsume) {
+                                this.s = this.s.slice(numCharsRead);
+                            }
+
+                            return [END_ARRAY];
+
+                        default:
+                            throw("Invalid character: " + theCharValue);
                     }
                 }
-            });
+            }
 
-            reader.on("end", () => {
-                resolve();
-            });
-        });
+            // If we got this far, we read everything we have so far but haven't found a valid return value yet.
+            storage += this.s;
+            this.s = "";
+        }
+
+        // If we get this far, that means the json data is incomplete and we will surely error somewhere.
+        return [];
     }
 }
 
 function findNullPhrase(iterator, phrase, firstChar) {
     // Look for the phrase "null".
+    let numCharsReadPhrase = 0;
     phrase += firstChar;
     if(phrase === "null") {
-        return [undefined, NULL];
+        return [undefined, NULL, numCharsReadPhrase];
     }
 
     for(let theChar = iterator.next(); !theChar.done; theChar = iterator.next()) {
+        numCharsReadPhrase++;
         let theCharValue = theChar.value;
         
         phrase += theCharValue;
         if(phrase === "null") {
-            return [undefined, NULL];
+            return [undefined, NULL, numCharsReadPhrase];
         }
     }
 
-    return ["null", phrase];
+    return ["null", phrase, numCharsReadPhrase];
 }
-
-/*
-function findNullPhrase(iterator) {
-    // The "n" has already been consumed, so just consume the "ull" part.
-    let phrase = "n" + iterator.next().value + iterator.next().value + iterator.next().value;
-
-    if(phrase !== "null") {
-        throw("Invalid phrase: " + phrase);
-    }
-
-    return NULL;
-}
-*/
 
 function findQuotePhrase(iterator, phrase, firstChar) {
     // The first quote has already been consumed, so keep searching until we consume the second quote.
+    let numCharsReadPhrase = 0;
     if(firstChar === "\"") {
-        return [undefined, phrase];
+        return [undefined, phrase, numCharsReadPhrase];
     }
 
     phrase += firstChar;
 
     for(let theChar = iterator.next(); !theChar.done; theChar = iterator.next()) {
+        numCharsReadPhrase++;
         let theCharValue = theChar.value;
 
         if(theCharValue === "\"") {
-            return [undefined, phrase];
+            return [undefined, phrase, numCharsReadPhrase];
         }
         
         phrase += theCharValue;
     }
 
-    return ["quote", phrase];
+    return ["quote", phrase, numCharsReadPhrase];
 }
 
 function wrapClass(fcnName, className) {
-    // Note that value will always be non-null.
     if(Reflection.isStaticMethod(className, fcnName)) {
         return className;
     }
