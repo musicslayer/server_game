@@ -1,3 +1,5 @@
+const Util = require("../util/Util.js");
+
 class UID {
     // Subclasses can call this constructor to store a map of uids to facilitate referencing and dereferencing.
     static uidMap = new Map();
@@ -9,7 +11,7 @@ class UID {
     }
 
     constructor(uid) {
-        let key = this.constructor.name;
+        let key = Util.getClassName(this);
 
         let map = UID.uidMap.get(key);
         if(map === undefined) {
@@ -32,7 +34,7 @@ class UID {
 
     reference(writer) {
         writer.beginObject()
-            .serialize("className", this.constructor.name)
+            .serialize("className", Util.getClassName(this))
             .serialize("uid", this.uid)
         .endObject();
     }

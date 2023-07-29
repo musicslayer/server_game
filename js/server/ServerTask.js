@@ -1,3 +1,5 @@
+const Util = require("../util/Util.js");
+
 class ServerTask {
     server;
     
@@ -40,12 +42,12 @@ class ServerTask {
 
             if(arg instanceof UID) {
                 writer.serialize("arg_isUID_" + i, true);
-                writer.serialize("arg_class_" + i, arg.constructor.name);
+                writer.serialize("arg_class_" + i, Util.getClassName(arg));
                 writer.reference("arg_" + i, arg);
             }
             else {
                 writer.serialize("arg_isUID_" + i, false);
-                writer.serialize("arg_class_" + i, arg.constructor.name);
+                writer.serialize("arg_class_" + i, Util.getClassName(arg));
                 writer.serialize("arg_" + i, arg);
             }
         }

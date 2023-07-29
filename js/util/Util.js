@@ -1,4 +1,13 @@
 class Util {
+    static getClassName(value) {
+        if(value === undefined) {
+            return "Undefined";
+        }
+        else {
+            return value.constructor.name;
+        }
+    }
+
     static getDirectionalShift(direction) {
         let shiftArray = [0, 0];
     

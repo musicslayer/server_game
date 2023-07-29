@@ -178,15 +178,18 @@ function attachAppListeners(socket, appState) {
 				// If the player has never logged in before then default to their home screen on this world.
 				let map = world.getMapByName(player.homeMapName);
 				let screen = map?.getScreenByName(player.homeScreenName);
+				player.x = player.homeX;
+				player.y = player.homeY;
 				
 				if(!screen) {
-					callback({"isSuccess": false});
-					return;
+					// Use the fallback map.
+					let fallbackMap = world.getMapByPosition("fallback");
+					screen = fallbackMap.getScreenByPosition(0, 0);
+					player.x = 7;
+					player.y = 11;
 				}
 
 				player.screen = screen;
-				player.x = player.homeX;
-				player.y = player.homeY;
 			}
 			else {
 				// Log into the same map/screen/x/y that the player is already located at but in the given world.
@@ -194,8 +197,11 @@ function attachAppListeners(socket, appState) {
         		let screen = map?.getScreenByName(player.screen.name);
 
 				if(!screen) {
-					callback({"isSuccess": false});	
-					return;
+					// Use the fallback map.
+					let fallbackMap = world.getMapByPosition("fallback");
+					screen = fallbackMap.getScreenByPosition(0, 0);
+					player.x = 7;
+					player.y = 11;	
 				}
 
 				player.screen = screen;
@@ -212,15 +218,22 @@ function attachAppListeners(socket, appState) {
 			client.socket = socket;
 			appState.clientManager.addClient(client);
 
+			player.client = client;
+
 			socket.on("disconnect", (reason) => {
 				let client = appState.clientManager.getClient(key);
 				appState.clientManager.removeClient(client);
 
-				let serverTask = new ServerTask((player) => {
-					player.doDespawn();
-				}, client.player);
+				if(client.player.isSpawned) {
+					let serverTask = new ServerTask((player) => {
+						player.doDespawn();
+					}, client.player);
 
-				client.player.getServer().scheduleTask(undefined, 0, serverTask);
+					client.player.getServer().scheduleTask(undefined, 0, serverTask);
+				}
+
+				client.player = undefined;
+				player.client = undefined;
 			});
 
 			attachClientListeners(socket, client);

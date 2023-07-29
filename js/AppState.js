@@ -7,6 +7,7 @@ const DataBridge = require("./data/DataBridge.js");
 const AccountManager = require("./account/AccountManager.js");
 const ClientManager = require("./client/ClientManager.js");
 const ServerManager = require("./server/ServerManager.js");
+const ServerTask = require("./server/ServerTask.js");
 const UID = require("./uid/UID.js");
 
 class AppState {
@@ -83,7 +84,9 @@ class AppState {
         for(let key of this.clientManager.clientMap.keys()) {
             let client = this.clientManager.getClient(key);
             let newPlayer = this.accountManager.getAccount(key).getCharacter(client.playerName);
+
             client.player = newPlayer;
+            newPlayer.client = client;
         }
     }
 
@@ -97,22 +100,11 @@ class AppState {
                     continue;
                 }
 
+                // All of these must exist because they existed at the time the save state was created.
                 let newServer = this.serverManager.getServerByName(player.screenInfo.serverName);
-                let newWorld = newServer?.universe?.getWorldByName(player.screenInfo.worldName);
-                let newMap = newWorld?.getMapByName(player.screenInfo.mapName);
-                let newScreen = newMap?.getScreenByPosition(player.screenInfo.screenX, player.screenInfo.screenY);
-
-                if(!newScreen) {
-                    // Teleport the entity to the fallback map.
-                    // Since the client is still logged in, we know its serverName and worldName actually exist.
-                    let clientServer = this.serverManager.getServerByName(client.serverName);
-                    let clientWorld = clientServer.universe.getWorldByName(client.worldName);
-                    let fallbackMap = clientWorld.getMapByPosition("fallback");
-
-                    newScreen = fallbackMap.getScreenByPosition(0, 0);
-                    player.x = 7;
-                    player.y = 11;
-                }
+                let newWorld = newServer.universe.getWorldByName(player.screenInfo.worldName);
+                let newMap = newWorld.getMapByName(player.screenInfo.mapName);
+                let newScreen = newMap.getScreenByPosition(player.screenInfo.screenX, player.screenInfo.screenY);
 
                 player.screen = newScreen;
                 newScreen.addEntity(player);
@@ -135,8 +127,11 @@ class AppState {
                 let player = account.getCharacter(key);
 
                 if(player.isSpawned) {
-                    // TODO Should this be scheduled? If there was a client, it would have been scheduled!
-                    player.doDespawn();
+                    let serverTask = new ServerTask((player) => {
+                        player.doDespawn();
+                    }, player);
+    
+                    player.getServer().scheduleTask(undefined, 0, serverTask);
                 }
             }
         }

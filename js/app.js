@@ -24,10 +24,6 @@ const AppState = require("./AppState.js");
 
 // TODO UID vs. EntityFactory. Do we still need both?
 
-// TODO UTIL package could have a method to get the class of something.
-
-// TODO Should there be a separate PlayerFactory as opposed to EntityFactory? 
-
 async function init() {
     await new AppState().init();
 }

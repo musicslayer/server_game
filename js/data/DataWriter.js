@@ -1,4 +1,5 @@
 const DataWrapper = require("./DataWrapper.js");
+const Util = require("../util/Util.js");
 
 class DataWriter {
     writeFcn;
@@ -192,7 +193,7 @@ function wrapValue(fcnName, value) {
         return value;
     }
 
-    let className = value.constructor.name;
+    let className = Util.getClassName(value);
     if(className === "Boolean") {
         return new DataWrapper.BooleanWrapper(value);
     }
@@ -206,22 +207,6 @@ function wrapValue(fcnName, value) {
         // Anything else is unsupported.
         throw("Unsupported value: " + fcnName + " " + (typeof value));
     }
-
-    /*
-    else if(isBoolean(value)) {
-        return new DataWrapper.BooleanWrapper(value);
-    }
-    else if(isNumber(value)) {
-        return new DataWrapper.NumberWrapper(value);
-    }
-    else if(isString(value)) {
-        return new DataWrapper.StringWrapper(value);
-    }
-    else {
-        // Anything else is unsupported.
-        throw("Unsupported value: " + fcnName + " " + (typeof value));
-    }
-    */
 }
 
 module.exports = DataWriter;

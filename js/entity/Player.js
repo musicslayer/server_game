@@ -1,4 +1,3 @@
-const Reflection = require("../reflection/Reflection.js");
 const Entity = require("./Entity.js");
 const EntityFactory = require("./EntityFactory.js");
 const Purse = require("./Purse.js");
@@ -7,6 +6,7 @@ const Progress = require("../progress/Progress.js");
 const ServerTask = require("../server/ServerTask.js");
 
 class Player extends Entity {
+    client;
     isPlayer = true;
 
     health = 70;

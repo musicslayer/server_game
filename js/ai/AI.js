@@ -1,10 +1,11 @@
 const Reflection = require("../reflection/Reflection.js");
+const Util = require("../util/Util.js");
 
 class AI {
     serialize(writer) {
         writer.beginObject()
             .serialize("!V!", 1)
-            .serialize("className", this.constructor.name)
+            .serialize("className", Util.getClassName(this))
             .serialize("defaultTime", this.defaultTime)
             .serialize("randomDirectionFlag", this.randomDirectionFlag)
             .endObject();

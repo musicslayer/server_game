@@ -106,7 +106,7 @@ class GameMap {
     serialize(writer) {
         writer.beginObject()
             .serialize("!V!", 1)
-            .serialize("className", this.constructor.name)
+            .serialize("className", Util.getClassName(this))
             .serialize("id", this.id)
             .serialize("name", this.name)
             .serializeArray("screens", this.screens)

@@ -334,7 +334,7 @@ class Entity extends UID {
                 }
 
                 if(number > 0) {
-                    let itemDrop = EntityFactory.createInstance(item.constructor.name, number);
+                    let itemDrop = EntityFactory.createInstance(Util.getClassName(item), number);
                     itemDrop.screen = this.screen;
                     itemDrop.x = this.x;
                     itemDrop.y = this.y;
@@ -409,7 +409,7 @@ class Entity extends UID {
 
     clone(number) {
         // By default, just create another instance with the same screen and the provided stack size.
-        let clone = EntityFactory.createInstance(this.constructor.name, number);
+        let clone = EntityFactory.createInstance(Util.getClassName(this), number);
         clone.screen = this.screen;
         return clone;
     }
@@ -446,7 +446,7 @@ class Entity extends UID {
         writer.beginObject()
             .serialize("!V!", 1)
             .serialize("uid", this.uid)
-            .serialize("className", this.constructor.name)
+            .serialize("className", Util.getClassName(this))
             .serialize("id", this.id)
             .serialize("isSpawned", this.isSpawned)
             .serialize("isPlayer", this.isPlayer)

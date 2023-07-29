@@ -483,10 +483,8 @@
 				if(socket && isSocketLoggedIn) {
 					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("get_dev_data");
 					
-					if(R !== null) {
-						let currentTick = Math.floor(Number(R.info.currentTick) / 60);
-						devText.innerHTML = currentTick;
-					}
+					let currentTick = Math.floor(Number(R.info.currentTick) / 60);
+					devText.innerHTML = currentTick;
 				}
 			}
 			
@@ -498,25 +496,23 @@
 				if(socket && isSocketLoggedIn) {
 					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("get_client_data");
 					
-					if(R !== null) { 
-						let canvasBuffer = document.createElement('canvas');
-						canvasBuffer.width = canvas_width;
-						canvasBuffer.height = canvas_height;
-						
-						let ctxBuffer = canvasBuffer.getContext("2d");
-						
-						if(canvas_showGrid) {
-							drawScreenGrid(ctxBuffer);
-							drawInventoryGrid(ctxBuffer);
-						}
-						
-						let animationFrame = Math.floor(ANIMATION_FRAMES * time / (1000 * ANIMATION_TIME)) % ANIMATION_FRAMES;
-						drawScreen(ctxBuffer, animationFrame, R.tiles, R.otherEntities, R.playerEntities, R.inventory, R.purse, R.info);
-						
-						// Clear current screen and draw new screen quickly to prevent flickering.
-						ctx.clearRect(0, 0, canvas.width, canvas.height);
-						ctx.drawImage(canvasBuffer, 0, 0);
+					let canvasBuffer = document.createElement('canvas');
+					canvasBuffer.width = canvas_width;
+					canvasBuffer.height = canvas_height;
+					
+					let ctxBuffer = canvasBuffer.getContext("2d");
+					
+					if(canvas_showGrid) {
+						drawScreenGrid(ctxBuffer);
+						drawInventoryGrid(ctxBuffer);
 					}
+					
+					let animationFrame = Math.floor(ANIMATION_FRAMES * time / (1000 * ANIMATION_TIME)) % ANIMATION_FRAMES;
+					drawScreen(ctxBuffer, animationFrame, R.tiles, R.otherEntities, R.playerEntities, R.inventory, R.purse, R.info);
+					
+					// Clear current screen and draw new screen quickly to prevent flickering.
+					ctx.clearRect(0, 0, canvas.width, canvas.height);
+					ctx.drawImage(canvasBuffer, 0, 0);
 					
 					requestAnimationFrame(drawClient);
 				}

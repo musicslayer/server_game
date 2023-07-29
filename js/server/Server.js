@@ -4,7 +4,6 @@ const ServerEntropy = require("./ServerEntropy.js");
 const ServerRNG = require("./ServerRNG.js");
 const ServerScheduler = require("./ServerScheduler.js");
 const ServerTask = require("./ServerTask.js");
-const NullAnimation = require("../animation/NullAnimation.js");
 const Universe = require("../world/Universe.js");
 
 const COMMA = ",";
@@ -81,9 +80,7 @@ class Server {
         let refreshServerTask = ServerTask.createRefreshTask((_this, animation, time, serverTask) => {
             serverTask.execute();
             _this.server.scheduleTask(animation, time, _this);
-        }, animation ?? new NullAnimation(), time, serverTask);
-
-        // TODO Can "NullAnimation" just be undefined?
+        }, animation, time, serverTask);
 
         this.scheduleTask(animation, time, refreshServerTask);
     }

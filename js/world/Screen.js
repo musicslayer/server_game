@@ -224,6 +224,8 @@ class Screen {
                 entity.screen = screen;
                 screen.addEntity(entity);
             }
+
+            // TODO Can we just refresh the players here?
         }
         else {
             throw("Unknown version number: " + version);

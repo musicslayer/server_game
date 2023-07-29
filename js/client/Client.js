@@ -4,6 +4,7 @@ const Controller = require("../input/Controller.js");
 const EntityFactory = require("../entity/EntityFactory");
 const MoveAnimation = require("../animation/MoveAnimation.js");
 const ServerTask = require("../server/ServerTask.js");
+const Util = require("../util/Util.js");
 
 class Client {
     socket;
@@ -26,6 +27,7 @@ class Client {
     playerName;
     player;
 
+    // TODO Everything but the "player" argument can be removed!
     constructor(serverName, worldName, playerName, player) {
         this.serverName = serverName;
         this.worldName = worldName;
@@ -461,19 +463,11 @@ class Client {
 
             this.player.getServer().scheduleTask(animation, time, serverTask);
 
-            // TOOD Should this go back to being scheduled?
-            setTimeout(() => {
-                this.delayMap.set(delayType, true);
-            }, delayTime * 1000)
+            let serverTask2 = new ServerTask((player, delayType) => {
+                player.client?.delayMap.set(delayType, true);
+            }, this.player, delayType);
 
-
-            /*
-            let serverTask2 = new ServerTask((client, delayType) => {
-                client.delayMap.set(delayType, true);
-            }, this, delayType);
-
-            this.player.getServer().scheduleTask(animation, delayTime, serverTask2);
-            */
+            this.player.getServer().scheduleTask(undefined, delayTime, serverTask2);
         }
     }
 
@@ -504,7 +498,7 @@ class Client {
         for(const entity of this.player.screen.otherEntities) {
             otherEntities.push({
                 stackSize: entity.stackSize,
-                className: entity.constructor.name,
+                className: Util.getClassName(entity),
                 x: entity.x,
                 y: entity.y,
                 animationShiftX: entity.animationShiftX,
@@ -528,7 +522,7 @@ class Client {
             }
 
             playerEntities.push({
-                className: entity.constructor.name,
+                className: Util.getClassName(entity),
                 stackSize: entity.stackSize,
                 x: entity.x,
                 y: entity.y,
@@ -550,7 +544,7 @@ class Client {
             let item = this.player.inventory.itemMap.get(index);
             if(item) {
                 inventory.items.push({
-                    className: item.constructor.name,
+                    className: Util.getClassName(item),
                     stackSize: item.stackSize
                 });
             }
@@ -565,7 +559,7 @@ class Client {
 
         // Info
         let info = {};
-        info.className = this.selectedEntity?.constructor.name;
+        info.className = Util.getClassName(this.selectedEntity);
         info.name = this.selectedEntity?.getName();
         info.text = this.selectedEntity?.getInfo();
 

@@ -1,5 +1,6 @@
-const Reflection = require("../reflection/Reflection.js");
 const EntityFactory = require("../entity/EntityFactory.js");
+const Reflection = require("../reflection/Reflection.js");
+const Util = require("../util/Util.js");
 
 class Animation {
     scheduleTasks(server) {
@@ -12,7 +13,7 @@ class Animation {
     serialize(writer) {
         writer.beginObject()
             .serialize("!V!", 1)
-            .serialize("className", this.constructor.name)
+            .serialize("className", Util.getClassName(this))
             .serialize("entity", this.entity?.id)
             .serialize("time", this.time)
             .endObject();
