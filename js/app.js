@@ -13,8 +13,6 @@ const AppState = require("./AppState.js");
 
 // TODO Now aggro is broken!
 
-// TODO Reloading a projectile causes error and shows an undefined entity
-
 async function init() {
     await new AppState().init();
 }

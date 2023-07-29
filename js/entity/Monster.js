@@ -145,11 +145,14 @@ class Monster extends Entity {
     doAction() {
         // Spawn a "melee projectile" representing a melee attack.
         // If the monster is moving, fire the projectile ahead of the motion.
-        let projectile = Entity.createInstance("MeleeProjectile", 1, 1, 40, false);
+        let projectile = Entity.createInstance("MeleeProjectile", 1);
         projectile.screen = this.screen;
         projectile.x = this.getMovementX();
         projectile.y = this.getMovementY();
         projectile.direction = this.direction;
+        projectile.range = 1;
+        projectile.damage = 40;
+        projectile.isMulti = false;
 
         this.doSpawnEntity(projectile);
     }

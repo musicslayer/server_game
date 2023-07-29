@@ -12,14 +12,6 @@ class Projectile extends Entity {
 
     moveTime = 0.05; // Move faster than most other entities.
 
-    constructor(range, damage, isMulti) {
-        super();
-
-        this.range = range;
-        this.damage = damage;
-        this.isMulti = isMulti;
-    }
-
     doSpawn() {
         super.doSpawn();
 

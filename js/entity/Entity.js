@@ -75,10 +75,6 @@ class Entity extends UID {
         return entity;
     }
 
-    constructor(uid) {
-        super(uid);
-    }
-
     getUIDMapName() {
         return "Entity";
     }
@@ -483,6 +479,7 @@ class Entity extends UID {
             .serialize("maxStackSize", this.maxStackSize)
             .serialize("stackSize", this.stackSize)
 
+        // TODO Get rid of these conditionals?
         if(this.isPlayer) {
             writer.serialize("healthRegen", this.healthRegen)
                 .serialize("manaRegen", this.manaRegen)

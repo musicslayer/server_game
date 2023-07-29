@@ -1,10 +1,6 @@
 const Projectile = require("./Projectile.js");
 
 class MeleeProjectile extends Projectile {
-    constructor(direction, range, damage, isMulti) {
-        super(direction, range, damage, isMulti);
-    }
-
     getName() {
         return "Melee Projectile";
     }

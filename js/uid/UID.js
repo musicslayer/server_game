@@ -1,5 +1,3 @@
-// TODO After a load and a reset, currentUID is wrong! Entries seem mixed up!
-
 class UID {
     // Subclasses can call this constructor to store a map of uids to facilitate referencing and dereferencing.
     static uidMap = new Map();
