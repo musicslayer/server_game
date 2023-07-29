@@ -640,7 +640,7 @@
 				ctxBuffer.drawImage(getGoldTotalImage(purse.goldTotal), (originPurseX + 1) * IMAGE_SCALE_FACTOR, originPurseY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 				
 				// Info
-				if(info.className) {
+				if(info.className !== "Undefined") {
 					const W = IMAGE_SCALE_FACTOR * 6;
 					let originInfoX = 17;
 					let originInfoY = 1;

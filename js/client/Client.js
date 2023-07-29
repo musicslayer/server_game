@@ -22,15 +22,10 @@ class Client {
     clientInputTime = 0.1;
     realtimeInputTime = 1;
 
-    serverName;
-    worldName;
     playerName;
     player;
 
-    // TODO Everything but the "player" argument can be removed!
-    constructor(serverName, worldName, playerName, player) {
-        this.serverName = serverName;
-        this.worldName = worldName;
+    constructor(playerName, player) {
         this.playerName = playerName;
         this.player = player;
     }

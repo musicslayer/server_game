@@ -177,14 +177,6 @@ class Screen {
         return this.map.getScreenInDirection(this, direction);
     }
 
-    getMapInDirection(direction) {
-        return this.map.getMapInDirection(direction);
-    }
-
-    getWorldInDirection(direction) {
-        return this.map.world.getWorldInDirection(direction);
-    }
-
     serialize(writer) {
         // Only serialize non-players here.
         writer.beginObject()
@@ -224,8 +216,6 @@ class Screen {
                 entity.screen = screen;
                 screen.addEntity(entity);
             }
-
-            // TODO Can we just refresh the players here?
         }
         else {
             throw("Unknown version number: " + version);
@@ -243,7 +233,6 @@ class Screen {
             .serialize("screenY", this.y)
             .serialize("mapName", this.map.name)
             .serialize("worldName", this.map.world.name)
-            .serialize("universeName", this.map.world.universe.name)
             .serialize("serverName", this.map.world.universe.server.name)
         .endObject();
     }
@@ -256,7 +245,6 @@ class Screen {
         let screenY = reader.deserialize("screenY", "Number");
         let mapName = reader.deserialize("mapName", "String");
         let worldName = reader.deserialize("worldName", "String");
-        let universeName = reader.deserialize("universeName", "String");
         let serverName = reader.deserialize("serverName", "String");
         reader.endObject();
 
@@ -265,7 +253,6 @@ class Screen {
             screenY: screenY,
             mapName: mapName,
             worldName: worldName,
-            universeName: universeName,
             serverName: serverName
         };
     }

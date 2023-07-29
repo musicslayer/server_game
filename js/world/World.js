@@ -83,7 +83,6 @@ class World {
         return map;
     }
 
-    // TODO Reduce a lot of these repeated methods.
     getWorldInDirection(direction) {
         return this.universe.getWorldInDirection(this, direction);
     }

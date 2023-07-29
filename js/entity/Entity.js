@@ -262,13 +262,13 @@ class Entity extends UID {
     }
 
     doMoveMap(direction) {
-        let newMap = this.screen.getMapInDirection(direction);
+        let newMap = this.screen.map.getMapInDirection(direction);
         let newScreen = newMap.getScreenByPosition(this.screen.x, this.screen.y);
         this.doTeleport(newScreen, this.x, this.y);
     }
 
     doMoveWorld(direction) {
-        let newWorld = this.screen.getWorldInDirection(direction);
+        let newWorld = this.screen.map.world.getWorldInDirection(direction);
         let newMap = newWorld.getMapByPosition(this.screen.map.id);
         let newScreen = newMap.getScreenByPosition(this.screen.x, this.screen.y);
         this.doTeleport(newScreen, this.x, this.y);

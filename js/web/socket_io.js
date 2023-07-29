@@ -213,7 +213,7 @@ function attachAppListeners(socket, appState) {
 	
 			player.getServer().scheduleTask(undefined, 0, serverTask);
 
-			let client = new Client(server.name, world.name, playerName, player);
+			let client = new Client(playerName, player);
         	client.key = key;
 			client.socket = socket;
 			appState.clientManager.addClient(client);

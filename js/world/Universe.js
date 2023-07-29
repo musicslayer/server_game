@@ -8,8 +8,6 @@ const COMMA = ",";
 const CRLF = "\r\n";
 const PIPE = "|";
 
-// TODO Is the layer of Universe really needed?
-
 class Universe {
     server;
     id;
