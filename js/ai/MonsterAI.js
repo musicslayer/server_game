@@ -12,6 +12,10 @@ class MonsterAI extends AI {
 
     generateNextActivity(monster) {
         // Look for the player with the highest agro and move towards them.
+        if(!monster.isSpawned) {
+            return;
+        }
+
         let time = this.defaultTime;
 
         let map = UID.uidMap.get("Entity");

@@ -11,8 +11,9 @@ const AppState = require("./AppState.js");
 
 // TODO Error with Permissions-Policy header: Origin trial controlled feature not enabled: 'browsing-topics'.
 
-// TODO When players despawn and respawn because of a client logout, the refreshTasks are added again without any removal, 
-// so health/mana regens twice as fast!
+// TODO Now aggro is broken!
+
+// TODO Reloading a projectile causes error and shows an undefined entity
 
 async function init() {
     await new AppState().init();

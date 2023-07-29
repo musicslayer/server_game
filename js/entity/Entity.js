@@ -135,6 +135,9 @@ class Entity extends UID {
     doDespawn() {
         this.isSpawned = false;
         this.screen.removeEntity(this);
+
+        let map = UID.uidMap.get("Entity");
+        map.delete(this.uid);
     }
 
     doInteract(entity) {

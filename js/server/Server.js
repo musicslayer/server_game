@@ -78,8 +78,10 @@ class Server {
     scheduleRefreshTask(animation, time, serverTask) {
         // The refresh server task executes the original server task and then reschedules itself to start the entire process again.
         let refreshServerTask = ServerTask.createRefreshTask((_this, animation, time, serverTask) => {
-            serverTask.execute();
-            _this.server.scheduleTask(animation, time, _this);
+            if(!serverTask.isCancelled) {
+                serverTask.execute();
+                _this.server.scheduleTask(animation, time, _this);
+            }
         }, animation, time, serverTask);
 
         this.scheduleTask(animation, time, refreshServerTask);

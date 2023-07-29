@@ -1,3 +1,5 @@
+// TODO After a load and a reset, currentUID is wrong! Entries seem mixed up!
+
 class UID {
     // Subclasses can call this constructor to store a map of uids to facilitate referencing and dereferencing.
     static uidMap = new Map();
@@ -47,18 +49,18 @@ class UID {
 
     reference(writer) {
         writer.beginObject()
-            .serialize("className", this.getUIDMapName())
+            .serialize("mapName", this.getUIDMapName())
             .serialize("uid", this.uid)
         .endObject();
     }
 
     static dereference(reader) {
         reader.beginObject();
-        let className = reader.deserialize("className", "String");
+        let mapName = reader.deserialize("mapName", "String");
         let uid = reader.deserialize("uid", "Number");
         reader.endObject();
 
-        let map = UID.uidMap.get(className);
+        let map = UID.uidMap.get(mapName);
         return map.get(uid);
     }
 }

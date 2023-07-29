@@ -3,8 +3,10 @@ const UID = require("../uid/UID.js");
 
 class ServerTask {
     server;
+    owner;
     
     isRefreshTask = false;
+    isCancelled = false;
     fcnString;
     args;
 
@@ -32,7 +34,9 @@ class ServerTask {
     serialize(writer) {
         writer.beginObject()
             .serialize("!V!", 1)
+            .reference("owner", this.owner)
             .serialize("isRefreshTask", this.isRefreshTask)
+            .serialize("isCancelled", this.isCancelled)
             .serialize("fcnString", this.fcnString)
             .serialize("numArgs", this.args.length);
 
@@ -60,7 +64,9 @@ class ServerTask {
 
         let version = reader.deserialize("!V!", "String");
         if(version === "1") {
+            let owner = reader.dereference("owner", "Entity");
             let isRefreshTask = reader.deserialize("isRefreshTask", "Boolean");
+            let isCancelled = reader.deserialize("isCancelled", "Boolean");
             let fcnString = reader.deserialize("fcnString", "String");
             let numArgs = reader.deserialize("numArgs", "Number");
 
@@ -82,6 +88,12 @@ class ServerTask {
 
             serverTask = new ServerTask(fcnString, ...args);
             serverTask.isRefreshTask = isRefreshTask;
+            serverTask.isCancelled = isCancelled;
+
+            if(owner) {
+                serverTask.owner = owner;
+                owner.serverTask = serverTask;
+            }
         }
         else {
             throw("Unknown version number: " + version);
