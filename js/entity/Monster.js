@@ -1,7 +1,8 @@
 const Entity = require("./Entity.js");
 const MonsterAI = require("../ai/MonsterAI.js");
-const Util = require("../util/Util.js");
 const ServerTask = require("../server/ServerTask.js");
+const Util = require("../util/Util.js");
+const UID = require("../uid/UID.js");
 
 class Monster extends Entity {
     isAI = true;
@@ -85,10 +86,9 @@ class Monster extends Entity {
 
     decreaseAggro() {
         // If a player is no longer on the screen, decrease the aggro for that player.
+        let map = UID.uidMap.get("Entity");
         for(let playerID of this.aggroMap.keys()) {
-            // TODO
-            /*
-            let player = EntityFactory.entityMap.get(playerID);
+            let player = map.get(playerID);
             if(!this.screen.playerEntities.includes(player)) {
                 let aggro = this.aggroMap.get(playerID) ?? 0;
                 let newAggro = Math.max(aggro - this.aggroForgiveness, 0);
@@ -100,11 +100,10 @@ class Monster extends Entity {
                     this.aggroMap.set(playerID, newAggro);
                 }
             }
-            */
         }
     }
 
-    getAggroPlayer() {
+    getAggroPlayerID() {
         // Returns the player that currently has the aggro.
         let playerIDs = [];
 

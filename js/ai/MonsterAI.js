@@ -1,7 +1,8 @@
 const AI = require("./AI.js");
-const Util = require("../util/Util.js");
 const MoveAnimation = require("../animation/MoveAnimation.js");
 const ServerTask = require("../server/ServerTask.js");
+const Util = require("../util/Util.js");
+const UID = require("../uid/UID.js");
 
 class MonsterAI extends AI {
     // This is the time to do any non-standard action (waiting, changing direction).
@@ -13,10 +14,9 @@ class MonsterAI extends AI {
         // Look for the player with the highest agro and move towards them.
         let time = this.defaultTime;
 
-        // TODO
-        let aggroPlayerID = monster.getAggroPlayer();
-        //let aggroPlayer = EntityFactory.entityMap.get(aggroPlayerID);
-        let aggroPlayer = undefined;
+        let map = UID.uidMap.get("Entity");
+        let aggroPlayerID = monster.getAggroPlayerID();
+        let aggroPlayer = map.get(aggroPlayerID);
 
         let directions;
         if(!aggroPlayer) {

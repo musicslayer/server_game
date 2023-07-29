@@ -508,7 +508,7 @@ class Entity extends UID {
         writer.serialize("aggroGain", this.aggroGain);
         writer.serialize("aggroForgiveness", this.aggroForgiveness);
         writer.serialize("aggroForgivenessTime", this.aggroForgivenessTime);
-        writer.serialize("lastPlayerID", this.lastPlayerID); // TODO Can we reference "lastPlayer" instead?
+        writer.serialize("lastPlayerID", this.lastPlayerID);
 
         writer.endObject();
     }
