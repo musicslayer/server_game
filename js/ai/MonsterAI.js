@@ -17,10 +17,7 @@ class MonsterAI extends AI {
         }
 
         let time = this.defaultTime;
-
-        let map = UID.uidMap.get("Entity");
-        let aggroPlayerID = monster.getAggroPlayerID();
-        let aggroPlayer = map.get(aggroPlayerID);
+        let aggroPlayer = monster.getAggroPlayer();
 
         let directions;
         if(!aggroPlayer) {

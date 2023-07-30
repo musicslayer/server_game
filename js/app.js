@@ -11,8 +11,6 @@ const AppState = require("./AppState.js");
 
 // TODO Error with Permissions-Policy header: Origin trial controlled feature not enabled: 'browsing-topics'.
 
-// TODO Now aggro is broken!
-
 async function init() {
     await new AppState().init();
 }

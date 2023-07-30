@@ -27,7 +27,7 @@ class Monster extends Entity {
     aggroForgiveness = 10;
     aggroForgivenessTime = 10;
 
-    lastPlayerID;
+    lastPlayer;
 
     serverTask;
 
@@ -68,11 +68,11 @@ class Monster extends Entity {
 
         // If damage came from a player, increase aggro.
         if(rootEntity.isPlayer) {
-            this.lastPlayerID = rootEntity.uid;
+            this.lastPlayer = rootEntity;
 
-            let aggro = this.aggroMap.get(rootEntity.uid) ?? 0;
+            let aggro = this.aggroMap.get(rootEntity) ?? 0;
             aggro = Math.min(aggro + this.aggroGain, this.maxAggro);
-            this.aggroMap.set(rootEntity.uid, aggro);
+            this.aggroMap.set(rootEntity, aggro);
         }
 
         if(this.health === 0) {
@@ -96,50 +96,48 @@ class Monster extends Entity {
 
     decreaseAggro() {
         // If a player is no longer on the screen, decrease the aggro for that player.
-        let map = UID.uidMap.get("Entity");
-        for(let playerID of this.aggroMap.keys()) {
-            let player = map.get(playerID);
+        for(let player of this.aggroMap.keys()) {
             if(!this.screen.playerEntities.includes(player)) {
-                let aggro = this.aggroMap.get(playerID) ?? 0;
+                let aggro = this.aggroMap.get(player) ?? 0;
                 let newAggro = Math.max(aggro - this.aggroForgiveness, 0);
 
                 if(newAggro === 0) {
-                    this.aggroMap.delete(playerID);
+                    this.aggroMap.delete(player);
                 }
                 else {
-                    this.aggroMap.set(playerID, newAggro);
+                    this.aggroMap.set(player, newAggro);
                 }
             }
         }
     }
 
-    getAggroPlayerID() {
+    getAggroPlayer() {
         // Returns the player that currently has the aggro.
-        let playerIDs = [];
+        let players = [];
 
         // First find max aggro.
         let max = 0;
         for(let player of this.screen.playerEntities) {
-            let aggro = this.aggroMap.get(player.uid) ?? 0;
+            let aggro = this.aggroMap.get(player) ?? 0;
             max = Math.max(max, aggro);
 
             if(max === aggro) {
-                playerIDs.push(player.uid);
+                players.push(player);
             }
         }
 
-        if(max === 0 || playerIDs.length === 0) {
+        if(max === 0 || players.length === 0) {
             // If no players have non-zero aggro, than don't target anyone.
             return undefined;
         }
 
         // If the last player to hit the monster is tied for first, choose that one.
-        if(playerIDs.includes(this.lastPlayerID)) {
-            return this.lastPlayerID;
+        if(players.includes(this.lastPlayer)) {
+            return this.lastPlayer;
         }
 
         // Otherwise, just return the first player in the array.
-        return playerIDs[0];
+        return players[0];
     }
 
     doAction() {

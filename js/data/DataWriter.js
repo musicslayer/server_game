@@ -180,6 +180,44 @@ class DataWriter {
 
         return this;
     }
+
+    referenceArray(name, arr) {
+        if(name !== undefined) {
+            this.putName(name);
+        }
+
+        if(arr === undefined) {
+            this.putNull();
+        }
+        else {
+            this.beginArray();
+            for(let a of arr) {
+                this.reference(undefined, a);
+            }
+            this.endArray();
+        }
+
+        return this;
+    }
+
+    referenceMap(name, map) {
+        // Reference a map as an object containing two arrays.
+        if(name !== undefined) {
+            this.putName(name);
+        }
+
+        if(map === undefined) {
+            this.putNull();
+        }
+        else {
+            this.beginObject();
+            this.referenceArray("keys", map.keys());
+            this.referenceArray("values", map.values());
+            this.endObject();
+        }
+        
+        return this;
+    }
 }
 
 function isFunction(value, fcnName) {

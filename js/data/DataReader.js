@@ -186,6 +186,63 @@ class DataReader {
         return value;
     }
 
+    dereferenceArray(name, className) {
+        if(name !== undefined) {
+            let nextName = this.getName(name);
+            if(name !== nextName) {
+                throw("Key mismatch. Expected: " + name + " Actual: " + nextName?.toString());
+            }
+        }
+
+        let arr;
+
+        if(this.peekNull()) {
+            arr = this.getNull();
+        }
+        else {
+            arr = [];
+
+            this.beginArray();
+            while(!(this.peekEndArray())) {
+                arr.push(this.dereference(undefined, className));
+            }
+            this.endArray();
+        }
+
+        return arr;
+    }
+
+    dereferenceMap(name, classNameKeys, classNameValues) {
+        // Dereference a map as an object containing arrays.
+        if(name !== undefined) {
+            let nextName = this.getName(name);
+            if(name !== nextName) {
+                throw("Key mismatch. Expected: " + name + " Actual: " + nextName?.toString());
+            }
+        }
+
+        let map;
+
+        if(this.peekNull()) {
+            map = this.getNull();
+        }
+        else {
+            this.beginObject();
+            let keys = this.dereferenceArray("keys", classNameKeys);
+            let values = this.dereferenceArray("values", classNameValues);
+            this.endObject();
+
+            if(keys !== undefined && values !== undefined && keys.length === values.length) {
+                map = new Map();
+                for(let i = 0; i < keys.length; i++) {
+                    map.set(keys[i], values[i]);
+                }
+            }
+        }
+        
+        return map;
+    }
+
     process(shouldConsume) {
         let chunk = "";
         let numCharsRead = 0;

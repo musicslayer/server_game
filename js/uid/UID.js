@@ -1,11 +1,16 @@
 class UID {
-    // Subclasses can call this constructor to store a map of uids to facilitate referencing and dereferencing.
+    // Subclasses will have all instances stored in a singleton map to facilitate referencing and dereferencing.
     static uidMap = new Map();
 
     uid;
 
     static reset() {
         UID.uidMap = new Map();
+    }
+
+    static remove(name, obj) {
+        let map = UID.uidMap.get(name);
+        map.delete(obj.uid);
     }
 
     static getValues(name) {

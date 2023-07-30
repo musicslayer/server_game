@@ -131,9 +131,7 @@ class Entity extends UID {
     doDespawn() {
         this.isSpawned = false;
         this.screen.removeEntity(this);
-
-        let map = UID.uidMap.get("Entity");
-        map.delete(this.uid);
+        UID.remove("Entity", this);
     }
 
     doInteract(entity) {
@@ -503,12 +501,12 @@ class Entity extends UID {
         writer.serialize("maxMonsterCount", this.maxMonsterCount);
 
         // Monster
-        writer.serializeMap("aggroMap", this.aggroMap);
+        writer.referenceMap("aggroMap", this.aggroMap);
         writer.serialize("maxAggro", this.maxAggro);
         writer.serialize("aggroGain", this.aggroGain);
         writer.serialize("aggroForgiveness", this.aggroForgiveness);
         writer.serialize("aggroForgivenessTime", this.aggroForgivenessTime);
-        writer.serialize("lastPlayerID", this.lastPlayerID);
+        writer.reference("lastPlayer", this.lastPlayer);
 
         writer.endObject();
     }
@@ -578,12 +576,12 @@ class Entity extends UID {
             entity.monsterCount = reader.deserialize("monsterCount", "Number");
             entity.maxMonsterCount = reader.deserialize("maxMonsterCount", "Number");
 
-            entity.aggroMap = reader.deserializeMap("aggroMap", "Number", "Number");
+            entity.aggroMap = reader.dereferenceMap("aggroMap", "Entity", "Number");
             entity.maxAggro = reader.deserialize("maxAggro", "Number");
             entity.aggroGain = reader.deserialize("aggroGain", "Number");
             entity.aggroForgiveness = reader.deserialize("aggroForgiveness", "Number");
             entity.aggroForgivenessTime = reader.deserialize("aggroForgivenessTime", "Number");
-            entity.lastPlayerID = reader.deserialize("lastPlayerID", "Number");
+            entity.lastPlayer = reader.dereference("lastPlayer", "Entity");
         }
         else {
             throw("Unknown version number: " + version);
