@@ -15,7 +15,7 @@ class Animation {
             .serialize("className", Util.getClassName(this))
             .reference("entity", this.entity)
             .serialize("time", this.time)
-            .endObject();
+        .endObject();
     }
 
     static deserialize(reader) {

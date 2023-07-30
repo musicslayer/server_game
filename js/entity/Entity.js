@@ -476,39 +476,25 @@ class Entity extends UID {
             .serialize("maxStackNumber", this.maxStackNumber)
             .serialize("maxStackSize", this.maxStackSize)
             .serialize("stackSize", this.stackSize)
-
-        // TODO Get rid of these conditionals?
-        if(this.isPlayer) {
-            writer.serialize("healthRegen", this.healthRegen)
-                .serialize("manaRegen", this.manaRegen)
-                .serialize("inventory", this.inventory)
-                .serialize("purse", this.purse)
-                .serialize("progress", this.progress)
-        }
-
-        if(this.isAI) {
-            writer.serialize("ai", this.ai)
-        }
-
-        // Projectile
-        writer.serialize("range", this.range);
-        writer.serialize("damage", this.damage);
-        writer.serialize("isMulti", this.isMulti);
-
-        // Monster Spawner
-        writer.serialize("spawnTime", this.spawnTime);
-        writer.serialize("monsterCount", this.monsterCount);
-        writer.serialize("maxMonsterCount", this.maxMonsterCount);
-
-        // Monster
-        writer.referenceMap("aggroMap", this.aggroMap);
-        writer.serialize("maxAggro", this.maxAggro);
-        writer.serialize("aggroGain", this.aggroGain);
-        writer.serialize("aggroForgiveness", this.aggroForgiveness);
-        writer.serialize("aggroForgivenessTime", this.aggroForgivenessTime);
-        writer.reference("lastPlayer", this.lastPlayer);
-
-        writer.endObject();
+            .serialize("healthRegen", this.healthRegen)
+            .serialize("manaRegen", this.manaRegen)
+            .serialize("inventory", this.inventory)
+            .serialize("purse", this.purse)
+            .serialize("progress", this.progress)
+            .serialize("ai", this.ai)
+            .serialize("range", this.range)
+            .serialize("damage", this.damage)
+            .serialize("isMulti", this.isMulti)
+            .serialize("spawnTime", this.spawnTime)
+            .serialize("monsterCount", this.monsterCount)
+            .serialize("maxMonsterCount", this.maxMonsterCount)
+            .referenceMap("aggroMap", this.aggroMap)
+            .serialize("maxAggro", this.maxAggro)
+            .serialize("aggroGain", this.aggroGain)
+            .serialize("aggroForgiveness", this.aggroForgiveness)
+            .serialize("aggroForgivenessTime", this.aggroForgivenessTime)
+            .reference("lastPlayer", this.lastPlayer)
+        .endObject();
     }
 
     static deserialize(reader) {
@@ -555,27 +541,18 @@ class Entity extends UID {
             entity.maxStackNumber = reader.deserialize("maxStackNumber", "Number");
             entity.maxStackSize = reader.deserialize("maxStackSize", "Number");
             entity.stackSize = reader.deserialize("stackSize", "Number");
-
-            if(entity.isPlayer) {
-                entity.healthRegen = reader.deserialize("healthRegen", "Number");
-                entity.manaRegen = reader.deserialize("manaRegen", "Number");
-                entity.inventory = reader.deserialize("inventory", "Inventory");
-                entity.purse = reader.deserialize("purse", "Purse");
-                entity.progress = reader.deserialize("progress", "Progress");
-            }
-
-            if(entity.isAI) {
-                entity.ai = reader.deserialize("ai", "AI");
-            }
-
+            entity.healthRegen = reader.deserialize("healthRegen", "Number");
+            entity.manaRegen = reader.deserialize("manaRegen", "Number");
+            entity.inventory = reader.deserialize("inventory", "Inventory");
+            entity.purse = reader.deserialize("purse", "Purse");
+            entity.progress = reader.deserialize("progress", "Progress");
+            entity.ai = reader.deserialize("ai", "AI");
             entity.range = reader.deserialize("range", "Number");
             entity.damage = reader.deserialize("damage", "Number");
             entity.isMulti = reader.deserialize("isMulti", "Boolean");
-
             entity.spawnTime = reader.deserialize("spawnTime", "Number");
             entity.monsterCount = reader.deserialize("monsterCount", "Number");
             entity.maxMonsterCount = reader.deserialize("maxMonsterCount", "Number");
-
             entity.aggroMap = reader.dereferenceMap("aggroMap", "Entity", "Number");
             entity.maxAggro = reader.deserialize("maxAggro", "Number");
             entity.aggroGain = reader.deserialize("aggroGain", "Number");

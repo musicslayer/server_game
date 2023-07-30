@@ -8,7 +8,7 @@ class AI {
             .serialize("className", Util.getClassName(this))
             .serialize("defaultTime", this.defaultTime)
             .serialize("randomDirectionFlag", this.randomDirectionFlag)
-            .endObject();
+        .endObject();
     }
 
     static deserialize(reader) {
