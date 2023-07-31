@@ -22,7 +22,7 @@ class DataBridge {
         let fd = fs.openSync(file, "r");
         
         let readFcn = () => {
-            let buffer = new Buffer.alloc(1024); // TODO What is a good number for this?
+            let buffer = new Buffer.alloc(65536);
             fs.readSync(fd, buffer);
             return buffer;
         }
