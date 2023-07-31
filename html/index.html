@@ -25,7 +25,7 @@
 		<button id="loginAccount2MageButton">Account 2 Mage</button>
 		<button id="loginAccount2WarriorButton">Account 2 Warrior</button><br/>
 		
-		<text id="devText"></text>
+		<text style="white-space: pre;" id="devText"></text>
 		
 		<script src="jszip.min.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
@@ -484,7 +484,15 @@
 					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("get_dev_data");
 					
 					let currentTick = Math.floor(Number(R.info.currentTick) / 60);
-					devText.innerHTML = currentTick;
+					let screenInfo = R.info.screenInfo;
+					let mapInfo = R.info.mapInfo;
+					let worldInfo = R.info.worldInfo;
+					let serverInfo = R.info.serverInfo;
+					devText.innerHTML = currentTick 
+					+ "\n" + screenInfo
+					+ "\n" + mapInfo
+					+ "\n" + worldInfo
+					+ "\n" + serverInfo;
 				}
 			}
 			

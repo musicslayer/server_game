@@ -69,10 +69,6 @@ class GameMap {
         this.screenIDMap.set(key, screen);
     }
 
-    getScreenByName(name) {
-        return this.screenNameMap.get(name);
-    }
-
     isScreenInDirection(screen, direction) {
         let [shiftX, shiftY] = Util.getDirectionalShift(direction);
         return this.isScreenByPosition(screen.x + shiftX, screen.y + shiftY);
@@ -89,14 +85,28 @@ class GameMap {
         return this.getScreenByID(screen.x + shiftX, screen.y + shiftY);
     }
 
+    getScreenByName(name) {
+        let screen = this.screenNameMap.get(name);
+
+        // If the screen does not exist on this map, then try VoidMap.
+        if(!screen) {
+            let voidMap = this.world.getMapByID("void");
+            screen = voidMap.getScreenByName(name);
+            screen.map = this;
+        }
+
+        return screen;
+    }
+
     getScreenByID(screenX, screenY) {
         let key = [screenX, screenY].join(",");
         let screen = this.screenIDMap.get(key);
 
-        // If this screen does not exist, return a dynamically generated "void" screen.
+        // If the screen does not exist on this map, then try VoidMap.
         if(!screen) {
             let voidMap = this.world.getMapByID("void");
-            screen = voidMap.createVoidScreen(this, screenX, screenY)
+            screen = voidMap.getScreenByID(screenX, screenY);
+            screen.map = this;
         }
         
         return screen;

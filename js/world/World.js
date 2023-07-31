@@ -68,11 +68,6 @@ class World {
         return this.gameMapNameMap.get(name);
     }
 
-    getMapInDirection(map, direction) {
-        let [, shiftY] = Util.getDirectionalShift(direction);
-        return this.getMapByID(map.id - shiftY); // Use opposite of shift for map position.
-    }
-
     getMapByID(p) {
         let map = this.gameMapIDMap.get(p);
 
@@ -83,6 +78,11 @@ class World {
         }
 
         return map;
+    }
+
+    getMapInDirection(map, direction) {
+        let [, shiftY] = Util.getDirectionalShift(direction);
+        return this.getMapByID(map.id - shiftY); // Use opposite of shift for map position.
     }
 
     getWorldInDirection(direction) {

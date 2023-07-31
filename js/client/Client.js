@@ -572,6 +572,10 @@ class Client {
         let info = {};
 
         info.currentTick = this.player.getServer().serverScheduler.currentTick;
+        info.screenInfo = this.player.screen.name + " (" + this.player.x + "," + this.player.y + ")";
+        info.mapInfo = this.player.screen.map.name + " (" + this.player.screen.x + "," + this.player.screen.y + ")";
+        info.worldInfo = this.player.screen.map.world.name + " " + this.player.screen.map.id;
+        info.serverInfo = this.player.screen.map.world.universe.server.name + " " + this.player.screen.map.world.id;
         
         return {
             info: info

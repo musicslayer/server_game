@@ -1,16 +1,31 @@
 const Screen = require("./Screen.js");
 const GameMap = require("./GameMap.js");
 
+const NAME_PREFIX = "_death_";
+
 class DeathMap extends GameMap {
-    getScreenByID(screenX, screenY) {
-        // Always return a dynamically generated "death" screen.
-        return this.createDeathScreen(this, screenX, screenY);
+    getScreenByName(name) {
+        // Return a dynamically generated "death" screen is the name starts with the expected prefix.
+        let screen;
+
+        if(name.startsWith(NAME_PREFIX)) {
+            name = name.slice(NAME_PREFIX.length);
+            let [screenX, screenY] = name.split(",");
+            screen = this.createDeathScreen(screenX, screenY);
+        }
+
+        return screen;
     }
 
-    createDeathScreen(map, screenX, screenY) {
+    getScreenByID(screenX, screenY) {
+        // Always return a dynamically generated "death" screen.
+        return this.createDeathScreen(screenX, screenY);
+    }
+
+    createDeathScreen(screenX, screenY) {
         let deathScreen = Screen.loadScreenFromFile("DeathScreen", this.mapFolder + "death.txt");
-        deathScreen.map = map;
-        deathScreen.name = "_death";
+        deathScreen.map = this;
+        deathScreen.name = NAME_PREFIX + [screenX, screenY].join(",");
         deathScreen.x = screenX;
         deathScreen.y = screenY;
         deathScreen.pvpStatus = "safe";

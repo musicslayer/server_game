@@ -193,7 +193,7 @@ class Entity extends UID {
     }
 
     doTeleportFallback() {
-        // If the fallback screen cannot be found, then do nothing.
+        // If the fallback target location cannot be found, then do nothing.
         // Players will remain trapped on the fallback map until this is fixed.
         let fallbackMap = this.screen.map.world.getMapByName(Fallback.FALLBACK_MAP_NAME);
         let fallbackScreen = fallbackMap?.getScreenByName(Fallback.FALLBACK_SCREEN_NAME);

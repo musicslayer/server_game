@@ -120,7 +120,7 @@ function attachAppListeners(socket, appState) {
 			}
 
 			// Don't attach the screen here. This will be done on first login.
-			// All new players will be spawned on a special tutorial map.
+			// All new players will have their home location set to a special tutorial map.
 			let player = Entity.createInstance(playerClass, 1);
 			player.homeMapName = "city";
 			player.homeScreenName = "field1";
