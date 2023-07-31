@@ -455,13 +455,13 @@ class Client {
 
             let serverTask = new ServerTask(task, ...args);
 
-            this.player.getServer().scheduleTask(animation, time, serverTask);
+            this.player.getServer().scheduleTask(animation, time, 1, serverTask);
 
             let serverTask2 = new ServerTask((player, delayType) => {
                 player.client?.delayMap.set(delayType, true);
             }, this.player, delayType);
 
-            this.player.getServer().scheduleTask(undefined, delayTime, serverTask2);
+            this.player.getServer().scheduleTask(undefined, delayTime, 1, serverTask2);
         }
     }
 

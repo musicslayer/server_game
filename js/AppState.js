@@ -157,7 +157,7 @@ class AppState {
                         player.doDespawn();
                     }, player);
     
-                    player.getServer().scheduleTask(undefined, 0, serverTask);
+                    player.getServer().scheduleTask(undefined, 0, 1, serverTask);
                 }
             }
         }

@@ -48,7 +48,7 @@ class Player extends Entity {
 
         this.serverTask.owner = this;
 
-        this.getServer().scheduleRefreshTask(undefined, 1, this.serverTask);
+        this.getServer().scheduleTask(undefined, 1, Number.POSITIVE_INFINITY, this.serverTask);
     }
 
     doDespawn() {

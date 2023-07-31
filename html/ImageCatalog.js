@@ -61,6 +61,9 @@ class ImageCatalog {
             case "HealthPotion":
                 image = this.getImage("item", "health_potion_" + animationFrame);
                 break;
+			case "HealthRegenPotion":
+                image = this.getImage("item", "health_regen_potion");
+                break;
 			case "HomePortal":
                 image = this.getImage("portal", "teleporter");
                 break;

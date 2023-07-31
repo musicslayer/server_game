@@ -29,7 +29,7 @@ class ServerManager {
                 entity.doSpawn();
             }, entity);
 
-            entity.getServer().scheduleTask(undefined, 0, serverTask);
+            entity.getServer().scheduleTask(undefined, 0, 1, serverTask);
         }
     }
 

@@ -65,7 +65,7 @@ class Server {
         return this.serverRNG.getRandomInteger(entropyArray, max);
     }
 
-    scheduleTask(animation, time, serverTask) {
+    addTask(animation, time, serverTask) {
         serverTask.server = this;
 
         animation?.scheduleTasks(this);
@@ -77,16 +77,20 @@ class Server {
         this.serverEntropy.processString(serverTask.fcnString);
     }
 
-    scheduleRefreshTask(animation, time, serverTask) {
-        // The refresh server task executes the original server task and then reschedules itself to start the entire process again.
-        let refreshServerTask = ServerTask.createRefreshTask((_this, animation, time, serverTask) => {
+    scheduleTask(animation, time, count, serverTask) {
+        serverTask.count = count;
+        let wrapperServerTask = ServerTask.createWrapperTask((_this, animation, time, serverTask) => {
             if(!serverTask.isCancelled) {
                 serverTask.execute();
-                _this.server.scheduleTask(animation, time, _this);
+
+                serverTask.count--;
+                if(serverTask.count > 0) {
+                    _this.server.addTask(animation, time, _this);
+                }
             }
         }, animation, time, serverTask);
 
-        this.scheduleTask(animation, time, refreshServerTask);
+        this.addTask(animation, time, wrapperServerTask);
     }
 
     serialize(writer) {

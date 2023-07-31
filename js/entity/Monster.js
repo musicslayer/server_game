@@ -49,7 +49,7 @@ class Monster extends Entity {
 
         this.serverTask.owner = this;
         
-        this.getServer().scheduleRefreshTask(undefined, this.aggroForgivenessTime, this.serverTask);
+        this.getServer().scheduleTask(undefined, this.aggroForgivenessTime, Number.POSITIVE_INFINITY, this.serverTask);
 
         // Monster activities are controlled by an AI class.
         this.ai.generateNextActivity(this);

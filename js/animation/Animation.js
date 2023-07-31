@@ -5,7 +5,7 @@ class Animation {
     scheduleTasks(server) {
         let animationDataArray = this.getAnimationServerTasks(this) ?? [];
         for(let animationData of animationDataArray) {
-            server.scheduleTask(animationData.animation, animationData.time, animationData.serverTask);
+            server.scheduleTask(animationData.animation, animationData.time, 1, animationData.serverTask);
         }
     }
 

@@ -5,8 +5,10 @@ class ServerTask {
     server;
     owner;
     
-    isRefreshTask = false;
+    isWrapperTask = false;
     isCancelled = false;
+    count;
+
     fcnString;
     args;
 
@@ -15,15 +17,16 @@ class ServerTask {
         this.args = args;
     }
 
-    static createRefreshTask(fcn, ...args) {
+    static createWrapperTask(fcn, ...args) {
+        // Wrapper tasks are used internally and are processed differently than regular tasks.
         let serverTask = new ServerTask(fcn, ...args);
-        serverTask.isRefreshTask = true;
+        serverTask.isWrapperTask = true;
         return serverTask;
     }
 
     execute() {
         let fcn = new Function('return ' + this.fcnString)();
-        if(this.isRefreshTask) {
+        if(this.isWrapperTask) {
             fcn(this, ...this.args);
         }
         else {
@@ -35,8 +38,9 @@ class ServerTask {
         writer.beginObject()
             .serialize("!V!", 1)
             .reference("owner", this.owner)
-            .serialize("isRefreshTask", this.isRefreshTask)
+            .serialize("isWrapperTask", this.isWrapperTask)
             .serialize("isCancelled", this.isCancelled)
+            .serialize("count", this.count)
             .serialize("fcnString", this.fcnString)
             .serialize("numArgs", this.args.length);
 
@@ -65,8 +69,9 @@ class ServerTask {
         let version = reader.deserialize("!V!", "String");
         if(version === "1") {
             let owner = reader.dereference("owner", "Entity");
-            let isRefreshTask = reader.deserialize("isRefreshTask", "Boolean");
+            let isWrapperTask = reader.deserialize("isWrapperTask", "Boolean");
             let isCancelled = reader.deserialize("isCancelled", "Boolean");
+            let count = reader.deserialize("count", "Number");
             let fcnString = reader.deserialize("fcnString", "String");
             let numArgs = reader.deserialize("numArgs", "Number");
 
@@ -87,8 +92,9 @@ class ServerTask {
             }
 
             serverTask = new ServerTask(fcnString, ...args);
-            serverTask.isRefreshTask = isRefreshTask;
+            serverTask.isWrapperTask = isWrapperTask;
             serverTask.isCancelled = isCancelled;
+            serverTask.count = count;
 
             if(owner) {
                 serverTask.owner = owner;

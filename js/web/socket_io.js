@@ -213,7 +213,7 @@ function attachAppListeners(socket, appState) {
 				player.doSpawn();
 			}, player);
 	
-			player.getServer().scheduleTask(undefined, 0, serverTask);
+			player.getServer().scheduleTask(undefined, 0, 1, serverTask);
 
 			let client = new Client(playerName, player);
         	client.key = key;
@@ -232,7 +232,7 @@ function attachAppListeners(socket, appState) {
 						player.doDespawn();
 					}, client.player);
 
-					client.player.getServer().scheduleTask(undefined, 0, serverTask);
+					client.player.getServer().scheduleTask(undefined, 0, 1, serverTask);
 				}
 
 				client.player = undefined;

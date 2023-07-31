@@ -7,7 +7,7 @@
 5,5||Monster,1
 0,6||HealthPotion,1
 0,7||HealthPotion,1
-0,8||HealthPotion,1
+0,8||HealthRegenPotion,1
 0,9||ManaPotion,1
 0,10||ManaPotion,1
 0,11||ManaPotion,1

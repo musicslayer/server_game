@@ -110,7 +110,7 @@ class Entity extends UID {
             entity.isInvincible = false;
         }, this);
 
-        this.getServer().scheduleTask(undefined, invincibleSeconds, serverTask);
+        this.getServer().scheduleTask(undefined, invincibleSeconds, 1, serverTask);
     }
 
     doCheckCollision() {
@@ -156,7 +156,7 @@ class Entity extends UID {
             entity.doDespawn();
         }, this);
 
-        this.getServer().scheduleTask(undefined, Performance.LOOT_TIME, serverTask);
+        this.getServer().scheduleTask(undefined, Performance.LOOT_TIME, 1, serverTask);
     }
 
     doTakeDamage(entity, damage) {

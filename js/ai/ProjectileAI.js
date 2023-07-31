@@ -13,13 +13,13 @@ class ProjectileAI extends AI {
             projectile.doMoveStep();
         }, projectile);
 
-        projectile.getServer().scheduleTask(new MoveAnimation(projectile, projectile.moveTime), projectile.moveTime, serverTask);
+        projectile.getServer().scheduleTask(new MoveAnimation(projectile, projectile.moveTime), projectile.moveTime, 1, serverTask);
 
         let serverTask2 = new ServerTask((projectile) => {
             projectile.ai.generateNextActivity(projectile);
         }, projectile);
 
-        projectile.getServer().scheduleTask(undefined, projectile.moveTime, serverTask2);
+        projectile.getServer().scheduleTask(undefined, projectile.moveTime, 1, serverTask2);
     }
 }
 
