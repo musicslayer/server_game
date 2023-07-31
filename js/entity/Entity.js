@@ -98,11 +98,15 @@ class Entity extends UID {
     */
 
     doAddHealth(health) {
-        this.health = Math.min(this.health + health, this.maxHealth);
+        if(!this.isDead) {
+            this.health = Math.min(this.health + health, this.maxHealth);
+        }
     }
 
     doAddMana(mana) {
-        this.mana = Math.min(this.mana + mana, this.maxMana);
+        if(!this.isDead) {
+            this.mana = Math.min(this.mana + mana, this.maxMana);
+        }
     }
 
     doMakeInvincible(invincibleSeconds) {

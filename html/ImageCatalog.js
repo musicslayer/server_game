@@ -76,6 +76,9 @@ class ImageCatalog {
             case "ManaPotion":
                 image = this.getImage("item", "mana_potion");
                 break;
+			case "ManaRegenPotion":
+                image = this.getImage("item", "mana_regen_potion");
+                break;
 			case "MeleeProjectile":
                 image = this.getImage("melee", "orb");
                 break;

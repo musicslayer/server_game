@@ -38,10 +38,8 @@ class Player extends Entity {
 
         // Register regen task.
         let serverTask = new ServerTask((player) => {
-            if(!player.isDead) {
-                player.doAddHealth(player.healthRegen)
-                player.doAddMana(player.manaRegen)
-            }
+            player.doAddHealth(player.healthRegen)
+            player.doAddMana(player.manaRegen)
         }, this);
 
         this.ownServerTask(serverTask);
