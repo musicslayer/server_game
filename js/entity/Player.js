@@ -25,8 +25,6 @@ class Player extends Entity {
     purse = new Purse();
     progress = new Progress();
 
-    serverTask;
-
     getName() {
         return "Player";
     }
@@ -39,22 +37,16 @@ class Player extends Entity {
         super.doSpawn();
 
         // Register regen task.
-        this.serverTask = new ServerTask((player) => {
+        let serverTask = new ServerTask((player) => {
             if(!player.isDead) {
                 player.doAddHealth(player.healthRegen)
                 player.doAddMana(player.manaRegen)
             }
         }, this);
 
-        this.serverTask.owner = this;
+        this.ownServerTask(serverTask);
 
-        this.getServer().scheduleTask(undefined, 1, Number.POSITIVE_INFINITY, this.serverTask);
-    }
-
-    doDespawn() {
-        super.doDespawn();
-
-        this.serverTask.isCancelled = true;
+        this.getServer().scheduleTask(undefined, 1, Number.POSITIVE_INFINITY, serverTask);
     }
     
     doAddExperience(experience) {

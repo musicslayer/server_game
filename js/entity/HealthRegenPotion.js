@@ -30,13 +30,15 @@ class HealthRegenPotion extends Entity {
 
     doConsume(entity) {
         // Register regen task.
-        this.serverTask = new ServerTask((entity, healthReward) => {
+        let serverTask = new ServerTask((entity, healthReward) => {
             if(!entity.isDead) {
                 entity.doAddHealth(healthReward);
             }
         }, entity, this.healthReward);
 
-        this.getServer().scheduleTask(undefined, this.healthTime, this.healthCount, this.serverTask);
+        entity.ownServerTask(serverTask);
+
+        this.getServer().scheduleTask(undefined, this.healthTime, this.healthCount, serverTask);
     }
 }
 

@@ -29,8 +29,6 @@ class Monster extends Entity {
 
     lastPlayer;
 
-    serverTask;
-
     getName() {
         return "Monster";
     }
@@ -43,22 +41,16 @@ class Monster extends Entity {
         super.doSpawn();
 
         // Use this to gradually decrease aggro over time.
-        this.serverTask = new ServerTask((monster) => {
+        let serverTask = new ServerTask((monster) => {
             monster.decreaseAggro();
         }, this);
 
-        this.serverTask.owner = this;
+        this.ownServerTask(serverTask);
         
-        this.getServer().scheduleTask(undefined, this.aggroForgivenessTime, Number.POSITIVE_INFINITY, this.serverTask);
+        this.getServer().scheduleTask(undefined, this.aggroForgivenessTime, Number.POSITIVE_INFINITY, serverTask);
 
         // Monster activities are controlled by an AI class.
         this.ai.generateNextActivity(this);
-    }
-
-    doDespawn() {
-        super.doDespawn();
-
-        this.serverTask.isCancelled = true;
     }
 
     doTakeDamage(entity, damage) {

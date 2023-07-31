@@ -68,6 +68,8 @@ class Entity extends UID {
 
     aggroMap = new Map();
 
+    serverTasks = [];
+
     static createInstance(className, stackSize, ...args) {
         // Use this factory method to create subclass instances.
         let entity = Reflection.createInstance(className, ...args) ?? Reflection.createInstance("UnknownEntity", ...args);
@@ -131,6 +133,7 @@ class Entity extends UID {
     doDespawn() {
         this.isSpawned = false;
         this.screen.removeEntity(this);
+        this.cancelServerTasks();
         UID.remove("Entity", this);
     }
 
@@ -436,6 +439,18 @@ class Entity extends UID {
         // Returns y, but if movement is in progress return the value that the entity is moving towards.
         let [, shiftY] = Util.getDirectionalShift(this.direction);
         return this.isMoveInProgress ? this.y + shiftY : this.y;
+    }
+
+    ownServerTask(serverTask) {
+        serverTask.owner = this;
+        this.serverTasks.push(serverTask);
+    }
+
+    cancelServerTasks() {
+        while(this.serverTasks.length > 0) {
+            let serverTask = this.serverTasks.shift();
+            serverTask.isCancelled = true;
+        }
     }
 
     serialize(writer) {

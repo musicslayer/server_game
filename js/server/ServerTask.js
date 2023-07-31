@@ -98,7 +98,7 @@ class ServerTask {
 
             if(owner) {
                 serverTask.owner = owner;
-                owner.serverTask = serverTask;
+                owner.ownServerTask(serverTask);
             }
         }
         else {
