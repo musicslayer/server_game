@@ -28,8 +28,8 @@ class Screen {
     static loadScreenFromFile(className, screenFile) {
         let screen = Reflection.createInstance(className);
 
-        let tileData = fs.readFileSync(screenFile, "ascii");
-        let lines = tileData ? tileData.split(CRLF) : [];
+        let screenData = fs.readFileSync(screenFile, "ascii");
+        let lines = screenData ? screenData.split(CRLF) : [];
 
         // Each line represents a square within this screen.
         while(lines.length > 0) {

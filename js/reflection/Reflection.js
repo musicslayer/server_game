@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const JS_SOURCE_FOLDER = path.resolve("js/");
+const JS_SOURCE_FOLDER = path.resolve("js");
 
 class Reflection {
     static classMap = {};
@@ -10,22 +10,22 @@ class Reflection {
         Reflection.processDirectory(JS_SOURCE_FOLDER, "");
     }
 
-    static processDirectory(path, dir) {
-        let files = fs.readdirSync(path + dir);
-        for(const file of files) {
-            const filename = dir + '/' + file;
-            const relative = filename.slice(1); // Remove the leading /
-            const absolute = path + '/' + relative;
+    static processDirectory(baseDir, dir) {
+        let folder = path.join(baseDir, dir);
+        let items = fs.readdirSync(folder);
+        for(const item of items) {
+            const relativePath = path.join(dir, item);
+            const absolutePath = path.join(baseDir, relativePath);
     
-            let stats = fs.lstatSync(absolute);
+            let stats = fs.lstatSync(absolutePath);
             if(stats.isDirectory()) {
-                Reflection.processDirectory(path, filename);
+                Reflection.processDirectory(baseDir, relativePath);
             }
             else {
-                if(!isExcluded(relative)) {
-                    let modulePath = file;
+                if(!isExcluded(relativePath)) {
+                    let modulePath = item;
                     let className = modulePath.substring(0, modulePath.length - 3);
-                    Reflection.classMap[className] = require("../" + relative)
+                    Reflection.classMap[className] = require("../" + relativePath)
                 }
             }
         }
@@ -76,9 +76,9 @@ function isFunction(value, fcnName) {
 
 function isExcluded(relative) {
     // Exclude anything that isn't a class.
-    return relative === "server/server_tick.js"
-        || relative === "web/http.js"
-        || relative === "web/socket_io.js"
+    return relative === "server\\server_tick.js"
+        || relative === "web\\http.js"
+        || relative === "web\\socket_io.js"
 }
 
 module.exports = Reflection;

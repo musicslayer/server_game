@@ -12,17 +12,16 @@ const ServerManager = require("./server/ServerManager.js");
 const ServerTask = require("./server/ServerTask.js");
 const UID = require("./uid/UID.js");
 
-const SAVE_STATE_FOLDER = path.resolve("save_states/");
-const ZIP_SOURCE_FOLDER = path.resolve("assets/image/");
-const ZIP_FILE_PATH = path.resolve("assets/image.zip");
+const SAVE_STATE_FOLDER = path.resolve("save_states");
+const ZIP_SOURCE_FOLDER = path.resolve(path.join("assets", "image"));
+const ZIP_FILE_PATH = path.resolve(path.join("assets", "image.zip"));
 
 class AppState {
     accountManager;
     clientManager;
     serverManager;
 
-    accountFile;
-    serverFile;
+    lastSaveFolder;
     
     async init() {
         // Validate up front that certain files and folders already exist and we have sufficient access to them.
@@ -62,14 +61,16 @@ class AppState {
     }
 
     save() {
-        // TODO We should store all of these in one folder.
         let dateString = new Date().toISOString().replaceAll(":", "_").replace(".", "_");
+        this.lastSaveFolder = path.join(SAVE_STATE_FOLDER, dateString);
 
-        this.accountFile = "save_states/account/" + dateString + ".txt";
-        DataBridge.serializeObject(this.accountManager, this.accountFile);
+        fs.mkdirSync(this.lastSaveFolder);
 
-        this.serverFile = "save_states/server/" + dateString + ".txt";
-        DataBridge.serializeObject(this.serverManager, this.serverFile);
+        let accountFile = path.join(this.lastSaveFolder, "account.txt");
+        DataBridge.serializeObject(this.accountManager, accountFile);
+
+        let serverFile = path.join(this.lastSaveFolder, "server.txt");
+        DataBridge.serializeObject(this.serverManager, serverFile);
     }
 
     load() {
@@ -82,8 +83,11 @@ class AppState {
         UID.reset();
 
         // Load data from the files.
-        this.accountManager = DataBridge.deserializeObject("AccountManager", this.accountFile);
-        this.serverManager = DataBridge.deserializeObject("ServerManager", this.serverFile);
+        let accountFile = path.join(this.lastSaveFolder, "account.txt");
+        this.accountManager = DataBridge.deserializeObject("AccountManager", accountFile);
+
+        let serverFile = path.join(this.lastSaveFolder, "server.txt");
+        this.serverManager = DataBridge.deserializeObject("ServerManager", serverFile);
 
         // After loading data:
         // - Refresh all clients that are currently logged in.

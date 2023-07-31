@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 
 const Reflection = require("../reflection/Reflection.js");
 const GameMap = require("./GameMap.js");
@@ -20,7 +21,8 @@ class World {
     static loadWorldFromFolder(className, worldFolder) {
         let world = Reflection.createInstance(className);
 
-        let worldData = fs.readFileSync(worldFolder + "_world.txt", "ascii");
+        let worldFile = path.join(worldFolder, "_world.txt");
+        let worldData = fs.readFileSync(worldFile, "ascii");
         let lines = worldData ? worldData.split(CRLF) : [];
 
         // Each line represents a map within this world.

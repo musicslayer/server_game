@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 
 const Reflection = require("../reflection/Reflection.js");
 const World = require("./World.js");
@@ -20,7 +21,8 @@ class Universe {
     static loadUniverseFromFolder(className, universeFolder) {
         let universe = Reflection.createInstance(className);
 
-        let universeData = fs.readFileSync(universeFolder + "_universe.txt", "ascii");
+        let universeFile = path.join(universeFolder, "_universe.txt");
+        let universeData = fs.readFileSync(universeFile, "ascii");
         let lines = universeData ? universeData.split(CRLF) : [];
 
         // Each line represents a world within this universe.

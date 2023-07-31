@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 
 const Reflection = require("../reflection/Reflection.js");
 const Screen = require("./Screen.js");
@@ -23,7 +24,8 @@ class GameMap {
         let map = Reflection.createInstance(className);
         map.mapFolder = mapFolder;
 
-        let mapData = fs.readFileSync(mapFolder + "_map.txt", "ascii");
+        let mapFile = path.join(mapFolder, "_map.txt");
+        let mapData = fs.readFileSync(mapFile, "ascii");
         let lines = mapData ? mapData.split(CRLF) : [];
 
         // Each line represents a screen within this map.

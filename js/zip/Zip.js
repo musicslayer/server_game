@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 
 const ZipStream = require("./ZipStream.js");
 
@@ -15,19 +16,19 @@ class Zip {
         zipStream.finish();
     }
 
-    static async processDirectory(zipStream, path, dir) {
-        let files = fs.readdirSync(path + dir);
-        for(const file of files) {
-            const filename = dir + '/' + file;
-            const relative = filename.slice(1); // Remove the leading /
-            const absolute = path + '/' + relative;
+    static async processDirectory(zipStream, baseDir, dir) {
+        let folder = path.join(baseDir, dir);
+        let items = fs.readdirSync(folder);
+        for(const item of items) {
+            const relativePath = path.join(dir, item);
+            const absolutePath = path.join(baseDir, relativePath);
     
-            let stats = fs.lstatSync(absolute);
+            let stats = fs.lstatSync(absolutePath);
             if(stats.isDirectory()) {
-                await Zip.processDirectory(zipStream, path, filename);
+                await Zip.processDirectory(zipStream, baseDir, relativePath);
             }
             else {
-                await zipStream.addFile(relative, absolute, stats.mtime);
+                await zipStream.addFile(relativePath, absolutePath, stats.mtime);
             }
         }
     }

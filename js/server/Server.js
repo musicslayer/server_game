@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 
 const ServerEntropy = require("./ServerEntropy.js");
 const ServerRNG = require("./ServerRNG.js");
@@ -24,7 +25,8 @@ class Server {
     static loadServerFromFolder(serverFolder) {
         let server = new Server();
 
-        let serverData = fs.readFileSync(serverFolder + "_server.txt", "ascii");
+        let serverFile = path.join(serverFolder, "_server.txt");
+        let serverData = fs.readFileSync(serverFile, "ascii");
         let lines = serverData ? serverData.split(CRLF) : [];
 
         // Each line represents a world within this server.

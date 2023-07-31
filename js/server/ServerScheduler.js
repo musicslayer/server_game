@@ -1,7 +1,10 @@
+const path = require("path");
 const { Worker } = require("worker_threads");
 
 const Performance = require("../constants/Performance.js");
 const ServerTaskList = require("./ServerTaskList.js");
+
+const WORKER_FILE_PATH = path.resolve(path.join("js", "server", "server_tick.js"));
 
 class ServerScheduler {
     scheduledTaskMap = new Map();
@@ -24,7 +27,7 @@ class ServerScheduler {
         const shared = new Int32Array(new SharedArrayBuffer(4));
         this.doWork(shared);
     
-        this.worker = new Worker("./js/server/server_tick.js", {
+        this.worker = new Worker(WORKER_FILE_PATH, {
             workerData: {
                 shared: shared,
                 interval: 1000000000 / Performance.TICK_RATE // In nanoseconds

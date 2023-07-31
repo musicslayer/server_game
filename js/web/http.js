@@ -120,14 +120,11 @@ function serveJS(res, htmlFile) {
 
 async function serveImages(res) {
 	let file = "assets/image.zip";
-	let fileText = fs.readFileSync(file);
 
 	if(!res.isEnded) {
 		res.isEnded = true;
 		res.statusCode = 200;
 		res.setHeader("Content-Type", "image/png");
-		//res.write(fileText);
-		//res.end();
 
 		fs.createReadStream(file).pipe(res);
 	}
