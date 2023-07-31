@@ -1,11 +1,13 @@
 const fs = require("fs");
 const path = require("path");
 
+const JS_SOURCE_FOLDER = path.resolve("js/");
+
 class Reflection {
     static classMap = {};
 
     static init() {
-        Reflection.processDirectory(path.resolve("js/"), "");
+        Reflection.processDirectory(JS_SOURCE_FOLDER, "");
     }
 
     static processDirectory(path, dir) {

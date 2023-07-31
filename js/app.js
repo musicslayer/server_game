@@ -1,6 +1,5 @@
 const AppState = require("./AppState.js");
 
-// TODO Any code that makes files should also make folders.
 // TODO Move existing save states into an archive...?
 
 // TODO Instead of scheduleTask and scheduleRefreshTask, maybe have an integer for the number of times something gets scheudled

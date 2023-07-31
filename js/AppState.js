@@ -1,3 +1,6 @@
+const fs = require("fs");
+const path = require("path");
+
 const http = require("./web/http.js");
 const socket_io = require("./web/socket_io.js");
 const Zip = require("./zip/Zip.js");
@@ -9,6 +12,10 @@ const ServerManager = require("./server/ServerManager.js");
 const ServerTask = require("./server/ServerTask.js");
 const UID = require("./uid/UID.js");
 
+const SAVE_STATE_FOLDER = path.resolve("save_states/");
+const ZIP_SOURCE_FOLDER = path.resolve("assets/image/");
+const ZIP_FILE_PATH = path.resolve("assets/image.zip");
+
 class AppState {
     accountManager;
     clientManager;
@@ -18,10 +25,13 @@ class AppState {
     serverFile;
     
     async init() {
-        // Recreate image zip file.
-        await Zip.createZipFileFromFolder("assets/image.zip", "assets/image/");
+        // Validate up front that certain files and folders already exist and we have sufficient access to them.
+        this.validateFilesAndFolders();
 
-        // Initialize factory classes.
+        // Recreate image zip file.
+        await Zip.createZipFileFromFolder(ZIP_FILE_PATH, ZIP_SOURCE_FOLDER);
+
+        // Initialize reflection class map.
         Reflection.init();
 
         // Create initial managers.
@@ -35,7 +45,24 @@ class AppState {
         socket_io.createSocketIOServer(httpServer, this);
     }
 
+    validateFilesAndFolders() {
+        if(!fs.existsSync(SAVE_STATE_FOLDER)) {
+            throw("SAVE_STATE_FOLDER does not exist: " + SAVE_STATE_FOLDER);
+        }
+
+        if(!fs.existsSync(ZIP_SOURCE_FOLDER)) {
+            throw("ZIP_SOURCE_FOLDER does not exist: " + ZIP_SOURCE_FOLDER);
+        }
+
+        // The zip file may or may not exist at this point.
+
+        fs.accessSync(SAVE_STATE_FOLDER, fs.constants.R_OK | fs.constants.W_OK);
+        fs.accessSync(ZIP_SOURCE_FOLDER, fs.constants.R_OK);
+        fs.accessSync(path.dirname(ZIP_FILE_PATH), fs.constants.R_OK | fs.constants.W_OK);
+    }
+
     save() {
+        // TODO We should store all of these in one folder.
         let dateString = new Date().toISOString().replaceAll(":", "_").replace(".", "_");
 
         this.accountFile = "save_states/account/" + dateString + ".txt";
