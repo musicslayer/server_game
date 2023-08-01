@@ -45,16 +45,16 @@ class Client {
         
         if(inputs.includes("left")) {
             if(location === "screen") {
-                this.scheduleClientTask(undefined, 0, (client, info_0, info_1) => {
-                    client.selectedEntity = client.player.screen.getHighestEntity(info_0, info_1);
-                }, this, info[0], info[1]);
+                this.scheduleClientTask(undefined, 0, (player, info_0, info_1) => {
+                    player.client.selectedEntity = player.screen.getHighestEntity(info_0, info_1);
+                }, this.player, info[0], info[1]);
             }
             else if(location === "inventory") {
                 if(this.player.inventory.itemMap.has(info[0])) {
-                    this.scheduleClientTask(undefined, 0, (client, info_0) => {
-                        client.selectedSlot = info_0;
-                        client.selectedEntity = client.player.inventory.itemMap.get(info_0);
-                    }, this, info[0]);
+                    this.scheduleClientTask(undefined, 0, (player, info_0) => {
+                        player.client.selectedSlot = info_0;
+                        player.client.selectedEntity = player.inventory.itemMap.get(info_0);
+                    }, this.player, info[0]);
                 }
             }
         }
@@ -90,25 +90,25 @@ class Client {
         if(inputs.includes("left")) {
             if(location1 === "inventory" && location2 === "inventory" && info1[0] !== info2[0]) {
                 // Swap two inventory slots (even if one or both of them are empty)
-                this.scheduleInventoryTask(undefined, 0, (client, info1_0, info2_0) => {
-                    if(client.selectedSlot === info1_0) {
-                        client.selectedEntity = client.player.inventory.itemMap.get(info1_0);
-                        client.selectedSlot = info2_0;
+                this.scheduleInventoryTask(undefined, 0, (player, info1_0, info2_0) => {
+                    if(player.client.selectedSlot === info1_0) {
+                        player.client.selectedEntity = player.inventory.itemMap.get(info1_0);
+                        player.client.selectedSlot = info2_0;
                     }
                     else if(this.selectedSlot === info2_0) {
-                        client.selectedEntity = client.player.inventory.itemMap.get(info2_0);
-                        client.selectedSlot = info1_0;
+                        player.client.selectedEntity = player.inventory.itemMap.get(info2_0);
+                        player.client.selectedSlot = info1_0;
                     }
                     
-                    client.player.doSwapInventorySlots(info1_0, info2_0);
-                }, this, info1[0], info2[0]);
+                    player.doSwapInventorySlots(info1_0, info2_0);
+                }, this.player, info1[0], info2[0]);
             }
             else if(location1 === "inventory" && location2 === "screen") {
                 // Drop entire stack on the player's current location.
                 if(!this.player.screen.isDynamic) {
-                    this.scheduleInventoryTask(undefined, 0, (player) => {
-                        player.doDropFromInventory(info1[0], -1);
-                    }, this.player);
+                    this.scheduleInventoryTask(undefined, 0, (player, info1_0) => {
+                        player.doDropFromInventory(info1_0, -1);
+                    }, this.player, info1[0]);
                 }
             }
         }
@@ -119,16 +119,16 @@ class Client {
 
         // Inventory (only one will be executed)
         if(inputs.includes("inventory_previous")) {
-            this.scheduleClientTask(undefined, 0, (client) => {
-                client.selectedSlot = client.selectedSlot === 0 ? client.player.inventory.maxSlots - 1 : client.selectedSlot - 1;
-                client.selectedEntity = client.player.inventory.itemMap.get(client.selectedSlot);
-            }, this);
+            this.scheduleClientTask(undefined, 0, (player) => {
+                player.client.selectedSlot = player.client.selectedSlot === 0 ? player.inventory.maxSlots - 1 : player.client.selectedSlot - 1;
+                player.client.selectedEntity = player.inventory.itemMap.get(player.client.selectedSlot);
+            }, this.player);
         }
         else if(inputs.includes("inventory_next")) {
-            this.scheduleClientTask(undefined, 0, (client) => {
-                client.selectedSlot = client.selectedSlot === client.player.inventory.maxSlots - 1 ? 0 : client.selectedSlot + 1;
-                client.selectedEntity = client.player.inventory.itemMap.get(client.selectedSlot);
-            }, this);
+            this.scheduleClientTask(undefined, 0, (player) => {
+                player.client.selectedSlot = player.client.selectedSlot === player.inventory.maxSlots - 1 ? 0 : player.client.selectedSlot + 1;
+                player.client.selectedEntity = player.inventory.itemMap.get(player.client.selectedSlot);
+            }, this.player);
         }
         else if(inputs.includes("inventory_use")) {
             if(!this.player.screen.isDynamic) {
@@ -313,16 +313,16 @@ class Client {
 
         // Inventory (only one will be executed)
         if(inputs.includes("inventory_previous")) {
-            this.scheduleClientTask(undefined, 0, (client) => {
-                client.selectedSlot = client.selectedSlot === 0 ? client.player.inventory.maxSlots - 1 : client.selectedSlot - 1;
-                client.selectedEntity = client.player.inventory.itemMap.get(client.selectedSlot);
-            }, this);
+            this.scheduleClientTask(undefined, 0, (player) => {
+                player.client.selectedSlot = player.client.selectedSlot === 0 ? player.inventory.maxSlots - 1 : player.client.selectedSlot - 1;
+                player.client.selectedEntity = player.inventory.itemMap.get(player.client.selectedSlot);
+            }, this.player);
         }
         else if(inputs.includes("inventory_next")) {
-            this.scheduleClientTask(undefined, 0, (client) => {
-                client.selectedSlot = client.selectedSlot === client.player.inventory.maxSlots - 1 ? 0 : client.selectedSlot + 1;
-                client.selectedEntity = client.player.inventory.itemMap.get(client.selectedSlot);
-            }, this);
+            this.scheduleClientTask(undefined, 0, (player) => {
+                player.client.selectedSlot = player.client.selectedSlot === player.inventory.maxSlots - 1 ? 0 : player.client.selectedSlot + 1;
+                player.client.selectedEntity = player.inventory.itemMap.get(player.client.selectedSlot);
+            }, this.player);
         }
         else if(inputs.includes("inventory_use")) {
             if(!this.player.screen.isDynamic) {
@@ -458,7 +458,7 @@ class Client {
             this.player.getServer().scheduleTask(animation, time, 1, serverTask);
 
             let serverTask2 = new ServerTask((player, delayType) => {
-                player.client?.delayMap.set(delayType, true);
+                player.client.delayMap.set(delayType, true);
             }, this.player, delayType);
 
             this.player.getServer().scheduleTask(undefined, delayTime, 1, serverTask2);

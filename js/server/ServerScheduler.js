@@ -9,6 +9,8 @@ const WORKER_FILE_PATH = path.resolve(path.join("js", "server", "server_tick.js"
 class ServerScheduler {
     scheduledTaskMap = new Map();
     currentTick = 0;
+    isCancelled = false;
+
     worker;
 
     getTick(time) {
@@ -41,11 +43,12 @@ class ServerScheduler {
 
     async endServerTick() {
         // We need to manually end worker threads when a server is no longer in use.
+        this.isCancelled = true;
         this.worker.terminate();
     }
 
     async doWork(shared) {
-        while(true) {
+        while(!this.isCancelled) {
             await Atomics.waitAsync(shared, 0, 0).value;
 
             let serverTaskList = this.scheduledTaskMap.get(this.currentTick) ?? new ServerTaskList();
