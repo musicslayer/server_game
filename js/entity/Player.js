@@ -43,7 +43,6 @@ class Player extends Entity {
         }, this);
 
         this.ownServerTask(serverTask);
-
         this.getServer().scheduleTask(undefined, 1, Number.POSITIVE_INFINITY, serverTask);
     }
     

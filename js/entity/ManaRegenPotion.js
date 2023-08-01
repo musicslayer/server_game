@@ -35,7 +35,6 @@ class ManaRegenPotion extends Entity {
         }, entity, this.manaReward);
 
         entity.ownServerTask(serverTask);
-
         this.getServer().scheduleTask(undefined, this.manaTime, this.manaCount, serverTask);
     }
 }

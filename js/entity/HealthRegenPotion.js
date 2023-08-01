@@ -35,7 +35,6 @@ class HealthRegenPotion extends Entity {
         }, entity, this.healthReward);
 
         entity.ownServerTask(serverTask);
-
         this.getServer().scheduleTask(undefined, this.healthTime, this.healthCount, serverTask);
     }
 }

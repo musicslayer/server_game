@@ -75,6 +75,9 @@ class AppState {
 
     load() {
         // Load from the most recently created files.
+        if(!this.lastSaveFolder) {
+            return;
+        }
 
         // Before loading data:
         // - Halt all existing servers.
