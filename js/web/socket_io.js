@@ -186,7 +186,6 @@ function attachAppListeners(socket, appState) {
 
 			if(!screen) {
 				// Use the fallback map.
-				// TODO We need "teleportToFallbackMap" and "teleportToFallbackLocation"
 				let fallbackMap = world.getMapByID("fallback");
 				screen = fallbackMap.getScreenByID(0, 0);
 				player.x = 7;
@@ -213,10 +212,12 @@ function attachAppListeners(socket, appState) {
 				let client = appState.clientManager.getClient(key);
 				appState.clientManager.removeClient(client);
 
+				// If a client is present but then a state is loaded where the player was despawned, it's possible client.player is not spawned.
 				if(client.player.isSpawned) {
 					let account = appState.accountManager.getAccount(key);
 					let character = account.getCharacter(playerName);
 
+					// TODO Is this the right place for this? Players despawn without clients in "AppState.logOutPlayers"...
 					character.mapName = client.player.screen.map.name;
 					character.screenName = client.player.screen.name;
 					character.x = client.player.x;

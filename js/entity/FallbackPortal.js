@@ -12,7 +12,7 @@ class FallbackPortal extends Entity {
     doInteract(entity) {
         // Teleport a player to a fixed location that exists in every world.
         if(entity.isPlayer) {
-            entity.doTeleportFallback();
+            entity.doTeleportFallbackLocation();
         }
     }
 }

@@ -201,16 +201,32 @@ class Entity extends UID {
         }
     }
 
+    doTeleportDeath() {
+        // Teleport the entity to the death plane.
+        let deathMap = this.screen.map.world.getMapByID("death");
+        let deathScreen = deathMap.getScreenByID(0, 0);
+        this.doTeleport(deathScreen, 7, 11);
+    }
+
     doTeleportFallback() {
+        // Teleport the entity to the fallback map.
+        let fallbackMap = this.screen.map.world.getMapByID("fallback");
+        let fallbackScreen = fallbackMap.getScreenByID(0, 0);
+        this.doTeleport(fallbackScreen, 7, 11);
+    }
+
+    doTeleportFallbackLocation() {
+        // Teleport the entity to the fallback location.
+        // This location is hardcoded to somewhere that exists and is safe.
+        let fallbackLocationMap = this.screen.map.world.getMapByName(Fallback.FALLBACK_LOCATION_MAP_NAME);
+        let fallbackLocationScreen = fallbackLocationMap?.getScreenByName(Fallback.FALLBACK_LOCATION_SCREEN_NAME);
+        let fallbackLocationX = Fallback.FALLBACK_LOCATION_X;
+        let fallbackLocationY = Fallback.FALLBACK_LOCATION_Y;
+
         // If the fallback target location cannot be found, then do nothing.
         // Players will remain trapped on the fallback map until this is fixed.
-        let fallbackMap = this.screen.map.world.getMapByName(Fallback.FALLBACK_MAP_NAME);
-        let fallbackScreen = fallbackMap?.getScreenByName(Fallback.FALLBACK_SCREEN_NAME);
-        let fallbackX = Fallback.FALLBACK_X;
-        let fallbackY = Fallback.FALLBACK_Y;
-
-        if(fallbackScreen) {
-            this.doTeleport(fallbackScreen, fallbackX, fallbackY);
+        if(fallbackLocationScreen) {
+            this.doTeleport(fallbackLocationScreen, fallbackLocationX, fallbackLocationY);
         }
     }
 
@@ -224,13 +240,6 @@ class Entity extends UID {
         else {
             this.doTeleportFallback();
         }
-    }
-
-    doTeleportDeath() {
-        // Teleport the entity to the death plane.
-        let deathMap = this.screen.map.world.getMapByID("death");
-        let deathScreen = deathMap.getScreenByID(0, 0);
-        this.doTeleport(deathScreen, 7, 11);
     }
 
     doKill() {
