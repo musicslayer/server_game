@@ -43,6 +43,10 @@ class Entity extends UID {
 
     isMoveInProgress = false;
 
+    selectedEntity;
+    selectedSlot = 0;
+    delayMap = new Map();
+
     // Seconds to perform 1 movement or action.
     moveTime = 0.1;
     directionTime = 0;
@@ -485,6 +489,9 @@ class Entity extends UID {
             .serialize("isTangible", this.isTangible)
             .serialize("isActionBlocker", this.isActionBlocker)
             .serialize("isMoveInProgress", this.isMoveInProgress)
+            .reference("selectedEntity", this.selectedEntity)
+            .serialize("selectedSlot", this.selectedSlot)
+            .serializeMap("delayMap", this.delayMap)
             .serialize("moveTime", this.moveTime)
             .serialize("directionTime", this.directionTime)
             .serialize("actionTime", this.actionTime)
@@ -550,6 +557,9 @@ class Entity extends UID {
             entity.isTangible = reader.deserialize("isTangible", "Boolean");
             entity.isActionBlocker = reader.deserialize("isActionBlocker", "Boolean");
             entity.isMoveInProgress = reader.deserialize("isMoveInProgress", "Boolean");
+            entity.selectedEntity = reader.dereference("selectedEntity", "Entity");
+            entity.selectedSlot = reader.deserialize("selectedSlot", "Number");
+            entity.delayMap = reader.deserializeMap("delayMap", "String", "Boolean");
             entity.moveTime = reader.deserialize("moveTime", "Number");
             entity.directionTime = reader.deserialize("directionTime", "Number");
             entity.actionTime = reader.deserialize("actionTime", "Number");

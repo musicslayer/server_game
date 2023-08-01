@@ -6,6 +6,8 @@ const MoveAnimation = require("../animation/MoveAnimation.js");
 const ServerTask = require("../server/ServerTask.js");
 const Util = require("../util/Util.js");
 
+const REALTIME_INPUT_TIME = 1;
+
 class Client {
     socket;
     appState;
@@ -16,13 +18,8 @@ class Client {
     mouse = new Mouse();
     controller = new Controller();
 
-    selectedEntity;
-    selectedSlot = 0;
-
-    delayMap = new Map();
-    clientInputTime = 0.1;
-    realtimeInputTime = 1;
-
+    realtimeDelay = true;
+    
     playerName;
     player;
 
@@ -45,15 +42,15 @@ class Client {
         
         if(inputs.includes("left")) {
             if(location === "screen") {
-                this.scheduleClientTask(undefined, 0, (player, info_0, info_1) => {
-                    player.client.selectedEntity = player.screen.getHighestEntity(info_0, info_1);
+                this.scheduleInventoryTask(undefined, 0, (player, info_0, info_1) => {
+                    player.selectedEntity = player.screen.getHighestEntity(info_0, info_1);
                 }, this.player, info[0], info[1]);
             }
             else if(location === "inventory") {
                 if(this.player.inventory.itemMap.has(info[0])) {
-                    this.scheduleClientTask(undefined, 0, (player, info_0) => {
-                        player.client.selectedSlot = info_0;
-                        player.client.selectedEntity = player.inventory.itemMap.get(info_0);
+                    this.scheduleInventoryTask(undefined, 0, (player, info_0) => {
+                        player.selectedSlot = info_0;
+                        player.selectedEntity = player.inventory.itemMap.get(info_0);
                     }, this.player, info[0]);
                 }
             }
@@ -91,13 +88,13 @@ class Client {
             if(location1 === "inventory" && location2 === "inventory" && info1[0] !== info2[0]) {
                 // Swap two inventory slots (even if one or both of them are empty)
                 this.scheduleInventoryTask(undefined, 0, (player, info1_0, info2_0) => {
-                    if(player.client.selectedSlot === info1_0) {
-                        player.client.selectedEntity = player.inventory.itemMap.get(info1_0);
-                        player.client.selectedSlot = info2_0;
+                    if(player.selectedSlot === info1_0) {
+                        player.selectedEntity = player.inventory.itemMap.get(info1_0);
+                        player.selectedSlot = info2_0;
                     }
-                    else if(this.selectedSlot === info2_0) {
-                        player.client.selectedEntity = player.inventory.itemMap.get(info2_0);
-                        player.client.selectedSlot = info1_0;
+                    else if(player.selectedSlot === info2_0) {
+                        player.selectedEntity = player.inventory.itemMap.get(info2_0);
+                        player.selectedSlot = info1_0;
                     }
                     
                     player.doSwapInventorySlots(info1_0, info2_0);
@@ -119,22 +116,22 @@ class Client {
 
         // Inventory (only one will be executed)
         if(inputs.includes("inventory_previous")) {
-            this.scheduleClientTask(undefined, 0, (player) => {
-                player.client.selectedSlot = player.client.selectedSlot === 0 ? player.inventory.maxSlots - 1 : player.client.selectedSlot - 1;
-                player.client.selectedEntity = player.inventory.itemMap.get(player.client.selectedSlot);
+            this.scheduleInventoryTask(undefined, 0, (player) => {
+                player.selectedSlot = player.selectedSlot === 0 ? player.inventory.maxSlots - 1 : player.selectedSlot - 1;
+                player.selectedEntity = player.inventory.itemMap.get(player.selectedSlot);
             }, this.player);
         }
         else if(inputs.includes("inventory_next")) {
-            this.scheduleClientTask(undefined, 0, (player) => {
-                player.client.selectedSlot = player.client.selectedSlot === player.inventory.maxSlots - 1 ? 0 : player.client.selectedSlot + 1;
-                player.client.selectedEntity = player.inventory.itemMap.get(player.client.selectedSlot);
+            this.scheduleInventoryTask(undefined, 0, (player) => {
+                player.selectedSlot = player.selectedSlot === player.inventory.maxSlots - 1 ? 0 : player.selectedSlot + 1;
+                player.selectedEntity = player.inventory.itemMap.get(player.selectedSlot);
             }, this.player);
         }
         else if(inputs.includes("inventory_use")) {
             if(!this.player.screen.isDynamic) {
-                this.scheduleInventoryTask(undefined, 0, (player, slot) => {
-                    player.doConsumeFromInventory(slot);
-                }, this.player, this.selectedSlot);
+                this.scheduleInventoryTask(undefined, 0, (player) => {
+                    player.doConsumeFromInventory(player.selectedSlot);
+                }, this.player);
             }
         }
 
@@ -313,22 +310,22 @@ class Client {
 
         // Inventory (only one will be executed)
         if(inputs.includes("inventory_previous")) {
-            this.scheduleClientTask(undefined, 0, (player) => {
-                player.client.selectedSlot = player.client.selectedSlot === 0 ? player.inventory.maxSlots - 1 : player.client.selectedSlot - 1;
-                player.client.selectedEntity = player.inventory.itemMap.get(player.client.selectedSlot);
+            this.scheduleInventoryTask(undefined, 0, (player) => {
+                player.selectedSlot = player.selectedSlot === 0 ? player.inventory.maxSlots - 1 : player.selectedSlot - 1;
+                player.selectedEntity = player.inventory.itemMap.get(player.selectedSlot);
             }, this.player);
         }
         else if(inputs.includes("inventory_next")) {
-            this.scheduleClientTask(undefined, 0, (player) => {
-                player.client.selectedSlot = player.client.selectedSlot === player.inventory.maxSlots - 1 ? 0 : player.client.selectedSlot + 1;
-                player.client.selectedEntity = player.inventory.itemMap.get(player.client.selectedSlot);
+            this.scheduleInventoryTask(undefined, 0, (player) => {
+                player.selectedSlot = player.selectedSlot === player.inventory.maxSlots - 1 ? 0 : player.selectedSlot + 1;
+                player.selectedEntity = player.inventory.itemMap.get(player.selectedSlot);
             }, this.player);
         }
         else if(inputs.includes("inventory_use")) {
             if(!this.player.screen.isDynamic) {
-                this.scheduleInventoryTask(undefined, 0, (player, slot) => {
-                    player.doConsumeFromInventory(slot);
-                }, this.player, this.selectedSlot);
+                this.scheduleInventoryTask(undefined, 0, (player) => {
+                    player.doConsumeFromInventory(player.selectedSlot);
+                }, this.player);
             }
         }
 
@@ -407,21 +404,17 @@ class Client {
         }
     }
 
-    scheduleRealtimeTask(task) {
+    scheduleRealtimeTask(task, ...args) {
         // Don't schedule these on the server.
-        if(this.delayMap.get("realtime") === true || this.delayMap.get("realtime") === undefined) {
-            this.delayMap.set("realtime", false);
+        if(this.realtimeDelay === true || this.realtimeDelay === undefined) {
+            this.realtimeDelay = false;
 
-            task();
+            task(...args);
 
             setTimeout(() => {
-                this.delayMap.set("realtime", true);
-            }, this.realtimeInputTime * 1000)
+                this.realtimeDelay = true;
+            }, REALTIME_INPUT_TIME * 1000)
         }
-    }
-
-    scheduleClientTask(animation, time, task, ...args) {
-        this.scheduleTask("client", this.clientInputTime, animation, time, task, ...args);
     }
 
     scheduleCreateTask(animation, time, task, ...args) {
@@ -450,19 +443,17 @@ class Client {
     }
 
     scheduleTask(delayType, delayTime, animation, time, task, ...args) {
-        if(this.delayMap.get(delayType) === true || this.delayMap.get(delayType) === undefined) {
-            this.delayMap.set(delayType, false);
+        if(this.player.delayMap.get(delayType) === true || this.player.delayMap.get(delayType) === undefined) {
+            this.player.delayMap.set(delayType, false);
 
             let serverTask = new ServerTask(task, ...args);
 
-            this.player.ownServerTask(serverTask);
             this.player.getServer().scheduleTask(animation, time, 1, serverTask);
 
             let serverTask2 = new ServerTask((player, delayType) => {
-                player.client.delayMap.set(delayType, true);
+                player.delayMap.set(delayType, true);
             }, this.player, delayType);
 
-            this.player.ownServerTask(serverTask2);
             this.player.getServer().scheduleTask(undefined, delayTime, 1, serverTask2);
         }
     }
@@ -534,7 +525,7 @@ class Client {
 
         // Inventory
         let inventory = {};
-        inventory.currentSlot = this.selectedSlot;
+        inventory.currentSlot = this.player.selectedSlot;
         inventory.items = [];
         for(let index = 0; index < this.player.inventory.maxSlots; index++) {
             let item = this.player.inventory.itemMap.get(index);
@@ -555,9 +546,9 @@ class Client {
 
         // Info
         let info = {};
-        info.className = Util.getClassName(this.selectedEntity);
-        info.name = this.selectedEntity?.getName();
-        info.text = this.selectedEntity?.getInfo();
+        info.className = Util.getClassName(this.player.selectedEntity);
+        info.name = this.player.selectedEntity?.getName();
+        info.text = this.player.selectedEntity?.getInfo();
 
         return {
             tiles: tiles,
