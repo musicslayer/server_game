@@ -143,6 +143,8 @@ class Entity extends UID {
         this.screen.removeEntity(this);
         this.cancelServerTasks();
 
+        // Non-players will never be used again so remove them from the map.
+        // Players are still stored in the Account objects so we need to maintain their entry in the map.
         if(!this.isPlayer) {
             UID.remove("Entity", this);
         }
@@ -465,7 +467,6 @@ class Entity extends UID {
     }
 
     serialize(writer) {
-        // To avoid a circular loop, only write a reference to the screen.
         writer.beginObject()
             .serialize("!V!", 1)
             .serialize("uid", this.uid)
@@ -480,7 +481,6 @@ class Entity extends UID {
             .serialize("maxMana", this.maxMana)
             .serialize("isDead", this.isDead)
             .serialize("isInvincible", this.isInvincible)
-            .reference("screen", this.screen)
             .serialize("x", this.x)
             .serialize("y", this.y)
             .serialize("animationShiftX", this.animationShiftX)
@@ -536,8 +536,6 @@ class Entity extends UID {
 
             let className = reader.deserialize("className", "String");
             entity = Reflection.createInstance(className, uid);
-
-            // Note that "screenInfo" will be used later.
             entity.isSpawned = reader.deserialize("isSpawned", "Boolean");
             entity.isPlayer = reader.deserialize("isPlayer", "Boolean");
             entity.isAI = reader.deserialize("isAI", "Boolean");
@@ -548,7 +546,6 @@ class Entity extends UID {
             entity.maxMana = reader.deserialize("maxMana", "Number");
             entity.isDead = reader.deserialize("isDead", "Boolean");
             entity.isInvincible = reader.deserialize("isInvincible", "Boolean");
-            entity.screenInfo = reader.dereference("screen", "Screen");
             entity.x = reader.deserialize("x", "Number");
             entity.y = reader.deserialize("y", "Number");
             entity.animationShiftX = reader.deserialize("animationShiftX", "Number");

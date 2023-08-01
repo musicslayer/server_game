@@ -1,6 +1,7 @@
 const IO = require("socket.io");
 
 const Account = require("../account/Account.js");
+const Character = require("../account/Character.js");
 const Client = require("../client/Client.js");
 const Entity = require("../entity/Entity.js");
 const ServerTask = require("../server/ServerTask.js");
@@ -119,7 +120,6 @@ function attachAppListeners(socket, appState) {
 				return;
 			}
 
-			// Don't attach the screen here. This will be done on first login.
 			// All new players will have their home location set to a special tutorial map.
 			let player = Entity.createInstance(playerClass, 1);
 			player.homeMapName = "city";
@@ -127,7 +127,8 @@ function attachAppListeners(socket, appState) {
 			player.homeX = 0;
 			player.homeY = 0;
 
-			account.addCharacter(playerName, player);
+			let character = new Character(player);
+			account.addCharacter(playerName, character);
 
 			callback({"isSuccess": true});
 		}, () => {
@@ -162,8 +163,8 @@ function attachAppListeners(socket, appState) {
 				return;
 			}
 
-			let player = account.getCharacter(playerName);
-			if(!player) {
+			let character = account.getCharacter(playerName);
+			if(!character) {
 				// The character does not exist.
 				callback({"isSuccess": false});
 				return;
@@ -176,38 +177,23 @@ function attachAppListeners(socket, appState) {
 				return;
 			}
 
-			if(!player.screen) {
-				// If the player has never logged in before then default to their home screen on this world.
-				let map = world.getMapByName(player.homeMapName);
-				let screen = map?.getScreenByName(player.homeScreenName);
-				player.x = player.homeX;
-				player.y = player.homeY;
-				
-				if(!screen) {
-					// Use the fallback map.
-					let fallbackMap = world.getMapByID("fallback");
-					screen = fallbackMap.getScreenByID(0, 0);
-					player.x = 7;
-					player.y = 11;
-				}
+			let player = character.player;
 
-				player.screen = screen;
+			let map = world.getMapByName(character.mapName);
+			let screen = map?.getScreenByName(character.screenName);
+			player.x = character.x;
+			player.y = character.y;
+
+			if(!screen) {
+				// Use the fallback map.
+				// TODO We need "teleportToFallbackMap" and "teleportToFallbackLocation"
+				let fallbackMap = world.getMapByID("fallback");
+				screen = fallbackMap.getScreenByID(0, 0);
+				player.x = 7;
+				player.y = 11;	
 			}
-			else {
-				// Log into the same map/screen/x/y that the player is already located at but in the given world.
-				let map = world.getMapByName(player.screen.map.name);
-        		let screen = map?.getScreenByName(player.screen.name);
 
-				if(!screen) {
-					// Use the fallback map.
-					let fallbackMap = world.getMapByID("fallback");
-					screen = fallbackMap.getScreenByID(0, 0);
-					player.x = 7;
-					player.y = 11;	
-				}
-
-				player.screen = screen;
-			}
+			player.screen = screen;
 
 			let serverTask = new ServerTask((player) => {
 				player.doSpawn();
@@ -228,6 +214,14 @@ function attachAppListeners(socket, appState) {
 				appState.clientManager.removeClient(client);
 
 				if(client.player.isSpawned) {
+					let account = appState.accountManager.getAccount(key);
+					let character = account.getCharacter(playerName);
+
+					character.mapName = client.player.screen.map.name;
+					character.screenName = client.player.screen.name;
+					character.x = client.player.x;
+					character.y = client.player.y;
+
 					let serverTask = new ServerTask((player) => {
 						player.doDespawn();
 					}, client.player);

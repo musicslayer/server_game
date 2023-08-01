@@ -13,9 +13,7 @@ const AppState = require("./AppState.js");
 
 // TODO Now that delay map is fixed, can we keep players logged in after a "load"
 
-// TODO Should "Server" or "Screen" also extend "UID".
-
-// TODO Maybe players shouldn't actually be despawned? Can they be intangible? Or moved to another "logged out" screen?
+// TODO With maps, there are a lot of unneccessary re-sets after altering a property of a value.
 
 async function init() {
     await new AppState().init();

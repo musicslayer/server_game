@@ -103,12 +103,10 @@ class AppState {
         this.serverManager = DataBridge.deserialize(serverFile, "ServerManager");
 
         // After loading data:
-        // - Refresh all clients that are currently logged in.
-        // - Refresh all players' screens.
+        // - Refresh all clients and players that are currently logged in.
         // - Log out all of the clients.
         // - Log out all of the players.
-        this.refreshClients();
-        this.refreshPlayers(); // TODO Do we still need this?
+        this.refresh();
         this.logOutClients();
         this.logOutPlayers();
 
@@ -116,37 +114,14 @@ class AppState {
         this.serverManager.startServerTicks();
     }
 
-    refreshClients() {
-        // Each client needs to point to an updated player.
+    refresh() {
+        // Each client needs to point to an updated player, and vice versa.
         for(let key of this.clientManager.clientMap.keys()) {
             let client = this.clientManager.getClient(key);
-            let newPlayer = this.accountManager.getAccount(key).getCharacter(client.playerName);
+            let newPlayer = this.accountManager.getAccount(key).getCharacter(client.playerName).player;
 
             client.player = newPlayer;
             newPlayer.client = client;
-        }
-    }
-
-    refreshPlayers() {
-        // Each player needs to point to an updated screen.
-        for(let account of this.accountManager.accounts) {
-            for(let key of account.characterMap.keys()) {
-                let player = account.getCharacter(key);
-                if(!player.screenInfo) {
-                    // The player has never logged in so it was never spawned on any screen.
-                    continue;
-                }
-
-                // All of these must exist because they existed at the time the save state was created.
-                let newServer = this.serverManager.getServerByName(player.screenInfo.serverName);
-                let newWorld = newServer.universe.getWorldByName(player.screenInfo.worldName);
-                let newMap = newWorld.getMapByName(player.screenInfo.mapName);
-                let newScreen = newMap.getScreenByID(player.screenInfo.screenX, player.screenInfo.screenY);
-
-                player.screen = newScreen;
-                player.screenInfo = undefined;
-                newScreen.addEntity(player);
-            }
         }
     }
 
@@ -162,7 +137,7 @@ class AppState {
     logOutPlayers() {
         for(let account of this.accountManager.accounts) {
             for(let key of account.characterMap.keys()) {
-                let player = account.getCharacter(key);
+                let player = account.getCharacter(key).player;
 
                 if(player.isSpawned) {
                     let serverTask = new ServerTask((player) => {

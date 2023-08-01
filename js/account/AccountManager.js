@@ -1,4 +1,5 @@
 const Account = require("./Account.js");
+const Character = require("./Character.js");
 const Entity = require("../entity/Entity.js");
 
 class AccountManager {
@@ -71,13 +72,13 @@ class AccountManager {
         
         let account1 = new Account();
         account1.key = "smith-password123";
-        account1.addCharacter("mage", player1Mage);
-        account1.addCharacter("warrior", player1Warrior);
+        account1.addCharacter("mage", new Character(player1Mage));
+        account1.addCharacter("warrior", new Character(player1Warrior));
 
         let account2 = new Account();
         account2.key = "maria-secret";
-        account2.addCharacter("mage", player2Mage);
-        account2.addCharacter("warrior", player2Warrior);
+        account2.addCharacter("mage", new Character(player2Mage));
+        account2.addCharacter("warrior", new Character(player2Warrior));
 
         let accountManager = new AccountManager();
         accountManager.addAccount(account1);

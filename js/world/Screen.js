@@ -196,7 +196,6 @@ class Screen {
 
             for(let entity of entities) {
                 entity.screen = screen;
-                entity.screenInfo = undefined;
                 screen.addEntity(entity);
             }
         }
@@ -206,38 +205,6 @@ class Screen {
 
         reader.endObject();
         return screen;
-    }
-
-    reference(writer) {
-        // Write enough information so the screen can be found later.
-        // This is only used for players, not other entities.
-        writer.beginObject()
-            .serialize("screenX", this.x)
-            .serialize("screenY", this.y)
-            .serialize("mapName", this.map.name)
-            .serialize("worldName", this.map.world.name)
-            .serialize("serverName", this.map.world.universe.server.name)
-        .endObject();
-    }
-
-    static dereference(reader) {
-        // Only return the information here, not an actual Screen instance.
-        // This is only used for players, not other entities.
-        reader.beginObject();
-        let screenX = reader.deserialize("screenX", "Number");
-        let screenY = reader.deserialize("screenY", "Number");
-        let mapName = reader.deserialize("mapName", "String");
-        let worldName = reader.deserialize("worldName", "String");
-        let serverName = reader.deserialize("serverName", "String");
-        reader.endObject();
-
-        return {
-            screenX: screenX,
-            screenY: screenY,
-            mapName: mapName,
-            worldName: worldName,
-            serverName: serverName
-        };
     }
 }
 
