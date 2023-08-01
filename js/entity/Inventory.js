@@ -82,7 +82,7 @@ class Inventory {
         writer.beginObject()
             .serialize("!V!", 1)
             .serialize("maxSlots", this.maxSlots)
-            .serializeMap("itemMap", this.itemMap)
+            .referenceMap("itemMap", this.itemMap)
         .endObject();
     }
 
@@ -94,7 +94,7 @@ class Inventory {
         if(version === "1") {
             inventory = new Inventory();
             inventory.maxSlots = reader.deserialize("maxSlots", "Number");
-            inventory.itemMap = reader.deserializeMap("itemMap", "Number", "Entity");
+            inventory.itemMap = reader.dereferenceMap("itemMap", "Number", "Entity");
         }
         else {
             throw("Unknown version number: " + version);

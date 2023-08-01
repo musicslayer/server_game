@@ -1,31 +1,14 @@
 class UID {
     // Subclasses will have all instances stored in a singleton map to facilitate referencing and dereferencing.
     static uidMap = new Map();
+    static currentUIDMap = new Map();
 
     uid;
 
-    static reset() {
-        UID.uidMap = new Map();
-    }
-
+    // TODO We need an add method?
     static remove(name, obj) {
         let map = UID.uidMap.get(name);
         map.delete(obj.uid);
-    }
-
-    static getValues(name) {
-        let arr = [];
-
-        let map = UID.uidMap.get(name);
-        for(let key of map.keys()) {
-            if(key === "currentUID") {
-                continue;
-            }
-
-            arr.push(map.get(key));
-        }
-
-        return arr;
     }
 
     constructor(uid) {
@@ -34,16 +17,16 @@ class UID {
         let map = UID.uidMap.get(key);
         if(map === undefined) {
             map = new Map();
-            map.set("currentUID", 0);
+            UID.currentUIDMap.set(key, 0);
         }
 
-        if(uid) {
+        if(uid !== undefined) {
             this.uid = uid;
         }
         else {
-            let currentUID = map.get("currentUID");
+            let currentUID = UID.currentUIDMap.get(key);
             this.uid = currentUID;
-            map.set("currentUID", currentUID + 1);
+            UID.currentUIDMap.set(key, currentUID + 1);
         }
 
         map.set(this.uid, this);

@@ -120,8 +120,12 @@ class MonsterAI extends AI {
         let x = monster.x + shiftX;
         let y = monster.y + shiftY;
 
-        for(let player of monster.screen.playerEntities) {
-            if(player.isAt(x, y)) {
+        for(let entity of monster.screen.entities) {
+            if(!entity.isPlayer) {
+                continue;
+            }
+
+            if(entity.isAt(x, y)) {
                 return true;
             }
         }

@@ -519,7 +519,7 @@
 					}
 					
 					let animationFrame = Math.floor(ANIMATION_FRAMES * time / (1000 * ANIMATION_TIME)) % ANIMATION_FRAMES;
-					drawScreen(ctxBuffer, animationFrame, R.tiles, R.otherEntities, R.playerEntities, R.inventory, R.purse, R.info);
+					drawScreen(ctxBuffer, animationFrame, R.tiles, R.entities, R.inventory, R.purse, R.info);
 					
 					// Clear current screen and draw new screen quickly to prevent flickering.
 					ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -542,7 +542,7 @@
 				ctx.drawImage(canvasBuffer, 0, 0);
 			}
 			
-			function drawScreen(ctxBuffer, animationFrame, tiles, otherEntities, playerEntities, inventory, purse, info) {
+			function drawScreen(ctxBuffer, animationFrame, tiles, entities, inventory, purse, info) {
 				// Only draw the screen where the player is located at.
 				ctxBuffer.beginPath();
 
@@ -559,72 +559,39 @@
 					}
 				}
 				
-				// Non-players
-				while(otherEntities.length > 0) {
-					let otherEntity = otherEntities.shift();
-					let image = imageCatalog.getImageByClassName(otherEntity.className, animationFrame);
+				// Entities
+				while(entities.length > 0) {
+					let entity = entities.shift();
+					let image = imageCatalog.getImageByClassName(entity.className, animationFrame);
 					
-					let x = otherEntity.x + otherEntity.animationShiftX;
-					let y = otherEntity.y + otherEntity.animationShiftY;
-					
-					ctxBuffer.drawImage(image, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
-					
-					if(otherEntity.stackSize !== 1) {
-						ctxBuffer.drawImage(getStackSizeImage(otherEntity.stackSize), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
-					}
-					
-					if(isValid(otherEntity.healthFraction)) {
-						ctxBuffer.drawImage(getHealthBarImage(otherEntity.healthFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
-					}
-					
-					if(isValid(otherEntity.manaFraction)) {
-						ctxBuffer.drawImage(getManaBarImage(otherEntity.manaFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
-					}
-					
-					if(isValid(otherEntity.experienceFraction)) {
-						ctxBuffer.drawImage(getExperienceBarImage(otherEntity.experienceFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
-					}
-					
-					if(isValid(otherEntity.level)) {
-						ctxBuffer.drawImage(getLevelImage(otherEntity.level), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
-					}
-				}
-				
-				// Players
-				while(playerEntities.length > 0) {
-					let playerEntity = playerEntities.shift();
-					let image = imageCatalog.getImageByClassName(playerEntity.className, animationFrame);
-					
-					let x = playerEntity.x + playerEntity.animationShiftX;
-					let y = playerEntity.y + playerEntity.animationShiftY;
+					let x = entity.x + entity.animationShiftX;
+					let y = entity.y + entity.animationShiftY;
 					
 					ctxBuffer.drawImage(image, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					
-					if(playerEntity.stackSize !== 1) {
-						ctxBuffer.drawImage(getStackSizeImage(playerEntity.stackSize), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					if(entity.stackSize !== 1) {
+						ctxBuffer.drawImage(getStackSizeImage(entity.stackSize), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 					
-					if(isValid(playerEntity.healthFraction)) {
-						ctxBuffer.drawImage(getHealthBarImage(playerEntity.healthFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					if(isValid(entity.healthFraction)) {
+						ctxBuffer.drawImage(getHealthBarImage(entity.healthFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 					
-					if(isValid(playerEntity.manaFraction)) {
-						ctxBuffer.drawImage(getManaBarImage(playerEntity.manaFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					if(isValid(entity.manaFraction)) {
+						ctxBuffer.drawImage(getManaBarImage(entity.manaFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 					
-					if(isValid(playerEntity.experienceFraction)) {
-						ctxBuffer.drawImage(getExperienceBarImage(playerEntity.experienceFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					if(isValid(entity.experienceFraction)) {
+						ctxBuffer.drawImage(getExperienceBarImage(entity.experienceFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 					
-					if(isValid(playerEntity.level)) {
-						ctxBuffer.drawImage(getLevelImage(playerEntity.level), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+					if(isValid(entity.level)) {
+						ctxBuffer.drawImage(getLevelImage(entity.level), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 					
-					if(playerEntity.statuses) {
-						if(playerEntity.statuses.includes("dead") || playerEntity.statuses.includes("invincible")) {
-							let haloImage = imageCatalog.getImage("status", "invincible");
-							ctxBuffer.drawImage(haloImage, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
-						}
+					if(entity.statuses.includes("dead") || entity.statuses.includes("invincible")) {
+						let haloImage = imageCatalog.getImage("status", "invincible");
+						ctxBuffer.drawImage(haloImage, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 				}
 

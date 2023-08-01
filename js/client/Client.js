@@ -480,26 +480,9 @@ class Client {
             });
         }
 
-        // Non-players.
-        let otherEntities = [];
-        for(const entity of this.player.screen.otherEntities) {
-            otherEntities.push({
-                stackSize: entity.stackSize,
-                className: Util.getClassName(entity),
-                x: entity.x,
-                y: entity.y,
-                animationShiftX: entity.animationShiftX,
-                animationShiftY: entity.animationShiftY,
-                healthFraction: entity.health / entity.maxHealth,
-                manaFraction: entity.mana / entity.maxMana,
-                experienceFraction: entity.experience / 100,
-                level: entity.level
-            });
-        }
-
-        // Players
-        let playerEntities = [];
-        for(const entity of this.player.screen.playerEntities) {
+        // Entities
+        let entities = [];
+        for(const entity of this.player.screen.entities) {
             let statuses = [];
             if(entity.isDead) {
                 statuses.push("dead");
@@ -508,7 +491,7 @@ class Client {
                 statuses.push("invincible");
             }
 
-            playerEntities.push({
+            entities.push({
                 className: Util.getClassName(entity),
                 stackSize: entity.stackSize,
                 x: entity.x,
@@ -517,8 +500,8 @@ class Client {
                 animationShiftY: entity.animationShiftY,
                 healthFraction: entity.health / entity.maxHealth,
                 manaFraction: entity.mana / entity.maxMana,
-                experienceFraction: entity.progress.experience / 100,
-                level: entity.progress.level,
+                experienceFraction: entity.progress?.experience / 100,
+                level: entity.progress?.level,
                 statuses: statuses
             });
         }
@@ -552,8 +535,7 @@ class Client {
 
         return {
             tiles: tiles,
-            otherEntities: otherEntities,
-            playerEntities: playerEntities,
+            entities: entities,
             inventory: inventory,
             purse: purse,
             info: info

@@ -66,11 +66,17 @@ class AppState {
 
         fs.mkdirSync(this.lastSaveFolder);
 
+        let currentUIDFile = path.join(this.lastSaveFolder, "currentUID.txt");
+        DataBridge.serializeMap(currentUIDFile, UID.currentUIDMap);
+
+        let entityFile = path.join(this.lastSaveFolder, "entity.txt");
+        DataBridge.serializeMap(entityFile, UID.uidMap.get("Entity"));
+
         let accountFile = path.join(this.lastSaveFolder, "account.txt");
-        DataBridge.serializeObject(this.accountManager, accountFile);
+        DataBridge.serialize(accountFile, this.accountManager);
 
         let serverFile = path.join(this.lastSaveFolder, "server.txt");
-        DataBridge.serializeObject(this.serverManager, serverFile);
+        DataBridge.serialize(serverFile, this.serverManager);
     }
 
     load() {
@@ -81,16 +87,20 @@ class AppState {
 
         // Before loading data:
         // - Halt all existing servers.
-        // - Reset all the UID maps.
         this.serverManager.endServerTicks();
-        UID.reset();
 
         // Load data from the files.
+        let currentUIDFile = path.join(this.lastSaveFolder, "currentUID.txt");
+        UID.currentUIDMap = DataBridge.deserializeMap(currentUIDFile, "String", "Number");
+
+        let entityFile = path.join(this.lastSaveFolder, "entity.txt");
+        UID.uidMap.set("Entity", DataBridge.deserializeMap(entityFile, "Number", "Entity"))
+
         let accountFile = path.join(this.lastSaveFolder, "account.txt");
-        this.accountManager = DataBridge.deserializeObject("AccountManager", accountFile);
+        this.accountManager = DataBridge.deserialize(accountFile, "AccountManager");
 
         let serverFile = path.join(this.lastSaveFolder, "server.txt");
-        this.serverManager = DataBridge.deserializeObject("ServerManager", serverFile);
+        this.serverManager = DataBridge.deserialize(serverFile, "ServerManager");
 
         // After loading data:
         // - Refresh all clients that are currently logged in.
@@ -98,7 +108,7 @@ class AppState {
         // - Log out all of the clients.
         // - Log out all of the players.
         this.refreshClients();
-        this.refreshPlayers();
+        this.refreshPlayers(); // TODO Do we still need this?
         this.logOutClients();
         this.logOutPlayers();
 
@@ -135,7 +145,6 @@ class AppState {
 
                 player.screen = newScreen;
                 player.screenInfo = undefined;
-
                 newScreen.addEntity(player);
             }
         }

@@ -142,7 +142,10 @@ class Entity extends UID {
         this.isSpawned = false;
         this.screen.removeEntity(this);
         this.cancelServerTasks();
-        UID.remove("Entity", this);
+
+        if(!this.isPlayer) {
+            UID.remove("Entity", this);
+        }
     }
 
     doInteract(entity) {

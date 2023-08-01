@@ -94,7 +94,6 @@ class Server {
     }
 
     serialize(writer) {
-        // The ServerScheduler must be handled last because all of the server entities must already be processed first.
         writer.beginObject()
             .serialize("!V!", 1)
             .serialize("uid", this.uid)

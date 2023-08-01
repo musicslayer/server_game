@@ -22,8 +22,7 @@ class Screen {
     pvpStatus;
 
     tiles = [];
-    otherEntities = [];
-    playerEntities = [];
+    entities = [];
 
     static loadScreenFromFile(className, screenFile) {
         let screen = Reflection.createInstance(className);
@@ -85,32 +84,16 @@ class Screen {
     }
 
     addEntity(entity) {
-        if(entity.isPlayer) {
-            const index = this.playerEntities.indexOf(entity);
-            if(index === -1) {
-                this.playerEntities.push(entity);
-            }
-        }
-        else {
-            const index = this.otherEntities.indexOf(entity);
-            if(index === -1) {
-                this.otherEntities.push(entity);
-            }
+        const index = this.entities.indexOf(entity);
+        if(index === -1) {
+            this.entities.push(entity);
         }
     }
 
     removeEntity(entity) {
-        if(entity.isPlayer) {
-            const index = this.playerEntities.indexOf(entity);
-            if(index > -1) {
-                this.playerEntities.splice(index, 1);
-            }
-        }
-        else {
-            const index = this.otherEntities.indexOf(entity);
-            if(index > -1) {
-                this.otherEntities.splice(index, 1);
-            }
+        const index = this.entities.indexOf(entity);
+        if(index > -1) {
+            this.entities.splice(index, 1);
         }
     }
 
@@ -145,27 +128,26 @@ class Screen {
     }
 
     getEntitiesAt(x, y) {
-        let entities = [];
+        let entitiesAt = [];
 
-        let screenEntities = this.otherEntities.concat(this.playerEntities);
-        for(let screenEntity of screenEntities) {
-            if(screenEntity.isAt(x, y)) {
-                entities.push(screenEntity);
+        for(let entity of this.entities) {
+            if(entity.isAt(x, y)) {
+                entitiesAt.push(entity);
             }
         }
 
-        return entities;
+        return entitiesAt;
     }
 
     getHighestEntity(x, y) {
         let highestEntity;
 
         // Iterate backwards to get the highest entity.
-        let screenEntities = this.otherEntities.concat(this.playerEntities);
-        for(let i = screenEntities.length - 1; i >= 0; i--) {
-            let screenEntity = screenEntities[i];
-            if(screenEntity.isAt(x, y)) {
-                highestEntity = screenEntity;
+        let entities = this.entities;
+        for(let i = entities.length - 1; i >= 0; i--) {
+            let entity = entities[i];
+            if(entity.isAt(x, y)) {
+                highestEntity = entity;
                 break;
             }
         }
@@ -188,7 +170,7 @@ class Screen {
             .serialize("numTilesY", this.numTilesY)
             .serialize("pvpStatus", this.pvpStatus)
             .serializeArray("tiles", this.tiles)
-            .serializeArray("otherEntities", this.otherEntities)
+            .referenceArray("entities", this.entities)
         .endObject();
     }
 
@@ -206,14 +188,15 @@ class Screen {
             screen.numTilesY = reader.deserialize("numTilesY", "Number");
             screen.pvpStatus = reader.deserialize("pvpStatus", "String");
             let tiles = reader.deserializeArray("tiles", "Tile");
-            let otherEntities = reader.deserializeArray("otherEntities", "Entity");
+            let entities = reader.dereferenceArray("entities", "Entity");
 
             for(let tile of tiles) {
                 screen.addTile(tile);
             }
 
-            for(let entity of otherEntities) {
+            for(let entity of entities) {
                 entity.screen = screen;
+                entity.screenInfo = undefined;
                 screen.addEntity(entity);
             }
         }

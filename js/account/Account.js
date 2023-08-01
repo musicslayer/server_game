@@ -14,7 +14,7 @@ class Account {
         writer.beginObject()
             .serialize("!V!", 1)
             .serialize("key", this.key)
-            .serializeMap("characterMap", this.characterMap)
+            .referenceMap("characterMap", this.characterMap)
         .endObject();
     }
 
@@ -26,7 +26,7 @@ class Account {
         if(version === "1") {
             account = new Account();
             account.key = reader.deserialize("key", "String");
-            account.characterMap = reader.deserializeMap("characterMap", "String", "Entity");
+            account.characterMap = reader.dereferenceMap("characterMap", "String", "Entity");
         }
         else {
             throw("Unknown version number: " + version);

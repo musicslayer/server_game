@@ -19,7 +19,7 @@ class ServerManager {
 
     addSpawnServerTasks() {
         // Spawn all non-player entities.
-        let entities = UID.getValues("Entity");
+        let entities = UID.uidMap.get("Entity").values();
         for(let entity of entities) {
             if(entity.isPlayer) {
                 continue;
