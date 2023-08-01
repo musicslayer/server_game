@@ -122,10 +122,10 @@ function attachAppListeners(socket, appState) {
 
 			// All new players will have their home location set to a special tutorial map.
 			let player = Entity.createInstance(playerClass, 1);
-			player.homeMapName = "city";
-			player.homeScreenName = "field1";
-			player.homeX = 0;
-			player.homeY = 0;
+			player.mapName = player.homeMapName = "city";
+			player.screenName = player.homeScreenName = "field1";
+			player.x = player.homeX = 0;
+			player.y = player.homeY = 0;
 
 			let character = new Character(player);
 			account.addCharacter(playerName, character);
@@ -179,13 +179,12 @@ function attachAppListeners(socket, appState) {
 
 			let player = character.player;
 
-			let map = world.getMapByName(character.mapName);
-			let screen = map?.getScreenByName(character.screenName);
-			player.x = character.x;
-			player.y = character.y;
+			let map = world.getMapByName(player.mapName);
+			let screen = map?.getScreenByName(player.screenName);
 
 			if(!screen) {
 				// Use the fallback map.
+				// TODO All these methods should be in a static method in the map class.
 				let fallbackMap = world.getMapByID("fallback");
 				screen = fallbackMap.getScreenByID(0, 0);
 				player.x = 7;
@@ -214,15 +213,6 @@ function attachAppListeners(socket, appState) {
 
 				// If a client is present but then a state is loaded where the player was despawned, it's possible client.player is not spawned.
 				if(client.player.isSpawned) {
-					let account = appState.accountManager.getAccount(key);
-					let character = account.getCharacter(playerName);
-
-					// TODO Is this the right place for this? Players despawn without clients in "AppState.logOutPlayers"...
-					character.mapName = client.player.screen.map.name;
-					character.screenName = client.player.screen.name;
-					character.x = client.player.x;
-					character.y = client.player.y;
-
 					let serverTask = new ServerTask((player) => {
 						player.doDespawn();
 					}, client.player);

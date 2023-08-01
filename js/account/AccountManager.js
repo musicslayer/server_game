@@ -46,28 +46,28 @@ class AccountManager {
     static createInitialAccountManager() {
         // Load players onto the given world.
         let player1Mage = Entity.createInstance("PlayerMage", 1);
-        player1Mage.homeMapName = "city";
-        player1Mage.homeScreenName = "field1";
-        player1Mage.homeX = 0;
-        player1Mage.homeY = 0;
+        player1Mage.mapName = player1Mage.homeMapName = "city";
+        player1Mage.screenName = player1Mage.homeScreenName = "field1";
+        player1Mage.x = player1Mage.homeX = 0;
+        player1Mage.y = player1Mage.homeY = 0;
 
         let player1Warrior = Entity.createInstance("PlayerWarrior", 1);
-        player1Warrior.homeMapName = "city";
-        player1Warrior.homeScreenName = "field1";
-        player1Warrior.homeX = 0;
-        player1Warrior.homeY = 0;
+        player1Warrior.mapName = player1Warrior.homeMapName = "city";
+        player1Warrior.screenName = player1Warrior.homeScreenName = "field1";
+        player1Warrior.x = player1Warrior.homeX = 0;
+        player1Warrior.y = player1Warrior.homeY = 0;
 
         let player2Mage = Entity.createInstance("PlayerMage", 1);
-        player2Mage.homeMapName = "city";
-        player2Mage.homeScreenName = "field1";
-        player2Mage.homeX = 7;
-        player2Mage.homeY = 0;
+        player2Mage.mapName = player2Mage.homeMapName = "city";
+        player2Mage.screenName = player2Mage.homeScreenName = "field1";
+        player2Mage.x = player2Mage.homeX = 7;
+        player2Mage.y = player2Mage.homeY = 0;
 
         let player2Warrior = Entity.createInstance("PlayerWarrior", 1);
-        player2Warrior.homeMapName = "city";
-        player2Warrior.homeScreenName = "field1";
-        player2Warrior.homeX = 7;
-        player2Warrior.homeY = 0;
+        player2Warrior.mapName = player2Warrior.homeMapName = "city";
+        player2Warrior.screenName = player2Warrior.homeScreenName = "field1";
+        player2Warrior.x = player2Warrior.homeX = 7;
+        player2Warrior.y = player2Warrior.homeY = 0;
 
         
         let account1 = new Account();

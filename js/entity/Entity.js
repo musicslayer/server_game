@@ -24,6 +24,8 @@ class Entity extends UID {
     isInvincible = false;
 
     screen;
+    mapName;
+    screenName;
     x;
     y;
     animationShiftX = 0;
@@ -162,6 +164,9 @@ class Entity extends UID {
     doSpawn() {
         this.isSpawned = true;
         this.screen.addEntity(this);
+
+        this.mapName = this.screen.map.name;
+        this.screenName = this.screen.name;
     }
 
     doSpawnAsLoot() {
@@ -193,12 +198,12 @@ class Entity extends UID {
         this.x = x;
         this.y = y;
 
-        // If the entity stays on the same screen, this is skipped to avoid triggering deregistration of instance screens.
-        if(this.screen !== screen) {
-            this.screen.removeEntity(this);
-            this.screen = screen;
-            screen.addEntity(this, x, y);
-        }
+        this.screen.removeEntity(this);
+        this.screen = screen;
+        screen.addEntity(this, x, y);
+
+        this.mapName = screen.map.name;
+        this.screenName = screen.name;
     }
 
     doTeleportDeath() {
@@ -490,6 +495,8 @@ class Entity extends UID {
             .serialize("maxMana", this.maxMana)
             .serialize("isDead", this.isDead)
             .serialize("isInvincible", this.isInvincible)
+            .serialize("mapName", this.mapName)
+            .serialize("screenName", this.screenName)
             .serialize("x", this.x)
             .serialize("y", this.y)
             .serialize("animationShiftX", this.animationShiftX)
@@ -555,6 +562,8 @@ class Entity extends UID {
             entity.maxMana = reader.deserialize("maxMana", "Number");
             entity.isDead = reader.deserialize("isDead", "Boolean");
             entity.isInvincible = reader.deserialize("isInvincible", "Boolean");
+            entity.mapName = reader.deserialize("mapName", "String");
+            entity.screenName = reader.deserialize("screenName", "String");
             entity.x = reader.deserialize("x", "Number");
             entity.y = reader.deserialize("y", "Number");
             entity.animationShiftX = reader.deserialize("animationShiftX", "Number");

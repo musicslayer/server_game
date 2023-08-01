@@ -70,7 +70,6 @@ class Screen {
                     entity.x = x;
                     entity.y = y;
 
-                    // Don't spawn entities here. This will be done later.
                     screen.addEntity(entity);
                 }
             }
