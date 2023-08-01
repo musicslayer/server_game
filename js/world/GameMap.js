@@ -47,7 +47,7 @@ class GameMap {
             // Fourth part is whether the screen is safe or pvp
             let pvpStatus = parts.shift();
 
-            let screen = Screen.loadScreenFromFile(className, mapFolder + name + ".txt");
+            let screen = Screen.loadScreenFromFile(className, path.join(mapFolder, name + ".txt"));
             screen.map = map;
             screen.name = name;
             screen.x = x;
@@ -88,11 +88,15 @@ class GameMap {
     getScreenByName(name) {
         let screen = this.screenNameMap.get(name);
 
-        // If the screen does not exist on this map, then try VoidMap.
+        // If the screen does not exist in this map, try dynamically generating a "VoidScreen".
         if(!screen) {
             let voidMap = this.world.getMapByID("void");
             screen = voidMap.getScreenByName(name);
-            screen.map = this;
+
+            // It's possible that the screen is undefined. This occurs if the screen name used to exist but was later removed.
+            if(screen) {
+                screen.map = this;
+            }
         }
 
         return screen;
@@ -102,7 +106,7 @@ class GameMap {
         let key = [screenX, screenY].join(",");
         let screen = this.screenIDMap.get(key);
 
-        // If the screen does not exist on this map, then try VoidMap.
+        // If the screen does not exist in this map, try dynamically generating a "VoidScreen".
         if(!screen) {
             let voidMap = this.world.getMapByID("void");
             screen = voidMap.getScreenByID(screenX, screenY);

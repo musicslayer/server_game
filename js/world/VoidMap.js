@@ -1,3 +1,5 @@
+const path = require("path");
+
 const Screen = require("./Screen.js");
 const GameMap = require("./GameMap.js");
 
@@ -5,13 +7,13 @@ const NAME_PREFIX = "_void_";
 
 class VoidMap extends GameMap {
     getScreenByName(name) {
-        // Return a dynamically generated "void" screen is the name starts with the expected prefix.
+        // Return a dynamically generated "void" screen if the name starts with the expected prefix.
         let screen;
 
         if(name.startsWith(NAME_PREFIX)) {
             name = name.slice(NAME_PREFIX.length);
             let [screenX, screenY] = name.split(",");
-            screen = this.createVoidScreen(screenX, screenY);
+            screen = this.createVoidScreen(Number(screenX), Number(screenY));
         }
 
         return screen;
@@ -23,7 +25,7 @@ class VoidMap extends GameMap {
     }
 
     createVoidScreen(screenX, screenY) {
-        let voidScreen = Screen.loadScreenFromFile("VoidScreen", this.mapFolder + "void.txt");
+        let voidScreen = Screen.loadScreenFromFile("VoidScreen", path.join(this.mapFolder, "void.txt"));
         voidScreen.map = this;
         voidScreen.name = NAME_PREFIX + [screenX, screenY].join(",");
         voidScreen.x = screenX;
@@ -31,16 +33,6 @@ class VoidMap extends GameMap {
         voidScreen.pvpStatus = "safe";
         
         return voidScreen;
-    }
-
-    createVoidMapClone(id) {
-        // Creates a clone of this VoidMap with the specified ID.
-        let voidMap = GameMap.loadMapFromFolder("VoidMap", this.mapFolder)
-        voidMap.world = this.world;
-        voidMap.id = id;
-        voidMap.name = this.name;
-
-        return voidMap;
     }
 }
 

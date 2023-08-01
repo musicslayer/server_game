@@ -484,15 +484,18 @@
 					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("get_dev_data");
 					
 					let currentTick = Math.floor(Number(R.info.currentTick) / 60);
-					let screenInfo = R.info.screenInfo;
-					let mapInfo = R.info.mapInfo;
-					let worldInfo = R.info.worldInfo;
-					let serverInfo = R.info.serverInfo;
-					devText.innerHTML = currentTick 
-					+ "\n" + screenInfo
-					+ "\n" + mapInfo
-					+ "\n" + worldInfo
-					+ "\n" + serverInfo;
+					let serverInfo = R.info.server;
+					let worldInfo = R.info.world;
+					let mapInfo = R.info.map;
+					let screenInfo = R.info.screen;
+					let playerInfo = R.info.player;
+					
+					devText.innerHTML = "Current Tick: " + currentTick 
+					+ "\nServer: " + serverInfo.id + " " + serverInfo.name
+					+ "\nWorld: " + worldInfo.id + " " + worldInfo.name
+					+ "\nMap: " + mapInfo.id + " " + mapInfo.name
+					+ "\nScreen: " + "(" + screenInfo.x + "," + screenInfo.y + ") " + screenInfo.name
+					+ "\nPlayer: " + "(" + playerInfo.x + "," + playerInfo.y + ")";
 				}
 			}
 			

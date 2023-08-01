@@ -1,3 +1,5 @@
+const path = require("path");
+
 const Screen = require("./Screen.js");
 const GameMap = require("./GameMap.js");
 
@@ -5,16 +7,16 @@ const NAME_PREFIX = "_fallback_";
 
 class FallbackMap extends GameMap {
     getScreenByName(name) {
-        // Return a dynamically generated "fallback" screen is the name starts with the expected prefix.
-        let screen;
+        // Return a dynamically generated "fallback" screen if the name starts with the expected prefix.
+        let fallbackScreen;
 
         if(name.startsWith(NAME_PREFIX)) {
             name = name.slice(NAME_PREFIX.length);
             let [screenX, screenY] = name.split(",");
-            screen = this.createFallbackScreen(screenX, screenY);
+            fallbackScreen = this.createFallbackScreen(Number(screenX), Number(screenY));
         }
 
-        return screen;
+        return fallbackScreen;
     }
 
     getScreenByID(screenX, screenY) {
@@ -23,7 +25,7 @@ class FallbackMap extends GameMap {
     }
 
     createFallbackScreen(screenX, screenY) {
-        let fallbackScreen = Screen.loadScreenFromFile("FallbackScreen", this.mapFolder + "fallback.txt");
+        let fallbackScreen = Screen.loadScreenFromFile("FallbackScreen", path.join(this.mapFolder, "fallback.txt"));
         fallbackScreen.map = this;
         fallbackScreen.name = NAME_PREFIX + [screenX, screenY].join(",");
         fallbackScreen.x = screenX;

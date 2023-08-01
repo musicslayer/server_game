@@ -1,2 +1,3 @@
 0|World|world0
 1|World|world1
+void|VoidWorld|_void

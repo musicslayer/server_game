@@ -18,8 +18,11 @@ class World {
     gameMapNameMap = new Map();
     gameMapIDMap = new Map();
 
+    worldFolder;
+
     static loadWorldFromFolder(className, worldFolder) {
         let world = Reflection.createInstance(className);
+        world.worldFolder = worldFolder;
 
         let worldFile = path.join(worldFolder, "_world.txt");
         let worldData = fs.readFileSync(worldFile, "ascii");
@@ -47,7 +50,7 @@ class World {
             // Third part is the map name
             let name = parts.shift();
 
-            let map = GameMap.loadMapFromFolder(className, worldFolder + name + "/");
+            let map = GameMap.loadMapFromFolder(className, path.join(worldFolder, name));
             map.world = world;
             map.id = id;
             map.name = name;
@@ -65,16 +68,30 @@ class World {
     }
 
     getMapByName(name) {
-        return this.gameMapNameMap.get(name);
+        let map = this.gameMapNameMap.get(name);
+
+        // If the map does not exist in this world, try dynamically generating a "VoidMap".
+        if(!map) {
+            let voidWorld = this.universe.getWorldByID("void");
+            map = voidWorld.getMapByName(name);
+
+            // It's possible that the map is undefined. This occurs if the map name used to exist but was later removed.
+            if(map) {
+                map.world = this;
+            }
+        }
+
+        return map;
     }
 
-    getMapByID(p) {
-        let map = this.gameMapIDMap.get(p);
+    getMapByID(id) {
+        let map = this.gameMapIDMap.get(id);
 
-        // If this map does not exist, return a dynamically generated "void" map.
+        // If the map does not exist in this world, try dynamically generating a "VoidMap".
         if(!map) {
-            let voidMap = this.getMapByID("void");
-            map = voidMap.createVoidMapClone(p);
+            let voidWorld = this.universe.getWorldByID("void");
+            map = voidWorld.getMapByID(id);
+            map.world = this;
         }
 
         return map;
@@ -92,9 +109,11 @@ class World {
     serialize(writer) {
         writer.beginObject()
             .serialize("!V!", 1)
+            .serialize("className", Util.getClassName(this))
             .serialize("id", this.id)
             .serialize("name", this.name)
             .serializeArray("maps", this.gameMaps)
+            .serialize("worldFolder", this.worldFolder)
         .endObject();
     }
 
@@ -104,10 +123,23 @@ class World {
 
         let version = reader.deserialize("!V!", "String");
         if(version === "1") {
-            world = new World();
-            world.id = reader.deserialize("id", "Number");
+            let className = reader.deserialize("className", "String");
+            world = Reflection.createInstance(className);
+            
+            let id_string = reader.deserialize("id", "String");
             world.name = reader.deserialize("name", "String");
             let maps = reader.deserializeArray("maps", "GameMap");
+            world.worldFolder = reader.deserialize("worldFolder", "String");
+
+            let id;
+            if(id_string === "death" || id_string === "fallback" || id_string === "void") {
+                id = id_string;
+            }
+            else {
+                id = Number(id_string);
+            }
+
+            world.id = id;
 
             for(let map of maps) {
                 map.world = world;

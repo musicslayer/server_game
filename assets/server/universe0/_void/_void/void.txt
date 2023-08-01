@@ -1,0 +1,5 @@
+6,0|letter,upperV|
+7,0|letter,upperO|
+8,0|letter,upperI|
+9,0|letter,upperD|
+7,3||HomePortal,1

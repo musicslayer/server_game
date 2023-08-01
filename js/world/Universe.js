@@ -32,7 +32,14 @@ class Universe {
 
             // First part is the world id
             let idPart = parts.shift().split(COMMA);
-            let id = Number(idPart.shift());
+            let id_string = idPart.shift();
+            let id;
+            if(id_string === "death" || id_string === "fallback" || id_string === "void") {
+                id = id_string;
+            }
+            else {
+                id = Number(id_string);
+            }
 
             // Second part is the world class name
             let className = parts.shift();
@@ -40,7 +47,7 @@ class Universe {
             // Third part is the world name
             let name = parts.shift();
 
-            let world = World.loadWorldFromFolder(className, universeFolder + name + "/");
+            let world = World.loadWorldFromFolder(className, path.join(universeFolder, name));
             world.universe = universe;
             world.id = id;
             world.name = name;
@@ -57,18 +64,18 @@ class Universe {
         this.worldIDMap.set(world.id, world);
     }
 
-    getWorldByName(name) {
-        return this.worldNameMap.get(name);
-    }
-
     getWorldInDirection(world, direction) {
         // If the new world does not exist, return the original world so nothing changes.
         let [, shiftY] = Util.getDirectionalShift(direction);
         return this.getWorldByID(world.id - shiftY) ?? world; // Use opposite of shift for world position.
     }
 
-    getWorldByID(p) {
-        return this.worldIDMap.get(p);
+    getWorldByName(name) {
+        return this.worldNameMap.get(name);
+    }
+
+    getWorldByID(id) {
+        return this.worldIDMap.get(id);
     }
 
     serialize(writer) {
