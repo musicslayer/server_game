@@ -15,8 +15,6 @@ const AppState = require("./AppState.js");
 
 // TODO Now that delay map is fixed, can we keep players logged in after a "load"
 
-// TODO With maps, there are a lot of unneccessary re-sets after altering a property of a value.
-
 
 // TODO When the entities are deserialized, they each rely on each other, so some will be outdated!
 
