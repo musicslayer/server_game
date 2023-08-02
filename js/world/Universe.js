@@ -18,8 +18,9 @@ class Universe {
     worldNameMap = new Map();
     worldIDMap = new Map();
 
-    static loadUniverseFromFolder(className, universeFolder) {
+    static loadUniverseFromFolder(server, className, universeFolder) {
         let universe = Reflection.createInstance(className);
+        universe.server = server;
 
         let universeFile = path.join(universeFolder, "_universe.txt");
         let universeData = fs.readFileSync(universeFile, "ascii");
@@ -47,8 +48,7 @@ class Universe {
             // Third part is the world name
             let name = parts.shift();
 
-            let world = World.loadWorldFromFolder(className, path.join(universeFolder, name));
-            world.universe = universe;
+            let world = World.loadWorldFromFolder(universe, className, path.join(universeFolder, name));
             world.id = id;
             world.name = name;
 

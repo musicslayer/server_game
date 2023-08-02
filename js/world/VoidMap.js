@@ -25,12 +25,13 @@ class VoidMap extends GameMap {
     }
 
     createVoidScreen(screenX, screenY) {
-        let voidScreen = Screen.loadScreenFromFile("VoidScreen", path.join(this.mapFolder, "void.txt"));
-        voidScreen.map = this;
+        let voidScreen = Screen.loadScreenFromFile(this, "VoidScreen", path.join(this.mapFolder, "void.txt"));
         voidScreen.name = NAME_PREFIX + [screenX, screenY].join(",");
         voidScreen.x = screenX;
         voidScreen.y = screenY;
         voidScreen.pvpStatus = "safe";
+
+        this.instanceScreens.push(voidScreen);
         
         return voidScreen;
     }

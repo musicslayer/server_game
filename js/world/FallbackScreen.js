@@ -1,11 +1,6 @@
-const Screen = require("./Screen.js");
+const DynamicScreen = require("./DynamicScreen.js");
 
-class DeathScreen extends Screen {
-    isDynamic = true;
-
-    isScreenInDirection(direction) {
-        return true;
-    }
+class DeathScreen extends DynamicScreen {
 }
 
 module.exports = DeathScreen;

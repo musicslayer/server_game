@@ -25,12 +25,13 @@ class FallbackMap extends GameMap {
     }
 
     createFallbackScreen(screenX, screenY) {
-        let fallbackScreen = Screen.loadScreenFromFile("FallbackScreen", path.join(this.mapFolder, "fallback.txt"));
-        fallbackScreen.map = this;
+        let fallbackScreen = Screen.loadScreenFromFile(this, "FallbackScreen", path.join(this.mapFolder, "fallback.txt"));
         fallbackScreen.name = NAME_PREFIX + [screenX, screenY].join(",");
         fallbackScreen.x = screenX;
         fallbackScreen.y = screenY;
         fallbackScreen.pvpStatus = "safe";
+
+        this.instanceScreens.push(fallbackScreen);
         
         return fallbackScreen;
     }

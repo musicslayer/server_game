@@ -26,7 +26,7 @@ class MonsterSpawner extends Entity {
 
     createMonsterInstance() {
         let monster = Entity.createInstance("Monster", 1);
-        monster.screen = this.screen;
+        monster.setScreen(this.screen);
         monster.x = this.x;
         monster.y = this.y;
         

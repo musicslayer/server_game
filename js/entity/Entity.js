@@ -164,9 +164,6 @@ class Entity extends UID {
     doSpawn() {
         this.isSpawned = true;
         this.screen.addEntity(this);
-
-        this.mapName = this.screen.map.name;
-        this.screenName = this.screen.name;
     }
 
     doSpawnAsLoot() {
@@ -199,11 +196,8 @@ class Entity extends UID {
         this.y = y;
 
         this.screen.removeEntity(this);
-        this.screen = screen;
+        this.setScreen(screen);
         screen.addEntity(this, x, y);
-
-        this.mapName = screen.map.name;
-        this.screenName = screen.name;
     }
 
     doTeleportDeath() {
@@ -327,7 +321,7 @@ class Entity extends UID {
 
             if(goldAmount > 0) {
                 let gold = Entity.createInstance("Gold", goldAmount);
-                gold.screen = this.screen;
+                gold.setScreen(this.screen);
                 gold.x = this.x;
                 gold.y = this.y;
 
@@ -370,7 +364,7 @@ class Entity extends UID {
 
                 if(number > 0) {
                     let itemDrop = Entity.createInstance(Util.getClassName(item), number);
-                    itemDrop.screen = this.screen;
+                    itemDrop.setScreen(this.screen);
                     itemDrop.x = this.x;
                     itemDrop.y = this.y;
 
@@ -437,7 +431,7 @@ class Entity extends UID {
     clone(number) {
         // By default, just create another instance with the same screen and the provided stack size.
         let clone = Entity.createInstance(Util.getClassName(this), number);
-        clone.screen = this.screen;
+        clone.setScreen(this.screen);
         return clone;
     }
 
@@ -478,6 +472,12 @@ class Entity extends UID {
             let serverTask = this.serverTasks.shift();
             serverTask.isCancelled = true;
         }
+    }
+
+    setScreen(screen) {
+        this.screen = screen;
+        this.mapName = screen.map.name;
+        this.screenName = screen.name;
     }
 
     serialize(writer) {

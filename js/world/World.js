@@ -18,10 +18,13 @@ class World {
     gameMapNameMap = new Map();
     gameMapIDMap = new Map();
 
+    instanceGameMaps = [];
+
     worldFolder;
 
-    static loadWorldFromFolder(className, worldFolder) {
+    static loadWorldFromFolder(universe, className, worldFolder) {
         let world = Reflection.createInstance(className);
+        world.universe = universe;
         world.worldFolder = worldFolder;
 
         let worldFile = path.join(worldFolder, "_world.txt");
@@ -50,8 +53,7 @@ class World {
             // Third part is the map name
             let name = parts.shift();
 
-            let map = GameMap.loadMapFromFolder(className, path.join(worldFolder, name));
-            map.world = world;
+            let map = GameMap.loadMapFromFolder(world, className, path.join(worldFolder, name));
             map.id = id;
             map.name = name;
 
@@ -65,6 +67,16 @@ class World {
         this.gameMaps.push(map);
         this.gameMapNameMap.set(map.name, map);
         this.gameMapIDMap.set(map.id, map);
+    }
+
+    removeInstanceMap(instanceMap) {
+        const index = this.instanceMaps.indexOf(instanceMap);
+        this.instanceMaps.splice(index, 1);
+    }
+
+    removeInstanceMap(instanceMap) {
+        const index = this.instanceMaps.indexOf(instanceMap);
+        this.instanceMaps.splice(index, 1);
     }
 
     getMapByName(name) {
@@ -113,6 +125,7 @@ class World {
             .serialize("id", this.id)
             .serialize("name", this.name)
             .serializeArray("maps", this.gameMaps)
+            .serializeArray("instanceMaps", this.instanceMaps)
             .serialize("worldFolder", this.worldFolder)
         .endObject();
     }
@@ -129,6 +142,7 @@ class World {
             let id_string = reader.deserialize("id", "String");
             world.name = reader.deserialize("name", "String");
             let maps = reader.deserializeArray("maps", "GameMap");
+            world.instanceMaps = reader.deserializeArray("instanceMaps", "GameMap");
             world.worldFolder = reader.deserialize("worldFolder", "String");
 
             let id;
@@ -144,6 +158,10 @@ class World {
             for(let map of maps) {
                 map.world = world;
                 world.addMap(map);
+            }
+
+            for(let instanceMap of map.instanceMaps) {
+                instanceMap.world = world;
             }
         }
         else {

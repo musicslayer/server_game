@@ -70,7 +70,7 @@ class Monster extends Entity {
             this.aggroMap.clear();
 
             let gold = Entity.createInstance("Gold", 100);
-            gold.screen = this.screen;
+            gold.setScreen(this.screen);
             gold.x = this.x;
             gold.y = this.y;
     
@@ -140,7 +140,7 @@ class Monster extends Entity {
         // Spawn a "melee projectile" representing a melee attack.
         // If the monster is moving, fire the projectile ahead of the motion.
         let projectile = Entity.createInstance("MeleeProjectile", 1);
-        projectile.screen = this.screen;
+        projectile.setScreen(this.screen);
         projectile.x = this.getMovementX();
         projectile.y = this.getMovementY();
         projectile.direction = this.direction;

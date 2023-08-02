@@ -24,10 +24,11 @@ class VoidWorld extends World {
     }
 
     createVoidMap(id) {
-        let voidMap = GameMap.loadMapFromFolder("VoidMap", path.join(this.worldFolder, "_void"))
-        voidMap.world = this;
+        let voidMap = GameMap.loadMapFromFolder(this, "VoidMap", path.join(this.worldFolder, "_void"))
         voidMap.name = NAME_PREFIX + id;
         voidMap.id = id;
+
+        this.instanceMaps.push(voidMap);
         
         return voidMap;
     }

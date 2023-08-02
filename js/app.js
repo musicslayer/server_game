@@ -15,6 +15,9 @@ const AppState = require("./AppState.js");
 
 // TODO With maps, there are a lot of unneccessary re-sets after altering a property of a value.
 
+
+// TODO When the entities are deserialized, they each rely on each other, so some will be outdated!
+
 async function init() {
     await new AppState().init();
 }

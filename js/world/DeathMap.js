@@ -25,12 +25,13 @@ class DeathMap extends GameMap {
     }
 
     createDeathScreen(screenX, screenY) {
-        let deathScreen = Screen.loadScreenFromFile("DeathScreen", path.join(this.mapFolder, "death.txt"));
-        deathScreen.map = this;
+        let deathScreen = Screen.loadScreenFromFile(this, "DeathScreen", path.join(this.mapFolder, "death.txt"));
         deathScreen.name = NAME_PREFIX + [screenX, screenY].join(",");
         deathScreen.x = screenX;
         deathScreen.y = screenY;
         deathScreen.pvpStatus = "safe";
+
+        this.instanceScreens.push(deathScreen);
         
         return deathScreen;
     }

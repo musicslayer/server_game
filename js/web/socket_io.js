@@ -191,7 +191,7 @@ function attachAppListeners(socket, appState) {
 				player.y = 11;	
 			}
 
-			player.screen = screen;
+			player.setScreen(screen);
 
 			let serverTask = new ServerTask((player) => {
 				player.doSpawn();
@@ -220,8 +220,8 @@ function attachAppListeners(socket, appState) {
 					client.player.getServer().scheduleTask(undefined, 0, 1, serverTask);
 				}
 
+				client.player.client = undefined;
 				client.player = undefined;
-				player.client = undefined;
 			});
 
 			attachClientListeners(socket, client);

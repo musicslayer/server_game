@@ -18,10 +18,13 @@ class GameMap {
     screenNameMap = new Map();
     screenIDMap = new Map();
 
+    instanceScreens = [];
+
     mapFolder;
 
-    static loadMapFromFolder(className, mapFolder) {
+    static loadMapFromFolder(world, className, mapFolder) {
         let map = Reflection.createInstance(className);
+        map.world = world;
         map.mapFolder = mapFolder;
 
         let mapFile = path.join(mapFolder, "_map.txt");
@@ -47,8 +50,7 @@ class GameMap {
             // Fourth part is whether the screen is safe or pvp
             let pvpStatus = parts.shift();
 
-            let screen = Screen.loadScreenFromFile(className, path.join(mapFolder, name + ".txt"));
-            screen.map = map;
+            let screen = Screen.loadScreenFromFile(map, className, path.join(mapFolder, name + ".txt"));
             screen.name = name;
             screen.x = x;
             screen.y = y;
@@ -67,6 +69,11 @@ class GameMap {
         // The ID of a screen is made from its coordinates.
         let key = [screen.x, screen.y].join(",");
         this.screenIDMap.set(key, screen);
+    }
+
+    removeInstanceScreen(instanceScreen) {
+        const index = this.instanceScreens.indexOf(instanceScreen);
+        this.instanceScreens.splice(index, 1);
     }
 
     isScreenInDirection(screen, direction) {
@@ -127,6 +134,7 @@ class GameMap {
             .serialize("id", this.id)
             .serialize("name", this.name)
             .serializeArray("screens", this.screens)
+            .serializeArray("instanceScreens", this.instanceScreens)
             .serialize("mapFolder", this.mapFolder)
         .endObject();
     }
@@ -143,6 +151,7 @@ class GameMap {
             let id_string = reader.deserialize("id", "String");
             map.name = reader.deserialize("name", "String");
             let screens = reader.deserializeArray("screens", "Screen");
+            map.instanceScreens = reader.deserializeArray("instanceScreens", "Screen");
             map.mapFolder = reader.deserialize("mapFolder", "String");
 
             let id;
@@ -158,6 +167,10 @@ class GameMap {
             for(let screen of screens) {
                 screen.map = map;
                 map.addScreen(screen);
+            }
+
+            for(let instanceScreen of map.instanceScreens) {
+                instanceScreen.map = map;
             }
         }
         else {

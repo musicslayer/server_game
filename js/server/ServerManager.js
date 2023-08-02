@@ -17,22 +17,6 @@ class ServerManager {
         return this.serverMap.get(name);
     }
 
-    addSpawnServerTasks() {
-        // Spawn all non-player entities.
-        let entities = UID.uidMap.get("Entity").values();
-        for(let entity of entities) {
-            if(entity.isPlayer) {
-                continue;
-            }
-
-            let serverTask = new ServerTask((entity) => {
-                entity.doSpawn();
-            }, entity);
-
-            entity.getServer().scheduleTask(undefined, 0, 1, serverTask);
-        }
-    }
-
     startServerTicks() {
         for(let server of this.servers) {
             server.serverScheduler.initServerTick();
@@ -83,10 +67,8 @@ class ServerManager {
 
         // Set server rng seed based on the server name.
         server.serverRNG.setInitialSeed(server.name);
-        server.serverRNG.server = server;
 
         serverManager.addServer(server);
-        serverManager.addSpawnServerTasks();
         serverManager.startServerTicks();
 
         return serverManager;

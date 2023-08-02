@@ -181,7 +181,7 @@ class Client {
         }
         if(inputs.includes("add_gold")) {
             let gold = Entity.createInstance("Gold", 1000);
-            gold.screen = this.player.screen;
+            gold.setScreen(this.player.screen);
             gold.x = this.player.getMovementX();
             gold.y = this.player.getMovementY();
 

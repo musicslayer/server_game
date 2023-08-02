@@ -2,6 +2,7 @@ const fs = require("fs");
 
 const Reflection = require("../reflection/Reflection.js");
 const Entity = require("../entity/Entity.js");
+const ServerTask = require("../server/ServerTask.js");
 const Tile = require("./Tile.js");
 const Util = require("../util/Util.js");
 
@@ -24,8 +25,11 @@ class Screen {
     tiles = [];
     entities = [];
 
-    static loadScreenFromFile(className, screenFile) {
+    playerCount = 0;
+
+    static loadScreenFromFile(map, className, screenFile) {
         let screen = Reflection.createInstance(className);
+        screen.map = map;
 
         let screenData = fs.readFileSync(screenFile, "ascii");
         let lines = screenData ? screenData.split(CRLF) : [];
@@ -66,11 +70,16 @@ class Screen {
                     let stackSize = Number(entityPart.shift());
 
                     let entity = Entity.createInstance(id, stackSize);
-                    entity.screen = screen;
+                    entity.setScreen(screen);
                     entity.x = x;
                     entity.y = y;
 
-                    screen.addEntity(entity);
+                    // Schedule each entity to be spawned.
+                    let serverTask = new ServerTask((entity) => {
+                        entity.doSpawn();
+                    }, entity);
+        
+                    entity.getServer().scheduleTask(undefined, 0, 1, serverTask);
                 }
             }
         }
@@ -82,10 +91,15 @@ class Screen {
         this.tiles.push(tile);
     }
 
+    // TODO Do we need to check index (I don't think we call these multiple times anymore)
     addEntity(entity) {
         const index = this.entities.indexOf(entity);
         if(index === -1) {
             this.entities.push(entity);
+
+            if(this.isPlayer) {
+                this.playerCount++;
+            }
         }
     }
 
@@ -93,6 +107,10 @@ class Screen {
         const index = this.entities.indexOf(entity);
         if(index > -1) {
             this.entities.splice(index, 1);
+
+            if(this.isPlayer) {
+                this.playerCount--;
+            }
         }
     }
 
@@ -162,6 +180,7 @@ class Screen {
         // Only serialize non-players here.
         writer.beginObject()
             .serialize("!V!", 1)
+            .serialize("className", Util.getClassName(this))
             .serialize("name", this.name)
             .serialize("x", this.x)
             .serialize("y", this.y)
@@ -179,13 +198,16 @@ class Screen {
 
         let version = reader.deserialize("!V!", "String");
         if(version === "1") {
-            screen = new Screen();
+            let className = reader.deserialize("className", "String");
+            screen = Reflection.createInstance(className);
+
             screen.name = reader.deserialize("name", "String");
             screen.x = reader.deserialize("x", "Number");
             screen.y = reader.deserialize("y", "Number");
             screen.numTilesX = reader.deserialize("numTilesX", "Number");
             screen.numTilesY = reader.deserialize("numTilesY", "Number");
             screen.pvpStatus = reader.deserialize("pvpStatus", "String");
+            
             let tiles = reader.deserializeArray("tiles", "Tile");
             let entities = reader.dereferenceArray("entities", "Entity");
 
