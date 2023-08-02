@@ -4,7 +4,6 @@ const Account = require("../account/Account.js");
 const Character = require("../account/Character.js");
 const Client = require("../client/Client.js");
 const Entity = require("../entity/Entity.js");
-const FallbackWorld = require("../world/FallbackWorld.js");
 const ServerTask = require("../server/ServerTask.js");
 
 // Used to limit the amount of socket connections that an IP can form at once.
@@ -185,7 +184,8 @@ function attachAppListeners(socket, appState) {
 
 			if(!screen) {
 				// Use the fallback map.
-				FallbackWorld.sendToEntrance(entity, world);
+				let fallbackWorld = world.universe.getWorldByID("fallback");
+				fallbackWorld.sendToEntrance(entity, world);
 			}
 
 			player.setScreen(screen);
@@ -217,7 +217,7 @@ function attachAppListeners(socket, appState) {
 
 						client.player.getServer().scheduleTask(undefined, 0, 1, serverTask);
 					}
-					
+
 					client.player.client = undefined;
 					client.player = undefined;
 				}

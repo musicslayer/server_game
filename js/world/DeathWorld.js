@@ -7,10 +7,8 @@ const NAME_PREFIX = "_death_";
 const ID_VALUE = "death";
 
 class DeathWorld extends World {
-    static sendToEntrance(entity, world) {
-        let deathWorld = world.universe.getWorldByID("death");
-
-        let deathMap = deathWorld.getMapByID("death");
+    sendToEntrance(entity, world) {
+        let deathMap = this.getMapByID("death");
         deathMap.world.removeMap(deathMap);
         deathMap.world = world;
         deathMap.world.addMap(deathMap);
@@ -22,8 +20,8 @@ class DeathWorld extends World {
         entity.y = 11;
     }
 
-    static teleportToEntrance(entity) {
-        DeathWorld.sendToEntrance(entity, entity.screen.map.world);
+    teleportToEntrance(entity) {
+        this.sendToEntrance(entity, entity.screen.map.world);
         entity.doTeleport(entity.screen, entity.x, entity.y);
     }
 

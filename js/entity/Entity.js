@@ -2,8 +2,6 @@ const Reflection = require("../reflection/Reflection.js");
 const Util = require("../util/Util.js");
 const Fallback = require("../constants/Fallback.js");
 const Performance = require("../constants/Performance.js");
-const DeathWorld = require("../world/DeathWorld.js");
-const FallbackWorld = require("../world/FallbackWorld.js");
 const ServerTask = require("../server/ServerTask.js");
 const UID = require("../uid/UID.js");
 
@@ -206,12 +204,14 @@ class Entity extends UID {
 
     doTeleportDeath() {
         // Teleport the entity to the death plane.
-        DeathWorld.teleportToEntrance(this);
+        let deathWorld = this.screen.map.world.universe.getWorldByID("fallback");
+        deathWorld.teleportToEntrance(this);
     }
 
     doTeleportFallback() {
         // Teleport the entity to the fallback map.
-        FallbackWorld.teleportToEntrance(this);
+        let fallbackWorld = this.screen.map.world.universe.getWorldByID("fallback");
+        fallbackWorld.teleportToEntrance(this);
     }
 
     doTeleportFallbackLocation() {
