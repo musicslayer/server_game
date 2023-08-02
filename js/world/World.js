@@ -95,22 +95,37 @@ class World {
     getMapByID(id) {
         let map = this.gameMapIDMap.get(id);
 
-        // If the map does not exist in this world, try dynamically generating a "VoidMap".
+        // If the map does not exist in this world, dynamically generate a map.
+        // Note that at least one dynamic world will be able to create a map.
         if(!map) {
-            let voidWorld = this.universe.getWorldByID("void");
+            for(let dynamicWorldName of ["death", "fallback", "void"]) {
+                let dynamicWorld = this.universe.getWorldByID(dynamicWorldName);
+                map = dynamicWorld.getMapByID(id);
+                if(!map) {
+                    continue;
+                }
 
-            map = voidWorld.getMapByID(id);
-            map.world.removeMap(map);
-            map.world = this;
-            map.world.addMap(map);
+                map.world.removeMap(map);
+                map.world = this;
+                map.world.addMap(map);
+
+                break;
+            }
         }
 
         return map;
     }
 
     getMapInDirection(map, direction) {
-        let [, shiftY] = Util.getDirectionalShift(direction);
-        return this.getMapByID(map.id - shiftY); // Use opposite of shift for map position.
+        let id = map.id;
+
+        // If the id is not a number, then we are in a special map and should not apply the direction.
+        if(Util.getClassName(map.id) === "Number") {
+            let [, shiftY] = Util.getDirectionalShift(direction);
+            id -= shiftY; // Use opposite of shift for map position.
+        }
+
+        return this.getMapByID(id); 
     }
 
     getWorldInDirection(direction) {

@@ -35,10 +35,6 @@ class DeathMap extends InstanceMap {
         
         return deathScreen;
     }
-
-    getMapInDirection(direction) {
-        return this;
-    }
 }
 
 module.exports = DeathMap;

@@ -4,6 +4,7 @@ const GameMap = require("./GameMap.js");
 const World = require("./World.js");
 
 const NAME_PREFIX = "_death_";
+const ID_VALUE = "death";
 
 class DeathWorld extends World {
     getMapByName(name) {
@@ -20,8 +21,14 @@ class DeathWorld extends World {
     }
 
     getMapByID(id) {
-        // Always return a dynamically generated "death" map.
-        return this.createDeathMap(id);
+        // Return a dynamically generated "death" map if the id is the expected value.
+        let map;
+
+        if(id === ID_VALUE) {
+            map = this.createDeathMap(id);
+        }
+
+        return map;
     }
 
     createDeathMap(id) {

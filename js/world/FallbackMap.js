@@ -35,10 +35,6 @@ class FallbackMap extends InstanceMap {
         
         return fallbackScreen;
     }
-
-    getMapInDirection(direction) {
-        return this;
-    }
 }
 
 module.exports = FallbackMap;

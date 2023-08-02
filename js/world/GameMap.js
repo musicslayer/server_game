@@ -119,7 +119,7 @@ class GameMap {
         let key = [screenX, screenY].join(",");
         let screen = this.screenIDMap.get(key);
 
-        // If the screen does not exist in this map, try dynamically generating a "VoidScreen".
+        // If the screen does not exist in this map, dynamically generate a "VoidScreen".
         if(!screen) {
             let voidWorld = this.world.universe.getWorldByID("void");
             let voidMap = voidWorld.getMapByID("void");

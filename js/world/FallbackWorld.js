@@ -4,6 +4,7 @@ const GameMap = require("./GameMap.js");
 const World = require("./World.js");
 
 const NAME_PREFIX = "_fallback_";
+const ID_VALUE = "death";
 
 class FallbackWorld extends World {
     getMapByName(name) {
@@ -20,8 +21,14 @@ class FallbackWorld extends World {
     }
 
     getMapByID(id) {
-        // Always return a dynamically generated "fallback" map.
-        return this.createFallbackMap(id);
+        // Return a dynamically generated "fallback" map if the id is the expected value.
+        let map;
+
+        if(id === ID_VALUE) {
+            map = this.createFallbackMap(id);
+        }
+
+        return map;
     }
 
     createFallbackMap(id) {
