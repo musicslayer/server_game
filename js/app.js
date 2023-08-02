@@ -2,7 +2,7 @@ const AppState = require("./AppState.js");
 
 // TODO Performance, memory leaks, etc... (closing program takes a long time)
 
-// TODO Does a void world need death and fallback maps?
+// TODO Merge all the XWorld, XMap, and XScreen instance classes.
 
 // TODO delayMap is true when the action is allowed, so it's the reverse of the name
 
@@ -17,8 +17,6 @@ const AppState = require("./AppState.js");
 
 
 // TODO When the entities are deserialized, they each rely on each other, so some will be outdated!
-
-// TODO Should VoidMap extend InstanceMap?
 
 async function init() {
     await new AppState().init();

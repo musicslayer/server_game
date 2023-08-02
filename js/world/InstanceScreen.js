@@ -1,13 +1,23 @@
 const Screen = require("./Screen.js");
 
 class InstanceScreen extends Screen {
-    removeEntity(entity) {
-        super.removeEntity(entity);
+    registeredPlayers = [];
 
-        // If there are no more players left, then this instance screen no longer needs to exist.
-        // TODO If players merely log out, will this also trigger? Also teleporting also triggers it :(
-        if(this.playerCount === 0) {
-            this.map.removeInstanceScreen(this);
+    registerEntity(entity) {
+        if(entity.isPlayer) {
+            this.registeredPlayers.push(entity);
+        }
+    }
+
+    deregisterEntity(entity) {
+        // When a player leaves and the instance has no more players left, the instance can be removed.
+        if(entity.isPlayer) {
+            const index = this.registeredPlayers.indexOf(entity);
+            this.registeredPlayers.splice(index, 1);
+
+            if(this.registeredPlayers.length === 0) {
+                this.map.removeScreen(this);
+            }
         }
     }
 }

@@ -185,10 +185,17 @@ function attachAppListeners(socket, appState) {
 			if(!screen) {
 				// Use the fallback map.
 				// TODO All these methods should be in a static method in the map class.
-				let fallbackMap = world.getMapByID("fallback");
+				let fallbackWorld = world.universe.getWorldByID("fallback");
+
+				let fallbackMap = fallbackWorld.getMapByID("fallback");
+				fallbackMap.world.removeMap(fallbackMap);
+				fallbackMap.world = world;
+				fallbackMap.world.addMap(fallbackMap);
+
 				screen = fallbackMap.getScreenByID(0, 0);
+
 				player.x = 7;
-				player.y = 11;	
+				player.y = 11;
 			}
 
 			player.setScreen(screen);

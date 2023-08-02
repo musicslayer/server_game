@@ -1,11 +1,11 @@
 const path = require("path");
 
 const Screen = require("./Screen.js");
-const GameMap = require("./GameMap.js");
+const InstanceMap = require("./InstanceMap.js");
 
 const NAME_PREFIX = "_void_";
 
-class VoidMap extends GameMap {
+class VoidMap extends InstanceMap {
     getScreenByName(name) {
         // Return a dynamically generated "void" screen if the name starts with the expected prefix.
         let screen;
@@ -31,7 +31,7 @@ class VoidMap extends GameMap {
         voidScreen.y = screenY;
         voidScreen.pvpStatus = "safe";
 
-        this.instanceScreens.push(voidScreen);
+        this.addScreen(voidScreen);
         
         return voidScreen;
     }

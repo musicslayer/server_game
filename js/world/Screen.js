@@ -25,8 +25,6 @@ class Screen {
     tiles = [];
     entities = [];
 
-    playerCount = 0;
-
     static loadScreenFromFile(map, className, screenFile) {
         let screen = Reflection.createInstance(className);
         screen.map = map;
@@ -96,10 +94,7 @@ class Screen {
         const index = this.entities.indexOf(entity);
         if(index === -1) {
             this.entities.push(entity);
-
-            if(this.isPlayer) {
-                this.playerCount++;
-            }
+            this.registerEntity(entity);
         }
     }
 
@@ -107,10 +102,7 @@ class Screen {
         const index = this.entities.indexOf(entity);
         if(index > -1) {
             this.entities.splice(index, 1);
-
-            if(this.isPlayer) {
-                this.playerCount--;
-            }
+            this.deregisterEntity(entity);
         }
     }
 
@@ -174,6 +166,14 @@ class Screen {
 
     getScreenInDirection(direction) {
         return this.map.getScreenInDirection(this, direction);
+    }
+
+    registerEntity(entity) {
+        // By default, do nothing.
+    }
+
+    deregisterEntity(entity) {
+        // By default, do nothing.
     }
 
     serialize(writer) {

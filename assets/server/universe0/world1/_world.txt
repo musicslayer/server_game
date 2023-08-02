@@ -1,5 +1,3 @@
 0|GameMap|city
 1|GameMap|town
 2|GameMap|x
-death|DeathMap|_death
-void|VoidMap|_void

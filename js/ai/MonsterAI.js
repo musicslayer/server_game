@@ -2,7 +2,6 @@ const AI = require("./AI.js");
 const MoveAnimation = require("../animation/MoveAnimation.js");
 const ServerTask = require("../server/ServerTask.js");
 const Util = require("../util/Util.js");
-const UID = require("../uid/UID.js");
 
 class MonsterAI extends AI {
     // This is the time to do any non-standard action (waiting, changing direction).

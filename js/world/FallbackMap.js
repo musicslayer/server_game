@@ -1,11 +1,11 @@
 const path = require("path");
 
 const Screen = require("./Screen.js");
-const GameMap = require("./GameMap.js");
+const InstanceMap = require("./InstanceMap.js");
 
 const NAME_PREFIX = "_fallback_";
 
-class FallbackMap extends GameMap {
+class FallbackMap extends InstanceMap {
     getScreenByName(name) {
         // Return a dynamically generated "fallback" screen if the name starts with the expected prefix.
         let fallbackScreen;
@@ -31,7 +31,7 @@ class FallbackMap extends GameMap {
         fallbackScreen.y = screenY;
         fallbackScreen.pvpStatus = "safe";
 
-        this.instanceScreens.push(fallbackScreen);
+        this.addScreen(fallbackScreen);
         
         return fallbackScreen;
     }

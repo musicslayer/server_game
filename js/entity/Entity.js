@@ -6,8 +6,6 @@ const ServerTask = require("../server/ServerTask.js");
 const UID = require("../uid/UID.js");
 
 class Entity extends UID {
-    id;
-
     isSpawned = false; // Only true if this entity instance exists in the game world.
     isPlayer = false;
     isAI = false;
@@ -146,7 +144,7 @@ class Entity extends UID {
         this.cancelServerTasks();
 
         // Non-players will never be used again so remove them from the map.
-        // Players are still stored in the Account objects so we need to maintain their entry in the map.
+        // Players are still stored in the Character objects so we need to maintain their entry in the map.
         if(!this.isPlayer) {
             UID.remove("Entity", this);
         }
@@ -195,22 +193,40 @@ class Entity extends UID {
         this.x = x;
         this.y = y;
 
-        this.screen.removeEntity(this);
-        this.setScreen(screen);
-        screen.addEntity(this, x, y);
+        // If the screen does not change, skip this for performance reasons.
+        // Also, we do not want to cause any instance screens to be removed by calling "removeEntity".
+        if(this.screen !== screen) {
+            this.screen.removeEntity(this);
+            this.setScreen(screen);
+            this.screen.addEntity(this, x, y);
+        }
     }
 
     doTeleportDeath() {
         // Teleport the entity to the death plane.
-        let deathMap = this.screen.map.world.getMapByID("death");
+        let deathWorld = this.screen.map.world.universe.getWorldByID("death");
+
+        let deathMap = deathWorld.getMapByID("death");
+        deathMap.world.removeMap(deathMap);
+        deathMap.world = this.screen.map.world;
+        deathMap.world.addMap(deathMap);
+
         let deathScreen = deathMap.getScreenByID(0, 0);
+
         this.doTeleport(deathScreen, 7, 11);
     }
 
     doTeleportFallback() {
         // Teleport the entity to the fallback map.
-        let fallbackMap = this.screen.map.world.getMapByID("fallback");
+        let fallbackWorld = this.screen.map.world.universe.getWorldByID("fallback");
+
+        let fallbackMap = fallbackWorld.getMapByID("fallback");
+        fallbackMap.world.removeMap(fallbackMap);
+        fallbackMap.world = this.screen.map.world;
+        fallbackMap.world.addMap(fallbackMap);
+
         let fallbackScreen = fallbackMap.getScreenByID(0, 0);
+
         this.doTeleport(fallbackScreen, 7, 11);
     }
 

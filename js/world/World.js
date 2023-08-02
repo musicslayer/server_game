@@ -18,8 +18,6 @@ class World {
     gameMapNameMap = new Map();
     gameMapIDMap = new Map();
 
-    instanceGameMaps = [];
-
     worldFolder;
 
     static loadWorldFromFolder(universe, className, worldFolder) {
@@ -38,14 +36,7 @@ class World {
 
             // First part is the map id
             let idPart = parts.shift().split(COMMA);
-            let id_string = idPart.shift();
-            let id;
-            if(id_string === "death" || id_string === "fallback" || id_string === "void") {
-                id = id_string;
-            }
-            else {
-                id = Number(id_string);
-            }
+            let id = Number(idPart.shift());
 
             // Second part is the map class name
             let className = parts.shift();
@@ -69,27 +60,32 @@ class World {
         this.gameMapIDMap.set(map.id, map);
     }
 
-    removeInstanceMap(instanceMap) {
-        const index = this.instanceGameMaps.indexOf(instanceMap);
-        this.instanceGameMaps.splice(index, 1);
-    }
+    removeMap(map) {
+        const index = this.gameMaps.indexOf(map);
+        this.gameMaps.splice(index, 1);
 
-    removeInstanceMap(instanceMap) {
-        const index = this.instanceGameMaps.indexOf(instanceMap);
-        this.instanceGameMaps.splice(index, 1);
+        this.gameMapNameMap.delete(map.name);
+        this.gameMapIDMap.delete(map.id);
     }
 
     getMapByName(name) {
         let map = this.gameMapNameMap.get(name);
 
-        // If the map does not exist in this world, try dynamically generating a "VoidMap".
+        // If the map does not exist in this world, try dynamically generating a map.
+        // It's possible that the map is still undefined. This occurs if the map name used to exist but was later removed.
         if(!map) {
-            let voidWorld = this.universe.getWorldByID("void");
-            map = voidWorld.getMapByName(name);
+            for(let dynamicWorldName of ["death", "fallback", "void"]) {
+                let dynamicWorld = this.universe.getWorldByID(dynamicWorldName);
+                map = dynamicWorld.getMapByName(name);
+                if(!map) {
+                    continue;
+                }
 
-            // It's possible that the map is undefined. This occurs if the map name used to exist but was later removed.
-            if(map) {
+                map.world.removeMap(map);
                 map.world = this;
+                map.world.addMap(map);
+                
+                break;
             }
         }
 
@@ -102,8 +98,11 @@ class World {
         // If the map does not exist in this world, try dynamically generating a "VoidMap".
         if(!map) {
             let voidWorld = this.universe.getWorldByID("void");
+
             map = voidWorld.getMapByID(id);
+            map.world.removeMap(map);
             map.world = this;
+            map.world.addMap(map);
         }
 
         return map;
@@ -125,7 +124,6 @@ class World {
             .serialize("id", this.id)
             .serialize("name", this.name)
             .serializeArray("maps", this.gameMaps)
-            .serializeArray("instanceMaps", this.instanceGameMaps)
             .serialize("worldFolder", this.worldFolder)
         .endObject();
     }
@@ -142,7 +140,6 @@ class World {
             let id_string = reader.deserialize("id", "String");
             world.name = reader.deserialize("name", "String");
             let maps = reader.deserializeArray("maps", "GameMap");
-            world.instanceGameMaps = reader.deserializeArray("instanceMaps", "GameMap");
             world.worldFolder = reader.deserialize("worldFolder", "String");
 
             let id;
@@ -158,10 +155,6 @@ class World {
             for(let map of maps) {
                 map.world = world;
                 world.addMap(map);
-            }
-
-            for(let instanceMap of world.instanceGameMaps) {
-                instanceMap.world = world;
             }
         }
         else {

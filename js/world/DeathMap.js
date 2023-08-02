@@ -1,11 +1,11 @@
 const path = require("path");
 
 const Screen = require("./Screen.js");
-const GameMap = require("./GameMap.js");
+const InstanceMap = require("./InstanceMap.js");
 
 const NAME_PREFIX = "_death_";
 
-class DeathMap extends GameMap {
+class DeathMap extends InstanceMap {
     getScreenByName(name) {
         // Return a dynamically generated "death" screen if the name starts with the expected prefix.
         let deathScreen;
@@ -31,7 +31,7 @@ class DeathMap extends GameMap {
         deathScreen.y = screenY;
         deathScreen.pvpStatus = "safe";
 
-        this.instanceScreens.push(deathScreen);
+        this.addScreen(deathScreen);
         
         return deathScreen;
     }

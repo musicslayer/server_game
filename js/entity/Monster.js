@@ -2,7 +2,6 @@ const Entity = require("./Entity.js");
 const MonsterAI = require("../ai/MonsterAI.js");
 const ServerTask = require("../server/ServerTask.js");
 const Util = require("../util/Util.js");
-const UID = require("../uid/UID.js");
 
 class Monster extends Entity {
     isAI = true;

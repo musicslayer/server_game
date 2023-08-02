@@ -18,8 +18,6 @@ class GameMap {
     screenNameMap = new Map();
     screenIDMap = new Map();
 
-    instanceScreens = [];
-
     mapFolder;
 
     static loadMapFromFolder(world, className, mapFolder) {
@@ -71,9 +69,14 @@ class GameMap {
         this.screenIDMap.set(key, screen);
     }
 
-    removeInstanceScreen(instanceScreen) {
-        const index = this.instanceScreens.indexOf(instanceScreen);
-        this.instanceScreens.splice(index, 1);
+    removeScreen(screen) {
+        const index = this.screens.indexOf(screen);
+        this.screens.splice(index, 1);
+
+        this.screenNameMap.delete(screen.name);
+
+        let key = [screen.x, screen.y].join(",");
+        this.screenIDMap.delete(key);
     }
 
     isScreenInDirection(screen, direction) {
@@ -96,13 +99,16 @@ class GameMap {
         let screen = this.screenNameMap.get(name);
 
         // If the screen does not exist in this map, try dynamically generating a "VoidScreen".
+        // It's possible that the screen is still undefined. This occurs if the screen name used to exist but was later removed.
         if(!screen) {
-            let voidMap = this.world.getMapByID("void");
-            screen = voidMap.getScreenByName(name);
+            let voidWorld = this.world.universe.getWorldByID("void");
+            let voidMap = voidWorld.getMapByID("void");
 
-            // It's possible that the screen is undefined. This occurs if the screen name used to exist but was later removed.
+            screen = voidMap.getScreenByName(name);
             if(screen) {
+                screen.map.removeScreen(screen);
                 screen.map = this;
+                screen.map.addScreen(screen);
             }
         }
 
@@ -115,9 +121,13 @@ class GameMap {
 
         // If the screen does not exist in this map, try dynamically generating a "VoidScreen".
         if(!screen) {
-            let voidMap = this.world.getMapByID("void");
+            let voidWorld = this.world.universe.getWorldByID("void");
+            let voidMap = voidWorld.getMapByID("void");
+
             screen = voidMap.getScreenByID(screenX, screenY);
+            screen.map.removeScreen(screen);
             screen.map = this;
+            screen.map.addScreen(screen);
         }
         
         return screen;
@@ -134,7 +144,6 @@ class GameMap {
             .serialize("id", this.id)
             .serialize("name", this.name)
             .serializeArray("screens", this.screens)
-            .serializeArray("instanceScreens", this.instanceScreens)
             .serialize("mapFolder", this.mapFolder)
         .endObject();
     }
@@ -151,7 +160,6 @@ class GameMap {
             let id_string = reader.deserialize("id", "String");
             map.name = reader.deserialize("name", "String");
             let screens = reader.deserializeArray("screens", "Screen");
-            map.instanceScreens = reader.deserializeArray("instanceScreens", "Screen");
             map.mapFolder = reader.deserialize("mapFolder", "String");
 
             let id;
@@ -167,10 +175,6 @@ class GameMap {
             for(let screen of screens) {
                 screen.map = map;
                 map.addScreen(screen);
-            }
-
-            for(let instanceScreen of map.instanceScreens) {
-                instanceScreen.map = map;
             }
         }
         else {

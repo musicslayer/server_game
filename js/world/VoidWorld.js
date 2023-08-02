@@ -11,6 +11,7 @@ class VoidWorld extends World {
         let map;
 
         if(name.startsWith(NAME_PREFIX)) {
+            // ID will always be a number.
             let id = name.slice(NAME_PREFIX.length);
             map = this.createVoidMap(Number(id));
         }
@@ -28,7 +29,7 @@ class VoidWorld extends World {
         voidMap.name = NAME_PREFIX + id;
         voidMap.id = id;
 
-        this.instanceGameMaps.push(voidMap);
+        this.addMap(voidMap);
         
         return voidMap;
     }

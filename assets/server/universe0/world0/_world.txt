@@ -1,5 +1,2 @@
 0|GameMap|city
 1|GameMap|town
-death|DeathMap|_death
-fallback|FallbackMap|_fallback
-void|VoidMap|_void
