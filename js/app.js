@@ -1,5 +1,7 @@
 const AppState = require("./AppState.js");
 
+// TODO When I shift worlds in an instance screen, things break!
+
 // TODO Performance, memory leaks, etc... (closing program takes a long time)
 
 // TODO Merge all the XWorld, XMap, and XScreen instance classes.

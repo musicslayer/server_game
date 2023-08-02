@@ -61,7 +61,7 @@ class World {
     }
 
     removeMap(map) {
-        const index = this.gameMaps.indexOf(map);
+        let index = this.gameMaps.indexOf(map);
         this.gameMaps.splice(index, 1);
 
         this.gameMapNameMap.delete(map.name);

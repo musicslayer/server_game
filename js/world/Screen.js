@@ -89,21 +89,15 @@ class Screen {
         this.tiles.push(tile);
     }
 
-    // TODO Do we need to check index (I don't think we call these multiple times anymore)
     addEntity(entity) {
-        const index = this.entities.indexOf(entity);
-        if(index === -1) {
-            this.entities.push(entity);
-            this.registerEntity(entity);
-        }
+        this.entities.push(entity);
+        this.registerEntity(entity);
     }
 
     removeEntity(entity) {
-        const index = this.entities.indexOf(entity);
-        if(index > -1) {
-            this.entities.splice(index, 1);
-            this.deregisterEntity(entity);
-        }
+        let index = this.entities.indexOf(entity);
+        this.entities.splice(index, 1);
+        this.deregisterEntity(entity);
     }
 
     isFacingEdge(entity, direction) {

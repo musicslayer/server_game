@@ -70,7 +70,7 @@ class GameMap {
     }
 
     removeScreen(screen) {
-        const index = this.screens.indexOf(screen);
+        let index = this.screens.indexOf(screen);
         this.screens.splice(index, 1);
 
         this.screenNameMap.delete(screen.name);

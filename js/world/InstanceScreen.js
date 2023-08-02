@@ -12,7 +12,7 @@ class InstanceScreen extends Screen {
     deregisterEntity(entity) {
         // When a player leaves and the instance has no more players left, the instance can be removed.
         if(entity.isPlayer) {
-            const index = this.registeredPlayers.indexOf(entity);
+            let index = this.registeredPlayers.indexOf(entity);
             this.registeredPlayers.splice(index, 1);
 
             if(this.registeredPlayers.length === 0) {

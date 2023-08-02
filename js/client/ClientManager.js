@@ -12,11 +12,8 @@ class ClientManager {
     }
 
     removeClient(client) {
-        const index = this.clients.indexOf(client);
-        if(index > -1) {
-            this.clients.splice(index, 1);
-        }
-
+        let index = this.clients.indexOf(client);
+        this.clients.splice(index, 1);
         this.clientMap.delete(client.key);
     }
 
