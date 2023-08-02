@@ -1,7 +1,7 @@
 const path = require("path");
 
-const GameMap = require("./GameMap.js");
-const World = require("./World.js");
+const GameMap = require("../GameMap.js");
+const World = require("../World.js");
 
 const NAME_PREFIX = "_death_";
 const ID_VALUE = "death";

@@ -1,4 +1,4 @@
-const GameMap = require("./GameMap.js");
+const GameMap = require("../GameMap.js");
 
 class InstanceMap extends GameMap {
     removeScreen(screen) {

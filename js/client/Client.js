@@ -443,15 +443,15 @@ class Client {
     }
 
     scheduleTask(delayType, delayTime, animation, time, task, ...args) {
-        if(this.player.delayMap.get(delayType) === true || this.player.delayMap.get(delayType) === undefined) {
-            this.player.delayMap.set(delayType, false);
+        if(!this.player.delayMap.get(delayType)) {
+            this.player.delayMap.set(delayType, true);
 
             let serverTask = new ServerTask(task, ...args);
 
             this.player.getServer().scheduleTask(animation, time, 1, serverTask);
 
             let serverTask2 = new ServerTask((player, delayType) => {
-                player.delayMap.set(delayType, true);
+                player.delayMap.set(delayType, false);
             }, this.player, delayType);
 
             this.player.getServer().scheduleTask(undefined, delayTime, 1, serverTask2);

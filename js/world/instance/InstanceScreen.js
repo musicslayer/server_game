@@ -1,4 +1,4 @@
-const Screen = require("./Screen.js");
+const Screen = require("../Screen.js");
 
 class InstanceScreen extends Screen {
     registeredPlayers = [];

@@ -1,6 +1,6 @@
 const path = require("path");
 
-const Screen = require("./Screen.js");
+const Screen = require("../Screen.js");
 const InstanceMap = require("./InstanceMap.js");
 
 const NAME_PREFIX = "_death_";
