@@ -4,25 +4,25 @@ const GameMap = require("./GameMap.js");
 const World = require("./World.js");
 
 const NAME_PREFIX = "_fallback_";
-const ID_VALUE = "death";
+const ID_VALUE = "fallback";
 
 class FallbackWorld extends World {
-    sendToEntrance(entity, world) {
+    createEntrance(world) {
         let fallbackMap = this.getMapByID("fallback");
         fallbackMap.world.removeMap(fallbackMap);
         fallbackMap.world = world;
         fallbackMap.world.addMap(fallbackMap);
 
-        let fallbackScreen = fallbackMap.getScreenByID(0, 0);
-
-        entity.setScreen(fallbackScreen);
-        entity.x = 7;
-        entity.y = 11;
+        return {
+            screen: fallbackMap.getScreenByID(0, 0),
+            x: 7,
+            y: 11
+        }
     }
 
     teleportToEntrance(entity) {
-        this.sendToEntrance(entity, entity.screen.map.world);
-        entity.doTeleport(entity.screen, entity.x, entity.y);
+        let entrance = this.createEntrance(entity.screen.map.world);
+        entity.doTeleport(entrance.screen, entrance.x, entrance.y);
     }
 
     getMapByName(name) {

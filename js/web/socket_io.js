@@ -185,7 +185,11 @@ function attachAppListeners(socket, appState) {
 			if(!screen) {
 				// Use the fallback map.
 				let fallbackWorld = world.universe.getWorldByID("fallback");
-				fallbackWorld.sendToEntrance(entity, world);
+				let entrance = fallbackWorld.createEntrance(world);
+
+				screen = entrance.screen;
+				player.x = entrance.x;
+				player.y = entrance.y;
 			}
 
 			player.setScreen(screen);

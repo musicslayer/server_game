@@ -204,7 +204,7 @@ class Entity extends UID {
 
     doTeleportDeath() {
         // Teleport the entity to the death plane.
-        let deathWorld = this.screen.map.world.universe.getWorldByID("fallback");
+        let deathWorld = this.screen.map.world.universe.getWorldByID("death");
         deathWorld.teleportToEntrance(this);
     }
 
