@@ -7,6 +7,26 @@ const NAME_PREFIX = "_fallback_";
 const ID_VALUE = "death";
 
 class FallbackWorld extends World {
+    static sendToEntrance(entity, world) {
+        let fallbackWorld = world.universe.getWorldByID("fallback");
+
+        let fallbackMap = fallbackWorld.getMapByID("fallback");
+        fallbackMap.world.removeMap(fallbackMap);
+        fallbackMap.world = world;
+        fallbackMap.world.addMap(fallbackMap);
+
+        let fallbackScreen = fallbackMap.getScreenByID(0, 0);
+
+        entity.setScreen(fallbackScreen);
+        entity.x = 7;
+        entity.y = 11;
+    }
+
+    static teleportToEntrance(entity) {
+        FallbackWorld.sendToEntrance(entity, entity.screen.map.world);
+        entity.doTeleport(entity.screen, entity.x, entity.y);
+    }
+
     getMapByName(name) {
         // Return a dynamically generated "fallback" map if the name starts with the expected prefix.
         let map;

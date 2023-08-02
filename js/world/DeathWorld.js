@@ -7,6 +7,26 @@ const NAME_PREFIX = "_death_";
 const ID_VALUE = "death";
 
 class DeathWorld extends World {
+    static sendToEntrance(entity, world) {
+        let deathWorld = world.universe.getWorldByID("death");
+
+        let deathMap = deathWorld.getMapByID("death");
+        deathMap.world.removeMap(deathMap);
+        deathMap.world = world;
+        deathMap.world.addMap(deathMap);
+
+        let deathScreen = deathMap.getScreenByID(0, 0);
+
+        entity.setScreen(deathScreen);
+        entity.x = 7;
+        entity.y = 11;
+    }
+
+    static teleportToEntrance(entity) {
+        DeathWorld.sendToEntrance(entity, entity.screen.map.world);
+        entity.doTeleport(entity.screen, entity.x, entity.y);
+    }
+
     getMapByName(name) {
         // Return a dynamically generated "death" map if the name starts with the expected prefix.
         let map;
