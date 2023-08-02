@@ -70,13 +70,13 @@ class World {
     }
 
     removeInstanceMap(instanceMap) {
-        const index = this.instanceMaps.indexOf(instanceMap);
-        this.instanceMaps.splice(index, 1);
+        const index = this.instanceGameMaps.indexOf(instanceMap);
+        this.instanceGameMaps.splice(index, 1);
     }
 
     removeInstanceMap(instanceMap) {
-        const index = this.instanceMaps.indexOf(instanceMap);
-        this.instanceMaps.splice(index, 1);
+        const index = this.instanceGameMaps.indexOf(instanceMap);
+        this.instanceGameMaps.splice(index, 1);
     }
 
     getMapByName(name) {
@@ -125,7 +125,7 @@ class World {
             .serialize("id", this.id)
             .serialize("name", this.name)
             .serializeArray("maps", this.gameMaps)
-            .serializeArray("instanceMaps", this.instanceMaps)
+            .serializeArray("instanceMaps", this.instanceGameMaps)
             .serialize("worldFolder", this.worldFolder)
         .endObject();
     }
@@ -142,7 +142,7 @@ class World {
             let id_string = reader.deserialize("id", "String");
             world.name = reader.deserialize("name", "String");
             let maps = reader.deserializeArray("maps", "GameMap");
-            world.instanceMaps = reader.deserializeArray("instanceMaps", "GameMap");
+            world.instanceGameMaps = reader.deserializeArray("instanceMaps", "GameMap");
             world.worldFolder = reader.deserialize("worldFolder", "String");
 
             let id;
@@ -160,7 +160,7 @@ class World {
                 world.addMap(map);
             }
 
-            for(let instanceMap of map.instanceMaps) {
+            for(let instanceMap of world.instanceGameMaps) {
                 instanceMap.world = world;
             }
         }

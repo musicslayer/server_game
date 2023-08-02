@@ -28,7 +28,7 @@ class VoidWorld extends World {
         voidMap.name = NAME_PREFIX + id;
         voidMap.id = id;
 
-        this.instanceMaps.push(voidMap);
+        this.instanceGameMaps.push(voidMap);
         
         return voidMap;
     }
