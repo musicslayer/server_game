@@ -13,10 +13,10 @@ const AppState = require("./AppState.js");
 
 // TODO TileFolders and TileImages. Should it be category and name?
 
-// TODO Now that delay map is fixed, can we keep players logged in after a "load"
-
 
 // TODO When the entities are deserialized, they each rely on each other, so some will be outdated!
+
+// TODO When I shift maps on deathmap (and thus get the same map), I see the screen refresh!
 
 async function init() {
     await new AppState().init();

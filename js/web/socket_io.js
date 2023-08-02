@@ -218,17 +218,19 @@ function attachAppListeners(socket, appState) {
 				let client = appState.clientManager.getClient(key);
 				appState.clientManager.removeClient(client);
 
-				// If a client is present but then a state is loaded where the player was despawned, it's possible client.player is not spawned.
-				if(client.player.isSpawned) {
-					let serverTask = new ServerTask((player) => {
-						player.doDespawn();
-					}, client.player);
+				// It's possible that a client is present but then a state is loaded where the player was despawned or did not exist.
+				if(client.player) {
+					if(client.player.isSpawned) {
+						let serverTask = new ServerTask((player) => {
+							player.doDespawn();
+						}, client.player);
 
-					client.player.getServer().scheduleTask(undefined, 0, 1, serverTask);
+						client.player.getServer().scheduleTask(undefined, 0, 1, serverTask);
+					}
+					
+					client.player.client = undefined;
+					client.player = undefined;
 				}
-
-				client.player.client = undefined;
-				client.player = undefined;
 			});
 
 			attachClientListeners(socket, client);

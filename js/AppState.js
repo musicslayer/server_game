@@ -104,9 +104,9 @@ class AppState {
 
         // After loading data:
         // - Refresh all clients and players that are currently logged in.
-        // - Log out all of the clients and players that are currently logged in.
+        // - Despawn players with logged out clients, and log out clients with despawned players.
         this.refresh();
-        this.logOut();
+        this.close();
 
         // Start the new servers' ticks.
         this.serverManager.startServerTicks();
@@ -116,31 +116,36 @@ class AppState {
         // Each client needs to point to an updated player, and vice versa.
         for(let key of this.clientManager.clientMap.keys()) {
             let client = this.clientManager.getClient(key);
-            let newPlayer = this.accountManager.getAccount(key).getCharacter(client.playerName).player;
+            let newPlayer = this.accountManager.getAccount(key)?.getCharacter(client.playerName)?.player;
 
             client.player = newPlayer;
-            newPlayer.client = client;
+
+            if(newPlayer) {
+                newPlayer.client = client;
+            }
+            else {
+                // The player this client pointed to no longer exists and thus cannot be updated. Just disconnect the client now.
+                client.socket.disconnect(true);
+            }
         }
     }
 
-    logOut() {
+    close() {
         for(let account of this.accountManager.accounts) {
             for(let key of account.characterMap.keys()) {
                 let player = account.getCharacter(key).player;
 
-                if(player.client) {
-                    // Disconnect the client, which will in turn despawn the player.
-                    player.client.socket.disconnect(true);
+                if(player.isSpawned && !player.client) {
+                    // If a player is spawned but the client is no longer logged in, then despawn the player.
+                    let serverTask = new ServerTask((player) => {
+                        player.doDespawn();
+                    }, player);
+    
+                    player.getServer().scheduleTask(undefined, 0, 1, serverTask);
                 }
-                else {
-                    // This player has no client, so despawn the player manually.
-                    if(player.isSpawned) {
-                        let serverTask = new ServerTask((player) => {
-                            player.doDespawn();
-                        }, player);
-        
-                        player.getServer().scheduleTask(undefined, 0, 1, serverTask);
-                    }
+                else if(!player.isSpawned && player.client) {
+                    // If a player is not spawned but the client is logged in, then log out the client.
+                    player.client.socket.disconnect(true);
                 }
             }
         }
