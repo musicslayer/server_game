@@ -5,7 +5,7 @@ class UID {
 
     uid;
 
-    // TODO We need an add method?
+    // TODO We need an add method? Clean this all up in general.
     static remove(name, obj) {
         let map = UID.uidMap.get(name);
         map.delete(obj.uid);

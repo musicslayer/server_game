@@ -115,7 +115,7 @@ function attachAppListeners(socket, appState) {
 				return;
 			}
 			
-			// TODO Should these be in a function somewhere...?
+			// TODO Should these be in a function somewhere...? Reflection.isSubclass()?
 			if(!["PlayerMage", "PlayerWarrior"].includes(playerClass)) {
 				callback({"isSuccess": false});
 				return;

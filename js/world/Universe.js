@@ -71,6 +71,18 @@ class Universe {
         return this.worldIDMap.get(id);
     }
 
+    getDynamicWorlds() {
+        let dynamicWorlds = [];
+
+        for(let world of this.worlds) {
+            if(world.isDynamic) {
+                dynamicWorlds.push(world);
+            }
+        }
+
+        return dynamicWorlds;
+    }
+
     serialize(writer) {
         writer.beginObject()
             .serialize("!V!", 1)

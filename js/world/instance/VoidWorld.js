@@ -1,12 +1,12 @@
 const path = require("path");
 
 const GameMap = require("../GameMap.js");
-const World = require("../World.js");
+const DynamicWorld = require("./DynamicWorld.js");
 const Util = require("../../util/Util.js");
 
 const NAME_PREFIX = "_void_";
 
-class VoidWorld extends World {
+class VoidWorld extends DynamicWorld {
     getMapByName(name) {
         // Return a dynamically generated "void" map if the name starts with the expected prefix.
         let map;

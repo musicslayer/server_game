@@ -1,12 +1,12 @@
 const path = require("path");
 
 const GameMap = require("../GameMap.js");
-const World = require("../World.js");
+const DynamicWorld = require("./DynamicWorld.js");
 
 const NAME_PREFIX = "_fallback_";
 const ID_VALUE = "fallback";
 
-class FallbackWorld extends World {
+class FallbackWorld extends DynamicWorld {
     createEntrance(world) {
         let fallbackMap = this.getMapByID(ID_VALUE);
         fallbackMap.world.removeMap(fallbackMap);

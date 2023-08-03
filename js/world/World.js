@@ -74,9 +74,7 @@ class World {
         // If the map does not exist in this world, try dynamically generating a map.
         // It's possible that the map is still undefined. This occurs if the map name used to exist but was later removed.
         if(!map) {
-            // TODO These arrays should be stored somewhere?
-            for(let dynamicWorldName of ["death", "fallback", "tutorial", "void"]) {
-                let dynamicWorld = this.universe.getWorldByID(dynamicWorldName);
+            for(let dynamicWorld of this.universe.getDynamicWorlds()) {
                 map = dynamicWorld.getMapByName(name);
                 if(!map) {
                     continue;
@@ -99,9 +97,7 @@ class World {
         // If the map does not exist in this world, dynamically generate a map.
         // Note that at least one dynamic world will be able to create a map.
         if(!map) {
-            // TODO These arrays should be stored somewhere?
-            for(let dynamicWorldName of ["death", "fallback", "tutorial", "void"]) {
-                let dynamicWorld = this.universe.getWorldByID(dynamicWorldName);
+            for(let dynamicWorld of this.universe.getDynamicWorlds()) {
                 map = dynamicWorld.getMapByID(id);
                 if(!map) {
                     continue;

@@ -1,12 +1,12 @@
 const path = require("path");
 
 const GameMap = require("../GameMap.js");
-const World = require("../World.js");
+const DynamicWorld = require("./DynamicWorld.js");
 
 const NAME_PREFIX = "_death_";
 const ID_VALUE = "death";
 
-class DeathWorld extends World {
+class DeathWorld extends DynamicWorld {
     createEntrance(world) {
         let deathMap = this.getMapByID(ID_VALUE);
         deathMap.world.removeMap(deathMap);
