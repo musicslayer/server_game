@@ -45,15 +45,13 @@ class Screen {
             // Second part is the tiles
             let tilePart = parts.shift().split(COMMA);
             if(tilePart[0]) {
-                let imageFolders = [];
-                let imageFiles = [];
+                let names = [];
 
                 while(tilePart.length > 0) {
-                    imageFolders.push(tilePart.shift());
-                    imageFiles.push(tilePart.shift());
+                    names.push(tilePart.shift());
                 }
 
-                let tile = new Tile(imageFolders, imageFiles);
+                let tile = new Tile(names);
                 tile.x = x;
                 tile.y = y;
         
@@ -146,9 +144,8 @@ class Screen {
         let highestEntity;
 
         // Iterate backwards to get the highest entity.
-        let entities = this.entities;
-        for(let i = entities.length - 1; i >= 0; i--) {
-            let entity = entities[i];
+        let entitiesReverse = this.entities.slice().reverse();
+        for(let entity of entitiesReverse) {
             if(entity.isAt(x, y)) {
                 highestEntity = entity;
                 break;

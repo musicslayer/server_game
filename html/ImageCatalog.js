@@ -42,7 +42,7 @@ class ImageCatalog {
         return this.imageMap.get(folder + "#" + file);
     }
 	
-	getImageByClassName(className, animationFrame) {
+	getImageByEntityClassName(className, animationFrame) {
 		let image;
 		
 		switch(className) {
@@ -108,6 +108,121 @@ class ImageCatalog {
                 break;
             case "Wall":
                 image = this.getImage("wall", "wall");
+                break;
+            default:
+                image = this.getImage("_base", "unknown");
+        }
+		
+		return image;
+    }
+	
+	getImageByTileName(tileName, animationFrame) {
+		let image;
+		
+		switch(tileName) {
+            case "letter_upperA":
+                image = this.getImage("letter", "upperA");
+                break;
+			case "letter_upperB":
+                image = this.getImage("letter", "upperB");
+                break;
+			case "letter_upperC":
+                image = this.getImage("letter", "upperC");
+                break;
+			case "letter_upperD":
+                image = this.getImage("letter", "upperD");
+                break;
+			case "letter_upperE":
+                image = this.getImage("letter", "upperE");
+                break;
+			case "letter_upperF":
+                image = this.getImage("letter", "upperF");
+                break;
+			case "letter_upperG":
+                image = this.getImage("letter", "upperG");
+                break;
+			case "letter_upperH":
+                image = this.getImage("letter", "upperH");
+                break;
+			case "letter_upperI":
+                image = this.getImage("letter", "upperI");
+                break;
+			case "letter_upperJ":
+                image = this.getImage("letter", "upperJ");
+                break;
+			case "letter_upperK":
+                image = this.getImage("letter", "upperK");
+                break;
+			case "letter_upperL":
+                image = this.getImage("letter", "upperL");
+                break;
+			case "letter_upperM":
+                image = this.getImage("letter", "upperM");
+                break;
+			case "letter_upperN":
+                image = this.getImage("letter", "upperN");
+                break;
+			case "letter_upperO":
+                image = this.getImage("letter", "upperO");
+                break;
+			case "letter_upperP":
+                image = this.getImage("letter", "upperP");
+                break;
+			case "letter_upperQ":
+                image = this.getImage("letter", "upperQ");
+                break;
+			case "letter_upperR":
+                image = this.getImage("letter", "upperR");
+                break;
+			case "letter_upperS":
+                image = this.getImage("letter", "upperS");
+                break;
+			case "letter_upperT":
+                image = this.getImage("letter", "upperT");
+                break;
+			case "letter_upperU":
+                image = this.getImage("letter", "upperU");
+                break;
+			case "letter_upperV":
+                image = this.getImage("letter", "upperV");
+                break;
+			case "letter_upperW":
+                image = this.getImage("letter", "upperW");
+                break;
+			case "letter_upperX":
+                image = this.getImage("letter", "upperX");
+                break;
+			case "letter_upperY":
+                image = this.getImage("letter", "upperY");
+                break;
+			case "letter_upperZ":
+                image = this.getImage("letter", "upperZ");
+                break;
+			case "floor_red":
+                image = this.getImage("floor", "red");
+				break;
+			case "floor_green":
+                image = this.getImage("floor", "green");
+                break;
+			case "floor_blue":
+                image = this.getImage("floor", "blue");
+                break;
+			case "marker_home":
+                image = this.getImage("marker", "home");
+                break;
+            default:
+                image = this.getImage("_base", "unknown");
+        }
+		
+		return image;
+    }
+	
+	getImageByStatusName(statusName, animationFrame) {
+		let image;
+		
+		switch(statusName) {
+            case "invincible":
+                image = this.getImage("status", "invincible");
                 break;
             default:
                 image = this.getImage("_base", "unknown");

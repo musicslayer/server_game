@@ -1,3 +1,5 @@
+//#EXCLUDE_REFLECTION
+
 const { workerData } = require("worker_threads");
 
 let T = process.hrtime();

@@ -550,10 +550,9 @@
 				while(tiles.length > 0) {
 					let tile = tiles.shift();
 					
-					while(tile.imageFolders.length > 0) {
-						let imageFolders = tile.imageFolders.shift();
-						let imageFiles = tile.imageFiles.shift();
-						let image = imageCatalog.getImage(imageFolders, imageFiles);
+					while(tile.names.length > 0) {
+						let name = tile.names.shift();
+						let image = imageCatalog.getImageByTileName(name, animationFrame);
 						
 						ctxBuffer.drawImage(image, tile.x * IMAGE_SCALE_FACTOR, tile.y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
@@ -562,7 +561,7 @@
 				// Entities
 				while(entities.length > 0) {
 					let entity = entities.shift();
-					let image = imageCatalog.getImageByClassName(entity.className, animationFrame);
+					let image = imageCatalog.getImageByEntityClassName(entity.className, animationFrame);
 					
 					let x = entity.x + entity.animationShiftX;
 					let y = entity.y + entity.animationShiftY;
@@ -590,7 +589,7 @@
 					}
 					
 					if(entity.statuses.includes("dead") || entity.statuses.includes("invincible")) {
-						let haloImage = imageCatalog.getImage("status", "invincible");
+						let haloImage = imageCatalog.getImageByStatusName("invincible", animationFrame);
 						ctxBuffer.drawImage(haloImage, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					}
 				}
@@ -602,7 +601,7 @@
 				// Inventory
 				let originInventoryX = 17;
 				let originInventoryY = 7;
-				let inventoryImages = getInventoryImages(inventory.items);
+				let inventoryImages = getInventoryImages(inventory.items, animationFrame);
 				while(inventoryImages.length > 0) {
 					let inventoryImage = inventoryImages.shift();
 					ctxBuffer.drawImage(inventoryImage.image, (originInventoryX + inventoryImage.x) * IMAGE_SCALE_FACTOR, (originInventoryY + inventoryImage.y) * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
@@ -613,7 +612,7 @@
 				// Purse
 				let originPurseX = 17;
 				let originPurseY = 0;
-				let purseImage = imageCatalog.getImage("item", "gold"); // TODO Get image by id
+				let purseImage = imageCatalog.getImageByEntityClassName("Gold", animationFrame);
 				ctxBuffer.drawImage(purseImage, originPurseX * IMAGE_SCALE_FACTOR, originPurseY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 				ctxBuffer.drawImage(getGoldTotalImage(purse.goldTotal), (originPurseX + 1) * IMAGE_SCALE_FACTOR, originPurseY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 				
@@ -622,7 +621,7 @@
 					const W = IMAGE_SCALE_FACTOR * 6;
 					let originInfoX = 17;
 					let originInfoY = 1;
-					let infoImage = imageCatalog.getImageByClassName(info.className, 0);
+					let infoImage = imageCatalog.getImageByEntityClassName(info.className, animationFrame);
 					ctxBuffer.drawImage(infoImage, originInfoX * IMAGE_SCALE_FACTOR, originInfoY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
 					ctxBuffer.drawImage(getInfoNameImage(info.name), (originInfoX + 1) * IMAGE_SCALE_FACTOR, originInfoY * IMAGE_SCALE_FACTOR, W, IMAGE_SCALE_FACTOR);
 					ctxBuffer.drawImage(getInfoTextImage(info.text), (originInfoX + 1) * IMAGE_SCALE_FACTOR, originInfoY * IMAGE_SCALE_FACTOR, W, IMAGE_SCALE_FACTOR);
@@ -801,7 +800,7 @@
 				return canvasTemp;
 			}
 			
-			function getInventoryImages(items) {
+			function getInventoryImages(items, animationFrame) {
 				// Returns an array of all the images that should be drawn on this screen.
 				let images = [];
 
@@ -814,7 +813,7 @@
 					let y = ySlots.shift();
 					
 					if(item) {
-						let itemImage = imageCatalog.getImageByClassName(item.className, 0);
+						let itemImage = imageCatalog.getImageByEntityClassName(item.className, animationFrame);
 						//for(let itemImage of itemImages) {
 							images.push({
 								x: x,

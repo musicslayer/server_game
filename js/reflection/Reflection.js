@@ -2,33 +2,44 @@ const fs = require("fs");
 const path = require("path");
 
 const JS_SOURCE_FOLDER = path.resolve("js");
+const PRAGMA_EXCLUDE = "#EXCLUDE_REFLECTION"
 
 class Reflection {
     static classMap = {};
 
     static init() {
-        Reflection.processDirectory(JS_SOURCE_FOLDER, "");
+        Reflection.processDirectory(JS_SOURCE_FOLDER);
     }
 
-    static processDirectory(baseDir, dir) {
-        let folder = path.join(baseDir, dir);
-        let items = fs.readdirSync(folder);
+    static processDirectory(dir) {
+        let items = fs.readdirSync(dir);
         for(const item of items) {
-            const relativePath = path.join(dir, item);
-            const absolutePath = path.join(baseDir, relativePath);
+            const itemPath = path.join(dir, item);
     
-            let stats = fs.lstatSync(absolutePath);
+            let stats = fs.lstatSync(itemPath);
             if(stats.isDirectory()) {
-                Reflection.processDirectory(baseDir, relativePath);
+                Reflection.processDirectory(itemPath);
             }
             else {
-                if(!isExcluded(relativePath)) {
-                    let modulePath = item;
-                    let className = modulePath.substring(0, modulePath.length - 3);
-                    Reflection.classMap[className] = require("../" + relativePath)
-                }
+                let className = item.substring(0, item.length - 3);
+                Reflection.addClassDataFromFile(className, itemPath);
             }
         }
+    }
+
+    static addClassDataFromFile(className, filePath) {
+        if(!isExcluded(filePath)) {
+            Reflection.classMap[className] = require(filePath);
+        }
+    }
+
+    static getClassData(className) {
+        let parts = className.split(".");
+        let classData = Reflection.classMap[parts.shift()];
+        while(parts.length > 0) {
+            classData = classData[parts.shift()];
+        }
+        return classData;
     }
 
     static createInstance(className, ...args) {
@@ -43,29 +54,26 @@ class Reflection {
     }
 
     static isStaticMethod(className, methodName) {
-        let parts = className.split(".");
-        let classData = Reflection.classMap[parts.shift()];
-        while(parts.length > 0) {
-            classData = classData[parts.shift()];
-        }
-
+        let classData = Reflection.getClassData(className);
         return classData && isFunction(classData, methodName);
     }
 
     static callStaticMethod(className, methodName, ...args) {
         let returnValue;
 
-        let parts = className.split(".");
-        let classData = Reflection.classMap[parts.shift()];
-        while(parts.length > 0) {
-            classData = classData[parts.shift()];
-        }
-
+        let classData = Reflection.getClassData(className);
         if(classData && isFunction(classData, methodName)) {
             returnValue = classData[methodName](...args);
         }
 
         return returnValue;
+    }
+
+    static isSubclass(classNameA, classNameB) {
+        // Returns whether classNameA is a subclass of classNameB.
+        let classDataA = Reflection.getClassData(classNameA);
+        let classDataB = Reflection.getClassData(classNameB);
+        return classDataA && classDataB && classDataB.isPrototypeOf(classDataA);
     }
 }
 
@@ -74,11 +82,10 @@ function isFunction(value, fcnName) {
         (typeof value[fcnName] === "function" || (typeof value[fcnName] === "object" && value[fcnName] instanceof Function));
 }
 
-function isExcluded(relative) {
-    // Exclude anything that isn't a class.
-    return relative === "server\\server_tick.js"
-        || relative === "web\\http.js"
-        || relative === "web\\socket_io.js"
+function isExcluded(absolutePath) {
+    // Read the file to look for the exclude pragma.
+    let fileContent = fs.readFileSync(absolutePath, "ascii");
+    return fileContent.includes(PRAGMA_EXCLUDE);
 }
 
 module.exports = Reflection;

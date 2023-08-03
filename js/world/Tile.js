@@ -2,12 +2,10 @@ class Tile {
     x;
     y;
 
-    imageFolders;
-    imageFiles;
+    names;
 
-    constructor(imageFolders, imageFiles) {
-        this.imageFolders = imageFolders;
-        this.imageFiles = imageFiles;
+    constructor(names) {
+        this.names = names;
     }
 
     serialize(writer) {
@@ -15,8 +13,7 @@ class Tile {
             .serialize("!V!", 1)
             .serialize("x", this.x)
             .serialize("y", this.y)
-            .serializeArray("imageFolders", this.imageFolders)
-            .serializeArray("imageFiles", this.imageFiles)
+            .serializeArray("names", this.names)
         .endObject();
     }
 
@@ -29,8 +26,7 @@ class Tile {
             tile = new Tile()
             tile.x = reader.deserialize("x", "Number");
             tile.y = reader.deserialize("y", "Number");
-            tile.imageFolders = reader.deserializeArray("imageFolders", "String");
-            tile.imageFiles = reader.deserializeArray("imageFiles", "String");
+            tile.names = reader.deserializeArray("names", "String");
         }
         else {
             throw("Unknown version number: " + version);

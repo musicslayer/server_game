@@ -465,8 +465,7 @@ class Client {
             tiles.push({
                 x: tile.x,
                 y: tile.y,
-                imageFolders: tile.imageFolders,
-                imageFiles: tile.imageFiles
+                names: tile.names
             });
         }
 
@@ -475,8 +474,7 @@ class Client {
             tiles.push({
                 x: this.player.homeX,
                 y: this.player.homeY,
-                imageFolders: ["marker"],
-                imageFiles: ["home"]
+                names: ["marker_home"]
             });
         }
 

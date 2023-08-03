@@ -1,9 +1,9 @@
-4,0|letter,upperT|
-5,0|letter,upperU|
-6,0|letter,upperT|
-7,0|letter,upperO|
-8,0|letter,upperR|
-9,0|letter,upperI|
-10,0|letter,upperA|
-11,0|letter,upperL|
+4,0|letter_upperT|
+5,0|letter_upperU|
+6,0|letter_upperT|
+7,0|letter_upperO|
+8,0|letter_upperR|
+9,0|letter_upperI|
+10,0|letter_upperA|
+11,0|letter_upperL|
 7,3||StartPortal,1

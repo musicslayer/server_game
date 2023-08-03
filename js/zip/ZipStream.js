@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 const stream = require("stream");
 const zlib = require("zlib");
 
@@ -12,8 +13,17 @@ class ZipStream {
         this.outputStream = fs.createWriteStream(zipFilePath);
     }
 
-    async addFile(name, absolute, time) {
+    async addFile(filePath) {
         // Add a single file to the zip file.
+
+        // For the name, use the relative path.
+        let fileParts = filePath.split(path.sep);
+        let name = path.join(...fileParts.slice(-2));
+
+        // For the time, use the mtime.
+        let stats = fs.lstatSync(filePath);
+        let time = stats.mtime;
+
         let fileData = {
             name: name,
             time: time,
@@ -33,7 +43,7 @@ class ZipStream {
 
         // Write data from this file into the zip file.
         this._writeLocalFileHeader(fileData);
-        await this.createZipPipeline(absolute, fileData);
+        await this.createZipPipeline(filePath, fileData);
         this._writeDataDescriptor(fileData);
     }
 
@@ -183,11 +193,11 @@ class ZipStream {
         this.outputStream.end();
     }
 
-    createZipPipeline(absolute, fileData) {
+    createZipPipeline(filePath, fileData) {
         // Create the stream pipeline that will stream data from the file into a zlib compressor and then into the zip file.
 
         // Read file.
-        let inputStream = fs.createReadStream(absolute);
+        let inputStream = fs.createReadStream(filePath);
         
         // Intercept uncompressed data.
         let contentPassThroughStream = new stream.PassThrough();

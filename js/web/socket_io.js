@@ -1,9 +1,12 @@
+//#EXCLUDE_REFLECTION
+
 const IO = require("socket.io");
 
 const Account = require("../account/Account.js");
 const Character = require("../account/Character.js");
 const Client = require("../client/Client.js");
 const Entity = require("../entity/Entity.js");
+const Reflection = require("../reflection/Reflection.js");
 const ServerTask = require("../server/ServerTask.js");
 
 // Used to limit the amount of socket connections that an IP can form at once.
@@ -114,9 +117,8 @@ function attachAppListeners(socket, appState) {
 				callback({"isSuccess": false});
 				return;
 			}
-			
-			// TODO Should these be in a function somewhere...? Reflection.isSubclass()?
-			if(!["PlayerMage", "PlayerWarrior"].includes(playerClass)) {
+
+			if(!Reflection.isSubclass(playerClass, "Player")) {
 				callback({"isSuccess": false});
 				return;
 			}

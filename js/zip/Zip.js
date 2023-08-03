@@ -12,23 +12,21 @@ class Zip {
 
         // Recursively process the directory, adding any files found along the way to the zip file.
         let zipStream = new ZipStream(zipFilePath);
-        await Zip.processDirectory(zipStream, srcFolder, "");
+        await Zip.processDirectory(zipStream, srcFolder);
         zipStream.finish();
     }
 
-    static async processDirectory(zipStream, baseDir, dir) {
-        let folder = path.join(baseDir, dir);
-        let items = fs.readdirSync(folder);
+    static async processDirectory(zipStream, dir) {
+        let items = fs.readdirSync(dir);
         for(const item of items) {
-            const relativePath = path.join(dir, item);
-            const absolutePath = path.join(baseDir, relativePath);
+            const itemPath = path.join(dir, item);
     
-            let stats = fs.lstatSync(absolutePath);
+            let stats = fs.lstatSync(itemPath);
             if(stats.isDirectory()) {
-                await Zip.processDirectory(zipStream, baseDir, relativePath);
+                await Zip.processDirectory(zipStream, itemPath);
             }
             else {
-                await zipStream.addFile(relativePath, absolutePath, stats.mtime);
+                await zipStream.addFile(itemPath);
             }
         }
     }
