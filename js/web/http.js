@@ -13,7 +13,7 @@ const SERVER_PORT = 80;
 const SERVER_REQUEST_TIMEOUT = 30000; // milliseconds
 
 function createHTTPServer() {
-	const server = http.createServer(async (req, res) => {
+	let server = http.createServer(async (req, res) => {
 		res.isEnded = false;
 
 		try {
@@ -34,7 +34,7 @@ function createHTTPServer() {
 			}
 
 			// Serve pages.
-			const pathname = url.parse(req.url, true).pathname;
+			let pathname = url.parse(req.url, true).pathname;
 			//console.log("HTTP Serve Pathname " + pathname);
 
 			switch(pathname) {

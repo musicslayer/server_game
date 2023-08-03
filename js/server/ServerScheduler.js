@@ -26,7 +26,7 @@ class ServerScheduler {
 
     initServerTick() {
         // Start a timer thread that will alert the main thread after every tick.
-        const shared = new Int32Array(new SharedArrayBuffer(4));
+        let shared = new Int32Array(new SharedArrayBuffer(4));
         this.doWork(shared);
     
         this.worker = new Worker(WORKER_FILE_PATH, {

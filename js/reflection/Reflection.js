@@ -13,8 +13,8 @@ class Reflection {
 
     static processDirectory(dir) {
         let items = fs.readdirSync(dir);
-        for(const item of items) {
-            const itemPath = path.join(dir, item);
+        for(let item of items) {
+            let itemPath = path.join(dir, item);
     
             let stats = fs.lstatSync(itemPath);
             if(stats.isDirectory()) {

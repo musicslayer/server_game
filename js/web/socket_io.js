@@ -36,7 +36,7 @@ function createSocketIOServer(httpServer, appState) {
 		numDevsMap.clear();
 	}, 1000);
 
-	const io = IO(httpServer);
+	let io = IO(httpServer);
 
 	io.on("connection", (socket) => {
 		let ip = socket.handshake.address;

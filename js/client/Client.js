@@ -461,7 +461,7 @@ class Client {
     getClientData() {
         // Tiles
         let tiles = [];
-        for(const tile of this.player.screen.tiles) {
+        for(let tile of this.player.screen.tiles) {
             tiles.push({
                 x: tile.x,
                 y: tile.y,
@@ -480,7 +480,7 @@ class Client {
 
         // Entities
         let entities = [];
-        for(const entity of this.player.screen.entities) {
+        for(let entity of this.player.screen.entities) {
             let statuses = [];
             if(entity.isDead) {
                 statuses.push("dead");

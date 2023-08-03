@@ -252,7 +252,7 @@ class DataReader {
         while(this.s.length > 0 || null !== (chunk = this.readData())) {
             this.s += chunk;
 
-            const iterator = this.s[Symbol.iterator]();
+            let iterator = this.s[Symbol.iterator]();
             for(let theChar = iterator.next(); !theChar.done; theChar = iterator.next()) {
                 numCharsRead++;
                 let theCharValue = theChar.value;
