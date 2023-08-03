@@ -26,6 +26,14 @@ class Util {
     
         return shiftArray;
     }
+
+    static getStringOrNumber(value) {
+        let snValue = Number(value)
+        if(isNaN(snValue)) {
+            snValue = value;
+        }
+        return snValue;
+    }
 }
 
 module.exports = Util;

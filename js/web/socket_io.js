@@ -115,18 +115,13 @@ function attachAppListeners(socket, appState) {
 				return;
 			}
 			
+			// TODO Should these be in a function somewhere...?
 			if(!["PlayerMage", "PlayerWarrior"].includes(playerClass)) {
 				callback({"isSuccess": false});
 				return;
 			}
 
-			// All new players will have their home location set to a special tutorial map.
 			let player = Entity.createInstance(playerClass, 1);
-			player.mapName = player.homeMapName = "city";
-			player.screenName = player.homeScreenName = "field1";
-			player.x = player.homeX = 0;
-			player.y = player.homeY = 0;
-
 			let character = new Character(player);
 			account.addCharacter(playerName, character);
 
@@ -179,11 +174,23 @@ function attachAppListeners(socket, appState) {
 
 			let player = character.player;
 
-			let map = world.getMapByName(player.mapName);
-			let screen = map?.getScreenByName(player.screenName);
+			let screen;
+			if(player.mapName === undefined || player.screenName === undefined) {
+				// On the first login use a tutorial screen.
+				let tutorialWorld = world.universe.getWorldByID("tutorial");
+				entrance = tutorialWorld.createEntrance(world);
+
+				screen = entrance.screen;
+				player.x = entrance.x;
+				player.y = entrance.y;
+			}
+			else {
+				let map = world.getMapByName(player.mapName);
+				screen = map?.getScreenByName(player.screenName);
+			}
 
 			if(!screen) {
-				// Use the fallback map.
+				// Use a fallback screen.
 				let fallbackWorld = world.universe.getWorldByID("fallback");
 				let entrance = fallbackWorld.createEntrance(world);
 

@@ -2,6 +2,7 @@ const path = require("path");
 
 const GameMap = require("../GameMap.js");
 const World = require("../World.js");
+const Util = require("../../util/Util.js");
 
 const NAME_PREFIX = "_void_";
 
@@ -20,8 +21,14 @@ class VoidWorld extends World {
     }
 
     getMapByID(id) {
-        // Always return a dynamically generated "void" map.
-        return this.createVoidMap(id);
+        // Return a dynamically generated "void" map if the id is a number.
+        let map;
+
+        if(Util.getClassName(id) === "Number") {
+            map = this.createVoidMap(id);
+        }
+
+        return map;
     }
 
     createVoidMap(id) {

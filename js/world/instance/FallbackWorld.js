@@ -8,7 +8,7 @@ const ID_VALUE = "fallback";
 
 class FallbackWorld extends World {
     createEntrance(world) {
-        let fallbackMap = this.getMapByID("fallback");
+        let fallbackMap = this.getMapByID(ID_VALUE);
         fallbackMap.world.removeMap(fallbackMap);
         fallbackMap.world = world;
         fallbackMap.world.addMap(fallbackMap);

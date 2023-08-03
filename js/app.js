@@ -4,7 +4,8 @@ const AppState = require("./AppState.js");
 
 // TODO Merge all the XWorld, XMap, and XScreen instance classes. Do we need DynamicMap?
 
-// TODO Create tutorial screen (should it be dynamic?)
+// TODO Create tutorial screen (should it be dynamic?).
+// --- It needs to have real content.
 
 // TODO TileFolders and TileImages. Should it be category and name?
 

@@ -6,6 +6,7 @@ const ServerRNG = require("./ServerRNG.js");
 const ServerScheduler = require("./ServerScheduler.js");
 const ServerTask = require("./ServerTask.js");
 const Universe = require("../world/Universe.js");
+const Util = require("../util/Util.js");
 
 const COMMA = ",";
 const CRLF = "\r\n";
@@ -36,7 +37,7 @@ class Server {
 
             // First part is the universe id
             let idPart = parts.shift().split(COMMA);
-            let id = Number(idPart.shift());
+            let id = Util.getStringOrNumber(idPart.shift());
 
             // Second part is the universe class name
             let className = parts.shift();
@@ -114,7 +115,7 @@ class Server {
             let uid = reader.deserialize("uid", "Number");
             server = new Server(uid);
 
-            server.id = reader.deserialize("id", "Number");
+            server.id = Util.getStringOrNumber(reader.deserialize("id", "String"));
             server.name = reader.deserialize("name", "String");
             server.universe = reader.deserialize("universe", "Universe");
             server.serverEntropy = reader.deserialize("serverEntropy", "ServerEntropy");

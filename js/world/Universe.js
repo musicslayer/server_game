@@ -33,14 +33,7 @@ class Universe {
 
             // First part is the world id
             let idPart = parts.shift().split(COMMA);
-            let id_string = idPart.shift();
-            let id;
-            if(id_string === "death" || id_string === "fallback" || id_string === "void") {
-                id = id_string;
-            }
-            else {
-                id = Number(id_string);
-            }
+            let id = Util.getStringOrNumber(idPart.shift());
 
             // Second part is the world class name
             let className = parts.shift();
@@ -94,7 +87,7 @@ class Universe {
         let version = reader.deserialize("!V!", "String");
         if(version === "1") {
             universe = new Universe();
-            universe.id = reader.deserialize("id", "Number");
+            universe.id = Util.getStringOrNumber(reader.deserialize("id", "String"));
             universe.name = reader.deserialize("name", "String");
             let worlds = reader.deserializeArray("worlds", "World");
 

@@ -36,7 +36,7 @@ class World {
 
             // First part is the map id
             let idPart = parts.shift().split(COMMA);
-            let id = Number(idPart.shift());
+            let id = Util.getStringOrNumber(idPart.shift());
 
             // Second part is the map class name
             let className = parts.shift();
@@ -74,7 +74,8 @@ class World {
         // If the map does not exist in this world, try dynamically generating a map.
         // It's possible that the map is still undefined. This occurs if the map name used to exist but was later removed.
         if(!map) {
-            for(let dynamicWorldName of ["death", "fallback", "void"]) {
+            // TODO These arrays should be stored somewhere?
+            for(let dynamicWorldName of ["death", "fallback", "tutorial", "void"]) {
                 let dynamicWorld = this.universe.getWorldByID(dynamicWorldName);
                 map = dynamicWorld.getMapByName(name);
                 if(!map) {
@@ -98,7 +99,8 @@ class World {
         // If the map does not exist in this world, dynamically generate a map.
         // Note that at least one dynamic world will be able to create a map.
         if(!map) {
-            for(let dynamicWorldName of ["death", "fallback", "void"]) {
+            // TODO These arrays should be stored somewhere?
+            for(let dynamicWorldName of ["death", "fallback", "tutorial", "void"]) {
                 let dynamicWorld = this.universe.getWorldByID(dynamicWorldName);
                 map = dynamicWorld.getMapByID(id);
                 if(!map) {
@@ -152,20 +154,10 @@ class World {
             let className = reader.deserialize("className", "String");
             world = Reflection.createInstance(className);
             
-            let id_string = reader.deserialize("id", "String");
+            world.id = Util.getStringOrNumber(reader.deserialize("id", "String"));
             world.name = reader.deserialize("name", "String");
             let maps = reader.deserializeArray("maps", "GameMap");
             world.worldFolder = reader.deserialize("worldFolder", "String");
-
-            let id;
-            if(id_string === "death" || id_string === "fallback" || id_string === "void") {
-                id = id_string;
-            }
-            else {
-                id = Number(id_string);
-            }
-
-            world.id = id;
 
             for(let map of maps) {
                 map.world = world;

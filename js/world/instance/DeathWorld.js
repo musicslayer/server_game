@@ -8,7 +8,7 @@ const ID_VALUE = "death";
 
 class DeathWorld extends World {
     createEntrance(world) {
-        let deathMap = this.getMapByID("death");
+        let deathMap = this.getMapByID(ID_VALUE);
         deathMap.world.removeMap(deathMap);
         deathMap.world = world;
         deathMap.world.addMap(deathMap);

@@ -100,6 +100,9 @@ class ImageCatalog {
             case "RevivePortal":
                 image = this.getImage("portal", "teleporter");
                 break;
+			case "StartPortal":
+                image = this.getImage("portal", "teleporter");
+                break;
             case "Teleporter":
                 image = this.getImage("portal", "teleporter");
                 break;

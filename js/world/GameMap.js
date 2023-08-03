@@ -157,20 +157,10 @@ class GameMap {
             let className = reader.deserialize("className", "String");
             map = Reflection.createInstance(className);
 
-            let id_string = reader.deserialize("id", "String");
+            map.id = Util.getStringOrNumber(reader.deserialize("id", "String"));
             map.name = reader.deserialize("name", "String");
             let screens = reader.deserializeArray("screens", "Screen");
             map.mapFolder = reader.deserialize("mapFolder", "String");
-
-            let id;
-            if(id_string === "death" || id_string === "fallback" || id_string === "void") {
-                id = id_string;
-            }
-            else {
-                id = Number(id_string);
-            }
-
-            map.id = id;
 
             for(let screen of screens) {
                 screen.map = map;
