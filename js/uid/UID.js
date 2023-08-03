@@ -5,32 +5,36 @@ class UID {
 
     uid;
 
-    // TODO We need an add method? Clean this all up in general.
-    static remove(name, obj) {
-        let map = UID.uidMap.get(name);
-        map.delete(obj.uid);
-    }
-
     constructor(uid) {
-        let key = this.getUIDMapName();
+        let name = this.getUIDMapName();
 
-        let map = UID.uidMap.get(key);
+        let map = UID.uidMap.get(name);
         if(map === undefined) {
             map = new Map();
-            UID.currentUIDMap.set(key, 0);
+            UID.uidMap.set(name, map);
+            UID.currentUIDMap.set(name, 0);
         }
 
-        if(uid !== undefined) {
-            this.uid = uid;
+        if(uid === undefined) {
+            let currentUID = UID.currentUIDMap.get(name);
+            this.uid = currentUID;
+            UID.currentUIDMap.set(name, currentUID + 1);
         }
         else {
-            let currentUID = UID.currentUIDMap.get(key);
-            this.uid = currentUID;
-            UID.currentUIDMap.set(key, currentUID + 1);
+            this.uid = uid;
         }
 
+        this.add();
+    }
+
+    add() {
+        let map = UID.uidMap.get(this.getUIDMapName());
         map.set(this.uid, this);
-        UID.uidMap.set(key, map);
+    }
+
+    remove() {
+        let map = UID.uidMap.get(this.getUIDMapName());
+        map.delete(this.uid);
     }
 
     reference(writer) {

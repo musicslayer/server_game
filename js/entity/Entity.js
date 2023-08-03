@@ -147,7 +147,7 @@ class Entity extends UID {
         // Non-players will never be used again so remove them from the map.
         // Players are still stored in the Character objects so we need to maintain their entry in the map.
         if(!this.isPlayer) {
-            UID.remove("Entity", this);
+            this.remove();
         }
     }
 
