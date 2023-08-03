@@ -3,20 +3,21 @@ const path = require("path");
 const GameMap = require("../GameMap.js");
 const DynamicWorld = require("./DynamicWorld.js");
 
-const NAME_PREFIX = "_death_";
-const ID_VALUE = "death";
-
 class DeathWorld extends DynamicWorld {
     getNamePrefix() {
-        return NAME_PREFIX;
+        return "_death_";
+    }
+
+    getIDValue() {
+        return "death";
     }
 
     isIDAllowed(id) {
-        return id === ID_VALUE;
+        return id === this.getIDValue();
     }
 
     createEntrance(world) {
-        let deathMap = this.getMapByID(ID_VALUE);
+        let deathMap = this.getMapByID(this.getIDValue());
         deathMap.world.removeMap(deathMap);
         deathMap.world = world;
         deathMap.world.addMap(deathMap);
@@ -35,7 +36,7 @@ class DeathWorld extends DynamicWorld {
 
     createDynamicMap(id) {
         let deathMap = GameMap.loadMapFromFolder(this, "DeathMap", path.join(this.worldFolder, "_death"))
-        deathMap.name = NAME_PREFIX + id;
+        deathMap.name = this.getNamePrefix() + id;
         deathMap.id = id;
 
         this.addMap(deathMap);

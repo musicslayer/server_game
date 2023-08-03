@@ -3,20 +3,21 @@ const path = require("path");
 const GameMap = require("../GameMap.js");
 const DynamicWorld = require("./DynamicWorld.js");
 
-const NAME_PREFIX = "_tutorial_";
-const ID_VALUE = "tutorial";
-
 class TutorialWorld extends DynamicWorld {
     getNamePrefix() {
-        return NAME_PREFIX;
+        return "_tutorial_";
+    }
+
+    getIDValue() {
+        return "tutorial";
     }
 
     isIDAllowed(id) {
-        return id === ID_VALUE;
+        return id === this.getIDValue();
     }
 
     createEntrance(world) {
-        let tutorialMap = this.getMapByID(ID_VALUE);
+        let tutorialMap = this.getMapByID(this.getIDValue());
         tutorialMap.world.removeMap(tutorialMap);
         tutorialMap.world = world;
         tutorialMap.world.addMap(tutorialMap);
@@ -35,7 +36,7 @@ class TutorialWorld extends DynamicWorld {
 
     createDynamicMap(id) {
         let tutorialMap = GameMap.loadMapFromFolder(this, "TutorialMap", path.join(this.worldFolder, "_tutorial"))
-        tutorialMap.name = NAME_PREFIX + id;
+        tutorialMap.name = this.getNamePrefix() + id;
         tutorialMap.id = id;
 
         this.addMap(tutorialMap);

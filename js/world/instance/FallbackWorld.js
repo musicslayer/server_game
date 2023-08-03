@@ -3,20 +3,21 @@ const path = require("path");
 const GameMap = require("../GameMap.js");
 const DynamicWorld = require("./DynamicWorld.js");
 
-const NAME_PREFIX = "_fallback_";
-const ID_VALUE = "fallback";
-
 class FallbackWorld extends DynamicWorld {
     getNamePrefix() {
-        return NAME_PREFIX;
+        return "_fallback_";
+    }
+
+    getIDValue() {
+        return "fallback";
     }
 
     isIDAllowed(id) {
-        return id === ID_VALUE;
+        return id === this.getIDValue();
     }
 
     createEntrance(world) {
-        let fallbackMap = this.getMapByID(ID_VALUE);
+        let fallbackMap = this.getMapByID(this.getIDValue());
         fallbackMap.world.removeMap(fallbackMap);
         fallbackMap.world = world;
         fallbackMap.world.addMap(fallbackMap);
@@ -35,7 +36,7 @@ class FallbackWorld extends DynamicWorld {
 
     createDynamicMap(id) {
         let fallbackMap = GameMap.loadMapFromFolder(this, "FallbackMap", path.join(this.worldFolder, "_fallback"))
-        fallbackMap.name = NAME_PREFIX + id;
+        fallbackMap.name = this.getNamePrefix() + id;
         fallbackMap.id = id;
 
         this.addMap(fallbackMap);

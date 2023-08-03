@@ -4,11 +4,9 @@ const GameMap = require("../GameMap.js");
 const DynamicWorld = require("./DynamicWorld.js");
 const Util = require("../../util/Util.js");
 
-const NAME_PREFIX = "_void_";
-
 class VoidWorld extends DynamicWorld {
     getNamePrefix() {
-        return NAME_PREFIX;
+        return "_void_";
     }
 
     isIDAllowed(id) {
@@ -17,7 +15,7 @@ class VoidWorld extends DynamicWorld {
 
     createDynamicMap(id) {
         let voidMap = GameMap.loadMapFromFolder(this, "VoidMap", path.join(this.worldFolder, "_void"))
-        voidMap.name = NAME_PREFIX + id;
+        voidMap.name = this.getNamePrefix() + id;
         voidMap.id = id;
 
         this.addMap(voidMap);
