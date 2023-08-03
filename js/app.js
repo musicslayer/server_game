@@ -2,8 +2,6 @@ const AppState = require("./AppState.js");
 
 // TODO Performance, memory leaks, etc... (closing program takes a long time)
 
-// TODO Merge all the XWorld, XMap, and XScreen instance classes. Do we need DynamicMap?
-
 // TODO TileFolders and TileImages. Should it be category and name?
 
 

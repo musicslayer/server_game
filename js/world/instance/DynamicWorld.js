@@ -1,4 +1,4 @@
-const World = require("./World.js");
+const World = require("../World.js");
 const Util = require("../../util/Util.js");
 
 class DynamicWorld extends World {
