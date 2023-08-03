@@ -1,6 +1,7 @@
 const Screen = require("../Screen.js");
 
 class InstanceScreen extends Screen {
+    // An instance screen will be removed if there are no more players left on it.
     registeredPlayers = [];
 
     registerEntity(entity) {
@@ -10,7 +11,6 @@ class InstanceScreen extends Screen {
     }
 
     deregisterEntity(entity) {
-        // When a player leaves and the instance has no more players left, the instance can be removed.
         if(entity.isPlayer) {
             let index = this.registeredPlayers.indexOf(entity);
             this.registeredPlayers.splice(index, 1);

@@ -7,6 +7,14 @@ const NAME_PREFIX = "_death_";
 const ID_VALUE = "death";
 
 class DeathWorld extends DynamicWorld {
+    getNamePrefix() {
+        return NAME_PREFIX;
+    }
+
+    isIDAllowed(id) {
+        return id === ID_VALUE;
+    }
+
     createEntrance(world) {
         let deathMap = this.getMapByID(ID_VALUE);
         deathMap.world.removeMap(deathMap);
@@ -25,31 +33,7 @@ class DeathWorld extends DynamicWorld {
         entity.doTeleport(entrance.screen, entrance.x, entrance.y);
     }
 
-    getMapByName(name) {
-        // Return a dynamically generated "death" map if the name starts with the expected prefix.
-        let map;
-
-        if(name.startsWith(NAME_PREFIX)) {
-            // ID will always be a string.
-            let id = name.slice(NAME_PREFIX.length);
-            map = this.createDeathMap(id);
-        }
-
-        return map;
-    }
-
-    getMapByID(id) {
-        // Return a dynamically generated "death" map if the id is the expected value.
-        let map;
-
-        if(id === ID_VALUE) {
-            map = this.createDeathMap(id);
-        }
-
-        return map;
-    }
-
-    createDeathMap(id) {
+    createDynamicMap(id) {
         let deathMap = GameMap.loadMapFromFolder(this, "DeathMap", path.join(this.worldFolder, "_death"))
         deathMap.name = NAME_PREFIX + id;
         deathMap.id = id;

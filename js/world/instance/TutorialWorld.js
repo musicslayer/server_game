@@ -7,6 +7,14 @@ const NAME_PREFIX = "_tutorial_";
 const ID_VALUE = "tutorial";
 
 class TutorialWorld extends DynamicWorld {
+    getNamePrefix() {
+        return NAME_PREFIX;
+    }
+
+    isIDAllowed(id) {
+        return id === ID_VALUE;
+    }
+
     createEntrance(world) {
         let tutorialMap = this.getMapByID(ID_VALUE);
         tutorialMap.world.removeMap(tutorialMap);
@@ -25,31 +33,7 @@ class TutorialWorld extends DynamicWorld {
         entity.doTeleport(entrance.screen, entrance.x, entrance.y);
     }
 
-    getMapByName(name) {
-        // Return a dynamically generated "tutorial" map if the name starts with the expected prefix.
-        let map;
-
-        if(name.startsWith(NAME_PREFIX)) {
-            // ID will always be a string.
-            let id = name.slice(NAME_PREFIX.length);
-            map = this.createTutorialMap(id);
-        }
-
-        return map;
-    }
-
-    getMapByID(id) {
-        // Return a dynamically generated "tutorial" map if the id is the expected value.
-        let map;
-
-        if(id === ID_VALUE) {
-            map = this.createTutorialMap(id);
-        }
-
-        return map;
-    }
-
-    createTutorialMap(id) {
+    createDynamicMap(id) {
         let tutorialMap = GameMap.loadMapFromFolder(this, "TutorialMap", path.join(this.worldFolder, "_tutorial"))
         tutorialMap.name = NAME_PREFIX + id;
         tutorialMap.id = id;

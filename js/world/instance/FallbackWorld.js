@@ -7,6 +7,14 @@ const NAME_PREFIX = "_fallback_";
 const ID_VALUE = "fallback";
 
 class FallbackWorld extends DynamicWorld {
+    getNamePrefix() {
+        return NAME_PREFIX;
+    }
+
+    isIDAllowed(id) {
+        return id === ID_VALUE;
+    }
+
     createEntrance(world) {
         let fallbackMap = this.getMapByID(ID_VALUE);
         fallbackMap.world.removeMap(fallbackMap);
@@ -25,31 +33,7 @@ class FallbackWorld extends DynamicWorld {
         entity.doTeleport(entrance.screen, entrance.x, entrance.y);
     }
 
-    getMapByName(name) {
-        // Return a dynamically generated "fallback" map if the name starts with the expected prefix.
-        let map;
-
-        if(name.startsWith(NAME_PREFIX)) {
-            // ID will always be a string.
-            let id = name.slice(NAME_PREFIX.length);
-            map = this.createFallbackMap(id);
-        }
-
-        return map;
-    }
-
-    getMapByID(id) {
-        // Return a dynamically generated "fallback" map if the id is the expected value.
-        let map;
-
-        if(id === ID_VALUE) {
-            map = this.createFallbackMap(id);
-        }
-
-        return map;
-    }
-
-    createFallbackMap(id) {
+    createDynamicMap(id) {
         let fallbackMap = GameMap.loadMapFromFolder(this, "FallbackMap", path.join(this.worldFolder, "_fallback"))
         fallbackMap.name = NAME_PREFIX + id;
         fallbackMap.id = id;

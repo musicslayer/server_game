@@ -1,11 +1,11 @@
 const path = require("path");
 
 const Screen = require("../Screen.js");
-const InstanceMap = require("./InstanceMap.js");
+const DynamicMap = require("./DynamicMap.js");
 
 const NAME_PREFIX = "_tutorial_";
 
-class TutorialMap extends InstanceMap {
+class TutorialMap extends DynamicMap {
     getScreenByName(name) {
         // Return a dynamically generated "tutorial" screen if the name starts with the expected prefix.
         let tutorialScreen;
