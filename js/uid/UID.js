@@ -1,3 +1,7 @@
+const DataBridge = require("../data/DataBridge.js");
+
+// A list of all of the names of maps this class will manage.
+// Note that the name of a map must be a base class of all the objects stored in it.
 const MAP_NAMES = ["Entity"]
 
 class UID {
@@ -11,6 +15,20 @@ class UID {
         for(let name of MAP_NAMES) {
             UID.uidMap.set(name, new Map());
             UID.currentUIDMap.set(name, 0);
+        }
+    }
+
+    static serialize(fileBase) {
+        DataBridge.serializeMap(fileBase + "_currentUIDMap.txt", UID.currentUIDMap);
+        for(let name of MAP_NAMES) {
+            DataBridge.serializeMap(fileBase + "_map_" + name + ".txt", UID.uidMap.get(name));
+        }
+    }
+
+    static deserialize(fileBase) {
+        UID.currentUIDMap = DataBridge.deserializeMap(fileBase + "_currentUIDMap.txt", "String", "Number");
+        for(let name of MAP_NAMES) {
+            UID.uidMap.set(name, DataBridge.deserializeMap(fileBase + "_map_" + name + ".txt", "Number", name))
         }
     }
 

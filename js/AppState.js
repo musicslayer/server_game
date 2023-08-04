@@ -17,6 +17,7 @@ const ZIP_SOURCE_FOLDER = path.resolve(path.join("assets", "image"));
 const ZIP_FILE_PATH = path.resolve(path.join("assets", "image.zip"));
 
 class AppState {
+    // TODO uidManager?
     accountManager;
     clientManager;
     serverManager;
@@ -67,11 +68,9 @@ class AppState {
 
         fs.mkdirSync(this.lastSaveFolder);
 
-        let currentUIDFile = path.join(this.lastSaveFolder, "currentUID.txt");
-        DataBridge.serializeMap(currentUIDFile, UID.currentUIDMap);
-
-        let entityFile = path.join(this.lastSaveFolder, "entity.txt");
-        DataBridge.serializeMap(entityFile, UID.uidMap.get("Entity"));
+        // Save data to the files.
+        let uidFileBase = path.join(this.lastSaveFolder, "uid");
+        UID.serialize(uidFileBase);
 
         let accountFile = path.join(this.lastSaveFolder, "account.txt");
         DataBridge.serialize(accountFile, this.accountManager);
@@ -91,11 +90,8 @@ class AppState {
         this.serverManager.endServerTicks();
 
         // Load data from the files.
-        let currentUIDFile = path.join(this.lastSaveFolder, "currentUID.txt");
-        UID.currentUIDMap = DataBridge.deserializeMap(currentUIDFile, "String", "Number");
-
-        let entityFile = path.join(this.lastSaveFolder, "entity.txt");
-        UID.uidMap.set("Entity", DataBridge.deserializeMap(entityFile, "Number", "Entity"))
+        let uidFileBase = path.join(this.lastSaveFolder, "uid");
+        UID.deserialize(uidFileBase);
 
         let accountFile = path.join(this.lastSaveFolder, "account.txt");
         this.accountManager = DataBridge.deserialize(accountFile, "AccountManager");
@@ -125,7 +121,8 @@ class AppState {
                 newPlayer.client = client;
             }
             else {
-                // The player this client pointed to no longer exists and thus cannot be updated. Just disconnect the client now.
+                // The player this client was pointing to before the load did not exist at the time the state was saved.
+                // Since the player cannot be updated, just disconnect the client now.
                 client.socket.disconnect(true);
             }
         }
