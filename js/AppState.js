@@ -30,8 +30,9 @@ class AppState {
         // Recreate image zip file.
         await Zip.createZipFileFromFolder(ZIP_FILE_PATH, ZIP_SOURCE_FOLDER);
 
-        // Initialize reflection class map.
+        // Initialize reflection and uid maps.
         Reflection.init();
+        UID.init();
 
         // Create initial managers.
         this.accountManager = AccountManager.createInitialAccountManager();
