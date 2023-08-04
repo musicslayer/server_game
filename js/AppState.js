@@ -17,7 +17,6 @@ const ZIP_SOURCE_FOLDER = path.resolve(path.join("assets", "image"));
 const ZIP_FILE_PATH = path.resolve(path.join("assets", "image.zip"));
 
 class AppState {
-    // TODO uidManager?
     accountManager;
     clientManager;
     serverManager;
