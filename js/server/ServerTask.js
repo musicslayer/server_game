@@ -1,3 +1,4 @@
+const ServerFunction = require("./ServerFunction.js");
 const Util = require("../util/Util.js");
 const UID = require("../uid/UID.js");
 
@@ -9,23 +10,23 @@ class ServerTask {
     isCancelled = false;
     count;
 
-    fcnString;
+    fcnName;
     args;
 
-    constructor(fcn, ...args) {
-        this.fcnString = fcn.toString();
+    constructor(fcnName, ...args) {
+        this.fcnName = fcnName;
         this.args = args;
     }
 
-    static createWrapperTask(fcn, ...args) {
+    static createWrapperTask(fcnName, ...args) {
         // Wrapper tasks are used internally and are processed differently than regular tasks.
-        let serverTask = new ServerTask(fcn, ...args);
+        let serverTask = new ServerTask(fcnName, ...args);
         serverTask.isWrapperTask = true;
         return serverTask;
     }
 
     execute() {
-        let fcn = new Function('return ' + this.fcnString)();
+        let fcn = ServerFunction.getFunction(this.fcnName);
         if(this.isWrapperTask) {
             fcn(this, ...this.args);
         }
@@ -41,7 +42,7 @@ class ServerTask {
             .serialize("isWrapperTask", this.isWrapperTask)
             .serialize("isCancelled", this.isCancelled)
             .serialize("count", this.count)
-            .serialize("fcnString", this.fcnString)
+            .serialize("fcnName", this.fcnName)
             .serialize("numArgs", this.args.length);
 
         for(let i = 0; i < this.args.length; i++) {
@@ -72,7 +73,7 @@ class ServerTask {
             let isWrapperTask = reader.deserialize("isWrapperTask", "Boolean");
             let isCancelled = reader.deserialize("isCancelled", "Boolean");
             let count = reader.deserialize("count", "Number");
-            let fcnString = reader.deserialize("fcnString", "String");
+            let fcnName = reader.deserialize("fcnName", "String");
             let numArgs = reader.deserialize("numArgs", "Number");
 
             let args = [];
@@ -91,7 +92,7 @@ class ServerTask {
                 args.push(arg);
             }
 
-            serverTask = new ServerTask(fcnString, ...args);
+            serverTask = new ServerTask(fcnName, ...args);
             serverTask.isWrapperTask = isWrapperTask;
             serverTask.isCancelled = isCancelled;
             serverTask.count = count;

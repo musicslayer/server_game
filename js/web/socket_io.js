@@ -36,7 +36,11 @@ function createSocketIOServer(httpServer, appState) {
 		numDevsMap.clear();
 	}, 1000);
 
-	let io = IO(httpServer);
+	let io = IO(httpServer, {
+		// Use these options to only allow websockets and avoid memory leaks.
+		allowUpgrades: false,
+		transports: ["websocket"]
+	});
 
 	io.on("connection", (socket) => {
 		let ip = socket.handshake.address;
@@ -202,11 +206,8 @@ function attachAppListeners(socket, appState) {
 			}
 
 			player.setScreen(screen);
-
-			let serverTask = new ServerTask((player) => {
-				player.doSpawn();
-			}, player);
-	
+			
+			let serverTask = new ServerTask("spawn", player);
 			player.getServer().scheduleTask(undefined, 0, 1, serverTask);
 
 			let client = new Client(playerName, player);
@@ -224,10 +225,7 @@ function attachAppListeners(socket, appState) {
 				// It's possible that a client is present but then a state is loaded where the player was despawned or did not exist.
 				if(client.player) {
 					if(client.player.isSpawned) {
-						let serverTask = new ServerTask((player) => {
-							player.doDespawn();
-						}, client.player);
-
+						let serverTask = new ServerTask("despawn", client.player);
 						client.player.getServer().scheduleTask(undefined, 0, 1, serverTask);
 					}
 

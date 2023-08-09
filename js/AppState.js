@@ -8,6 +8,7 @@ const Reflection = require("./reflection/Reflection.js");
 const DataBridge = require("./data/DataBridge.js");
 const AccountManager = require("./account/AccountManager.js");
 const ClientManager = require("./client/ClientManager.js");
+const ServerFunction = require("./server/ServerFunction.js");
 const ServerManager = require("./server/ServerManager.js");
 const ServerTask = require("./server/ServerTask.js");
 const UID = require("./uid/UID.js");
@@ -30,8 +31,9 @@ class AppState {
         // Recreate image zip file.
         await Zip.createZipFileFromFolder(ZIP_FILE_PATH, ZIP_SOURCE_FOLDER);
 
-        // Initialize reflection and uid maps.
+        // Initialize static maps.
         Reflection.init();
+        ServerFunction.init();
         UID.init();
 
         // Create initial managers.
@@ -134,10 +136,7 @@ class AppState {
 
                 if(player.isSpawned && !player.client) {
                     // If a player is spawned but the client is no longer logged in, then despawn the player.
-                    let serverTask = new ServerTask((player) => {
-                        player.doDespawn();
-                    }, player);
-    
+                    let serverTask = new ServerTask("despawn", player);
                     player.getServer().scheduleTask(undefined, 0, 1, serverTask);
                 }
                 else if(!player.isSpawned && player.client) {

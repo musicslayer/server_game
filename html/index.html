@@ -96,7 +96,11 @@
 					isSocketLoggedIn = false;
 				}
 				
-				socket = io();
+				socket = io({
+					// Use these options to only allow websockets and avoid memory leaks.
+					upgrade: false,
+					transports: ["websocket"]
+				});
 				
 				socket.on("connect", (err) => {
 					// Display the rest of the game...

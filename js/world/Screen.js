@@ -71,10 +71,7 @@ class Screen {
                     entity.y = y;
 
                     // Schedule each entity to be spawned.
-                    let serverTask = new ServerTask((entity) => {
-                        entity.doSpawn();
-                    }, entity);
-        
+                    let serverTask = new ServerTask("spawn", entity);
                     entity.getServer().scheduleTask(undefined, 0, 1, serverTask);
                 }
             }

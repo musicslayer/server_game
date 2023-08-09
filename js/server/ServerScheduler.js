@@ -49,15 +49,16 @@ class ServerScheduler {
 
     async doWork(shared) {
         while(!this.isCancelled) {
+            // We must query "value" or else this statement will not actually wait for anything.
             await Atomics.waitAsync(shared, 0, 0).value;
 
-            let serverTaskList = this.scheduledTaskMap.get(this.currentTick) ?? new ServerTaskList();
+            let serverTaskList = this.scheduledTaskMap.get(this.currentTick);
             this.scheduledTaskMap.delete(this.currentTick);
 
-            // Increment the current tick now so that new tasks added during a task won't be executed until the next tick.
+            // Increment the current tick now so that new tasks added during a task won't be executed until at least the next tick.
             this.currentTick++;
 
-            serverTaskList.execute();
+            serverTaskList?.execute();
         }
     }
 

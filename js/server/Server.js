@@ -74,22 +74,15 @@ class Server {
         // Use the arguments to generate entropy to make things more random.
         this.serverEntropy.processBoolean(animation !== undefined);
         this.serverEntropy.processNumber(this.serverScheduler.getTick(time));
-        this.serverEntropy.processString(serverTask.fcnString);
+
+        // TODO What string should we use here?
+        //this.serverEntropy.processString(serverTask.fcnString);
+        this.serverEntropy.processString("serverTask.fcnString");
     }
 
     scheduleTask(animation, time, count, serverTask) {
         serverTask.count = count;
-        let wrapperServerTask = ServerTask.createWrapperTask((_this, animation, time, serverTask) => {
-            if(!serverTask.isCancelled) {
-                serverTask.execute();
-
-                serverTask.count--;
-                if(serverTask.count > 0) {
-                    _this.server.addTask(animation, time, _this);
-                }
-            }
-        }, animation, time, serverTask);
-
+        let wrapperServerTask = ServerTask.createWrapperTask("_wrapper", animation, time, serverTask);
         this.addTask(animation, time, wrapperServerTask);
     }
 

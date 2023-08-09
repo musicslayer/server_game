@@ -24,21 +24,11 @@ class MoveAnimation extends Animation {
             let fraction = a / frames;
             let [shiftX, shiftY] = Util.getDirectionalShift(this.entity.direction);
 
-            let serverTask = new ServerTask((entity, fraction, shiftX, shiftY) => {
-                entity.animationShiftX = (shiftX * fraction);
-                entity.animationShiftY = (shiftY * fraction);
-            }, this.entity, fraction, shiftX, shiftY);
-
+            let serverTask = new ServerTask("animation_shift", this.entity, fraction, shiftX, shiftY);
             dataArray.push({"animation": undefined, "time": this.time * fraction, "serverTask": serverTask});
         }
 
-        let serverTask2 = new ServerTask((entity) => {
-            entity.isMoveInProgress = false;
-            
-            entity.animationShiftX = 0;
-            entity.animationShiftY = 0;
-        }, this.entity);
-
+        let serverTask2 = new ServerTask("animation_reset", this.entity);
         dataArray.push({"animation": undefined, "time": this.time, "serverTask": serverTask2});
 
         return dataArray;

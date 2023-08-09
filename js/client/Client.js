@@ -42,39 +42,29 @@ class Client {
         
         if(inputs.includes("left")) {
             if(location === "screen") {
-                this.scheduleInventoryTask(undefined, 0, (player, info_0, info_1) => {
-                    player.selectedEntity = player.screen.getHighestEntity(info_0, info_1);
-                }, this.player, info[0], info[1]);
+                this.scheduleInventoryTask(undefined, 0, "select_screen_entity", this.player, info[0], info[1]);
             }
             else if(location === "inventory") {
+                // TODO Do we need this check (or place it inside)?
                 if(this.player.inventory.itemMap.has(info[0])) {
-                    this.scheduleInventoryTask(undefined, 0, (player, info_0) => {
-                        player.selectedSlot = info_0;
-                        player.selectedEntity = player.inventory.itemMap.get(info_0);
-                    }, this.player, info[0]);
+                    this.scheduleInventoryTask(undefined, 0, "select_inventory_entity", this.player, info[0]);
                 }
             }
         }
         else if(inputs.includes("middle")) {
             if(location === "screen") {
-                this.scheduleMoveTask(undefined, 0, (player, info_0, info_1) => {
-                    player.doTeleport(player.screen, info_0, info_1);
-                }, this.player, info[0], info[1]);
+                this.scheduleMoveTask(undefined, 0, "teleport", this.player, info[0], info[1]);
             }
         }
         else if(inputs.includes("right")) {
             if(location === "inventory") {
                 if(!this.player.screen.isDynamic) {
-                    this.scheduleInventoryTask(undefined, 0, (player, info_0) => {
-                        player.doConsumeFromInventory(info_0);
-                    }, this.player, info[0]);
+                    this.scheduleInventoryTask(undefined, 0, "consume_from_inventory", this.player, info[0]);
                 }
             }
             else if(location === "purse") {
                 if(!this.player.screen.isDynamic) {
-                    this.schedulePurseTask(undefined, 0, (player) => {
-                        player.doDropFromPurse(100);
-                    }, this.player);
+                    this.schedulePurseTask(undefined, 0, "drop_from_purse", this.player, 100);
                 }
             }
         }
@@ -87,25 +77,12 @@ class Client {
         if(inputs.includes("left")) {
             if(location1 === "inventory" && location2 === "inventory" && info1[0] !== info2[0]) {
                 // Swap two inventory slots (even if one or both of them are empty)
-                this.scheduleInventoryTask(undefined, 0, (player, info1_0, info2_0) => {
-                    if(player.selectedSlot === info1_0) {
-                        player.selectedEntity = player.inventory.itemMap.get(info1_0);
-                        player.selectedSlot = info2_0;
-                    }
-                    else if(player.selectedSlot === info2_0) {
-                        player.selectedEntity = player.inventory.itemMap.get(info2_0);
-                        player.selectedSlot = info1_0;
-                    }
-                    
-                    player.doSwapInventorySlots(info1_0, info2_0);
-                }, this.player, info1[0], info2[0]);
+                this.scheduleInventoryTask(undefined, 0, "inventory_swap", this.player, info1[0], info2[0]);
             }
             else if(location1 === "inventory" && location2 === "screen") {
                 // Drop entire stack on the player's current location.
                 if(!this.player.screen.isDynamic) {
-                    this.scheduleInventoryTask(undefined, 0, (player, info1_0) => {
-                        player.doDropFromInventory(info1_0, -1);
-                    }, this.player, info1[0]);
+                    this.scheduleInventoryTask(undefined, 0, "drop_from_inventory", this.player, info1[0], -1);
                 }
             }
         }
@@ -116,68 +93,46 @@ class Client {
 
         // Inventory (only one will be executed)
         if(inputs.includes("inventory_previous")) {
-            this.scheduleInventoryTask(undefined, 0, (player) => {
-                player.selectedSlot = player.selectedSlot === 0 ? player.inventory.maxSlots - 1 : player.selectedSlot - 1;
-                player.selectedEntity = player.inventory.itemMap.get(player.selectedSlot);
-            }, this.player);
+            this.scheduleInventoryTask(undefined, 0, "inventory_previous", this.player);
         }
         else if(inputs.includes("inventory_next")) {
-            this.scheduleInventoryTask(undefined, 0, (player) => {
-                player.selectedSlot = player.selectedSlot === player.inventory.maxSlots - 1 ? 0 : player.selectedSlot + 1;
-                player.selectedEntity = player.inventory.itemMap.get(player.selectedSlot);
-            }, this.player);
+            this.scheduleInventoryTask(undefined, 0, "inventory_next", this.player);
         }
         else if(inputs.includes("inventory_use")) {
             if(!this.player.screen.isDynamic) {
-                this.scheduleInventoryTask(undefined, 0, (player) => {
-                    player.doConsumeFromInventory(player.selectedSlot);
-                }, this.player);
+                this.scheduleInventoryTask(undefined, 0, "consume_from_inventory", this.player, player.selectedSlot);
             }
         }
 
         // Player Action
         if(inputs.includes("action")) {
-            this.scheduleActionTask(undefined, 0, (player) => {
-                player.doAction();
-            }, this.player);
+            this.scheduleActionTask(undefined, 0, "action", this.player);
         }
 
         // **** Player Teleport Home
         if(inputs.includes("teleport_home")) {
-            this.scheduleMoveTask(undefined, 0, (player) => {
-                player.doTeleportHome();
-            }, this.player);
+            this.scheduleMoveTask(undefined, 0, "teleport_home", this.player);
         }
 
         // **** Player Kill
         if(inputs.includes("kill")) {
-            this.scheduleMoveTask(undefined, 0, (player) => {
-                player.doKill();
-            }, this.player);
+            this.scheduleMoveTask(undefined, 0, "kill", this.player);
         }
 
         // **** Player Revive
         if(inputs.includes("revive")) {
-            this.scheduleMoveTask(undefined, 0, (player) => {
-                player.doRevive();
-            }, this.player);
+            this.scheduleMoveTask(undefined, 0, "revive", this.player);
         }
 
         // **** Player Boosts
         if(inputs.includes("boost_experience")) {
-            this.scheduleActionTask(undefined, 0, (player) => {
-                player.doAddExperience(10);
-            }, this.player);
+            this.scheduleActionTask(undefined, 0, "add_experience", this.player, 10);
         }
         if(inputs.includes("boost_health")) {
-            this.scheduleActionTask(undefined, 0, (player) => {
-                player.doAddHealth(10);
-            }, this.player);
+            this.scheduleActionTask(undefined, 0, "add_health", this.player, 10);
         }
         if(inputs.includes("boost_mana")) {
-            this.scheduleActionTask(undefined, 0, (player) => {
-                player.doAddMana(10);
-            }, this.player);
+            this.scheduleActionTask(undefined, 0, "add_mana", this.player, 10);
         }
         if(inputs.includes("add_gold")) {
             let gold = Entity.createInstance("Gold", 1000);
@@ -185,111 +140,75 @@ class Client {
             gold.x = this.player.getMovementX();
             gold.y = this.player.getMovementY();
 
-            this.scheduleCreateTask(undefined, 0, (player, gold) => {
-                player.doSpawnEntity(gold);
-            }, this.player, gold);
+            this.scheduleCreateTask(undefined, 0, "spawn_entity", this.player, gold);
         }
         if(inputs.includes("make_invincible")) {
-            this.scheduleActionTask(undefined, 0, (player) => {
-                player.doMakeInvincible(10);
-            }, this.player);
+            this.scheduleActionTask(undefined, 0, "make_invincible", this.player, 10);
         }
 
         // Move Position (only one will be executed)
         // Change player direction if needed, or take a step if we are already facing that way.
         if(inputs.includes("move_up")) {
             if(this.player.direction === "up" && this.player.isNextStepAllowed("up")) {
-                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, (player) => {
-                    player.doMoveStep();
-                }, this.player);
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player);
             }
             else {
-                this.scheduleDirectionTask(undefined, 0, (player) => {
-                    player.doChangeDirection("up");
-                }, this.player);
+                this.scheduleDirectionTask(undefined, 0, "change_direction", this.player, "up");
             }
         }
         else if(inputs.includes("move_down")) {
             if(this.player.direction === "down" && this.player.isNextStepAllowed("down")) {
-                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, (player) => {
-                    player.doMoveStep();
-                }, this.player);
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player);
             }
             else {
-                this.scheduleDirectionTask(undefined, 0, (player) => {
-                    player.doChangeDirection("down");
-                }, this.player);
+                this.scheduleDirectionTask(undefined, 0, "change_direction", this.player, "down");
             }
         }
         else if(inputs.includes("move_left")) {
             if(this.player.direction === "left" && this.player.isNextStepAllowed("left")) {
-                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, (player) => {
-                    player.doMoveStep();
-                }, this.player);
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player);
             }
             else {
-                this.scheduleDirectionTask(undefined, 0, (player) => {
-                    player.doChangeDirection("left");
-                }, this.player);
+                this.scheduleDirectionTask(undefined, 0, "change_direction", this.player, "left");
             }
         }
         else if(inputs.includes("move_right")) {
             if(this.player.direction === "right" && this.player.isNextStepAllowed("right")) {
-                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, (player) => {
-                    player.doMoveStep();
-                }, this.player);
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player);
             }
             else {
-                this.scheduleDirectionTask(undefined, 0, (player) => {
-                    player.doChangeDirection("right");
-                }, this.player);
+                this.scheduleDirectionTask(undefined, 0, "change_direction", this.player, "right");
             }
         }
 
         // **** Move Screens (only one will be executed)
         if(inputs.includes("screen_up")) {
-            this.scheduleMoveTask(undefined, 0, (player) => {
-                player.doMoveScreen("up");
-            }, this.player);
+            this.scheduleMoveTask(undefined, 0, "move_screen", this.player, "up");
         }
         else if(inputs.includes("screen_down")) {
-            this.scheduleMoveTask(undefined, 0, (player) => {
-                player.doMoveScreen("down");
-            }, this.player);
+            this.scheduleMoveTask(undefined, 0, "move_screen", this.player, "down");
         }
         else if(inputs.includes("screen_left")) {
-            this.scheduleMoveTask(undefined, 0, (player) => {
-                player.doMoveScreen("left");
-            }, this.player);
+            this.scheduleMoveTask(undefined, 0, "move_screen", this.player, "left");
         }
         else if(inputs.includes("screen_right")) {
-            this.scheduleMoveTask(undefined, 0, (player) => {
-                player.doMoveScreen("right");
-            }, this.player);
+            this.scheduleMoveTask(undefined, 0, "move_screen", this.player, "right");
         }
 
         // **** Move Maps (only one will be executed)
         if(inputs.includes("map_up")) {
-            this.scheduleMoveTask(undefined, 0, (player) => {
-                player.doMoveMap("up");
-            }, this.player);
+            this.scheduleMoveTask(undefined, 0, "move_map", this.player, "up");
         }
         else if(inputs.includes("map_down")) {
-            this.scheduleMoveTask(undefined, 0, (player) => {
-                player.doMoveMap("down");
-            }, this.player);
+            this.scheduleMoveTask(undefined, 0, "move_map", this.player, "down");
         }
 
         // **** Move Worlds (only one will be executed)
         if(inputs.includes("world_up")) {
-            this.scheduleMoveTask(undefined, 0, (player) => {
-                player.doMoveWorld("up");
-            }, this.player);
+            this.scheduleMoveTask(undefined, 0, "move_world", this.player, "up");
         }
         else if(inputs.includes("world_down")) {
-            this.scheduleMoveTask(undefined, 0, (player) => {
-                player.doMoveWorld("down");
-            }, this.player);
+            this.scheduleMoveTask(undefined, 0, "move_world", this.player, "down");
         }
 
         // **** Save/load state (only one will be executed)
@@ -310,79 +229,53 @@ class Client {
 
         // Inventory (only one will be executed)
         if(inputs.includes("inventory_previous")) {
-            this.scheduleInventoryTask(undefined, 0, (player) => {
-                player.selectedSlot = player.selectedSlot === 0 ? player.inventory.maxSlots - 1 : player.selectedSlot - 1;
-                player.selectedEntity = player.inventory.itemMap.get(player.selectedSlot);
-            }, this.player);
+            this.scheduleInventoryTask(undefined, 0, "inventory_previous", this.player);
         }
         else if(inputs.includes("inventory_next")) {
-            this.scheduleInventoryTask(undefined, 0, (player) => {
-                player.selectedSlot = player.selectedSlot === player.inventory.maxSlots - 1 ? 0 : player.selectedSlot + 1;
-                player.selectedEntity = player.inventory.itemMap.get(player.selectedSlot);
-            }, this.player);
+            this.scheduleInventoryTask(undefined, 0, "inventory_next", this.player);
         }
         else if(inputs.includes("inventory_use")) {
             if(!this.player.screen.isDynamic) {
-                this.scheduleInventoryTask(undefined, 0, (player) => {
-                    player.doConsumeFromInventory(player.selectedSlot);
-                }, this.player);
+                this.scheduleInventoryTask(undefined, 0, "consume_from_inventory", this.player, player.selectedSlot);
             }
         }
 
         // Player Action
         if(inputs.includes("action")) {
-            this.scheduleActionTask(undefined, 0, (player) => {
-                player.doAction();
-            }, this.player);
+            this.scheduleActionTask(undefined, 0, "action", this.player);
         }
 
         // Move Position (only one will be executed)
         if(inputs.includes("move_up")) {
             if(this.player.direction === "up" && this.player.isNextStepAllowed("up")) {
-                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, (player) => {
-                    player.doMoveStep();
-                }, this.player);
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player);
             }
             else {
-                this.scheduleDirectionTask(undefined, 0, (player) => {
-                    player.doChangeDirection("up");
-                }, this.player);
+                this.scheduleDirectionTask(undefined, 0, "change_direction", this.player, "up");
             }
         }
         else if(inputs.includes("move_down")) {
             if(this.player.direction === "down" && this.player.isNextStepAllowed("down")) {
-                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, (player) => {
-                    player.doMoveStep();
-                }, this.player);
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player);
             }
             else {
-                this.scheduleDirectionTask(undefined, 0, (player) => {
-                    player.doChangeDirection("down");
-                }, this.player);
+                this.scheduleDirectionTask(undefined, 0, "change_direction", this.player, "down");
             }
         }
         else if(inputs.includes("move_left")) {
             if(this.player.direction === "left" && this.player.isNextStepAllowed("left")) {
-                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, (player) => {
-                    player.doMoveStep();
-                }, this.player);
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player);
             }
             else {
-                this.scheduleDirectionTask(undefined, 0, (player) => {
-                    player.doChangeDirection("left");
-                }, this.player);
+                this.scheduleDirectionTask(undefined, 0, "change_direction", this.player, "left");
             }
         }
         else if(inputs.includes("move_right")) {
             if(this.player.direction === "right" && this.player.isNextStepAllowed("right")) {
-                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, (player) => {
-                    player.doMoveStep();
-                }, this.player);
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player);
             }
             else {
-                this.scheduleDirectionTask(undefined, 0, (player) => {
-                    player.doChangeDirection("right");
-                }, this.player);
+                this.scheduleDirectionTask(undefined, 0, "change_direction", this.player, "right");
             }
         }
     }
@@ -404,12 +297,12 @@ class Client {
         }
     }
 
-    scheduleRealtimeTask(task, ...args) {
+    scheduleRealtimeTask(fcn, ...args) {
         // Don't schedule these on the server.
         if(this.realtimeDelay === true || this.realtimeDelay === undefined) {
             this.realtimeDelay = false;
 
-            task(...args);
+            fcn(...args);
 
             setTimeout(() => {
                 this.realtimeDelay = true;
@@ -417,43 +310,39 @@ class Client {
         }
     }
 
-    scheduleCreateTask(animation, time, task, ...args) {
-        this.scheduleTask("create", this.player.createTime, animation, time, task, ...args);
+    scheduleCreateTask(animation, time, fcnName, ...args) {
+        this.scheduleTask("create", this.player.createTime, animation, time, fcnName, ...args);
     }
 
-    scheduleMoveTask(animation, time, task, ...args) {
-        this.scheduleTask("move", this.player.moveTime, animation, time, task, ...args);
+    scheduleMoveTask(animation, time, fcnName, ...args) {
+        this.scheduleTask("move", this.player.moveTime, animation, time, fcnName, ...args);
     }
 
-    scheduleDirectionTask(animation, time, task, ...args) {
+    scheduleDirectionTask(animation, time, fcnName, ...args) {
         // Use the move delay type with the direction time.
-        this.scheduleTask("move", this.player.directionTime, animation, time, task, ...args);
+        this.scheduleTask("move", this.player.directionTime, animation, time, fcnName, ...args);
     }
 
-    scheduleActionTask(animation, time, task, ...args) {
-        this.scheduleTask("action", this.player.actionTime, animation, time, task, ...args);
+    scheduleActionTask(animation, time, fcnName, ...args) {
+        this.scheduleTask("action", this.player.actionTime, animation, time, fcnName, ...args);
     }
 
-    scheduleInventoryTask(animation, time, task, ...args) {
-        this.scheduleTask("inventory", this.player.inventoryTime, animation, time, task, ...args);
+    scheduleInventoryTask(animation, time, fcnName, ...args) {
+        this.scheduleTask("inventory", this.player.inventoryTime, animation, time, fcnName, ...args);
     }
 
-    schedulePurseTask(animation, time, task, ...args) {
-        this.scheduleTask("purse", this.player.purseTime, animation, time, task, ...args);
+    schedulePurseTask(animation, time, fcnName, ...args) {
+        this.scheduleTask("purse", this.player.purseTime, animation, time, fcnName, ...args);
     }
 
-    scheduleTask(delayType, delayTime, animation, time, task, ...args) {
+    scheduleTask(delayType, delayTime, animation, time, fcnName, ...args) {
         if(!this.player.delayMap.get(delayType)) {
             this.player.delayMap.set(delayType, true);
 
-            let serverTask = new ServerTask(task, ...args);
-
+            let serverTask = new ServerTask(fcnName, ...args);
             this.player.getServer().scheduleTask(animation, time, 1, serverTask);
 
-            let serverTask2 = new ServerTask((player, delayType) => {
-                player.delayMap.set(delayType, false);
-            }, this.player, delayType);
-
+            let serverTask2 = new ServerTask("set_delay_off", this.player, delayType);
             this.player.getServer().scheduleTask(undefined, delayTime, 1, serverTask2);
         }
     }

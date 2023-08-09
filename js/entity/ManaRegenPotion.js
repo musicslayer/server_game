@@ -30,9 +30,7 @@ class ManaRegenPotion extends Entity {
 
     doConsume(entity) {
         // Register regen task.
-        let serverTask = new ServerTask((entity, manaReward) => {
-            entity.doAddMana(manaReward);
-        }, entity, this.manaReward);
+        let serverTask = new ServerTask("add_mana", entity, this.manaReward);
 
         entity.ownServerTask(serverTask);
         this.getServer().scheduleTask(undefined, this.manaTime, this.manaCount, serverTask);

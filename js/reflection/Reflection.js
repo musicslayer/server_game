@@ -5,6 +5,7 @@ const JS_SOURCE_FOLDER = path.resolve("js");
 const PRAGMA_EXCLUDE = "#EXCLUDE_REFLECTION"
 
 class Reflection {
+    // TODO Use container map?
     static classMap = {};
 
     static init() {

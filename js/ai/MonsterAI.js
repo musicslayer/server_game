@@ -48,11 +48,8 @@ class MonsterAI extends AI {
                 this.randomDirectionFlag = true;
 
                 time = monster.directionTime;
-
-                let serverTask = new ServerTask((monster, direction) => {
-                    monster.doChangeDirection(direction);
-                }, monster, randomValidDirection);
-        
+                
+                let serverTask = new ServerTask("change_direction", monster, randomValidDirection);
                 monster.getServer().scheduleTask(undefined, 0, 1, serverTask);
             }
             else {
@@ -60,10 +57,7 @@ class MonsterAI extends AI {
 
                 time = monster.moveTime;
 
-                let serverTask = new ServerTask((monster) => {
-                    monster.doMoveStep();
-                }, monster);
-        
+                let serverTask = new ServerTask("move_step", monster);
                 monster.getServer().scheduleTask(new MoveAnimation(monster, time), time, 1, serverTask);
             }
         }
@@ -73,10 +67,7 @@ class MonsterAI extends AI {
                 // Face towards the aggro player, picking a direction deterministically to avoid jittering.
                 time = monster.directionTime;
 
-                let serverTask = new ServerTask((monster, direction) => {
-                    monster.doChangeDirection(direction);
-                }, monster, directions[0]);
-        
+                let serverTask = new ServerTask("change_direction", monster, directions[0]);
                 monster.getServer().scheduleTask(undefined, 0, 1, serverTask);
             }
             else if(this.isFacingAPlayer(monster)) {
@@ -84,18 +75,12 @@ class MonsterAI extends AI {
                 // This means that if another player is blocking the monster from the aggro player, they will be attacked instead.
                 time = monster.actionTime;
 
-                let serverTask = new ServerTask((monster) => {
-                    monster.doAction();
-                }, monster);
-        
+                let serverTask = new ServerTask("action", monster);
                 monster.getServer().scheduleTask(undefined, 0, 1, serverTask);
             }
         }
 
-        let serverTask2 = new ServerTask((monster) => {
-            monster.ai.generateNextActivity(monster);
-        }, monster);
-
+        let serverTask2 = new ServerTask("ai_generate_next_activity", monster);
         monster.getServer().scheduleTask(undefined, time, 1, serverTask2);
     }
 
