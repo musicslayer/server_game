@@ -30,6 +30,9 @@ class ServerTask {
             if(this.count > 0) {
                 server.scheduleTask(this);
             }
+            else {
+                this.owner?.disownServerTask(this);
+            }
         }
     }
 

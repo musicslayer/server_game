@@ -139,7 +139,7 @@ class Entity extends UID {
     doDespawn() {
         this.isSpawned = false;
         this.screen.removeEntity(this);
-        this.cancelServerTasks();
+        this.cancelAllServerTasks();
 
         // Non-players will never be used again so remove them from the map.
         // Players are still stored in the Character objects so we need to maintain their entry in the map.
@@ -525,7 +525,14 @@ class Entity extends UID {
         this.serverTasks.push(serverTask);
     }
 
-    cancelServerTasks() {
+    disownServerTask(serverTask) {
+        serverTask.owner = undefined;
+        let index = this.serverTasks.indexOf(serverTask);
+        this.serverTasks.splice(index, 1);
+    }
+
+    cancelAllServerTasks() {
+        // Cancels and removes all server tasks that this entity owns.
         while(this.serverTasks.length > 0) {
             let serverTask = this.serverTasks.shift();
             serverTask.isCancelled = true;
