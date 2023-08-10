@@ -5,7 +5,6 @@ const ServerEntropy = require("./ServerEntropy.js");
 const ServerFunction = require("./ServerFunction.js");
 const ServerRNG = require("./ServerRNG.js");
 const ServerScheduler = require("./ServerScheduler.js");
-const ServerTask = require("./ServerTask.js");
 const Universe = require("../world/Universe.js");
 const Util = require("../util/Util.js");
 
@@ -67,8 +66,6 @@ class Server {
     }
 
     scheduleTask(serverTask) {
-        serverTask.server = this;
-
         serverTask.animation?.scheduleTasks(this);
         this.serverScheduler.addTask(serverTask);
 
@@ -110,16 +107,6 @@ class Server {
             server.serverScheduler = reader.deserialize("serverScheduler", "ServerScheduler");
             
             server.universe.server = server;
-
-            // For all of the scheduled tasks, we need to reattach the server.
-            let scheduledTaskMap = server.serverScheduler.scheduledTaskMap;
-            for(let key of scheduledTaskMap.keys()) {
-                let serverTaskList = scheduledTaskMap.get(key);
-                for(let serverTask of serverTaskList.serverTasks) {
-                    serverTask.server = server;
-                }
-                scheduledTaskMap.get(key, serverTaskList);
-            }
         }
         else {
             throw("Unknown version number: " + version);

@@ -3,7 +3,6 @@ const Util = require("../util/Util.js");
 const UID = require("../uid/UID.js");
 
 class ServerTask {
-    server;
     owner;
 
     isCancelled = false;
@@ -22,14 +21,14 @@ class ServerTask {
         this.args = args;
     }
 
-    execute() {
+    execute(server) {
         if(!this.isCancelled) {
             let fcn = ServerFunction.getFunction(this.fcnName);
             fcn(...this.args);
 
             this.count--;
             if(this.count > 0) {
-                this.server.scheduleTask(this);
+                server.scheduleTask(this);
             }
         }
     }

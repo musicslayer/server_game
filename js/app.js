@@ -8,6 +8,8 @@ const AppState = require("./AppState.js");
 
 // TODO Do we even need socket_io?
 
+// TODO entity.serverTasks could cause a memory leak?
+
 async function init() {
     await new AppState().init();
 }

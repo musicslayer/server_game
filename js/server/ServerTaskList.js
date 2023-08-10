@@ -5,10 +5,10 @@ class ServerTaskList {
         this.serverTasks.push(serverTask);
     }
 
-    execute() {
+    execute(server) {
         while(this.serverTasks.length > 0) {
             let task = this.serverTasks.shift();
-            task.execute();
+            task.execute(server);
         }
     }
 

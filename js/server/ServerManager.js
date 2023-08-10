@@ -17,7 +17,7 @@ class ServerManager {
 
     startServerTicks() {
         for(let server of this.servers) {
-            server.serverScheduler.initServerTick();
+            server.serverScheduler.initServerTick(server);
         }
     }
 

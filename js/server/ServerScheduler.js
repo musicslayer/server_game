@@ -7,6 +7,8 @@ const ServerTaskList = require("./ServerTaskList.js");
 const WORKER_FILE_PATH = path.resolve(path.join("js", "server", "server_tick.js"));
 
 class ServerScheduler {
+    server;
+
     scheduledTaskMap = new Map();
     currentTick = 0;
     isCancelled = false;
@@ -24,8 +26,10 @@ class ServerScheduler {
         this.scheduledTaskMap.set(tick, serverTaskList);
     }
 
-    initServerTick() {
+    initServerTick(server) {
         // Start a timer thread that will alert the main thread after every tick.
+        this.server = server;
+        
         let shared = new Int32Array(new SharedArrayBuffer(4));
         this.doWork(shared);
     
@@ -58,7 +62,7 @@ class ServerScheduler {
             // Increment the current tick now so that new tasks added during a task won't be executed until at least the next tick.
             this.currentTick++;
 
-            serverTaskList?.execute();
+            serverTaskList?.execute(this.server);
         }
     }
 
