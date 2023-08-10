@@ -74,10 +74,7 @@ class Server {
         // Use the arguments to generate entropy to make things more random.
         this.serverEntropy.processBoolean(animation !== undefined);
         this.serverEntropy.processNumber(this.serverScheduler.getTick(time));
-
-        // TODO What string should we use here?
-        //this.serverEntropy.processString(serverTask.fcnString);
-        this.serverEntropy.processString("serverTask.fcnString");
+        this.serverEntropy.processString(serverTask.args[serverTask.args.length - 1].fcnName);
     }
 
     scheduleTask(animation, time, count, serverTask) {

@@ -5,8 +5,7 @@ const JS_SOURCE_FOLDER = path.resolve("js");
 const PRAGMA_EXCLUDE = "#EXCLUDE_REFLECTION"
 
 class Reflection {
-    // TODO Use container map?
-    static classMap = {};
+    static classMap = new Map();
 
     static init() {
         Reflection.processDirectory(JS_SOURCE_FOLDER);
@@ -30,13 +29,13 @@ class Reflection {
 
     static addClassDataFromFile(className, filePath) {
         if(!isExcluded(filePath)) {
-            Reflection.classMap[className] = require(filePath);
+            Reflection.classMap.set(className, require(filePath));
         }
     }
 
     static getClassData(className) {
         let parts = className.split(".");
-        let classData = Reflection.classMap[parts.shift()];
+        let classData = Reflection.classMap.get(parts.shift());
         while(parts.length > 0) {
             classData = classData[parts.shift()];
         }
@@ -46,7 +45,7 @@ class Reflection {
     static createInstance(className, ...args) {
         let instance;
 
-        let classData = Reflection.classMap[className];
+        let classData = Reflection.classMap.get(className);
         if(classData) {
             instance = new classData(...args);
         }

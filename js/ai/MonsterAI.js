@@ -57,7 +57,7 @@ class MonsterAI extends AI {
 
                 time = monster.moveTime;
 
-                let serverTask = new ServerTask("move_step", monster);
+                let serverTask = new ServerTask("move_step", monster, monster.direction);
                 monster.getServer().scheduleTask(new MoveAnimation(monster, time), time, 1, serverTask);
             }
         }

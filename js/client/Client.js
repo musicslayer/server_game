@@ -42,13 +42,10 @@ class Client {
         
         if(inputs.includes("left")) {
             if(location === "screen") {
-                this.scheduleInventoryTask(undefined, 0, "select_screen_entity", this.player, info[0], info[1]);
+                this.scheduleInventoryTask(undefined, 0, "select_entity_screen", this.player, info[0], info[1]);
             }
             else if(location === "inventory") {
-                // TODO Do we need this check (or place it inside)?
-                if(this.player.inventory.itemMap.has(info[0])) {
-                    this.scheduleInventoryTask(undefined, 0, "select_inventory_entity", this.player, info[0]);
-                }
+                this.scheduleInventoryTask(undefined, 0, "select_entity_inventory", this.player, info[0]);
             }
         }
         else if(inputs.includes("middle")) {
@@ -142,15 +139,15 @@ class Client {
 
             this.scheduleCreateTask(undefined, 0, "spawn_entity", this.player, gold);
         }
-        if(inputs.includes("make_invincible")) {
-            this.scheduleActionTask(undefined, 0, "make_invincible", this.player, 10);
+        if(inputs.includes("invincible_on")) {
+            this.scheduleActionTask(undefined, 0, "invincible_on", this.player, 10);
         }
 
         // Move Position (only one will be executed)
         // Change player direction if needed, or take a step if we are already facing that way.
         if(inputs.includes("move_up")) {
             if(this.player.direction === "up" && this.player.isNextStepAllowed("up")) {
-                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player);
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player, "up");
             }
             else {
                 this.scheduleDirectionTask(undefined, 0, "change_direction", this.player, "up");
@@ -158,7 +155,7 @@ class Client {
         }
         else if(inputs.includes("move_down")) {
             if(this.player.direction === "down" && this.player.isNextStepAllowed("down")) {
-                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player);
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player, "down");
             }
             else {
                 this.scheduleDirectionTask(undefined, 0, "change_direction", this.player, "down");
@@ -166,7 +163,7 @@ class Client {
         }
         else if(inputs.includes("move_left")) {
             if(this.player.direction === "left" && this.player.isNextStepAllowed("left")) {
-                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player);
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player, "left");
             }
             else {
                 this.scheduleDirectionTask(undefined, 0, "change_direction", this.player, "left");
@@ -174,7 +171,7 @@ class Client {
         }
         else if(inputs.includes("move_right")) {
             if(this.player.direction === "right" && this.player.isNextStepAllowed("right")) {
-                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player);
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player, "right");
             }
             else {
                 this.scheduleDirectionTask(undefined, 0, "change_direction", this.player, "right");
@@ -248,7 +245,7 @@ class Client {
         // Move Position (only one will be executed)
         if(inputs.includes("move_up")) {
             if(this.player.direction === "up" && this.player.isNextStepAllowed("up")) {
-                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player);
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player, "up");
             }
             else {
                 this.scheduleDirectionTask(undefined, 0, "change_direction", this.player, "up");
@@ -256,7 +253,7 @@ class Client {
         }
         else if(inputs.includes("move_down")) {
             if(this.player.direction === "down" && this.player.isNextStepAllowed("down")) {
-                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player);
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player, "down");
             }
             else {
                 this.scheduleDirectionTask(undefined, 0, "change_direction", this.player, "down");
@@ -264,7 +261,7 @@ class Client {
         }
         else if(inputs.includes("move_left")) {
             if(this.player.direction === "left" && this.player.isNextStepAllowed("left")) {
-                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player);
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player, "left");
             }
             else {
                 this.scheduleDirectionTask(undefined, 0, "change_direction", this.player, "left");
@@ -272,7 +269,7 @@ class Client {
         }
         else if(inputs.includes("move_right")) {
             if(this.player.direction === "right" && this.player.isNextStepAllowed("right")) {
-                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player);
+                this.scheduleMoveTask(new MoveAnimation(this.player, this.player.moveTime), this.player.moveTime, "move_step", this.player, "right");
             }
             else {
                 this.scheduleDirectionTask(undefined, 0, "change_direction", this.player, "right");
@@ -369,7 +366,14 @@ class Client {
 
         // Entities
         let entities = [];
-        for(let entity of this.player.screen.entities) {
+        let screenEntities = this.player.screen.entities;
+
+        // Make sure the player is last in the array.
+        let index = screenEntities.indexOf(this.player);
+        screenEntities.splice(index, 1);
+        screenEntities.push(this.player);
+
+        for(let entity of screenEntities) {
             let statuses = [];
             if(entity.isDead) {
                 statuses.push("dead");

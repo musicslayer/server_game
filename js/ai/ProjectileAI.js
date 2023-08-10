@@ -9,7 +9,7 @@ class ProjectileAI extends AI {
             return;
         }
 
-        let serverTask = new ServerTask("move_step", projectile);
+        let serverTask = new ServerTask("move_step", projectile, projectile.direction);
         projectile.getServer().scheduleTask(new MoveAnimation(projectile, projectile.moveTime), projectile.moveTime, 1, serverTask);
         
         let serverTask2 = new ServerTask("ai_generate_next_activity", projectile);

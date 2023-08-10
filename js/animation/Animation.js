@@ -3,7 +3,7 @@ const Util = require("../util/Util.js");
 
 class Animation {
     scheduleTasks(server) {
-        let animationDataArray = this.getAnimationServerTasks(this) ?? [];
+        let animationDataArray = this.getAnimationServerTaskData(this) ?? [];
         for(let animationData of animationDataArray) {
             server.scheduleTask(animationData.animation, animationData.time, 1, animationData.serverTask);
         }

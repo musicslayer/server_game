@@ -148,8 +148,8 @@ class Monster extends Entity {
         this.doSpawnEntity(projectile);
     }
 
-    doMoveStep() {
-        let [shiftX, shiftY] = Util.getDirectionalShift(this.direction);
+    doMoveStep(direction) {
+        let [shiftX, shiftY] = Util.getDirectionalShift(direction);
         this.x += shiftX;
         this.y += shiftY;
     }

@@ -175,7 +175,17 @@ class Entity extends UID {
     }
 
 
+    doAnimationReset() {
+        this.isMoveInProgress = false;
+        this.animationShiftX = 0;
+        this.animationShiftY = 0;
+    }
 
+    doAnimationShift(fraction, shiftX, shiftY) {
+        this.isMoveInProgress = true;
+        this.animationShiftX = (shiftX * fraction);
+        this.animationShiftY = (shiftY * fraction);
+    }
 
 
 
@@ -185,15 +195,17 @@ class Entity extends UID {
 
     doTeleport(screen, x, y) {
         // Move to an arbitrary point in the world. Do not check collision or call spawn/respawn.
-        this.x = x;
-        this.y = y;
+        if(screen.hasXY(x, y)) {
+            this.x = x;
+            this.y = y;
 
-        // If the screen does not change, skip this for performance reasons.
-        // Also, we do not want to cause any instance screens to be removed by calling "removeEntity".
-        if(this.screen !== screen) {
-            this.screen.removeEntity(this);
-            this.setScreen(screen);
-            this.screen.addEntity(this, x, y);
+            // If the screen does not change, skip this for performance reasons.
+            // Also, we do not want to cause any instance screens to be removed by calling "removeEntity".
+            if(this.screen !== screen) {
+                this.screen.removeEntity(this);
+                this.setScreen(screen);
+                this.screen.addEntity(this, x, y);
+            }
         }
     }
 
@@ -272,17 +284,17 @@ class Entity extends UID {
         this.direction = direction;
     }
 
-    doMoveStep() {
-        // Perform a single step of movement in the entity's current direction.
+    doMoveStep(direction) {
+        // Perform a single step of movement in the direction.
         // If the edge is crossed then the entity moves to the next screen.
         // Also, if you move onto another entity, the two entities interact with each other.
-        if(this.screen.isFacingEdge(this, this.direction)) {
+        if(this.screen.isFacingEdge(this, direction)) {
             // Cross into the next screen.
-            this.screen.doCrossScreen(this, this.direction);
+            this.screen.doCrossScreen(this, direction);
         }
         else {
             // Just do normal movement.
-            let [shiftX, shiftY] = Util.getDirectionalShift(this.direction);
+            let [shiftX, shiftY] = Util.getDirectionalShift(direction);
             this.x += shiftX;
             this.y += shiftY;
         }
@@ -383,8 +395,49 @@ class Entity extends UID {
 
     doSwapInventorySlots(slot1, slot2) {
         if(this.inventory) {
+            // Swap the selected slots.
+            if(this.inventory.itemMap.has(slot1) && this.inventory.itemMap.has(slot2)) {
+                if(this.selectedSlot === slot1) {
+                    this.selectedEntity = this.inventory.itemMap.get(slot1);
+                    this.selectedSlot = slot2;
+                }
+                else if(this.selectedSlot === slot2) {
+                    this.selectedEntity = this.inventory.itemMap.get(slot2);
+                    this.selectedSlot = slot1;
+                }
+            }
+
+            // Swap the inventory items.
             this.inventory.swapInventorySlots(slot1, slot2);
         }
+    }
+
+    doInventoryNext() {
+        if(this.inventory) {
+            this.selectedSlot = this.selectedSlot === this.inventory.maxSlots - 1 ? 0 : this.selectedSlot + 1;
+            this.selectedEntity = this.inventory.itemMap.get(this.selectedSlot);
+        }
+    }
+
+    doInventoryPrevious() {
+        if(this.inventory) {
+            this.selectedSlot = this.selectedSlot === 0 ? this.inventory.maxSlots - 1 : this.selectedSlot - 1;
+            this.selectedEntity = this.inventory.itemMap.get(this.selectedSlot);
+        }
+    }
+
+    doSelectEntityInventory(slot) {
+        if(this.inventory) {
+            let item = this.inventory.itemMap.get(slot);
+            if(item) {
+                this.selectedSlot = slot;
+                this.selectedEntity = item;
+            }
+        }
+    }
+
+    doSelectEntityScreen(x, y) {
+        this.selectedEntity = this.screen.getHighestEntity(x, y);
     }
 
 

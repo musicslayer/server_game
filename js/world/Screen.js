@@ -156,6 +156,10 @@ class Screen {
         return this.map.getScreenInDirection(this, direction);
     }
 
+    hasXY(x, y) {
+        return x >= 0 && x < this.numTilesX && y >= 0 && y < this.numTilesY;
+    }
+
     registerEntity(entity) {
         // By default, do nothing.
     }

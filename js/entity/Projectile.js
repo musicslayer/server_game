@@ -33,8 +33,8 @@ class Projectile extends Entity {
         }
     }
 
-    doMoveStep() {
-        let [shiftX, shiftY] = Util.getDirectionalShift(this.direction);
+    doMoveStep(direction) {
+        let [shiftX, shiftY] = Util.getDirectionalShift(direction);
         this.x += shiftX;
         this.y += shiftY;
 

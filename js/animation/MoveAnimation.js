@@ -13,11 +13,8 @@ class MoveAnimation extends Animation {
         this.time = time;
     }
 
-    getAnimationServerTasks() {
+    getAnimationServerTaskData() {
         let dataArray = [];
-
-        this.entity.isMoveInProgress = true;
-        
         let frames = Performance.MOVEMENT_FRAMES;
             
         for(let a = 0; a < frames; a++) {
