@@ -17,8 +17,8 @@ class ServerScheduler {
         return Math.floor(this.currentTick + time * Performance.TICK_RATE);
     }
 
-    addTask(time, serverTask) {
-        let tick = this.getTick(time);
+    addTask(serverTask) {
+        let tick = this.getTick(serverTask.time);
         let serverTaskList = this.scheduledTaskMap.get(tick) ?? new ServerTaskList();
         serverTaskList.addTask(serverTask);
         this.scheduledTaskMap.set(tick, serverTaskList);

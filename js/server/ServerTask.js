@@ -5,11 +5,12 @@ const UID = require("../uid/UID.js");
 class ServerTask {
     server;
     owner;
-    
-    isWrapperTask = false;
-    isCancelled = false;
-    count;
 
+    isCancelled = false;
+
+    animation;
+    time;
+    count;
     fcnName;
     args;
 
@@ -18,20 +19,15 @@ class ServerTask {
         this.args = args;
     }
 
-    static createWrapperTask(fcnName, ...args) {
-        // Wrapper tasks are used internally and are processed differently than regular tasks.
-        let serverTask = new ServerTask(fcnName, ...args);
-        serverTask.isWrapperTask = true;
-        return serverTask;
-    }
-
     execute() {
-        let fcn = ServerFunction.getFunction(this.fcnName);
-        if(this.isWrapperTask) {
-            fcn(this, ...this.args);
-        }
-        else {
+        if(!this.isCancelled) {
+            let fcn = ServerFunction.getFunction(this.fcnName);
             fcn(...this.args);
+
+            this.count--;
+            if(this.count > 0) {
+                this.server.addTask(this);
+            }
         }
     }
 
@@ -39,8 +35,9 @@ class ServerTask {
         writer.beginObject()
             .serialize("!V!", 1)
             .reference("owner", this.owner)
-            .serialize("isWrapperTask", this.isWrapperTask)
             .serialize("isCancelled", this.isCancelled)
+            .serialize("animation", this.animation)
+            .serialize("time", this.time)
             .serialize("count", this.count)
             .serialize("fcnName", this.fcnName)
             .serialize("numArgs", this.args.length);
@@ -70,8 +67,9 @@ class ServerTask {
         let version = reader.deserialize("!V!", "String");
         if(version === "1") {
             let owner = reader.dereference("owner", "Entity");
-            let isWrapperTask = reader.deserialize("isWrapperTask", "Boolean");
             let isCancelled = reader.deserialize("isCancelled", "Boolean");
+            let animation = reader.deserialize("animation", "Animation");
+            let time = reader.deserialize("time", "Number");
             let count = reader.deserialize("count", "Number");
             let fcnName = reader.deserialize("fcnName", "String");
             let numArgs = reader.deserialize("numArgs", "Number");
@@ -93,8 +91,9 @@ class ServerTask {
             }
 
             serverTask = new ServerTask(fcnName, ...args);
-            serverTask.isWrapperTask = isWrapperTask;
             serverTask.isCancelled = isCancelled;
+            serverTask.animation = animation;
+            serverTask.time = time;
             serverTask.count = count;
 
             if(owner) {

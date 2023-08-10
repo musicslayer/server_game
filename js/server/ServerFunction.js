@@ -6,19 +6,6 @@ class ServerFunction {
         // Manually add all functions that could be scheduled on the server.
         let map = ServerFunction.functionMap;
 
-        map.set("_wrapper", (_this, animation, time, serverTask) => {
-            if(!serverTask.isCancelled) {
-                serverTask.execute();
-
-                serverTask.count--;
-                if(serverTask.count > 0) {
-                    // TODO Can we access "_this" or "_this.server" from inside the function without needing it passed in?
-                    // --- Do we even need this wrapper anymore...?
-                    _this.server.addTask(animation, time, _this);
-                }
-            }
-        });
-
         map.set("action", (entity) => {
             entity.doAction();
         });

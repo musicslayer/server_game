@@ -66,26 +66,26 @@ class Server {
         return this.serverRNG.getRandomInteger(entropyArray, max);
     }
 
-    addTask(animation, time, serverTask) {
+    addTask(serverTask) {
         serverTask.server = this;
 
-        animation?.scheduleTasks(this);
-        this.serverScheduler.addTask(time, serverTask);
+        serverTask.animation?.scheduleTasks(this);
+        this.serverScheduler.addTask(serverTask);
 
-        // Use the arguments to generate entropy to make things more random.
-        let tick = this.serverScheduler.getTick(time)
+        // Generate entropy to make things more random.
+        let tick = this.serverScheduler.getTick(serverTask.time)
 
-        this.serverEntropy.processBoolean(animation !== undefined);
+        this.serverEntropy.processBoolean(serverTask.animation !== undefined);
         this.serverEntropy.processNumber(tick);
-
-        let innerServerTask = serverTask.args[serverTask.args.length - 1];
-        this.serverEntropy.processString(ServerFunction.getFunctionString(innerServerTask.fcnName), tick);
+        this.serverEntropy.processString(ServerFunction.getFunctionString(serverTask.fcnName), tick);
     }
 
     scheduleTask(animation, time, count, serverTask) {
+        serverTask.animation = animation;
+        serverTask.time = time;
         serverTask.count = count;
-        let wrapperServerTask = ServerTask.createWrapperTask("_wrapper", animation, time, serverTask);
-        this.addTask(animation, time, wrapperServerTask);
+
+        this.addTask(serverTask);
     }
 
     serialize(writer) {
