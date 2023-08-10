@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 
 const ServerEntropy = require("./ServerEntropy.js");
+const ServerFunction = require("./ServerFunction.js");
 const ServerRNG = require("./ServerRNG.js");
 const ServerScheduler = require("./ServerScheduler.js");
 const ServerTask = require("./ServerTask.js");
@@ -72,9 +73,13 @@ class Server {
         this.serverScheduler.addTask(time, serverTask);
 
         // Use the arguments to generate entropy to make things more random.
+        let tick = this.serverScheduler.getTick(time)
+
         this.serverEntropy.processBoolean(animation !== undefined);
-        this.serverEntropy.processNumber(this.serverScheduler.getTick(time));
-        this.serverEntropy.processString(serverTask.args[serverTask.args.length - 1].fcnName);
+        this.serverEntropy.processNumber(tick);
+
+        let innerServerTask = serverTask.args[serverTask.args.length - 1];
+        this.serverEntropy.processString(ServerFunction.getFunctionString(innerServerTask.fcnName), tick);
     }
 
     scheduleTask(animation, time, count, serverTask) {

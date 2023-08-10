@@ -21,14 +21,11 @@ class ServerEntropy {
         this.entropyArray = newFront.concat(newBack);
     }
 
-    processString(s) {
-        // Inflate string until it is exactly as long as entropyArray.
-        // Then, for each character add its code value to the array.
-        s = s.repeat(Math.ceil(this.entropyArray.length / s.length));
-        s = s.substring(0, 64);
+    processString(s, offset) {
+        // For each character, add its code value to the array.
         for(let i = 0; i < s.length; i++) {
             let code = s.charCodeAt(i);
-            this.entropyArray[i] += code;
+            this.entropyArray[(offset + i) % this.entropyArray.length] += code;
         }
     }
 

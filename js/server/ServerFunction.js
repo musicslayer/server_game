@@ -1,5 +1,6 @@
 class ServerFunction {
     static functionMap = new Map();
+    static functionStringMap = new Map(); // Used to generate entropy.
 
     static init() {
         // Manually add all functions that could be scheduled on the server.
@@ -151,10 +152,19 @@ class ServerFunction {
         map.set("teleport_home", (entity) => {
             entity.doTeleportHome();
         });
+
+        for(let key of map.keys()) {
+            let fcnString = ServerFunction.functionMap.get(key).toString();
+            ServerFunction.functionStringMap.set(key, fcnString);
+        }
     }
 
     static getFunction(name) {
         return ServerFunction.functionMap.get(name);
+    }
+
+    static getFunctionString(name) {
+        return ServerFunction.functionStringMap.get(name);
     }
 }
 
