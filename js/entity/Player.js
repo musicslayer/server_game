@@ -37,10 +37,10 @@ class Player extends Entity {
         super.doSpawn();
 
         // Register regen task.
-        let serverTask = new ServerTask("regen", this);
+        let serverTask = new ServerTask(undefined, 1, Number.POSITIVE_INFINITY, "regen", this);
 
         this.ownServerTask(serverTask);
-        this.getServer().scheduleTask(undefined, 1, Number.POSITIVE_INFINITY, serverTask);
+        this.getServer().scheduleTask(serverTask);
     }
     
     doAddExperience(experience) {

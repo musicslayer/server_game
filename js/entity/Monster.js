@@ -40,10 +40,10 @@ class Monster extends Entity {
         super.doSpawn();
 
         // Use this to gradually decrease aggro over time.
-        let serverTask = new ServerTask("decrease_aggro", this);
+        let serverTask = new ServerTask(undefined, this.aggroForgivenessTime, Number.POSITIVE_INFINITY, "decrease_aggro", this);
 
         this.ownServerTask(serverTask);
-        this.getServer().scheduleTask(undefined, this.aggroForgivenessTime, Number.POSITIVE_INFINITY, serverTask);
+        this.getServer().scheduleTask(serverTask);
 
         // Monster activities are controlled by an AI class.
         this.ai.generateNextActivity(this);

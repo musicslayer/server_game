@@ -66,7 +66,7 @@ class Server {
         return this.serverRNG.getRandomInteger(entropyArray, max);
     }
 
-    addTask(serverTask) {
+    scheduleTask(serverTask) {
         serverTask.server = this;
 
         serverTask.animation?.scheduleTasks(this);
@@ -78,14 +78,6 @@ class Server {
         this.serverEntropy.processBoolean(serverTask.animation !== undefined);
         this.serverEntropy.processNumber(tick);
         this.serverEntropy.processString(ServerFunction.getFunctionString(serverTask.fcnName), tick);
-    }
-
-    scheduleTask(animation, time, count, serverTask) {
-        serverTask.animation = animation;
-        serverTask.time = time;
-        serverTask.count = count;
-
-        this.addTask(serverTask);
     }
 
     serialize(writer) {

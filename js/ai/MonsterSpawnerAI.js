@@ -9,12 +9,12 @@ class MonsterSpawnerAI extends AI {
         }
 
         if(monsterSpawner.monsterCount < monsterSpawner.maxMonsterCount) {
-            let serverTask = new ServerTask("spawn_monster", monsterSpawner);
-            monsterSpawner.getServer().scheduleTask(undefined, 0, 1, serverTask);
+            let serverTask = new ServerTask(undefined, 0, 1, "spawn_monster", monsterSpawner);
+            monsterSpawner.getServer().scheduleTask(serverTask);
         }
 
-        let serverTask2 = new ServerTask("ai_generate_next_activity", monsterSpawner);
-        monsterSpawner.getServer().scheduleTask(undefined, monsterSpawner.spawnTime, 1, serverTask2);
+        let serverTask2 = new ServerTask(undefined, monsterSpawner.spawnTime, 1, "ai_generate_next_activity", monsterSpawner);
+        monsterSpawner.getServer().scheduleTask(serverTask2);
     }
 }
 

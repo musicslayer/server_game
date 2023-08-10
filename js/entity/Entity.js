@@ -117,8 +117,8 @@ class Entity extends UID {
     doMakeInvincible(invincibleSeconds) {
         this.isInvincible = true;
 
-        let serverTask = new ServerTask("invincible_off", entity);
-        this.getServer().scheduleTask(undefined, invincibleSeconds, 1, serverTask);
+        let serverTask = new ServerTask(undefined, invincibleSeconds, 1, "invincible_off", entity);
+        this.getServer().scheduleTask(serverTask);
     }
 
     doCheckCollision() {
@@ -166,8 +166,8 @@ class Entity extends UID {
         // Spawns this entity as loot (i.e. it will despawn after a certain amount of time).
         this.doSpawn();
 
-        let serverTask = new ServerTask("despawn", this);
-        this.getServer().scheduleTask(undefined, Performance.LOOT_TIME, 1, serverTask);
+        let serverTask = new ServerTask(undefined, Performance.LOOT_TIME, 1, "despawn", this);
+        this.getServer().scheduleTask(serverTask);
     }
 
     doTakeDamage(entity, damage) {

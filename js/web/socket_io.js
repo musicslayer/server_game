@@ -207,8 +207,8 @@ function attachAppListeners(socket, appState) {
 
 			player.setScreen(screen);
 			
-			let serverTask = new ServerTask("spawn", player);
-			player.getServer().scheduleTask(undefined, 0, 1, serverTask);
+			let serverTask = new ServerTask(undefined, 0, 1, "spawn", player);
+			player.getServer().scheduleTask(serverTask);
 
 			let client = new Client(playerName, player);
         	client.key = key;
@@ -225,8 +225,8 @@ function attachAppListeners(socket, appState) {
 				// It's possible that a client is present but then a state is loaded where the player was despawned or did not exist.
 				if(client.player) {
 					if(client.player.isSpawned) {
-						let serverTask = new ServerTask("despawn", client.player);
-						client.player.getServer().scheduleTask(undefined, 0, 1, serverTask);
+						let serverTask = new ServerTask(undefined, 0, 1, "despawn", client.player);
+						client.player.getServer().scheduleTask(serverTask);
 					}
 
 					client.player.client = undefined;

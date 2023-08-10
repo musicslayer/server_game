@@ -336,11 +336,11 @@ class Client {
         if(!this.player.delayMap.get(delayType)) {
             this.player.delayMap.set(delayType, true);
 
-            let serverTask = new ServerTask(fcnName, ...args);
-            this.player.getServer().scheduleTask(animation, time, 1, serverTask);
+            let serverTask = new ServerTask(animation, time, 1, fcnName, ...args);
+            this.player.getServer().scheduleTask(serverTask);
 
-            let serverTask2 = new ServerTask("set_delay_off", this.player, delayType);
-            this.player.getServer().scheduleTask(undefined, delayTime, 1, serverTask2);
+            let serverTask2 = new ServerTask(undefined, delayTime, 1, "set_delay_off", this.player, delayType);
+            this.player.getServer().scheduleTask(serverTask2);
         }
     }
 

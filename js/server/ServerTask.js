@@ -14,7 +14,10 @@ class ServerTask {
     fcnName;
     args;
 
-    constructor(fcnName, ...args) {
+    constructor(animation, time, count, fcnName, ...args) {
+        this.animation = animation;
+        this.time = time;
+        this.count = count;
         this.fcnName = fcnName;
         this.args = args;
     }
@@ -26,7 +29,7 @@ class ServerTask {
 
             this.count--;
             if(this.count > 0) {
-                this.server.addTask(this);
+                this.server.scheduleTask(this);
             }
         }
     }
@@ -90,11 +93,8 @@ class ServerTask {
                 args.push(arg);
             }
 
-            serverTask = new ServerTask(fcnName, ...args);
+            serverTask = new ServerTask(animation, time, count, fcnName, ...args);
             serverTask.isCancelled = isCancelled;
-            serverTask.animation = animation;
-            serverTask.time = time;
-            serverTask.count = count;
 
             if(owner) {
                 serverTask.owner = owner;

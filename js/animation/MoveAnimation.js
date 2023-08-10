@@ -13,22 +13,19 @@ class MoveAnimation extends Animation {
         this.time = time;
     }
 
-    getAnimationServerTaskData() {
-        let dataArray = [];
+    scheduleTasks(server) {
         let frames = Performance.MOVEMENT_FRAMES;
             
         for(let a = 0; a < frames; a++) {
             let fraction = a / frames;
             let [shiftX, shiftY] = Util.getDirectionalShift(this.entity.direction);
 
-            let serverTask = new ServerTask("animation_shift", this.entity, fraction, shiftX, shiftY);
-            dataArray.push({"animation": undefined, "time": this.time * fraction, "serverTask": serverTask});
+            let serverTask = new ServerTask(undefined, this.time * fraction, 1, "animation_shift", this.entity, fraction, shiftX, shiftY);
+            server.scheduleTask(serverTask);
         }
 
-        let serverTask2 = new ServerTask("animation_reset", this.entity);
-        dataArray.push({"animation": undefined, "time": this.time, "serverTask": serverTask2});
-
-        return dataArray;
+        let serverTask2 = new ServerTask(undefined, this.time, 1, "animation_reset", this.entity);
+        server.scheduleTask(serverTask2);
     }
 }
 
