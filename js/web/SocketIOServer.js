@@ -8,15 +8,13 @@ const RateLimit = require("../security/RateLimit.js");
 const Reflection = require("../reflection/Reflection.js");
 const ServerTask = require("../server/ServerTask.js");
 
-// Used to limit the amount of socket connections that an IP can form at once.
-// TODO put in a class?
-const numAllowedSockets = 10;
-const numSocketsMap = new Map();
-
 class SocketIOServer {
+	// Used to limit the amount of socket connections that an IP can form at once.
+	numAllowedSockets = 10;
+	numSocketsMap = new Map();
+
 	server;
 	appState;
-	rateLimiter;
 
 	constructor(httpServer, appState) {
 		this.server = IO(httpServer.server, {
@@ -33,18 +31,18 @@ class SocketIOServer {
 	attachConnectionListeners() {
 		this.server.on("connection", (socket) => {
 			let ip = socket.handshake.address;
-			let numSockets = numSocketsMap.get(ip) ?? 0;
-			if(numSockets >= numAllowedSockets) {
+			let numSockets = this.numSocketsMap.get(ip) ?? 0;
+			if(numSockets >= this.numAllowedSockets) {
 				return;
 			}
 	
 			numSockets++;
-			numSocketsMap.set(ip, numSockets);
+			this.numSocketsMap.set(ip, numSockets);
 	
 			socket.on("disconnect", (reason) => {
-				let numSockets = numSocketsMap.get(ip);
+				let numSockets = this.numSocketsMap.get(ip);
 				numSockets--;
-				numSocketsMap.set(ip, numSockets);
+				this.numSocketsMap.set(ip, numSockets);
 			});
 	
 			this.attachAppListeners(socket);
