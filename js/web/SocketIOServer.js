@@ -54,7 +54,6 @@ class SocketIOServer {
 
 	attachAppListeners(socket) {
 		let ip = socket.handshake.address;
-		socket.secretValue = "ABCDEFG"
 
 		// Respond to account creation.
 		socket.on("on_account_creation", (username, password, callback) => {
