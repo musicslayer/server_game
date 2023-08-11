@@ -1,5 +1,8 @@
 const crypto = require("crypto");
 
+// BigInt can handle an arbitrary number of bits, but we want to use 64 bits to match the long data type in Java.
+const NUM_BITS = 64;
+
 class ServerRNG {
     // This is a BigInt so that we can handle larger numbers.
     seed;
@@ -24,7 +27,7 @@ class ServerRNG {
 
     getRandomInteger(arr, max) {
         this.seed += this.reduce(arr);
-        return this.nextInt(BigInt(max));
+        return Number(this.nextInt(BigInt(max)));
     }
 
     nextInt(n) {
@@ -46,10 +49,7 @@ class ServerRNG {
 
     next(bits) {
         this.seed = (this.seed * 0x5DEECE66Dn + 0xBn) & 281474976710655n;
-        return this.seed >> (48n - bits);
-
-        // TODO Should be 
-        // return this.seed >>> (48n - bits);
+        return unsignedRightShift(this.seed, 48n - bits);
     }
 
     serialize(writer) {
@@ -75,6 +75,26 @@ class ServerRNG {
         reader.endObject();
         return serverRNG;
     }
+}
+
+function unsignedRightShift(value, shift) {
+    // Implement >>> for BigInt.
+    let result;
+
+    if(value >= 0) {
+        // >> and >>> are the same.
+        result = value >> shift;
+    }
+    else {
+        // Manually perform the unsigned shift by converting the value into a binary string.
+        let n = -value - 1n;
+        let bin = n.toString(2).padStart(NUM_BITS, "0");
+        let binFlip = bin.split("").reduce((a, b) => a + (1 - Number(b)), "")
+        let binShift = "0".repeat(Number(shift)) + binFlip.substring(0, binFlip.length - Number(shift));
+        result = BigInt("0b" + binShift);
+    }
+
+    return result;
 }
 
 module.exports = ServerRNG;
