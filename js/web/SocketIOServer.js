@@ -9,12 +9,14 @@ const Reflection = require("../reflection/Reflection.js");
 const ServerTask = require("../server/ServerTask.js");
 
 // Used to limit the amount of socket connections that an IP can form at once.
+// TODO put in a class?
 const numAllowedSockets = 10;
 const numSocketsMap = new Map();
 
 class SocketIOServer {
 	server;
 	appState;
+	rateLimiter;
 
 	constructor(httpServer, appState) {
 		this.server = IO(httpServer.server, {
@@ -51,14 +53,17 @@ class SocketIOServer {
 
 	attachAppListeners(socket) {
 		let ip = socket.handshake.address;
+		socket.secretValue = "ABCDEFG"
 
 		// Respond to account creation.
 		socket.on("on_account_creation", (username, password, callback) => {
 			RateLimit.rateLimitTask("create_account", ip, () => {
 				if(!validateCallback(callback)) {
+					socket.disconnect(true);
 					return;
 				}
 				if(!validateStrings(username, password)) {
+					socket.disconnect(true);
 					return;
 				}
 
@@ -76,10 +81,7 @@ class SocketIOServer {
 
 				callback({"isSuccess": true});
 			}, () => {
-				if(!validateCallback(callback)) {
-					return;
-				}
-				callback({"isSuccess": false, "error": "rate limit"});
+				socket.disconnect(true);
 			});
 		});
 
@@ -87,9 +89,11 @@ class SocketIOServer {
 		socket.on("on_character_creation", (username, password, playerName, playerClass, callback) => {
 			RateLimit.rateLimitTask("create_character", ip, () => {
 				if(!validateCallback(callback)) {
+					socket.disconnect(true);
 					return;
 				}
 				if(!validateStrings(username, password, playerName, playerClass)) {
+					socket.disconnect(true);
 					return;
 				}
 
@@ -118,10 +122,7 @@ class SocketIOServer {
 
 				callback({"isSuccess": true});
 			}, () => {
-				if(!validateCallback(callback)) {
-					return;
-				}
-				callback({"isSuccess": false, "error": "rate limit"});
+				socket.disconnect(true);
 			});
 		});
 
@@ -129,9 +130,11 @@ class SocketIOServer {
 		socket.on("on_login", (username, password, playerName, serverName, worldName, callback) => {
 			RateLimit.rateLimitTask("login", ip, () => {
 				if(!validateCallback(callback)) {
+					socket.disconnect(true);
 					return;
 				}
 				if(!validateStrings(username, password, playerName, serverName, worldName)) {
+					socket.disconnect(true);
 					return;
 				}
 
@@ -223,10 +226,7 @@ class SocketIOServer {
 
 				callback({"isSuccess": true});
 			}, () => {
-				if(!validateCallback(callback)) {
-					return;
-				}
-				callback({"isSuccess": false, "error": "rate limit"});
+				socket.disconnect(true);
 			});
 		});
 	}
@@ -238,19 +238,18 @@ class SocketIOServer {
 		socket.on("on_key_press", (keys, callback) => {
 			RateLimit.rateLimitTask("input", ip, () => {
 				if(!validateCallback(callback)) {
+					socket.disconnect(true);
 					return;
 				}
 				if(!validateKeys(keys)) {
+					socket.disconnect(true);
 					return;
 				}
 	
 				client.onKeyPress(keys);
 				callback();
 			}, () => {
-				if(!validateCallback(callback)) {
-					return;
-				}
-				callback({"isSuccess": false, "error": "rate limit"});
+				socket.disconnect(true);
 			});
 		});
 	
@@ -258,19 +257,18 @@ class SocketIOServer {
 		socket.on("on_controller_press", (buttons, callback) => {
 			RateLimit.rateLimitTask("input", ip, () => {
 				if(!validateCallback(callback)) {
+					socket.disconnect(true);
 					return;
 				}
 				if(!validateButtons(buttons)) {
+					socket.disconnect(true);
 					return;
 				}
 	
 				client.onControllerPress(buttons);
 				callback();
 			}, () => {
-				if(!validateCallback(callback)) {
-					return;
-				}
-				callback({"isSuccess": false, "error": "rate limit"});
+				socket.disconnect(true);
 			});
 		});
 	
@@ -278,19 +276,18 @@ class SocketIOServer {
 		socket.on("on_controller_sticks", (axes, callback) => {
 			RateLimit.rateLimitTask("input", ip, () => {
 				if(!validateCallback(callback)) {
+					socket.disconnect(true);
 					return;
 				}
 				if(!validateAxes(axes)) {
+					socket.disconnect(true);
 					return;
 				}
 	
 				client.onControllerSticks(axes);
 				callback();
 			}, () => {
-				if(!validateCallback(callback)) {
-					return;
-				}
-				callback({"isSuccess": false, "error": "rate limit"});
+				socket.disconnect(true);
 			});
 		});
 	
@@ -298,19 +295,18 @@ class SocketIOServer {
 		socket.on("on_mouse_click", (button, location, info, callback) => {
 			RateLimit.rateLimitTask("input", ip, () => {
 				if(!validateCallback(callback)) {
+					socket.disconnect(true);
 					return;
 				}
 				if(!validateMouse(button, location, info)) {
+					socket.disconnect(true);
 					return;
 				}
 	
 				client.onClick(button, location, info);
 				callback();
 			}, () => {
-				if(!validateCallback(callback)) {
-					return;
-				}
-				callback({"isSuccess": false, "error": "rate limit"});
+				socket.disconnect(true);
 			});
 		});
 	
@@ -318,22 +314,22 @@ class SocketIOServer {
 		socket.on("on_mouse_drag", (button, location1, info1, location2, info2, callback) => {
 			RateLimit.rateLimitTask("input", ip, () => {
 				if(!validateCallback(callback)) {
+					socket.disconnect(true);
 					return;
 				}
 				if(!validateMouse(button, location2, info2)) {
+					socket.disconnect(true);
 					return;
 				}
 				if(!validateMouse(button, location2, info2)) {
+					socket.disconnect(true);
 					return;
 				}
 	
 				client.onDrag(button, location1, info1, location2, info2);
 				callback();
 			}, () => {
-				if(!validateCallback(callback)) {
-					return;
-				}
-				callback({"isSuccess": false, "error": "rate limit"});
+				socket.disconnect(true);
 			});
 		});
 	
@@ -341,16 +337,14 @@ class SocketIOServer {
 		socket.on("get_client_data", (callback) => {
 			RateLimit.rateLimitTask("data", ip, () => {
 				if(!validateCallback(callback)) {
+					socket.disconnect(true);
 					return;
 				}
 	
 				let clientData = client.getClientData();
 				callback({"isSuccess": true, "clientData": clientData});
 			}, () => {
-				if(!validateCallback(callback)) {
-					return;
-				}
-				callback({"isSuccess": false, "error": "rate limit"});
+				socket.disconnect(true);
 			});
 		});
 	
@@ -358,16 +352,14 @@ class SocketIOServer {
 		socket.on("get_dev_data", (callback) => {
 			RateLimit.rateLimitTask("dev", ip, () => {
 				if(!validateCallback(callback)) {
+					socket.disconnect(true);
 					return;
 				}
 	
 				let devData = client.getDevData();
 				callback({"isSuccess": true, "devData": devData});
 			}, () => {
-				if(!validateCallback(callback)) {
-					return;
-				}
-				callback({"isSuccess": false, "error": "rate limit"});
+				socket.disconnect(true);
 			});
 		});
 	}
