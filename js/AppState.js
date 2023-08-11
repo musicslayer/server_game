@@ -1,8 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 
-const http = require("./web/http.js");
-const socket_io = require("./web/socket_io.js");
+const HTTPServer = require("./web/HTTPServer.js");
+const SocketIOServer = require("./web/SocketIOServer.js");
 const Zip = require("./zip/Zip.js");
 const Reflection = require("./reflection/Reflection.js");
 const DataBridge = require("./data/DataBridge.js");
@@ -21,6 +21,9 @@ class AppState {
     accountManager;
     clientManager;
     serverManager;
+
+    httpServer;
+    socketIOServer;
 
     lastSaveFolder;
     
@@ -42,9 +45,8 @@ class AppState {
         this.serverManager = ServerManager.createInitialServerManager();
 
         // Create servers to serve the web pages and communicate between front and back ends.
-        let httpServer = http.createHTTPServer();
-        //let httpsServer = https.createHTTPSServer();
-        socket_io.createSocketIOServer(httpServer, this);
+        this.httpServer = new HTTPServer();
+        this.socketIOServer = new SocketIOServer(this.httpServer, this);
     }
 
     validateFilesAndFolders() {
