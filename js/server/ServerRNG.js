@@ -1,20 +1,21 @@
 const crypto = require("crypto");
 
 class ServerRNG {
+    // This is a BigInt so that we can handle larger numbers.
     seed;
 
     setInitialSeed(s) {
-        let seedBuffer = crypto.createHash("sha256").update(Buffer.from(s, "utf-8")).digest();
+        let seedBuffer = crypto.createHash("sha512").update(Buffer.from(s, "utf-8")).digest();
+        seedBuffer = Array.from(seedBuffer, (x) => BigInt(x));
         this.seed = this.reduce(seedBuffer);
     }
 
     reduce(arr) {
-        let m = 1;
-        let f = 2;
-        let t = 0;
-        //for(let a of arr) {  // The seed cannot be too large because javascript doesn't support long integers.
-        for(let i = 0; i < 16; i++) {
-            t += m * arr[i];
+        let m = 1n;
+        let f = 2n;
+        let t = 0n;
+        for(let a of arr) {
+            t += m * a;
             m *= f;
         }
 
@@ -23,32 +24,32 @@ class ServerRNG {
 
     getRandomInteger(arr, max) {
         this.seed += this.reduce(arr);
-        return this.nextInt(max);
+        return this.nextInt(BigInt(max));
     }
 
     nextInt(n) {
         // Returns a random int [0, n)
         if((n & -n) === n) { // i.e., n is a power of 2
-            return ((n * this.next(31)) >> 31);
+            return (n * this.next(31n)) >> 31n;
         }
     
         let bits;
         let val;
         do {
-            bits = this.next(31);
+            bits = this.next(31n);
             val = bits % n;
         }
-        while(bits - val + (n - 1) < 0);
+        while(bits - val + (n - 1n) < 0n);
 
         return val;
     }
 
     next(bits) {
-        // To avoid negative values for the seed, use BigInt to do the calculation and then revert back to a regular Number.
-        //this.seed = Number(BigInt(this.seed * 0x5DEECE66D + 0xB) & BigInt(281474976710655));
+        this.seed = (this.seed * 0x5DEECE66Dn + 0xBn) & 281474976710655n;
+        return this.seed >> (48n - bits);
 
-        this.seed = (this.seed * 0x5DEECE66D + 0xB) & 281474976710655;
-        return this.seed >>> (48 - bits);
+        // TODO Should be 
+        // return this.seed >>> (48n - bits);
     }
 
     serialize(writer) {
@@ -65,7 +66,7 @@ class ServerRNG {
         let version = reader.deserialize("!V!", "String");
         if(version === "1") {
             serverRNG = new ServerRNG();
-            serverRNG.seed = reader.deserialize("seed", "Number");
+            serverRNG.seed = reader.deserialize("seed", "BigInt");
         }
         else {
             throw("Unknown version number: " + version);

@@ -16,7 +16,7 @@ class ServerScheduler {
     worker;
 
     getTick(time) {
-        return Math.floor(this.currentTick + time * Performance.TICK_RATE);
+        return Math.floor(this.currentTick + (time * Performance.TICK_RATE) / Performance.TICK_SPEED);
     }
 
     addTask(serverTask) {

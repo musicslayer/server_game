@@ -238,6 +238,9 @@ function wrapValue(fcnName, value) {
     else if(className === "Number") {
         return new DataWrapper.NumberWrapper(value);
     }
+    else if(className === "BigInt") {
+        return new DataWrapper.BigIntWrapper(value);
+    }
     else if(className === "String") {
         return new DataWrapper.StringWrapper(value);
     }

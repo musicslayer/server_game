@@ -436,6 +436,9 @@ function wrapClass(fcnName, className) {
     else if(className === "Number") {
         return "DataWrapper.NumberWrapper";
     }
+    else if(className === "BigInt") {
+        return "DataWrapper.BigIntWrapper";
+    }
     else if(className === "String") {
         return "DataWrapper.StringWrapper";
     }

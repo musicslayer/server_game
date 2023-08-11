@@ -46,6 +46,30 @@ class NumberWrapper {
     }
 }
 
+class BigIntWrapper {
+    value;
+
+    constructor(value) {
+        this.value = value;
+    }
+
+    serialize(writer) {
+        writer.putString(this.value);
+    }
+
+    static deserialize(reader) {
+        return BigInt(reader.getString());
+    }
+
+    reference(writer) {
+        writer.putString(this.value);
+    }
+
+    static dereference(reader) {
+        return BigInt(reader.getString());
+    }
+}
+
 class StringWrapper {
     value;
 
@@ -110,4 +134,5 @@ function unescape(e) {
 
 module.exports.BooleanWrapper = BooleanWrapper;
 module.exports.NumberWrapper = NumberWrapper;
+module.exports.BigIntWrapper = BigIntWrapper;
 module.exports.StringWrapper = StringWrapper;

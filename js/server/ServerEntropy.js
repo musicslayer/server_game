@@ -1,5 +1,5 @@
 class ServerEntropy {
-    entropyArray = Array.from({length: 64}, () => 0);
+    entropyArray = Array.from({length: 64}, () => 0n);
 
     processBoolean(b) {
         // Flip the sign of every other element, offset by the boolean.
@@ -24,7 +24,7 @@ class ServerEntropy {
     processString(s, offset) {
         // For each character, add its code value to the array.
         for(let i = 0; i < s.length; i++) {
-            let code = s.charCodeAt(i);
+            let code = BigInt(s.charCodeAt(i));
             this.entropyArray[(offset + i) % this.entropyArray.length] += code;
         }
     }
@@ -43,7 +43,7 @@ class ServerEntropy {
         let version = reader.deserialize("!V!", "String");
         if(version === "1") {
             serverEntropy = new ServerEntropy();
-            serverEntropy.entropyArray = reader.deserializeArray("entropyArray", "Number");
+            serverEntropy.entropyArray = reader.deserializeArray("entropyArray", "BigInt");
         }
         else {
             throw("Unknown version number: " + version);
