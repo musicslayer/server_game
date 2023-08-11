@@ -85,7 +85,7 @@ class Client {
         }
     }
 
-    async onKeyPress(keys) {
+    onKeyPress(keys) {
         let inputs = this.keyboard.processKeyPress(keys);
 
         // Inventory (only one will be executed)

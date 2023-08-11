@@ -4,34 +4,13 @@ const Account = require("../account/Account.js");
 const Character = require("../account/Character.js");
 const Client = require("../client/Client.js");
 const Entity = require("../entity/Entity.js");
+const RateLimit = require("../security/RateLimit.js");
 const Reflection = require("../reflection/Reflection.js");
 const ServerTask = require("../server/ServerTask.js");
 
 // Used to limit the amount of socket connections that an IP can form at once.
 const numAllowedSockets = 10;
 const numSocketsMap = new Map();
-
-// Used to limit the amount of messages that any IP can send per second.
-const numAllowedAccountOperations = 1;
-const numAllowedInputOperations = 1000;
-const numAllowedDataOperations = 1000;
-const numAllowedDevOperations = 1000;
-
-const numAccountCreationsMap = new Map();
-const numCharacterCreationsMap = new Map();
-const numLoginsMap = new Map();
-const numInputsMap = new Map();
-const numDatasMap = new Map();
-const numDevsMap = new Map();
-
-setInterval(() => {
-	numAccountCreationsMap.clear();
-	numCharacterCreationsMap.clear();
-	numLoginsMap.clear();
-	numInputsMap.clear();
-	numDatasMap.clear();
-	numDevsMap.clear();
-}, 1000);
 
 class SocketIOServer {
 	server;
@@ -75,7 +54,7 @@ class SocketIOServer {
 
 		// Respond to account creation.
 		socket.on("on_account_creation", (username, password, callback) => {
-			rateLimitAccountCreationTask(ip, () => {
+			RateLimit.rateLimitTask("create_account", ip, () => {
 				if(!validateCallback(callback)) {
 					return;
 				}
@@ -106,7 +85,7 @@ class SocketIOServer {
 
 		// Respond to character creation.
 		socket.on("on_character_creation", (username, password, playerName, playerClass, callback) => {
-			rateLimitCharacterCreationTask(ip, () => {
+			RateLimit.rateLimitTask("create_character", ip, () => {
 				if(!validateCallback(callback)) {
 					return;
 				}
@@ -148,7 +127,7 @@ class SocketIOServer {
 
 		// Respond to login.
 		socket.on("on_login", (username, password, playerName, serverName, worldName, callback) => {
-			rateLimitLoginTask(ip, () => {
+			RateLimit.rateLimitTask("login", ip, () => {
 				if(!validateCallback(callback)) {
 					return;
 				}
@@ -256,8 +235,8 @@ class SocketIOServer {
 		let ip = socket.handshake.address;
 	
 		// Respond to key presses.
-		socket.on("on_key_press", async (keys, callback) => {
-			await rateLimitInputTask(ip, async () => {
+		socket.on("on_key_press", (keys, callback) => {
+			RateLimit.rateLimitTask("input", ip, () => {
 				if(!validateCallback(callback)) {
 					return;
 				}
@@ -265,9 +244,9 @@ class SocketIOServer {
 					return;
 				}
 	
-				await client.onKeyPress(keys);
+				client.onKeyPress(keys);
 				callback();
-			}, async () => {
+			}, () => {
 				if(!validateCallback(callback)) {
 					return;
 				}
@@ -277,7 +256,7 @@ class SocketIOServer {
 	
 		// Respond to controller button presses.
 		socket.on("on_controller_press", (buttons, callback) => {
-			rateLimitInputTask(ip, async () => {
+			RateLimit.rateLimitTask("input", ip, () => {
 				if(!validateCallback(callback)) {
 					return;
 				}
@@ -287,7 +266,7 @@ class SocketIOServer {
 	
 				client.onControllerPress(buttons);
 				callback();
-			}, async () => {
+			}, () => {
 				if(!validateCallback(callback)) {
 					return;
 				}
@@ -297,7 +276,7 @@ class SocketIOServer {
 	
 		// Respond to controller analog sticks.
 		socket.on("on_controller_sticks", (axes, callback) => {
-			rateLimitInputTask(ip, async () => {
+			RateLimit.rateLimitTask("input", ip, () => {
 				if(!validateCallback(callback)) {
 					return;
 				}
@@ -307,7 +286,7 @@ class SocketIOServer {
 	
 				client.onControllerSticks(axes);
 				callback();
-			}, async () => {
+			}, () => {
 				if(!validateCallback(callback)) {
 					return;
 				}
@@ -317,7 +296,7 @@ class SocketIOServer {
 	
 		// Respond to mouse clicks.
 		socket.on("on_mouse_click", (button, location, info, callback) => {
-			rateLimitInputTask(ip, async () => {
+			RateLimit.rateLimitTask("input", ip, () => {
 				if(!validateCallback(callback)) {
 					return;
 				}
@@ -327,7 +306,7 @@ class SocketIOServer {
 	
 				client.onClick(button, location, info);
 				callback();
-			}, async () => {
+			}, () => {
 				if(!validateCallback(callback)) {
 					return;
 				}
@@ -337,7 +316,7 @@ class SocketIOServer {
 	
 		// Respond to mouse drags.
 		socket.on("on_mouse_drag", (button, location1, info1, location2, info2, callback) => {
-			rateLimitInputTask(ip, async () => {
+			RateLimit.rateLimitTask("input", ip, () => {
 				if(!validateCallback(callback)) {
 					return;
 				}
@@ -350,7 +329,7 @@ class SocketIOServer {
 	
 				client.onDrag(button, location1, info1, location2, info2);
 				callback();
-			}, async () => {
+			}, () => {
 				if(!validateCallback(callback)) {
 					return;
 				}
@@ -360,25 +339,13 @@ class SocketIOServer {
 	
 		// Send the client all the data needed to draw the player's screen.
 		socket.on("get_client_data", (callback) => {
-			rateLimitDataTask(ip, () => {
+			RateLimit.rateLimitTask("data", ip, () => {
 				if(!validateCallback(callback)) {
 					return;
 				}
 	
 				let clientData = client.getClientData();
-				callback(clientData);
-			});
-		});
-	
-		// Send developer data to the client.
-		socket.on("get_dev_data", (callback) => {
-			rateLimitDevTask(ip, () => {
-				if(!validateCallback(callback)) {
-					return;
-				}
-	
-				let devData = client.getDevData();
-				callback(devData);
+				callback({"isSuccess": true, "clientData": clientData});
 			}, () => {
 				if(!validateCallback(callback)) {
 					return;
@@ -386,84 +353,23 @@ class SocketIOServer {
 				callback({"isSuccess": false, "error": "rate limit"});
 			});
 		});
-	}
-}
-
-function rateLimitAccountCreationTask(ip, task, rtask) {
-	let N = numAccountCreationsMap.get(ip) ?? 0;
-	if(N < numAllowedAccountOperations) {
-		N++;
-		numAccountCreationsMap.set(ip, N);
-
-		task();
-	}
-	else {
-		rtask();
-	}
-}
-
-function rateLimitCharacterCreationTask(ip, task, rtask) {
-	let N = numCharacterCreationsMap.get(ip) ?? 0;
-	if(N < numAllowedAccountOperations) {
-		N++;
-		numCharacterCreationsMap.set(ip, N);
-
-		task();
-	}
-	else {
-		rtask();
-	}
-}
-
-function rateLimitLoginTask(ip, task, rtask) {
-	let N = numLoginsMap.get(ip) ?? 0;
-	if(N < numAllowedAccountOperations) {
-		N++;
-		numLoginsMap.set(ip, N);
-
-		task();
-	}
-	else {
-		rtask();
-	}
-}
-
-async function rateLimitInputTask(ip, task, rtask) {
-	let N = numInputsMap.get(ip) ?? 0;
-	if(N < numAllowedInputOperations) {
-		N++;
-		numInputsMap.set(ip, N);
-
-		await task();
-	}
-	else {
-		await rtask();
-	}
-}
-
-function rateLimitDataTask(ip, task, rtask) {
-	let N = numDatasMap.get(ip) ?? 0;
-	if(N < numAllowedDataOperations) {
-		N++;
-		numDatasMap.set(ip, N);
-
-		task();
-	}
-	else {
-		rtask();
-	}
-}
-
-function rateLimitDevTask(ip, task, rtask) {
-	let N = numDevsMap.get(ip) ?? 0;
-	if(N < numAllowedDevOperations) {
-		N++;
-		numDevsMap.set(ip, N);
-		
-		task();
-	}
-	else {
-		rtask();
+	
+		// Send developer data to the client.
+		socket.on("get_dev_data", (callback) => {
+			RateLimit.rateLimitTask("dev", ip, () => {
+				if(!validateCallback(callback)) {
+					return;
+				}
+	
+				let devData = client.getDevData();
+				callback({"isSuccess": true, "devData": devData});
+			}, () => {
+				if(!validateCallback(callback)) {
+					return;
+				}
+				callback({"isSuccess": false, "error": "rate limit"});
+			});
+		});
 	}
 }
 

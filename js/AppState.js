@@ -4,6 +4,7 @@ const path = require("path");
 const HTTPServer = require("./web/HTTPServer.js");
 const SocketIOServer = require("./web/SocketIOServer.js");
 const Zip = require("./zip/Zip.js");
+const RateLimit = require("./security/RateLimit.js");
 const Reflection = require("./reflection/Reflection.js");
 const DataBridge = require("./data/DataBridge.js");
 const AccountManager = require("./account/AccountManager.js");
@@ -35,6 +36,7 @@ class AppState {
         await Zip.createZipFileFromFolder(ZIP_FILE_PATH, ZIP_SOURCE_FOLDER);
 
         // Initialize static maps.
+        RateLimit.init();
         Reflection.init();
         ServerFunction.init();
         UID.init();

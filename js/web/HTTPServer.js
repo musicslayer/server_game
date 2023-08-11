@@ -6,6 +6,7 @@ const FAVICON_FILE = "favicon.ico";
 const HTML_HOME = "html/index.html";
 const HTML_IMAGE_CATALOG = "html/ImageCatalog.js";
 const HTML_JSZIP = "html/jszip.min.js";
+const IMAGE_ZIP = "assets/image.zip";
 
 const SERVER_PORT = 80;
 const SERVER_REQUEST_TIMEOUT = 30000; // milliseconds
@@ -14,7 +15,7 @@ class HTTPServer {
     server;
 
     constructor() {
-        this.server = http.createServer(async (req, res) => {
+        this.server = http.createServer((req, res) => {
             res.isEnded = false;
     
             try {
@@ -26,51 +27,41 @@ class HTTPServer {
                     return;
                 }
     
-                // Special case for favicon. Use exact match.
-                if(req.url === "/favicon.ico") {
-                    //console.log("HTTP Favicon");
-    
-                    serveFavicon(res);
-                    return;
-                }
-    
                 // Serve pages.
                 let pathname = url.parse(req.url, true).pathname;
                 //console.log("HTTP Serve Pathname " + pathname);
     
-                let pageName;
                 switch(pathname) {
                     case "/": {
-                        pageName = "Home";
-                        serveHTML(res, HTML_HOME);
+                        serveFile(res, "text/html", HTML_HOME);
+                        break;
+                    }
+                    case "/favicon.ico": {
+                        serveFile(res, "image/x-icon", FAVICON_FILE);
                         break;
                     }
                     case "/ImageCatalog.js": {
-                        pageName = "ImageCatalog";
-                        serveJS(res, HTML_IMAGE_CATALOG);
+                        serveFile(res, "application/javascript", HTML_IMAGE_CATALOG);
                         break;
                     }
                     case "/jszip.min.js": {
-                        pageName = "JSZip";
-                        serveJS(res, HTML_JSZIP);
+                        serveFile(res, "application/javascript", HTML_JSZIP);
                         break;
                     }
                     case "/images": {
-                        pageName = "image";
-                        await serveImages(res);
+                        serveFile(res, "application/zip", IMAGE_ZIP);
                         break;
                     }
                     default: {
-                        pageName = "Default";
-                        serveError(res, 404, "Error 404: Page not found.");
+                        serveError(res, 404, "Error 404: Page not found.\n" + pathname);
                         break;
                     }
                 }
     
-                //console.log("HTTP Serve Page Success " + pageName);
+                //console.log("HTTP Serve Page Success: " + pathname);
             }
             catch(err) {
-                //console.log("HTTP Serve Page Failure " + pageName + "\n" + err);
+                //console.log("HTTP Serve Page Failure: " + pathname + "\n" + err);
     
                 serveError(res, 400, "Error processing request.");
             }
@@ -84,6 +75,15 @@ class HTTPServer {
     }
 }
 
+function serveFile(res, contentType, file) {
+	if(!res.isEnded) {
+		res.isEnded = true;
+		res.statusCode = 200;
+		res.setHeader("Content-Type", contentType);
+		fs.createReadStream(file).pipe(res);
+	}
+}
+
 function serveError(res, statusCode, str) {
 	if(!res.isEnded) {
 		res.isEnded = true;
@@ -91,45 +91,6 @@ function serveError(res, statusCode, str) {
 		res.setHeader("Content-Type", "text/plain");
 		res.write(str);
 		res.end();
-	}
-}
-
-function serveFavicon(res) {
-	if(!res.isEnded) {
-		res.isEnded = true;
-		res.statusCode = 200;
-		res.setHeader("Content-Type", "image/x-icon");
-		fs.createReadStream(FAVICON_FILE).pipe(res);
-	}
-}
-
-function serveHTML(res, htmlFile) {
-	if(!res.isEnded) {
-		res.isEnded = true;
-		res.statusCode = 200;
-		res.setHeader("Content-Type", "text/html");
-		fs.createReadStream(htmlFile).pipe(res);
-	}
-}
-
-function serveJS(res, htmlFile) {
-	if(!res.isEnded) {
-		res.isEnded = true;
-		res.statusCode = 200;
-		res.setHeader("Content-Type", "application/javascript");
-		fs.createReadStream(htmlFile).pipe(res);
-	}
-}
-
-async function serveImages(res) {
-	let file = "assets/image.zip";
-
-	if(!res.isEnded) {
-		res.isEnded = true;
-		res.statusCode = 200;
-		res.setHeader("Content-Type", "image/png");
-
-		fs.createReadStream(file).pipe(res);
 	}
 }
 

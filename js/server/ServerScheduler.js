@@ -45,7 +45,7 @@ class ServerScheduler {
         });
     };
 
-    async endServerTick() {
+    endServerTick() {
         // We need to manually end worker threads when a server is no longer in use.
         this.isCancelled = true;
         this.worker.terminate();
