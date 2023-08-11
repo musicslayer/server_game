@@ -6,6 +6,7 @@ const FAVICON_FILE = "favicon.ico";
 const HTML_HOME = "html/index.html";
 const HTML_IMAGE_CATALOG = "html/ImageCatalog.js";
 const HTML_JSZIP = "html/jszip.min.js";
+const HTML_SOCKETIO = "html/socket.io.min.js";
 const IMAGE_ZIP = "assets/image.zip";
 
 const SERVER_PORT = 80;
@@ -46,6 +47,10 @@ class HTTPServer {
                     }
                     case "/jszip.min.js": {
                         serveFile(res, "application/javascript", HTML_JSZIP);
+                        break;
+                    }
+                    case "/socket.io.min.js": {
+                        serveFile(res, "application/javascript", HTML_SOCKETIO);
                         break;
                     }
                     case "/images": {

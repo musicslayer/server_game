@@ -20,7 +20,10 @@ class SocketIOServer {
 		this.server = IO(httpServer.server, {
 			// Use these options to only allow websockets and avoid memory leaks.
 			allowUpgrades: false,
-			transports: ["websocket"]
+			transports: ["websocket"],
+
+			// Use this so we don't serve clients extra files that we don't need.
+			serveClient: false
 		});
 
 		this.appState = appState;
