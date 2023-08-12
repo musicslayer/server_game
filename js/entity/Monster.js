@@ -26,7 +26,7 @@ class Monster extends Entity {
     aggroForgiveness = 10;
     aggroForgivenessTime = 10;
 
-    lastPlayer;
+    lastPlayer_uid;
 
     getName() {
         return "Monster";
@@ -56,11 +56,11 @@ class Monster extends Entity {
 
         // If damage came from a player, increase aggro.
         if(rootEntity.isPlayer) {
-            this.lastPlayer = rootEntity;
+            this.setLastPlayer(rootEntity);
 
-            let aggro = this.aggroMap.get(rootEntity) ?? 0;
+            let aggro = this.aggroMap.get(rootEntity.uid) ?? 0;
             aggro = Math.min(aggro + this.aggroGain, this.maxAggro);
-            this.aggroMap.set(rootEntity, aggro);
+            this.aggroMap.set(rootEntity.uid, aggro);
         }
 
         if(this.health === 0) {
@@ -74,7 +74,7 @@ class Monster extends Entity {
             gold.doSpawnAsLoot();
 
             this.doDespawn();
-            this.owner?.onMonsterDespawn();
+            this.getOwner()?.onMonsterDespawn();
 
             if(rootEntity.isPlayer) {
                 rootEntity.doAddExperience(this.experienceReward);
@@ -84,16 +84,17 @@ class Monster extends Entity {
 
     decreaseAggro() {
         // If a player is no longer on the screen, decrease the aggro for that player.
-        for(let player of this.aggroMap.keys()) {
+        for(let player_uid of this.aggroMap.keys()) {
+            let player = Entity.getEntity(player_uid);
             if(!this.screen.entities.includes(player)) {
-                let aggro = this.aggroMap.get(player) ?? 0;
+                let aggro = this.aggroMap.get(player.uid) ?? 0;
                 let newAggro = Math.max(aggro - this.aggroForgiveness, 0);
 
                 if(newAggro === 0) {
-                    this.aggroMap.delete(player);
+                    this.aggroMap.delete(player.uid);
                 }
                 else {
-                    this.aggroMap.set(player, newAggro);
+                    this.aggroMap.set(player.uid, newAggro);
                 }
             }
         }
@@ -111,7 +112,7 @@ class Monster extends Entity {
                 continue;
             }
 
-            let aggro = this.aggroMap.get(entity) ?? 0;
+            let aggro = this.aggroMap.get(entity.uid) ?? 0;
             max = Math.max(max, aggro);
 
             if(max === aggro) {
@@ -125,8 +126,8 @@ class Monster extends Entity {
         }
 
         // If the last player to hit the monster is tied for first, choose that one.
-        if(players.includes(this.lastPlayer)) {
-            return this.lastPlayer;
+        if(players.includes(this.getLastPlayer())) {
+            return this.getLastPlayer();
         }
 
         // Otherwise, just return the first player in the array.

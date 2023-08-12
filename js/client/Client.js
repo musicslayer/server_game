@@ -420,9 +420,9 @@ class Client {
 
         // Info
         let info = {};
-        info.className = Util.getClassName(this.player.selectedEntity);
-        info.name = this.player.selectedEntity?.getName();
-        info.text = this.player.selectedEntity?.getInfo();
+        info.className = Util.getClassName(this.player.getSelectedEntity());
+        info.name = this.player.getSelectedEntity()?.getName();
+        info.text = this.player.getSelectedEntity()?.getInfo();
 
         return {
             tiles: tiles,

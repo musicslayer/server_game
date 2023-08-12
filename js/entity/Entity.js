@@ -11,7 +11,7 @@ class Entity extends UID {
     isPlayer = false;
     isAI = false;
 
-    owner; // e.g. The entity that spawned a projectile is the owner.
+    owner_uid; // e.g. The entity that spawned a projectile is the owner.
 
     health = 0;
     maxHealth = 0;
@@ -44,7 +44,7 @@ class Entity extends UID {
 
     isMoveInProgress = false;
 
-    selectedEntity;
+    selectedEntity_uid;
     selectedSlot = 0;
     delayMap = new Map();
 
@@ -80,6 +80,10 @@ class Entity extends UID {
         let entity = Reflection.createInstance(className, ...args) ?? Reflection.createInstance("UnknownEntity", ...args);
         entity.stackSize = stackSize;
         return entity;
+    }
+
+    static getEntity(uid) {
+        return UID.uidMap.get("Entity").get(uid);
     }
 
     getUIDMapName() {
@@ -153,7 +157,7 @@ class Entity extends UID {
     }
 
     doSpawnEntity(entity) {
-        entity.owner = this;
+        entity.setOwner(this);
         entity.doSpawn();
     }
 
@@ -398,11 +402,11 @@ class Entity extends UID {
             // Swap the selected slots.
             if(this.inventory.itemMap.has(slot1) && this.inventory.itemMap.has(slot2)) {
                 if(this.selectedSlot === slot1) {
-                    this.selectedEntity = this.inventory.itemMap.get(slot1);
+                    this.setSelectedEntity(this.inventory.itemMap.get(slot1));
                     this.selectedSlot = slot2;
                 }
                 else if(this.selectedSlot === slot2) {
-                    this.selectedEntity = this.inventory.itemMap.get(slot2);
+                    this.setSelectedEntity(this.inventory.itemMap.get(slot2));
                     this.selectedSlot = slot1;
                 }
             }
@@ -415,14 +419,14 @@ class Entity extends UID {
     doInventoryNext() {
         if(this.inventory) {
             this.selectedSlot = this.selectedSlot === this.inventory.maxSlots - 1 ? 0 : this.selectedSlot + 1;
-            this.selectedEntity = this.inventory.itemMap.get(this.selectedSlot);
+            this.setSelectedEntity(this.inventory.itemMap.get(this.selectedSlot));
         }
     }
 
     doInventoryPrevious() {
         if(this.inventory) {
             this.selectedSlot = this.selectedSlot === 0 ? this.inventory.maxSlots - 1 : this.selectedSlot - 1;
-            this.selectedEntity = this.inventory.itemMap.get(this.selectedSlot);
+            this.setSelectedEntity(this.inventory.itemMap.get(this.selectedSlot));
         }
     }
 
@@ -431,13 +435,13 @@ class Entity extends UID {
             let item = this.inventory.itemMap.get(slot);
             if(item) {
                 this.selectedSlot = slot;
-                this.selectedEntity = item;
+                this.setSelectedEntity(item);
             }
         }
     }
 
     doSelectEntityScreen(x, y) {
-        this.selectedEntity = this.screen.getHighestEntity(x, y);
+        this.setSelectedEntity(this.screen.getHighestEntity(x, y));
     }
 
 
@@ -479,8 +483,8 @@ class Entity extends UID {
     getRootEntity(entity) {
         let rootEntity = entity;
 
-        while(rootEntity.owner) {
-            rootEntity = rootEntity.owner;
+        while(rootEntity.getOwner()) {
+            rootEntity = rootEntity.getOwner();
         }
 
         return rootEntity;
@@ -545,6 +549,30 @@ class Entity extends UID {
         this.screenName = screen.name;
     }
 
+    getOwner() {
+        return Entity.getEntity(this.owner_uid);
+    }
+
+    setOwner(owner) {
+        this.owner_uid = owner.uid;
+    }
+
+    getSelectedEntity() {
+        return Entity.getEntity(this.selectedEntity_uid);
+    }
+
+    setSelectedEntity(selectedEntity) {
+        this.selectedEntity_uid = selectedEntity.uid;
+    }
+
+    getLastPlayer() {
+        return Entity.getEntity(this.lastPlayer_uid);
+    }
+
+    setLastPlayer(lastPlayer) {
+        this.lastPlayer_uid = lastPlayer.uid;
+    }
+
     serialize(writer) {
         writer.beginObject()
             .serialize("!V!", 1)
@@ -553,7 +581,7 @@ class Entity extends UID {
             .serialize("isSpawned", this.isSpawned)
             .serialize("isPlayer", this.isPlayer)
             .serialize("isAI", this.isAI)
-            .reference("owner", this.owner)
+            .serialize("owner_uid", this.owner_uid)
             .serialize("health", this.health)
             .serialize("maxHealth", this.maxHealth)
             .serialize("mana", this.mana)
@@ -573,7 +601,7 @@ class Entity extends UID {
             .serialize("isTangible", this.isTangible)
             .serialize("isActionBlocker", this.isActionBlocker)
             .serialize("isMoveInProgress", this.isMoveInProgress)
-            .reference("selectedEntity", this.selectedEntity)
+            .serialize("selectedEntity_uid", this.selectedEntity_uid)
             .serialize("selectedSlot", this.selectedSlot)
             .serializeMap("delayMap", this.delayMap)
             .serialize("moveTime", this.moveTime)
@@ -598,12 +626,12 @@ class Entity extends UID {
             .serialize("spawnTime", this.spawnTime)
             .serialize("monsterCount", this.monsterCount)
             .serialize("maxMonsterCount", this.maxMonsterCount)
-            .referenceMap("aggroMap", this.aggroMap)
+            .serializeMap("aggroMap", this.aggroMap)
             .serialize("maxAggro", this.maxAggro)
             .serialize("aggroGain", this.aggroGain)
             .serialize("aggroForgiveness", this.aggroForgiveness)
             .serialize("aggroForgivenessTime", this.aggroForgivenessTime)
-            .reference("lastPlayer", this.lastPlayer)
+            .serialize("lastPlayer_uid", this.lastPlayer_uid)
         .endObject();
     }
 
@@ -620,7 +648,7 @@ class Entity extends UID {
             entity.isSpawned = reader.deserialize("isSpawned", "Boolean");
             entity.isPlayer = reader.deserialize("isPlayer", "Boolean");
             entity.isAI = reader.deserialize("isAI", "Boolean");
-            entity.owner = reader.dereference("owner", "Entity");
+            entity.owner_uid = reader.deserialize("owner_uid", "Number");
             entity.health = reader.deserialize("health", "Number");
             entity.maxHealth = reader.deserialize("maxHealth", "Number");
             entity.mana = reader.deserialize("mana", "Number");
@@ -640,7 +668,7 @@ class Entity extends UID {
             entity.isTangible = reader.deserialize("isTangible", "Boolean");
             entity.isActionBlocker = reader.deserialize("isActionBlocker", "Boolean");
             entity.isMoveInProgress = reader.deserialize("isMoveInProgress", "Boolean");
-            entity.selectedEntity = reader.dereference("selectedEntity", "Entity");
+            entity.selectedEntity_uid = reader.deserialize("selectedEntity_uid", "Number");
             entity.selectedSlot = reader.deserialize("selectedSlot", "Number");
             entity.delayMap = reader.deserializeMap("delayMap", "String", "Boolean");
             entity.moveTime = reader.deserialize("moveTime", "Number");
@@ -665,12 +693,12 @@ class Entity extends UID {
             entity.spawnTime = reader.deserialize("spawnTime", "Number");
             entity.monsterCount = reader.deserialize("monsterCount", "Number");
             entity.maxMonsterCount = reader.deserialize("maxMonsterCount", "Number");
-            entity.aggroMap = reader.dereferenceMap("aggroMap", "Entity", "Number");
+            entity.aggroMap = reader.deserializeMap("aggroMap", "Number", "Number");
             entity.maxAggro = reader.deserialize("maxAggro", "Number");
             entity.aggroGain = reader.deserialize("aggroGain", "Number");
             entity.aggroForgiveness = reader.deserialize("aggroForgiveness", "Number");
             entity.aggroForgivenessTime = reader.deserialize("aggroForgivenessTime", "Number");
-            entity.lastPlayer = reader.dereference("lastPlayer", "Entity");
+            entity.lastPlayer_uid = reader.deserialize("lastPlayer_uid", "Number");
         }
         else {
             throw("Unknown version number: " + version);
