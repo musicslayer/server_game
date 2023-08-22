@@ -33,7 +33,7 @@ class AppState {
         this.validateFilesAndFolders();
 
         // Recreate image zip file.
-        await Zip.createZipFileFromFolder(ZIP_FILE_PATH, ZIP_SOURCE_FOLDER);
+        await Zip.createZipFileFromFolder(ZIP_FILE_PATH, ZIP_SOURCE_FOLDER, 9);
 
         // Initialize static maps.
         RateLimit.init();

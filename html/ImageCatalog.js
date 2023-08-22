@@ -16,10 +16,10 @@ class ImageCatalog {
 			await new Promise(r => image.onload = r, image.src = imageURL);
 			
 			// Images are stored using both their folder name and file name.
-			// All paths will have the format "folder\file.png"
-			let fileParts = filePath.split("\\");
-			let folder = fileParts[0];
-			let file = fileParts[1].slice(0, -4);
+			// All paths will have the format "image/[folder]/[file].png"
+			let fileParts = filePath.split("/");
+			let folder = fileParts[1];
+			let file = fileParts[2].slice(0, -4);
 			
 			this.addImage(folder, file, image);
 		};
