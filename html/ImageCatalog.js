@@ -1,38 +1,40 @@
+import { UnzipStream } from "./UnzipStream.js";
+
 class ImageCatalog {
     imageMap = new Map();
 
     async createImageCatalog() {
-		let zip = await this.fetchImages();
+		let fileDataMap = await this.fetchZipDataMap();
 		
-		for(let filePath in zip.files) {
-			if(!filePath.endsWith(".png")) {
-				continue;
-			}
+		for(let filePath of fileDataMap.keys()) {
+			// Images are stored using both their folder name and file name.
+			// "filePath" will always have the format ".../[folder]/[file].png"
+			let fileParts = filePath.split("/").slice(-2);
+			let folder = fileParts[0];
+			let file = fileParts[1].slice(0, -4);
 			
 			// We load each image now and store it for future use.
-			let blob = await zip.files[filePath].async("blob");
+			let fileData = fileDataMap.get(filePath);
+			let blob = new Blob([fileData.uncompressedFileContent]);
 			let imageURL = URL.createObjectURL(blob);
 			let image = new Image();
 			await new Promise(r => image.onload = r, image.src = imageURL);
-			
-			// Images are stored using both their folder name and file name.
-			// All paths will have the format "image/[folder]/[file].png"
-			let fileParts = filePath.split("/");
-			let folder = fileParts[1];
-			let file = fileParts[2].slice(0, -4);
 			
 			this.addImage(folder, file, image);
 		};
     }
 	
-	async fetchImages() {
+	async fetchZipDataMap() {
 		// Get a zip file containing all game images from the server.
 		let response = await fetch("/images");		
-		let data = await response.arrayBuffer();
-		let zip = new JSZip();
-		await zip.loadAsync(data);
-		return zip;
-	}
+		let data = new Uint8Array(await response.arrayBuffer());
+		
+        // Return a map with the uncompressed file information.
+        let unzipStream = new UnzipStream(data);
+        await unzipStream.extractFiles();
+        return unzipStream.fileDataMap;
+    }
+	
 
     addImage(folder, file, image) {
         this.imageMap.set(folder + "#" + file, image);

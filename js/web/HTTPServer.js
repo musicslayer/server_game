@@ -5,7 +5,7 @@ const url = require("url");
 const FAVICON_FILE = "favicon.ico";
 const HTML_HOME = "html/index.html";
 const HTML_IMAGE_CATALOG = "html/ImageCatalog.js";
-const HTML_JSZIP = "html/jszip.min.js";
+const HTML_UNZIP_STREAM = "html/UnzipStream.js";
 const HTML_SOCKETIO = "html/socket.io.min.js";
 const IMAGE_ZIP = "assets/image.zip";
 
@@ -33,34 +33,33 @@ class HTTPServer {
                 //console.log("HTTP Serve Pathname " + pathname);
     
                 switch(pathname) {
-                    case "/": {
+                    case "/":
                         serveFile(res, "text/html", HTML_HOME);
                         break;
-                    }
-                    case "/favicon.ico": {
+
+                    case "/favicon.ico":
                         serveFile(res, "image/x-icon", FAVICON_FILE);
                         break;
-                    }
-                    case "/ImageCatalog.js": {
+
+                    case "/ImageCatalog.js":
                         serveFile(res, "application/javascript", HTML_IMAGE_CATALOG);
                         break;
-                    }
-                    case "/jszip.min.js": {
-                        serveFile(res, "application/javascript", HTML_JSZIP);
+
+                    case "/UnzipStream.js":
+                        serveFile(res, "application/javascript", HTML_UNZIP_STREAM);
                         break;
-                    }
-                    case "/socket.io.min.js": {
+
+                    case "/socket.io.min.js":
                         serveFile(res, "application/javascript", HTML_SOCKETIO);
                         break;
-                    }
-                    case "/images": {
+
+                    case "/images":
                         serveFile(res, "application/zip", IMAGE_ZIP);
                         break;
-                    }
-                    default: {
+
+                    default:
                         serveError(res, 404, "Error 404: Page not found.\n" + pathname);
                         break;
-                    }
                 }
     
                 //console.log("HTTP Serve Page Success: " + pathname);

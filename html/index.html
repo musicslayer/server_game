@@ -27,7 +27,6 @@
 		
 		<text style="white-space: pre;" id="devText"></text>
 		
-		<script src="jszip.min.js"></script>
 		<script src="socket.io.min.js"></script>
 		
 		<script type="module">
@@ -190,6 +189,8 @@
 			
 				imageCatalog = new ImageCatalog();
 				await imageCatalog.createImageCatalog();
+				
+				// TODO Make sure users cannot click buttons before page is loaded...
 			});
 			
 			canvas.addEventListener("contextmenu", function (e){
