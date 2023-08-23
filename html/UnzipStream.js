@@ -250,21 +250,18 @@ function getShortValue(bytes) {
 };
 
 function getLongValue(bytes) {
-    return ((bytes[0]) | (bytes[1] << 8) | (bytes[2] << 16)) + (bytes[3] * 0x1000000);
+    return bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | Number(BigInt(bytes[3]) << 24n);
 };
 
 function getEightValue(bytes) {
-    const lo = bytes[0] +
-    bytes[1] * 2 ** 8 +
-    bytes[2] * 2 ** 16 +
-    bytes[3] * 2 ** 24
-
-    const hi = bytes[4] +
-    bytes[5] * 2 ** 8 +
-    bytes[6] * 2 ** 16 +
-    bytes[7] * 2 ** 24
-
-    return BigInt(lo) + (BigInt(hi) << BigInt(32))
+    return BigInt(bytes[0]) | 
+    (BigInt(bytes[1]) << 8n) |
+    (BigInt(bytes[2]) << 16n) |
+    (BigInt(bytes[3]) << 24n) |
+    (BigInt(bytes[4]) << 32n) |
+    (BigInt(bytes[5]) << 40n) |
+    (BigInt(bytes[6]) << 48n) |
+    (BigInt(bytes[7]) << 56n);
 };
 
 function getStringValue(bytes) {
