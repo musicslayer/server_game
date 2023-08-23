@@ -102,6 +102,8 @@
 				socket.on("connect", (err) => {
 					// Display the rest of the game...
 					isSocketConnected = true;
+					
+					drawLoginScreen();
 				});
 				
 				socket.on("disconnect", (err) => {
@@ -185,12 +187,12 @@
 			}
 			
 			window.addEventListener('load', async () => {
-				connectSocket();
+				drawLoadingScreen();
 			
 				imageCatalog = new ImageCatalog();
 				await imageCatalog.createImageCatalog();
 				
-				// TODO Make sure users cannot click buttons before page is loaded...
+				connectSocket();
 			});
 			
 			canvas.addEventListener("contextmenu", function (e){
@@ -536,6 +538,32 @@
 						requestAnimationFrame(drawClient);
 					}
 				}
+			}
+			
+			function drawLoadingScreen() {
+				let canvasBuffer = document.createElement('canvas');
+				canvasBuffer.width = canvas_width;
+				canvasBuffer.height = canvas_height;
+				
+				let ctxBuffer = canvasBuffer.getContext("2d");
+				ctxBuffer.font = "30px Arial";
+				ctxBuffer.fillText("Loading...", 5, 25);
+				
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.drawImage(canvasBuffer, 0, 0);
+			}
+			
+			function drawLoginScreen() {
+				let canvasBuffer = document.createElement('canvas');
+				canvasBuffer.width = canvas_width;
+				canvasBuffer.height = canvas_height;
+				
+				let ctxBuffer = canvasBuffer.getContext("2d");
+				ctxBuffer.font = "30px Arial";
+				ctxBuffer.fillText("Login to Play.", 5, 25);
+				
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.drawImage(canvasBuffer, 0, 0);
 			}
 			
 			function drawDisconnectScreen() {
