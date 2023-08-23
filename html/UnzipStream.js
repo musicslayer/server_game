@@ -246,25 +246,25 @@ function getZip64ExtraRecord(extra) {
 };
 
 function getShortValue(bytes) {
-	return bytes[0] | (bytes[1] << 8);
+    return bytes[0] | (bytes[1] << 8);
 };
 
 function getLongValue(bytes) {
-	return ((bytes[0]) | (bytes[1] << 8) | (bytes[2] << 16)) + (bytes[3] * 0x1000000);
+    return ((bytes[0]) | (bytes[1] << 8) | (bytes[2] << 16)) + (bytes[3] * 0x1000000);
 };
 
 function getEightValue(bytes) {
-	const lo = bytes[0] +
+    const lo = bytes[0] +
     bytes[1] * 2 ** 8 +
     bytes[2] * 2 ** 16 +
     bytes[3] * 2 ** 24
 
-	const hi = bytes[4] +
+    const hi = bytes[4] +
     bytes[5] * 2 ** 8 +
     bytes[6] * 2 ** 16 +
     bytes[7] * 2 ** 24
 
-	return BigInt(lo) + (BigInt(hi) << BigInt(32))
+    return BigInt(lo) + (BigInt(hi) << BigInt(32))
 };
 
 function getStringValue(bytes) {
@@ -272,10 +272,10 @@ function getStringValue(bytes) {
 };
 
 function concatUint8Array(x, y) {
-	let c = new Uint8Array(x.length + y.length)
-	c.set(x);
-	c.set(y, x.length);
-	return c;
+    let c = new Uint8Array(x.length + y.length)
+    c.set(x);
+    c.set(y, x.length);
+    return c;
 }
 
 export { UnzipStream };
