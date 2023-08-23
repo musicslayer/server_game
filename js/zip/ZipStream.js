@@ -43,6 +43,7 @@ class ZipStream {
 
     writeData(chunk) {
         if(chunk) {
+            chunk = Buffer.from(chunk);
             this.offset += BigInt(chunk.length);
             fs.writeSync(this.outputFD, chunk);
         }
@@ -90,26 +91,6 @@ class ZipStream {
         this._writeLocalFileHeader(fileData);
         await this._writeLocalFileContent(filePath, fileData);
         this._writeDataDescriptor(fileData);
-
-        // If this file needs the Zip64 format, modify certain values here to use in the Central Directory entries later.
-        if(isFileZip64(fileData.size, fileData.csize, fileData.fileOffset)) {
-            fileData.extra = Buffer.concat([
-                fileData.extra,
-
-                getShortBytes(ZIP64_EXTRA_ID),
-                getShortBytes(24),
-
-                // Because we are using the Data Descriptor, just use 0 for the sizes.
-                getEightBytes(0n), // fileData.size
-                getEightBytes(0n), // fileData.csize
-
-                getEightBytes(fileData.fileOffset)
-            ]);
-
-            fileData.size = BigInt(ZIP64_MAGIC);
-            fileData.csize = BigInt(ZIP64_MAGIC);
-            fileData.fileOffset = BigInt(ZIP64_MAGIC);
-        }
     }
 
     finish() {
@@ -118,6 +99,10 @@ class ZipStream {
         let centralOffset = this.offset;
     
         for(let fileData of this.fileDataArray) {
+            if(isFileZip64(fileData.size, fileData.csize, fileData.fileOffset)) {
+                addZip64Values(fileData);
+            }
+
             this._writeCentralFileHeader(fileData);
         }
     
@@ -148,11 +133,11 @@ class ZipStream {
         // datetime
         this.writeData(getLongBytes(fileData.time));
       
-        // crc32 checksum and sizes
-        // Use zeroes here and write the real values later.
-        this.writeData(Buffer.alloc(4));
-        this.writeData(Buffer.alloc(4));
-        this.writeData(Buffer.alloc(4));
+        // crc32 checksum, compressed size, and uncompressed size
+        // Use zeroes here because we are using the Data Descriptor.
+        this.writeData(getLongBytes(0));
+        this.writeData(getLongBytes(0));
+        this.writeData(getLongBytes(0));
       
         // name length
         this.writeData(getShortBytes(fileData.name.length));
@@ -249,7 +234,7 @@ class ZipStream {
         this.writeData(getShortBytes(fileData.comment.length));
       
         // disk number start (just use 0)
-        this.writeData(Buffer.alloc(2));
+        this.writeData(getShortBytes(0));
       
         // internal attributes
         this.writeData(getShortBytes(fileData.internalAttributes));
@@ -284,8 +269,8 @@ class ZipStream {
         this.writeData(getShortBytes(MIN_VERSION_ZIP64));
       
         // disk numbers (just use 0)
-        this.writeData(Buffer.alloc(4));
-        this.writeData(Buffer.alloc(4));
+        this.writeData(getLongBytes(0));
+        this.writeData(getLongBytes(0));
       
         // number of entries
         this.writeData(getEightBytes(records));
@@ -299,7 +284,7 @@ class ZipStream {
         this.writeData(getLongBytes(SIG_ZIP64_EOCD_LOC));
       
         // disk number holding the ZIP64 EOCD record (just use 0)
-        this.writeData(Buffer.alloc(4));
+        this.writeData(getLongBytes(0));
       
         // relative offset of the ZIP64 EOCD record
         this.writeData(getEightBytes(size + offset));
@@ -313,8 +298,8 @@ class ZipStream {
         this.writeData(getLongBytes(SIG_EOCD));
       
         // disk numbers (just use 0)
-        this.writeData(Buffer.alloc(2));
-        this.writeData(Buffer.alloc(2));
+        this.writeData(getShortBytes(0));
+        this.writeData(getShortBytes(0));
       
         // number of entries
         this.writeData(getShortBytes(records));
@@ -336,6 +321,23 @@ function isFileZip64(size, csize, fileOffset) {
 
 function isArchiveZip64(records, centralLength, centralOffset) {
     return records > ZIP64_MAGIC_SHORT || centralLength > ZIP64_MAGIC || centralOffset > ZIP64_MAGIC;
+}
+
+function addZip64Values(fileData) {
+    // Add the zip64 extra record and then modify certain values to use in the Central Directory entries.
+    fileData.extra = Buffer.concat([
+        fileData.extra,
+
+        getShortBytes(ZIP64_EXTRA_ID),
+        getShortBytes(24),
+        getEightBytes(fileData.size),
+        getEightBytes(fileData.csize),
+        getEightBytes(fileData.fileOffset)
+    ]);
+
+    fileData.size = BigInt(ZIP64_MAGIC);
+    fileData.csize = BigInt(ZIP64_MAGIC);
+    fileData.fileOffset = BigInt(ZIP64_MAGIC);
 }
 
 function dateToDos(d, forceLocalTime) {
