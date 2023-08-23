@@ -109,66 +109,38 @@ class UnzipStream {
 
     async _processLocalFileContent(fileData) {
         // Decompress the file content.
-		return new Promise(async (resolve) => {
-			fileData.uncompressedFileContent = new Uint8Array();
+        fileData.uncompressedFileContent = new Uint8Array();
 
-			let decompressStream = new DecompressionStream("deflate-raw");
-			let decompressWriteStream = decompressStream.writable;
-			let decompressWriter = decompressWriteStream.getWriter();
-			let decompressReadStream = decompressStream.readable;
-			let decompressReader = decompressReadStream.getReader();
+        let decompressStream = new DecompressionStream("deflate-raw");
+        let decompressWriteStream = decompressStream.writable;
+        let decompressWriter = decompressWriteStream.getWriter();
+        let decompressReadStream = decompressStream.readable;
+        let decompressReader = decompressReadStream.getReader();
 
-            // We know exactly how many bytes to read. Note that "csize" is a BigInt.
-            let numBytes = fileData.csize;
+        // We know exactly how many bytes to read. Note that "csize" is a BigInt.
+        let numBytes = fileData.csize;
 
-            while(numBytes > MAX_BYTES_READ) {
-                numBytes -= MAX_BYTES_READ;
-                decompressWriter.write(this._readBytes(MAX_BYTES_READ));
+        while(numBytes > MAX_BYTES_READ) {
+            numBytes -= MAX_BYTES_READ;
+            decompressWriter.write(this._readBytes(MAX_BYTES_READ));
+        }
+
+        // At this point, we know "numBytes" is small enough to safely convert into a Number.
+        decompressWriter.write(this._readBytes(Number(numBytes)));
+        
+        // Close the writer and start reading the decompressed data.
+        decompressWriter.close();
+        
+        while(true) {
+            let readData = await decompressReader.read();
+            
+            if(readData.done) {
+                break;
             }
-
-            // At this point, we know "numBytes" is small enough to safely convert into a Number.
-            decompressWriter.write(this._readBytes(Number(numBytes)));
-
-			//await decompressWriter.ready;
-			//decompressWriter.releaseLock();
-			//await decompressWriter.closed;
-			//await decompressStream.close();
-			
-			//await decompressWriter.close();
-			
-			console.log("CLOSE START");
-			/*
-			decompressWriter.close().then(() => {
-				console.log("CLOSE END");
-			});
-			*/
-			
-			//decompressWriter.close();
-			
-			decompressWriter.releaseLock();
-			decompressWriteStream.close();
-			
-			while(true) {
-				let readData = await decompressReader.read();
-				
-				if(readData.done) {
-					break;
-				}
-				
-				let chunk = readData.value;
-				fileData.uncompressedFileContent = concatUint8Array(fileData.uncompressedFileContent, chunk);
-			}
-			
-			resolve();
-			
-			//decompressReadStream.close();
-			
-			/*
-			decompressWriter.closed.then(() => {
-				console.log("CLOSE END");
-			});
-			*/
-		});
+            
+            let chunk = readData.value;
+            fileData.uncompressedFileContent = concatUint8Array(fileData.uncompressedFileContent, chunk);
+        }
     }
 
     _processCentralFileHeader(fileData) {
