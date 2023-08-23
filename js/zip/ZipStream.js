@@ -155,10 +155,10 @@ class ZipStream {
     async _writeLocalFileContent(filePath, fileData) {
         // Create the stream pipeline that will stream data from the uncompressed file into a zlib compressor and then into the zip file.
 
-        // Read file.
+        // Read file
         let inputStream = fs.createReadStream(filePath);
         
-        // Intercept uncompressed data.
+        // Intercept uncompressed data
         let uncompressedPassThroughStream = new stream.PassThrough();
         uncompressedPassThroughStream.on("data", (chunk) => {
             if(chunk) {
@@ -170,7 +170,7 @@ class ZipStream {
         // Compress data with zlib
         let compressStream = zlib.createDeflateRaw({ level: this.compressionLevel });
         
-        // Intercept compressed data.
+        // Intercept compressed data
         let compressedPassThroughStream = new stream.PassThrough();
         compressedPassThroughStream.on("data", (chunk) => {
             if(chunk) {

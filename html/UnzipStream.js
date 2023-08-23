@@ -49,7 +49,7 @@ class UnzipStream {
         this.openFile(centralFileHeaderOffset);
 
         while(this._readLong() === SIG_CFH) {
-            let fileData = {};
+            let fileData = { uncompressedFileContent: new Uint8Array() };
 
             this._processCentralFileHeader(fileData);
 
@@ -108,39 +108,39 @@ class UnzipStream {
     }
 
     async _processLocalFileContent(fileData) {
-        // Decompress the file content.
-        fileData.uncompressedFileContent = new Uint8Array();
+        // Create the stream pipeline that will stream compressed data into a zlib decompressor.
 
-        let decompressStream = new DecompressionStream("deflate-raw");
-        let decompressWriteStream = decompressStream.writable;
-        let decompressWriter = decompressWriteStream.getWriter();
-        let decompressReadStream = decompressStream.readable;
-        let decompressReader = decompressReadStream.getReader();
-
-        // We know exactly how many bytes to read. Note that "csize" is a BigInt.
+        // Note that "csize" is a BigInt and may be large, so we may not be able to process everything at once.
         let numBytes = fileData.csize;
 
-        while(numBytes > MAX_BYTES_READ) {
-            numBytes -= MAX_BYTES_READ;
-            decompressWriter.write(this._readBytes(MAX_BYTES_READ));
-        }
+        // Read data
+        let inputStream = new ReadableStream({
+            pull: (controller) => {
+                let numBytesToRead = numBytes < MAX_BYTES_READ ? Number(numBytes) : MAX_BYTES_READ;
+                numBytes -= BigInt(numBytesToRead);
 
-        // At this point, we know "numBytes" is small enough to safely convert into a Number.
-        decompressWriter.write(this._readBytes(Number(numBytes)));
-        
-        // Close the writer and start reading the decompressed data.
-        decompressWriter.close();
-        
-        while(true) {
-            let readData = await decompressReader.read();
-            
-            if(readData.done) {
-                break;
+                if(numBytesToRead > 0) {
+                    controller.enqueue(this._readBytes(numBytesToRead));
+                }
+                else {
+                    controller.close();
+                }
             }
-            
-            let chunk = readData.value;
-            fileData.uncompressedFileContent = concatUint8Array(fileData.uncompressedFileContent, chunk);
-        }
+        });
+
+        // Uncompress data with zlib
+        let decompressStream = new DecompressionStream("deflate-raw");
+
+        // Intercept uncompressed data
+        let uncompressedPassThroughStream = new WritableStream({
+            write: (chunk) => {
+                if(chunk) {
+                    fileData.uncompressedFileContent = concatUint8Array(fileData.uncompressedFileContent, chunk);
+                }
+            },
+        });
+
+        await inputStream.pipeThrough(decompressStream).pipeTo(uncompressedPassThroughStream);
     }
 
     _processCentralFileHeader(fileData) {
@@ -161,8 +161,8 @@ class UnzipStream {
         fileData.crc = this._readLong();
       
         // compressed size and uncompressed size
-        fileData.csize = this._readLong();
-        fileData.size = this._readLong();
+        fileData.csize = BigInt(this._readLong());
+        fileData.size = BigInt(this._readLong());
       
         // name length
         let nameLength = this._readShort();
