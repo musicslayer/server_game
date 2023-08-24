@@ -4,6 +4,7 @@ class RateLimit {
 
     static init() {
         // For each operation, set the allowed number of operations per IP address and per second.
+        RateLimit.allowedOperationsMap.set("html", 100);
         RateLimit.allowedOperationsMap.set("create_account", 1);
         RateLimit.allowedOperationsMap.set("create_character", 1);
         RateLimit.allowedOperationsMap.set("login", 1);
@@ -19,6 +20,7 @@ class RateLimit {
     }
 
     static reset() {
+        RateLimit.operationsMap.set("html", new Map());
         RateLimit.operationsMap.set("create_account", new Map());
         RateLimit.operationsMap.set("create_character", new Map());
         RateLimit.operationsMap.set("login", new Map());

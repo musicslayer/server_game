@@ -1,5 +1,5 @@
 const Animation = require("./Animation.js");
-const Performance = require("../constants/Performance.js");
+const Constants = require("../constants/Constants.js");
 const Util = require("../util/Util.js");
 const ServerTask = require("../server/ServerTask.js");
 
@@ -14,7 +14,7 @@ class MoveAnimation extends Animation {
     }
 
     scheduleTasks(server) {
-        let frames = Performance.MOVEMENT_FRAMES;
+        let frames = Constants.performance.MOVEMENT_FRAMES;
             
         for(let a = 0; a < frames; a++) {
             let fraction = a / frames;

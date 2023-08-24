@@ -1,7 +1,7 @@
 const path = require("path");
 const { Worker } = require("worker_threads");
 
-const Performance = require("../constants/Performance.js");
+const Constants = require("../constants/Constants.js");
 const ServerTaskList = require("./ServerTaskList.js");
 
 const WORKER_FILE_PATH = path.resolve(path.join("js", "server", "server_tick.js"));
@@ -16,7 +16,7 @@ class ServerScheduler {
     worker;
 
     getTick(time) {
-        return Math.floor(this.currentTick + (time * Performance.TICK_RATE) / Performance.TICK_SPEED);
+        return Math.floor(this.currentTick + (time * Constants.performance.TICK_RATE) / Constants.performance.TICK_SPEED);
     }
 
     addTask(serverTask) {
@@ -36,7 +36,7 @@ class ServerScheduler {
         this.worker = new Worker(WORKER_FILE_PATH, {
             workerData: {
                 shared: shared,
-                interval: 1000000000 / Performance.TICK_RATE // In nanoseconds
+                interval: 1000000000 / Constants.performance.TICK_RATE // In nanoseconds
             }
         });
         this.worker.on("error", (err) => {

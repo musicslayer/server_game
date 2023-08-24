@@ -4,8 +4,10 @@ const path = require("path");
 const HTTPServer = require("./web/HTTPServer.js");
 const SocketIOServer = require("./web/SocketIOServer.js");
 const Zip = require("./zip/Zip.js");
+const Logger = require("./log/Logger.js");
 const RateLimit = require("./security/RateLimit.js");
 const Reflection = require("./reflection/Reflection.js");
+const Secret = require("./security/Secret.js");
 const DataBridge = require("./data/DataBridge.js");
 const AccountManager = require("./account/AccountManager.js");
 const ClientManager = require("./client/ClientManager.js");
@@ -14,6 +16,7 @@ const ServerManager = require("./server/ServerManager.js");
 const ServerTask = require("./server/ServerTask.js");
 const UID = require("./uid/UID.js");
 
+const LOG_FOLDER = path.resolve("logs");
 const SAVE_STATE_FOLDER = path.resolve("save_states");
 const ZIP_SOURCE_FOLDER = path.resolve(path.join("assets", "image"));
 const ZIP_FILE_PATH = path.resolve(path.join("assets", "image.zip"));
@@ -38,8 +41,16 @@ class AppState {
         // Initialize static maps.
         RateLimit.init();
         Reflection.init();
+        Secret.init();
         ServerFunction.init();
         UID.init();
+
+        // Initialize Loggers
+        Logger.initialize();
+        Logger.createLogger("CLIENT", "C", path.join(LOG_FOLDER, "client_log.txt"), path.join(LOG_FOLDER, "client_error_log.txt"));
+        Logger.createLogger("EMAIL", "E", path.join(LOG_FOLDER, "email_log.txt"), path.join(LOG_FOLDER, "email_error_log.txt"));
+        Logger.createLogger("GAME", "G", path.join(LOG_FOLDER, "game_log.txt"), path.join(LOG_FOLDER, "game_error_log.txt"));
+        Logger.createLogger("SERVER", "S", path.join(LOG_FOLDER, "server_log.txt"), path.join(LOG_FOLDER, "server_error_log.txt"));
 
         // Create initial managers.
         this.accountManager = AccountManager.createInitialAccountManager();
@@ -47,11 +58,23 @@ class AppState {
         this.serverManager = ServerManager.createInitialServerManager();
 
         // Create servers to serve the web pages and communicate between front and back ends.
-        this.httpServer = new HTTPServer();
+        let certificateData = {
+            cert: Secret.getSecret("ssl_cert"),
+            key: Secret.getSecret("ssl_key"),
+            ca: Secret.getSecret("ssl_ca")
+        };
+
+        this.httpServer = new HTTPServer(certificateData);
         this.socketIOServer = new SocketIOServer(this.httpServer, this);
+
+        Logger.logEvent("SERVER", "main", "Server Initialized");
     }
 
     validateFilesAndFolders() {
+        if(!fs.existsSync(LOG_FOLDER)) {
+            throw("LOG_FOLDER does not exist: " + LOG_FOLDER);
+        }
+
         if(!fs.existsSync(SAVE_STATE_FOLDER)) {
             throw("SAVE_STATE_FOLDER does not exist: " + SAVE_STATE_FOLDER);
         }
@@ -62,6 +85,7 @@ class AppState {
 
         // The zip file may or may not exist at this point.
 
+        fs.accessSync(LOG_FOLDER, fs.constants.R_OK | fs.constants.W_OK);
         fs.accessSync(SAVE_STATE_FOLDER, fs.constants.R_OK | fs.constants.W_OK);
         fs.accessSync(ZIP_SOURCE_FOLDER, fs.constants.R_OK);
         fs.accessSync(path.dirname(ZIP_FILE_PATH), fs.constants.R_OK | fs.constants.W_OK);

@@ -1,8 +1,6 @@
 const Reflection = require("../reflection/Reflection.js");
 const Util = require("../util/Util.js");
-const Fallback = require("../constants/Fallback.js");
-const Performance = require("../constants/Performance.js");
-const Start = require("../constants/Start.js");
+const Constants = require("../constants/Constants.js");
 const ServerTask = require("../server/ServerTask.js");
 const UID = require("../uid/UID.js");
 
@@ -170,7 +168,7 @@ class Entity extends UID {
         // Spawns this entity as loot (i.e. it will despawn after a certain amount of time).
         this.doSpawn();
 
-        let serverTask = new ServerTask(undefined, Performance.LOOT_TIME, 1, "despawn", this);
+        let serverTask = new ServerTask(undefined, Constants.performance.LOOT_TIME, 1, "despawn", this);
         this.getServer().scheduleTask(serverTask);
     }
 
@@ -228,10 +226,10 @@ class Entity extends UID {
     doTeleportFallbackLocation() {
         // Teleport the entity to the fallback location.
         // This location is hardcoded to somewhere that exists and is safe.
-        let fallbackLocationMap = this.screen.map.world.getMapByName(Fallback.FALLBACK_LOCATION_MAP_NAME);
-        let fallbackLocationScreen = fallbackLocationMap?.getScreenByName(Fallback.FALLBACK_LOCATION_SCREEN_NAME);
-        let fallbackLocationX = Fallback.FALLBACK_LOCATION_X;
-        let fallbackLocationY = Fallback.FALLBACK_LOCATION_Y;
+        let fallbackLocationMap = this.screen.map.world.getMapByName(Constants.fallback.FALLBACK_LOCATION_MAP_NAME);
+        let fallbackLocationScreen = fallbackLocationMap?.getScreenByName(Constants.fallback.FALLBACK_LOCATION_SCREEN_NAME);
+        let fallbackLocationX = Constants.fallback.FALLBACK_LOCATION_X;
+        let fallbackLocationY = Constants.fallback.FALLBACK_LOCATION_Y;
 
         // If the fallback target location cannot be found, then do nothing.
         // Players will remain trapped on the fallback map until this is fixed.
@@ -242,10 +240,10 @@ class Entity extends UID {
 
     doTeleportStartLocation() {
         // Set the entity's home location to the game's start location and then teleport them there.
-        this.homeMapName = Start.START_LOCATION_MAP_NAME;
-        this.homeScreenName = Start.START_LOCATION_SCREEN_NAME;
-        this.homeX = Start.START_LOCATION_X;
-        this.homeY = Start.START_LOCATION_Y;
+        this.homeMapName = Constants.start.START_LOCATION_MAP_NAME;
+        this.homeScreenName = Constants.start.START_LOCATION_SCREEN_NAME;
+        this.homeX = Constants.start.START_LOCATION_X;
+        this.homeY = Constants.start.START_LOCATION_Y;
 
         this.doTeleportHome()
     }

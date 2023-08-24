@@ -1,6 +1,10 @@
 const fs = require("fs");
 const http = require("http");
+const https = require("https");
 const url = require("url");
+
+const ErrorPrinter = require("../error/ErrorPrinter.js");
+const RateLimit = require("../security/RateLimit.js");
 
 const FAVICON_FILE = "favicon.ico";
 const HTML_HOME = "html/index.html";
@@ -9,20 +13,29 @@ const HTML_UNZIP_STREAM = "html/UnzipStream.js";
 const HTML_SOCKETIO = "html/socket.io.min.js";
 const IMAGE_ZIP = "assets/image.zip";
 
-const SERVER_PORT = 80;
 const SERVER_REQUEST_TIMEOUT = 30000; // milliseconds
 
 class HTTPServer {
     server;
 
-    constructor() {
-        this.server = http.createServer((req, res) => {
+    constructor(certificateData) {
+        let serverName = certificateData === undefined ? "HTTP" : "HTTPS";
+        let serverPort = certificateData === undefined ? 80 : 443;
+        let serverFcn = certificateData === undefined ? http.createServer : https.createServer;
+        let serverArgs = certificateData === undefined ? [] : [certificateData];
+
+        this.server = serverFcn(...serverArgs, (req, res) => {
+            let ip = req.socket.remoteAddress
             res.isEnded = false;
     
             try {
+                RateLimit.rateLimitTask("html", ip, () => {}, () => {
+                    throw("Too many html requests from this IP address. Please wait and try again.");
+                });
+
                 // Only allow GET method.
                 if(req.method !== "GET") {
-                    //console.log("HTTP Invalid Method " + req.method);
+                    //console.log(serverName + " Invalid Method " + req.method);
     
                     serveError(res, 400, `Invalid method (${req.method}).`);
                     return;
@@ -30,7 +43,7 @@ class HTTPServer {
     
                 // Serve pages.
                 let pathname = url.parse(req.url, true).pathname;
-                //console.log("HTTP Serve Pathname " + pathname);
+                //console.log(serverName + " Serve Pathname " + pathname);
     
                 switch(pathname) {
                     case "/":
@@ -62,19 +75,19 @@ class HTTPServer {
                         break;
                 }
     
-                //console.log("HTTP Serve Page Success: " + pathname);
+                //console.log(serverName + " Serve Page Success: " + pathname);
             }
             catch(err) {
-                //console.log("HTTP Serve Page Failure: " + pathname + "\n" + err);
+                //console.log(serverName + " Serve Page Failure: " + pathname + "\n" + err);
     
-                serveError(res, 400, "Error processing request.");
+                serveError(res, 400, "Error processing request.\n\n" + ErrorPrinter.createErrorString(err));
             }
         });
     
         this.server.timeout = SERVER_REQUEST_TIMEOUT;
     
-        this.server.listen(SERVER_PORT, () => {
-            console.log("HTTP Server Listening On Port " + SERVER_PORT);
+        this.server.listen(serverPort, () => {
+            console.log(serverName + " Server Listening On Port " + serverPort);
         });
     }
 }
