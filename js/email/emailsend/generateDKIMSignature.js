@@ -47,7 +47,37 @@ function generateDKIMSignature(email, domainName, keySelector, privateKey) {
     reducedHeaders += "dkim-signature:" + dkimInfo + "; b=";
     let signature = sign("RSA-SHA256", reducedHeaders, privateKey, "base64");
 
-    return "DKIM-Signature: " + dkimInfo + "; b=" + signature;
+    // Each line can only be 76 characters long. Since spaces are inserted in the "b=" value, use 75 as the limit.
+    return foldText("DKIM-Signature: " + dkimInfo + ";", 76, ";", CRLF) + CRLF +
+        " " + wrapText("b=" + signature, 75, CRLF + " ");
+}
+
+function wrapText(str, lineLength, insertChar) {
+    // Wrap text into lines with fixed width.
+    let pattern = ".{" + lineLength + "}";
+    pattern = pattern + "(?!$)"; // Excludes a match at the end
+    return str.replace(new RegExp(pattern, "g"), "$&" + insertChar);
+}
+
+function foldText(str, lineLength, delimiter, insertChar) {
+    // Wrap text into lines ending with a delimiter, keeping them within "lineLength" if possible.
+    // However, a single delimited section will not be broken and thus may be longer than "lineLength".
+    // The text may or may not end with a delimiter.
+
+    // Look for a match in this order:
+    // -> Match the entire string if it is within "lineLength".
+    // -> Match up to the furthest delimiter that is within "lineLength".
+    // -> Match up to the first delimiter regardless of whether it is within "lineLength".
+    // -> Match the entire string regardless of whether it is within "lineLength".
+    // Note that the entire text can be broken up into these patterns.
+    let pattern1 = "(?:.{1," + lineLength + "}$)";
+    let pattern2 = "(?:.{1," + lineLength + "}" + delimiter + ")";
+    let pattern3 = "(?:.*?" + delimiter + ")";
+    let pattern4 = "(?:.*$)";
+
+    let pattern = "(?:" + pattern1 + "|" + pattern2 + "|" + pattern3 + "|" + pattern4 + ")";
+    pattern = pattern + "(?!$)"; // Excludes a match at the end
+    return str.replace(new RegExp(pattern, "g"), "$&" + insertChar)
 }
 
 function hash(algorithm, str, encoding) {
@@ -65,11 +95,13 @@ function canonicalizeRelaxHeaders(headers) {
         headers: []
     }
 
-    let headerArray = headers.split(CRLF);
+    // Header values that were long may have been folded, so unfold them here before splitting.
+    let headerArray = headers.replaceAll(CRLF + " ", " ").split(CRLF);
+
     for(let header of headerArray) {
         let parts = header.split(":");
-        let key = parts[0].toLowerCase().trim();
-        let value = parts[1].replace(/\s+/g, " ").trim(); // only single spaces
+        let key = parts[0].toLowerCase().trim(); // convert to lower case before trimming
+        let value = parts[1].replace(/\s+/g, " ").trim(); // replace any contiguous spaces with a single space before trimming
 
         canonicalizedHeaderData.fieldNames.push(key);
         canonicalizedHeaderData.headers.push(key + ":" + value);
@@ -85,8 +117,7 @@ function reduceHeaderData(headerData) {
         headers: []
     }
 
-    for(let i = 0; i < DKIM_FIELD_NAMES.length; i++) {
-        let fieldName = DKIM_FIELD_NAMES[i];
+    for(let fieldName of DKIM_FIELD_NAMES) {
         let idx = headerData.fieldNames.indexOf(fieldName);
         if(idx !== -1) {
             reducedHeaderData.fieldNames.push(headerData.fieldNames[idx]);
