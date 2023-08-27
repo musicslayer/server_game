@@ -1,14 +1,13 @@
 const fs = require("fs");
 const path = require("path");
 
-const JS_SOURCE_FOLDER = path.resolve("js");
-const PRAGMA_EXCLUDE = "#EXCLUDE_REFLECTION"
+const Constants = require("../constants/Constants.js");
 
 class Reflection {
     static classMap = new Map();
 
     static init() {
-        Reflection.processDirectory(JS_SOURCE_FOLDER);
+        Reflection.processDirectory(Constants.path.JS_SOURCE_FOLDER);
     }
 
     static processDirectory(dir) {
@@ -85,7 +84,7 @@ function isFunction(value, fcnName) {
 function isExcluded(absolutePath) {
     // Read the file to look for the exclude pragma.
     let fileContent = fs.readFileSync(absolutePath, "ascii");
-    return fileContent.includes(PRAGMA_EXCLUDE);
+    return fileContent.includes(Constants.reflection.PRAGMA_EXCLUDE);
 }
 
 module.exports = Reflection;

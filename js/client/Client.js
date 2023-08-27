@@ -1,3 +1,4 @@
+const Constants = require("../constants/Constants.js");
 const Keyboard = require("../input/Keyboard.js");
 const Mouse = require("../input/Mouse.js");
 const Controller = require("../input/Controller.js");
@@ -5,8 +6,6 @@ const Entity = require("../entity/Entity");
 const MoveAnimation = require("../animation/MoveAnimation.js");
 const ServerTask = require("../server/ServerTask.js");
 const Util = require("../util/Util.js");
-
-const REALTIME_INPUT_TIME = 1;
 
 class Client {
     socket;
@@ -303,7 +302,7 @@ class Client {
 
             setTimeout(() => {
                 this.realtimeDelay = true;
-            }, REALTIME_INPUT_TIME * 1000)
+            }, Constants.client.REALTIME_INPUT_TIME)
         }
     }
 

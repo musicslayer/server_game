@@ -3,6 +3,7 @@ const http = require("http");
 const https = require("https");
 const url = require("url");
 
+const Constants = require("../constants/Constants.js");
 const ErrorPrinter = require("../error/ErrorPrinter.js");
 const RateLimit = require("../security/RateLimit.js");
 
@@ -13,14 +14,15 @@ const HTML_UNZIP_STREAM = "html/UnzipStream.js";
 const HTML_SOCKETIO = "html/socket.io.min.js";
 const IMAGE_ZIP = "assets/image.zip";
 
-const SERVER_REQUEST_TIMEOUT = 30000; // milliseconds
+const HTTP_PORT = 80;
+const HTTPS_PORT = 443;
 
 class HTTPServer {
     server;
 
     constructor(certificateData) {
         let serverName = certificateData === undefined ? "HTTP" : "HTTPS";
-        let serverPort = certificateData === undefined ? 80 : 443;
+        let serverPort = certificateData === undefined ? HTTP_PORT : HTTPS_PORT;
         let serverFcn = certificateData === undefined ? http.createServer : https.createServer;
         let serverArgs = certificateData === undefined ? [] : [certificateData];
 
@@ -84,7 +86,7 @@ class HTTPServer {
             }
         });
     
-        this.server.timeout = SERVER_REQUEST_TIMEOUT;
+        this.server.timeout = Constants.server.REQUEST_TIMEOUT;
     
         this.server.listen(serverPort, () => {
             console.log(serverName + " Server Listening On Port " + serverPort);

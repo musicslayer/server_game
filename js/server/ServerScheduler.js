@@ -4,7 +4,7 @@ const { Worker } = require("worker_threads");
 const Constants = require("../constants/Constants.js");
 const ServerTaskList = require("./ServerTaskList.js");
 
-const WORKER_FILE_PATH = path.resolve(path.join("js", "server", "server_tick.js"));
+const WORKER_FILE_PATH = path.resolve(path.join(__dirname, "server_tick.js"));
 
 class ServerScheduler {
     server;

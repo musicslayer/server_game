@@ -1,10 +1,10 @@
 const fs = require("fs");
 const path = require("path");
 
+const Constants = require("./constants/Constants.js");
 const HTTPServer = require("./web/HTTPServer.js");
 const SocketIOServer = require("./web/SocketIOServer.js");
 const Zip = require("./zip/Zip.js");
-const Logger = require("./log/Logger.js");
 const RateLimit = require("./security/RateLimit.js");
 const Reflection = require("./reflection/Reflection.js");
 const Secret = require("./security/Secret.js");
@@ -15,11 +15,6 @@ const ServerFunction = require("./server/ServerFunction.js");
 const ServerManager = require("./server/ServerManager.js");
 const ServerTask = require("./server/ServerTask.js");
 const UID = require("./uid/UID.js");
-
-const LOG_FOLDER = path.resolve("logs");
-const SAVE_STATE_FOLDER = path.resolve("save_states");
-const ZIP_SOURCE_FOLDER = path.resolve(path.join("assets", "image"));
-const ZIP_FILE_PATH = path.resolve(path.join("assets", "image.zip"));
 
 class AppState {
     accountManager;
@@ -36,7 +31,7 @@ class AppState {
         this.validateFilesAndFolders();
 
         // Recreate image zip file.
-        await Zip.createZipFileFromFolder(ZIP_FILE_PATH, ZIP_SOURCE_FOLDER, 9);
+        await Zip.createZipFileFromFolder(Constants.path.ZIP_FILE, Constants.path.ZIP_SOURCE_FOLDER, 9);
 
         // Initialize static maps.
         RateLimit.init();
@@ -44,13 +39,6 @@ class AppState {
         Secret.init();
         ServerFunction.init();
         UID.init();
-
-        // Initialize Loggers
-        Logger.initialize();
-        Logger.createLogger("CLIENT", "C", path.join(LOG_FOLDER, "client_log.txt"), path.join(LOG_FOLDER, "client_error_log.txt"));
-        Logger.createLogger("EMAIL", "E", path.join(LOG_FOLDER, "email_log.txt"), path.join(LOG_FOLDER, "email_error_log.txt"));
-        Logger.createLogger("GAME", "G", path.join(LOG_FOLDER, "game_log.txt"), path.join(LOG_FOLDER, "game_error_log.txt"));
-        Logger.createLogger("SERVER", "S", path.join(LOG_FOLDER, "server_log.txt"), path.join(LOG_FOLDER, "server_error_log.txt"));
 
         // Create initial managers.
         this.accountManager = AccountManager.createInitialAccountManager();
@@ -66,34 +54,37 @@ class AppState {
 
         this.httpServer = new HTTPServer(certificateData);
         this.socketIOServer = new SocketIOServer(this.httpServer, this);
-
-        Logger.logEvent("SERVER", "main", "Server Initialized");
     }
 
     validateFilesAndFolders() {
-        if(!fs.existsSync(LOG_FOLDER)) {
-            throw("LOG_FOLDER does not exist: " + LOG_FOLDER);
+        // Note that the zip file may or may not exist at this point, but its parent folder should.
+        let zipParentFolder = path.dirname(Constants.path.ZIP_FILE);
+
+        if(!fs.existsSync(Constants.path.LOG_FOLDER)) {
+            throw("LOG_FOLDER does not exist: " + Constants.path.LOG_FOLDER);
         }
 
-        if(!fs.existsSync(SAVE_STATE_FOLDER)) {
-            throw("SAVE_STATE_FOLDER does not exist: " + SAVE_STATE_FOLDER);
+        if(!fs.existsSync(Constants.path.SAVE_STATE_FOLDER)) {
+            throw("SAVE_STATE_FOLDER does not exist: " + Constants.path.SAVE_STATE_FOLDER);
         }
 
-        if(!fs.existsSync(ZIP_SOURCE_FOLDER)) {
-            throw("ZIP_SOURCE_FOLDER does not exist: " + ZIP_SOURCE_FOLDER);
+        if(!fs.existsSync(zipParentFolder)) {
+            throw("ZIP_FILE parent folder does not exist: " + zipParentFolder);
         }
 
-        // The zip file may or may not exist at this point.
+        if(!fs.existsSync(Constants.path.ZIP_SOURCE_FOLDER)) {
+            throw("ZIP_SOURCE_FOLDER does not exist: " + Constants.path.ZIP_SOURCE_FOLDER);
+        }
 
-        fs.accessSync(LOG_FOLDER, fs.constants.R_OK | fs.constants.W_OK);
-        fs.accessSync(SAVE_STATE_FOLDER, fs.constants.R_OK | fs.constants.W_OK);
-        fs.accessSync(ZIP_SOURCE_FOLDER, fs.constants.R_OK);
-        fs.accessSync(path.dirname(ZIP_FILE_PATH), fs.constants.R_OK | fs.constants.W_OK);
+        fs.accessSync(Constants.path.LOG_FOLDER, fs.constants.R_OK | fs.constants.W_OK);
+        fs.accessSync(Constants.path.SAVE_STATE_FOLDER, fs.constants.R_OK | fs.constants.W_OK);
+        fs.accessSync(Constants.path.ZIP_SOURCE_FOLDER, fs.constants.R_OK);
+        fs.accessSync(zipParentFolder, fs.constants.R_OK | fs.constants.W_OK);
     }
 
     save() {
         let dateString = new Date().toISOString().replaceAll(":", "_").replace(".", "_");
-        this.lastSaveFolder = path.join(SAVE_STATE_FOLDER, dateString);
+        this.lastSaveFolder = path.join(Constants.path.SAVE_STATE_FOLDER, dateString);
 
         fs.mkdirSync(this.lastSaveFolder);
 

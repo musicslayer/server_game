@@ -1,9 +1,8 @@
 const fs = require("fs");
 
+const Constants = require("../constants/Constants.js");
 const DataReader = require("./DataReader.js");
 const DataWriter = require("./DataWriter.js");
-
-const MAX_BYTES_READ = 65536;
 
 class DataBridge {
     static serialize(file, value) {
@@ -38,7 +37,7 @@ class DataBridge {
         let fd = fs.openSync(file, "r");
         
         let readFcn = () => {
-            let buffer = new Buffer.alloc(MAX_BYTES_READ);
+            let buffer = new Buffer.alloc(Constants.data.MAX_BYTES_READ);
             let numBytes = fs.readSync(fd, buffer);
             return buffer.subarray(0, numBytes);
         }
@@ -55,7 +54,7 @@ class DataBridge {
         let fd = fs.openSync(file, "r");
         
         let readFcn = () => {
-            let buffer = new Buffer.alloc(MAX_BYTES_READ);
+            let buffer = new Buffer.alloc(Constants.data.MAX_BYTES_READ);
             let numBytes = fs.readSync(fd, buffer);
             return buffer.subarray(0, numBytes);
         }

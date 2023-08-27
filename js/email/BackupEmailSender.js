@@ -1,7 +1,6 @@
 // This class will use an external company to send the emails.
 
 const Constants = require("../constants/Constants.js");
-const Logger = require("../log/Logger.js");
 const Secret = require("../security/Secret.js");
 const emailsend = require("./emailsend/emailsend.js");
 const dns_util = require("./emailsend/dns_util.js");
@@ -127,9 +126,11 @@ function getEmailOptions() {
             cert: Secret.getSecret("ssl_cert")
         },
 
+        /*
         logger: {
             logFcn: (str) => { Logger.logEvent("EMAIL", "main", "Email Communication", str); }
         }
+        */
     }
 }
 

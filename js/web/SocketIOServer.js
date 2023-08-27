@@ -3,6 +3,7 @@ const IO = require("socket.io");
 const Account = require("../account/Account.js");
 const Character = require("../account/Character.js");
 const Client = require("../client/Client.js");
+const Constants = require("../constants/Constants.js");
 const Entity = require("../entity/Entity.js");
 const RateLimit = require("../security/RateLimit.js");
 const Reflection = require("../reflection/Reflection.js");
@@ -10,7 +11,6 @@ const ServerTask = require("../server/ServerTask.js");
 
 class SocketIOServer {
 	// Used to limit the amount of socket connections that an IP can form at once.
-	numAllowedSockets = 10;
 	numSocketsMap = new Map();
 
 	server;
@@ -35,7 +35,7 @@ class SocketIOServer {
 		this.server.on("connection", (socket) => {
 			let ip = socket.handshake.address;
 			let numSockets = this.numSocketsMap.get(ip) ?? 0;
-			if(numSockets >= this.numAllowedSockets) {
+			if(numSockets >= Constants.server.numAllowedSockets) {
 				return;
 			}
 	
