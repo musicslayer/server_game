@@ -29,7 +29,7 @@ class Account {
             account.characterMap = reader.deserializeMap("characterMap", "String", "Character");
         }
         else {
-            throw("Unknown version number: " + version);
+            throw(new Error("Unknown version number: " + version));
         }
 
         reader.endObject();

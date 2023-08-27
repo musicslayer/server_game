@@ -86,7 +86,7 @@ class ServerScheduler {
             serverScheduler.currentTick = reader.deserialize("currentTick", "Number");
         }
         else {
-            throw("Unknown version number: " + version);
+            throw(new Error("Unknown version number: " + version));
         }
 
         reader.endObject();

@@ -29,7 +29,7 @@ class Tile {
             tile.names = reader.deserializeArray("names", "String");
         }
         else {
-            throw("Unknown version number: " + version);
+            throw(new Error("Unknown version number: " + version));
         }
 
         reader.endObject();

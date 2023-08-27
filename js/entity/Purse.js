@@ -32,7 +32,7 @@ class Purse {
             purse.goldTotal = reader.deserialize("goldTotal", "Number");
         }
         else {
-            throw("Unknown version number: " + version);
+            throw(new Error("Unknown version number: " + version));
         }
 
         reader.endObject();

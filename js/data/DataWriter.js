@@ -246,7 +246,7 @@ function wrapValue(fcnName, value) {
     }
     else {
         // Anything else is unsupported.
-        throw("Unsupported value: " + fcnName + " " + (typeof value));
+        throw(new Error("Unsupported value: " + fcnName + " " + (typeof value)));
     }
 }
 

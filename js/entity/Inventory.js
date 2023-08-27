@@ -97,7 +97,7 @@ class Inventory {
             inventory.itemMap = reader.dereferenceMap("itemMap", "Number", "Entity");
         }
         else {
-            throw("Unknown version number: " + version);
+            throw(new Error("Unknown version number: " + version));
         }
 
         reader.endObject();

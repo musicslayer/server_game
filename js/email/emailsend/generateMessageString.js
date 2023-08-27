@@ -15,7 +15,7 @@ function generateMessageString(mail, domainName) {
     let isText = mail.text !== undefined;
     let isHTML = mail.html !== undefined;
     if((isText && isHTML) || (!isText && !isHTML)) {
-        throw("Exactly one of mail.text or mail.html must be specified.");
+        throw(new Error("Exactly one of mail.text or mail.html must be specified."));
     }
     let contentType = isText ? "text/plain" : "text/html";
     let bodyString = isText ? mail.text : mail.html;

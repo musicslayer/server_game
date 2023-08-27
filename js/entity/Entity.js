@@ -699,7 +699,7 @@ class Entity extends UID {
             entity.lastPlayer_uid = reader.deserialize("lastPlayer_uid", "Number");
         }
         else {
-            throw("Unknown version number: " + version);
+            throw(new Error("Unknown version number: " + version));
         }
 
         reader.endObject();

@@ -37,7 +37,7 @@ class DataReader {
     getName() {
         let arr = this.process(true);
         if(arr[0] !== NAME) {
-            throw("Invalid Element: " + arr[0]?.toString());
+            throw(new Error("Invalid Element: " + arr[0]?.toString()));
         }
         return arr[1];
     }
@@ -45,7 +45,7 @@ class DataReader {
     getString() {
         let arr = this.process(true);
         if(arr[0] !== VALUE) {
-            throw("Invalid Element: " + arr[0]?.toString());
+            throw(new Error("Invalid Element: " + arr[0]?.toString()));
         }
         return arr[1];
     }
@@ -53,10 +53,10 @@ class DataReader {
     getNull() {
         let arr = this.process(true);
         if(arr[0] !== VALUE) {
-            throw("Invalid Element: " + arr[0]?.toString());
+            throw(new Error("Invalid Element: " + arr[0]?.toString()));
         }
         if(arr[1] !== NULL) {
-            throw("Expecting null element, but instead found: " + arr[1]?.toString());
+            throw(new Error("Expecting null element, but instead found: " + arr[1]?.toString()));
         }
         return undefined;
     }
@@ -64,28 +64,28 @@ class DataReader {
     beginObject() {
         let arr = this.process(true);
         if(arr[0] !== BEGIN_OBJECT) {
-            throw("Invalid Element: " + arr[0]?.toString());
+            throw(new Error("Invalid Element: " + arr[0]?.toString()));
         }
     }
 
     endObject() {
         let arr = this.process(true);
         if(arr[0] !== END_OBJECT) {
-            throw("Invalid Element: " + arr[0]?.toString());
+            throw(new Error("Invalid Element: " + arr[0]?.toString()));
         }
     }
 
     beginArray() {
         let arr = this.process(true);
         if(arr[0] !== BEGIN_ARRAY) {
-            throw("Invalid Element: " + arr[0]?.toString());
+            throw(new Error("Invalid Element: " + arr[0]?.toString()));
         }
     }
 
     endArray() {
         let arr = this.process(true);
         if(arr[0] !== END_ARRAY) {
-            throw("Invalid Element: " + arr[0]?.toString());
+            throw(new Error("Invalid Element: " + arr[0]?.toString()));
         }
     }
 
@@ -93,7 +93,7 @@ class DataReader {
         if(name !== undefined) {
             let nextName = this.getName(name);
             if(name !== nextName) {
-                throw("Key mismatch. Expected: " + name + " Actual: " + nextName?.toString());
+                throw(new Error("Key mismatch. Expected: " + name + " Actual: " + nextName?.toString()));
             }
         }
 
@@ -113,7 +113,7 @@ class DataReader {
         if(name !== undefined) {
             let nextName = this.getName(name);
             if(name !== nextName) {
-                throw("Key mismatch. Expected: " + name + " Actual: " + nextName?.toString());
+                throw(new Error("Key mismatch. Expected: " + name + " Actual: " + nextName?.toString()));
             }
         }
 
@@ -140,7 +140,7 @@ class DataReader {
         if(name !== undefined) {
             let nextName = this.getName(name);
             if(name !== nextName) {
-                throw("Key mismatch. Expected: " + name + " Actual: " + nextName?.toString());
+                throw(new Error("Key mismatch. Expected: " + name + " Actual: " + nextName?.toString()));
             }
         }
 
@@ -170,7 +170,7 @@ class DataReader {
         if(name !== undefined) {
             let nextName = this.getName(name);
             if(name !== nextName) {
-                throw("Key mismatch. Expected: " + name + " Actual: " + nextName?.toString());
+                throw(new Error("Key mismatch. Expected: " + name + " Actual: " + nextName?.toString()));
             }
         }
 
@@ -190,7 +190,7 @@ class DataReader {
         if(name !== undefined) {
             let nextName = this.getName(name);
             if(name !== nextName) {
-                throw("Key mismatch. Expected: " + name + " Actual: " + nextName?.toString());
+                throw(new Error("Key mismatch. Expected: " + name + " Actual: " + nextName?.toString()));
             }
         }
 
@@ -217,7 +217,7 @@ class DataReader {
         if(name !== undefined) {
             let nextName = this.getName(name);
             if(name !== nextName) {
-                throw("Key mismatch. Expected: " + name + " Actual: " + nextName?.toString());
+                throw(new Error("Key mismatch. Expected: " + name + " Actual: " + nextName?.toString()));
             }
         }
 
@@ -367,7 +367,7 @@ class DataReader {
                             return [END_ARRAY];
 
                         default:
-                            throw("Invalid character: " + theCharValue);
+                            throw(new Error("Invalid character: " + theCharValue));
                     }
                 }
             }
@@ -444,7 +444,7 @@ function wrapClass(fcnName, className) {
     }
     else {
         // Anything else is unsupported.
-        throw("Unsupported class: " + fcnName + " " + className);
+        throw(new Error("Unsupported class: " + fcnName + " " + className));
     }
 }
 

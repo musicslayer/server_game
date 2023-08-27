@@ -46,7 +46,7 @@ class ServerEntropy {
             serverEntropy.entropyArray = reader.deserializeArray("entropyArray", "BigInt");
         }
         else {
-            throw("Unknown version number: " + version);
+            throw(new Error("Unknown version number: " + version));
         }
 
         reader.endObject();

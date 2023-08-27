@@ -69,7 +69,7 @@ class ServerRNG {
             serverRNG.seed = reader.deserialize("seed", "BigInt");
         }
         else {
-            throw("Unknown version number: " + version);
+            throw(new Error("Unknown version number: " + version));
         }
 
         reader.endObject();

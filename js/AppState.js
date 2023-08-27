@@ -61,19 +61,19 @@ class AppState {
         let zipParentFolder = path.dirname(Constants.path.ZIP_FILE);
 
         if(!fs.existsSync(Constants.path.LOG_FOLDER)) {
-            throw("LOG_FOLDER does not exist: " + Constants.path.LOG_FOLDER);
+            throw(new Error("LOG_FOLDER does not exist: " + Constants.path.LOG_FOLDER));
         }
 
         if(!fs.existsSync(Constants.path.SAVE_STATE_FOLDER)) {
-            throw("SAVE_STATE_FOLDER does not exist: " + Constants.path.SAVE_STATE_FOLDER);
+            throw(new Error("SAVE_STATE_FOLDER does not exist: " + Constants.path.SAVE_STATE_FOLDER));
         }
 
         if(!fs.existsSync(zipParentFolder)) {
-            throw("ZIP_FILE parent folder does not exist: " + zipParentFolder);
+            throw(new Error("ZIP_FILE parent folder does not exist: " + zipParentFolder));
         }
 
         if(!fs.existsSync(Constants.path.ZIP_SOURCE_FOLDER)) {
-            throw("ZIP_SOURCE_FOLDER does not exist: " + Constants.path.ZIP_SOURCE_FOLDER);
+            throw(new Error("ZIP_SOURCE_FOLDER does not exist: " + Constants.path.ZIP_SOURCE_FOLDER));
         }
 
         fs.accessSync(Constants.path.LOG_FOLDER, fs.constants.R_OK | fs.constants.W_OK);

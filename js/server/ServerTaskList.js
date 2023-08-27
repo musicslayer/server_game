@@ -29,7 +29,7 @@ class ServerTaskList {
             serverTaskList.serverTasks = reader.deserializeArray("serverTasks", "ServerTask");
         }
         else {
-            throw("Unknown version number: " + version);
+            throw(new Error("Unknown version number: " + version));
         }
 
         reader.endObject();

@@ -32,7 +32,8 @@ class HTTPServer {
     
             try {
                 RateLimit.rateLimitTask("html", ip, () => {}, () => {
-                    throw("Too many html requests from this IP address. Please wait and try again.");
+                    // TODO Don't throw error, just disconnect user...?
+                    throw(new Error("Too many html requests from this IP address. Please wait and try again."));
                 });
 
                 // Only allow GET method.
