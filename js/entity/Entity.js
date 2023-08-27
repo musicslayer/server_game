@@ -552,7 +552,7 @@ class Entity extends UID {
     }
 
     setOwner(owner) {
-        this.owner_uid = owner.uid;
+        this.owner_uid = owner?.uid;
     }
 
     getSelectedEntity() {
@@ -560,7 +560,7 @@ class Entity extends UID {
     }
 
     setSelectedEntity(selectedEntity) {
-        this.selectedEntity_uid = selectedEntity.uid;
+        this.selectedEntity_uid = selectedEntity?.uid;
     }
 
     getLastPlayer() {
@@ -568,7 +568,7 @@ class Entity extends UID {
     }
 
     setLastPlayer(lastPlayer) {
-        this.lastPlayer_uid = lastPlayer.uid;
+        this.lastPlayer_uid = lastPlayer?.uid;
     }
 
     serialize(writer) {
