@@ -31,22 +31,19 @@ class HTTPServer {
             res.isEnded = false;
     
             try {
-                RateLimit.rateLimitTask("html", ip, () => {}, () => {
-                    // TODO Don't throw error, just disconnect user...?
-                    throw(new Error("Too many html requests from this IP address. Please wait and try again."));
-                });
+                if(RateLimit.isRateLimited("html", ip)) {
+                    serveError(res, 400, "Too many HTML requests from this IP address. Please wait and try again.");
+                    return;
+                }
 
                 // Only allow GET method.
                 if(req.method !== "GET") {
-                    //console.log(serverName + " Invalid Method " + req.method);
-    
                     serveError(res, 400, `Invalid method (${req.method}).`);
                     return;
                 }
     
                 // Serve pages.
                 let pathname = url.parse(req.url, true).pathname;
-                //console.log(serverName + " Serve Pathname " + pathname);
     
                 switch(pathname) {
                     case "/":

@@ -17,20 +17,26 @@ class RateLimit {
         }
     }
 
-    static rateLimitTask(taskName, ip, taskSuccess, taskFail) {
+    static isRateLimited(taskName, ip) {
+        // Returns whether the task is over the allowed rate limit for the specified IP address.
+        let isRateLimited;
+
         let allowedOperations = Constants.ratelimit.operationMap.get(taskName);
         let ipMap = RateLimit.operationIPMap.get(taskName);
         let numOperations = ipMap?.get(ip) ?? 0;
 
         if(ipMap === undefined || numOperations >= allowedOperations) {
-            taskFail();
+            isRateLimited = true;
         }
         else {
+            isRateLimited = false;
+
+            // The task is allowed, so record this execution in the map for subsequent checks.
             numOperations++;
             ipMap.set(ip, numOperations);
-    
-            taskSuccess();
         }
+
+        return isRateLimited;
     }
 }
 
