@@ -1,8 +1,7 @@
 const AppState = require("./AppState.js");
+const WorkerManager = require("./worker/WorkerManager.js");
 
 // TODO Add in logging calls.
-
-// TODO Have a class to manage workers? And then we can end them directly here instead of in "AppState.end()"?
 
 async function init() {
     let appState = new AppState();
@@ -11,7 +10,9 @@ async function init() {
         console.log("AppState init finished.");
     }
     catch(err) {
-        appState.end();
+        // Terminate the workers here so that the program can properly end.
+        WorkerManager.terminateAllWorkers();
+        
         console.error(err);
         process.exit(1);
     }

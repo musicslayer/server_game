@@ -57,11 +57,6 @@ class AppState {
         this.socketIOServer = new SocketIOServer(this.httpServer, this);
     }
 
-    end() {
-        // Do this to terminate the workers so the program can end.
-        this.serverManager?.endServerTicks();
-    }
-
     validateFilesAndFolders() {
         // Note that the zip file may or may not exist at this point, but its parent folder should.
         let zipParentFolder = path.dirname(Constants.path.ZIP_FILE);
