@@ -70,7 +70,6 @@ class ServerScheduler {
                 serverTaskList?.execute(this.server);
             }
             catch(err) {
-                // TODO Log error...
                 console.error(err);
             }
         }

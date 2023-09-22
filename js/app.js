@@ -1,7 +1,8 @@
 const AppAdmin = require("./AppAdmin.js");
 const AppState = require("./AppState.js");
 
-// TODO Add in logging calls.
+// Future Items:
+// --- Add in logging calls. This requires more storage space.
 
 async function init() {
     let appState = new AppState();

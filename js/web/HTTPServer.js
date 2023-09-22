@@ -4,7 +4,6 @@ const https = require("https");
 const url = require("url");
 
 const Constants = require("../constants/Constants.js");
-const ErrorPrinter = require("../error/ErrorPrinter.js");
 const RateLimit = require("../security/RateLimit.js");
 
 const FAVICON_FILE = "favicon.ico";
@@ -24,7 +23,6 @@ class HTTPServer {
     constructor(certificateData) {
         this.isHTTPS = certificateData === undefined;
 
-        let serverName = this.isHTTPS ? "HTTP" : "HTTPS";
         let serverFcn = this.isHTTPS ? http.createServer : https.createServer;
         let serverArgs = this.isHTTPS ? [] : [certificateData];
 
@@ -76,14 +74,11 @@ class HTTPServer {
                         serveError(res, 404, "Error 404: Page not found.\n" + pathname);
                         break;
                 }
-    
-                //console.log(serverName + " Serve Page Success: " + pathname);
             }
             catch(err) {
-                //console.log(serverName + " Serve Page Failure: " + pathname + "\n" + err);
-    
-                // TODO Give generic error and log the real error to hide info from the user.
-                serveError(res, 400, "Error processing request.\n\n" + ErrorPrinter.createErrorString(err));
+                // Print the specific error to the console but do not show it to the client.
+                serveError(res, 400, "Error processing request.");
+                console.error(err);
             }
         });
     

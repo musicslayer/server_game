@@ -59,7 +59,6 @@ class SocketIOServer {
 						this.numSocketsMap.set(ip, numSockets);
 					}
 					catch(err) {
-						// TODO Log Error...
 						console.error(err);
 						socket.disconnect(true);
 					}
@@ -68,7 +67,6 @@ class SocketIOServer {
 				this.attachAppListeners(socket);
 			}
 			catch(err) {
-				// TODO Log Error...
 				console.error(err);
 				socket.disconnect(true);
 			}
@@ -110,7 +108,6 @@ class SocketIOServer {
 				callback({"isSuccess": true});
 			}
 			catch(err) {
-				// TODO Log Error...
 				console.error(err);
 				socket.disconnect(true);
 			}
@@ -159,7 +156,6 @@ class SocketIOServer {
 				callback({"isSuccess": true});
 			}
 			catch(err) {
-				// TODO Log Error...
 				console.error(err);
 				socket.disconnect(true);
 			}
@@ -271,7 +267,6 @@ class SocketIOServer {
 				callback({"isSuccess": true});
 			}
 			catch(err) {
-				// TODO Log Error...
 				console.error(err);
 				socket.disconnect(true);
 			}
@@ -303,7 +298,6 @@ class SocketIOServer {
 				callback();
 			}
 			catch(err) {
-				// TODO Log Error...
 				console.error(err);
 				socket.disconnect(true);
 			}
@@ -331,7 +325,6 @@ class SocketIOServer {
 				callback();
 			}
 			catch(err) {
-				// TODO Log Error...
 				console.error(err);
 				socket.disconnect(true);
 			}
@@ -359,7 +352,6 @@ class SocketIOServer {
 				callback();
 			}
 			catch(err) {
-				// TODO Log Error...
 				console.error(err);
 				socket.disconnect(true);
 			}
@@ -382,7 +374,6 @@ class SocketIOServer {
 				callback();
 			}
 			catch(err) {
-				// TODO Log Error...
 				console.error(err);
 				socket.disconnect(true);
 			}
@@ -415,7 +406,6 @@ class SocketIOServer {
 				callback();
 			}
 			catch(err) {
-				// TODO Log Error...
 				console.error(err);
 				socket.disconnect(true);
 			}
@@ -438,7 +428,6 @@ class SocketIOServer {
 				callback({"isSuccess": true, "clientData": clientData});
 			}
 			catch(err) {
-				// TODO Log Error...
 				console.error(err);
 				socket.disconnect(true);
 			}
@@ -461,7 +450,6 @@ class SocketIOServer {
 				callback({"isSuccess": true, "devData": devData});
 			}
 			catch(err) {
-				// TODO Log Error...
 				console.error(err);
 				socket.disconnect(true);
 			}

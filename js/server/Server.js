@@ -62,19 +62,22 @@ class Server {
     getRandomInteger(max) {
         // Feed any accumulated entropy into the RNG to produce a random number.
         let entropyArray = this.serverEntropy.entropyArray;
-        return this.serverRNG.getRandomInteger(entropyArray, max);
+        let R = this.serverRNG.getRandomInteger(entropyArray, max);
+
+        return R;
     }
 
     scheduleTask(serverTask) {
         serverTask.animation?.scheduleTasks(this);
         this.serverScheduler.addTask(serverTask);
 
-        // Generate entropy to make things more random.
         let tick = this.serverScheduler.getTick(serverTask.time)
+        let fcnString = ServerFunction.getFunctionString(serverTask.fcnName);
 
+        // Generate entropy to make things more random.
         this.serverEntropy.processBoolean(serverTask.animation !== undefined);
         this.serverEntropy.processNumber(tick);
-        this.serverEntropy.processString(ServerFunction.getFunctionString(serverTask.fcnName), tick);
+        this.serverEntropy.processString(fcnString, tick);
     }
 
     serialize(writer) {
