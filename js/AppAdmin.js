@@ -29,8 +29,8 @@ class AppAdmin {
                     break;
 
                 case "exit":
-                    // When this error is caught, the app will properly close itself.
-                    throw("Admin is exiting the app.");
+                    // The app will properly close itself after catching the error.
+                    throw(new Error("Admin is exiting the app."));
 
                 default:
                     console.log("Command not recognized.");
