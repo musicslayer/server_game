@@ -1,12 +1,14 @@
 const Constants = require("../constants/Constants.js");
 
 class RateLimit {
+    static interval;
+
     static operationIPMap = new Map();
 
     static init() {
         RateLimit.reset();
 
-        setInterval(() => {
+        this.interval = setInterval(() => {
             RateLimit.reset();
         }, 1000);
     }
@@ -37,6 +39,10 @@ class RateLimit {
         }
 
         return isRateLimited;
+    }
+
+    static terminate() {
+        clearInterval(RateLimit.interval);
     }
 }
 

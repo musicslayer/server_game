@@ -1,4 +1,3 @@
-const Constants = require("../constants/Constants.js");
 const Keyboard = require("../input/Keyboard.js");
 const Mouse = require("../input/Mouse.js");
 const Controller = require("../input/Controller.js");
@@ -7,18 +6,14 @@ const MoveAnimation = require("../animation/MoveAnimation.js");
 const ServerTask = require("../server/ServerTask.js");
 const Util = require("../util/Util.js");
 
-// TODO Don't pass in appState!
 class Client {
     socket;
-    appState;
     
     key;
 
     keyboard = new Keyboard();
     mouse = new Mouse();
     controller = new Controller();
-
-    realtimeDelay = true;
     
     playerName;
     player;
@@ -207,18 +202,6 @@ class Client {
         else if(inputs.includes("world_down")) {
             this.scheduleMoveTask(undefined, 0, "move_world", this.player, "down");
         }
-
-        // **** Save/load state (only one will be executed)
-        if(inputs.includes("save_state")) {
-            this.scheduleRealtimeTask(() => {
-                this.appState.save();
-            });
-        }
-        else if(inputs.includes("load_state")) {
-            this.scheduleRealtimeTask(() => {
-                this.appState.load();
-            });
-        }
     }
 
     onControllerPress(buttons) {
@@ -291,19 +274,6 @@ class Client {
         else if(Math.abs(axes[2]) > deadzone || Math.abs(axes[3]) > deadzone) {
             this.player.x += axes[2] / speedFactor;
             this.player.y += axes[3] / speedFactor;
-        }
-    }
-
-    scheduleRealtimeTask(fcn, ...args) {
-        // Don't schedule these on the server.
-        if(this.realtimeDelay === true || this.realtimeDelay === undefined) {
-            this.realtimeDelay = false;
-
-            fcn(...args);
-
-            setTimeout(() => {
-                this.realtimeDelay = true;
-            }, Constants.client.REALTIME_INPUT_TIME)
         }
     }
 

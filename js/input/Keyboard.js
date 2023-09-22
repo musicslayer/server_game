@@ -55,8 +55,6 @@ class Keyboard {
         this.inputMap.set(this._h, "inventory_use");
 
         this.inputMap.set(this._spacebar, "action");
-        this.inputMap.set(this._8, "save_state");
-        this.inputMap.set(this._9, "load_state");
         this.inputMap.set(this._0, "teleport_home");
         this.inputMap.set(this._dash, "kill");
         this.inputMap.set(this._equals, "revive");

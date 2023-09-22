@@ -11,8 +11,11 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
+            "program": "${workspaceFolder}\\js\\app.js",
+            "console": "integratedTerminal"
+
+            // Use these to help track down memory leaks.
             //"runtimeArgs": ["--expose-gc", "--jitless", "--no-opt"],
-            "program": "${workspaceFolder}\\js\\app.js"
         }
     ]
 }

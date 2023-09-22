@@ -99,6 +99,10 @@ class HTTPServer {
             });
         });
     }
+
+    terminate() {
+        this.server.close();
+    }
 }
 
 function serveFile(res, contentType, file) {

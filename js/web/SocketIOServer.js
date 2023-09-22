@@ -9,15 +9,17 @@ const RateLimit = require("../security/RateLimit.js");
 const Reflection = require("../reflection/Reflection.js");
 const ServerTask = require("../server/ServerTask.js");
 
-// TODO Don't pass in appState!
 class SocketIOServer {
+	server;
+
+	accountManager;
+    clientManager;
+    serverManager;
+	
 	// Used to limit the amount of socket connections that an IP can form at once.
 	numSocketsMap = new Map();
 
-	server;
-	appState;
-
-	constructor(httpServer, appState) {
+	constructor(httpServer, accountManager, clientManager, serverManager) {
 		this.server = IO(httpServer.server, {
 			// Use these options to only allow websockets and avoid memory leaks.
 			allowUpgrades: false,
@@ -27,10 +29,16 @@ class SocketIOServer {
 			serveClient: false
 		});
 
-		this.appState = appState;
+		this.accountManager = accountManager;
+		this.clientManager = clientManager;
+		this.serverManager = serverManager;
 
 		this.attachConnectionListeners();
 	}
+
+	terminate() {
+        this.server.close();
+    }
 
 	attachConnectionListeners() {
 		this.server.on("connection", (socket) => {
@@ -88,7 +96,7 @@ class SocketIOServer {
 				}
 
 				let key = username + "-" + password;
-				if(this.appState.accountManager.getAccount(key)) {
+				if(this.accountManager.getAccount(key)) {
 					// The account already exists.
 					callback({"isSuccess": false});
 					return;
@@ -97,7 +105,7 @@ class SocketIOServer {
 				// Create a new account.
 				let account = new Account();
 				account.key = key;
-				this.appState.accountManager.addAccount(account);
+				this.accountManager.addAccount(account);
 
 				callback({"isSuccess": true});
 			}
@@ -126,7 +134,7 @@ class SocketIOServer {
 				}
 
 				let key = username + "-" + password;
-				let account = this.appState.accountManager.getAccount(key);
+				let account = this.accountManager.getAccount(key);
 				if(!account) {
 					// The account does not exist.
 					callback({"isSuccess": false});
@@ -176,13 +184,13 @@ class SocketIOServer {
 				}
 
 				let key = username + "-" + password;
-				if(this.appState.clientManager.clientMap.has(key)) {
+				if(this.clientManager.clientMap.has(key)) {
 					// User is already logged in.
 					callback({"isSuccess": false});
 					return;
 				}
 
-				let account = this.appState.accountManager.getAccount(key);
+				let account = this.accountManager.getAccount(key);
 				if(!account) {
 					// The account does not exist.
 					callback({"isSuccess": false});
@@ -196,7 +204,7 @@ class SocketIOServer {
 					return;
 				}
 
-				let server = this.appState.serverManager.getServerByName(serverName);
+				let server = this.serverManager.getServerByName(serverName);
 				let world = server?.universe.getWorldByName(worldName);
 				if(!world) {
 					callback({"isSuccess": false});
@@ -238,14 +246,13 @@ class SocketIOServer {
 				let client = new Client(playerName, player);
 				client.key = key;
 				client.socket = socket;
-				client.appState = this.appState;
-				this.appState.clientManager.addClient(client);
+				this.clientManager.addClient(client);
 
 				player.client = client;
 
 				socket.on("disconnect", (reason) => {
-					let client = this.appState.clientManager.getClient(key);
-					this.appState.clientManager.removeClient(client);
+					let client = this.clientManager.getClient(key);
+					this.clientManager.removeClient(client);
 
 					// It's possible that a client is present but then a state is loaded where the player was despawned or did not exist.
 					if(client.player) {

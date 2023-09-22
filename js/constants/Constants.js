@@ -1,10 +1,6 @@
 const path = require("path");
 
 class Constants {
-    static client = {
-        REALTIME_INPUT_TIME: 1000 // milliseconds
-    };
-
     static data = {
         MAX_BYTES_READ: 65536
     };

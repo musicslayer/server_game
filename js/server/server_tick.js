@@ -1,7 +1,5 @@
 //#EXCLUDE_REFLECTION
 
-// Note: We do not try to recover or log in the case of an error here.
-
 const { workerData } = require("worker_threads");
 
 let T = process.hrtime();

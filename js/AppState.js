@@ -15,6 +15,7 @@ const ServerFunction = require("./server/ServerFunction.js");
 const ServerManager = require("./server/ServerManager.js");
 const ServerTask = require("./server/ServerTask.js");
 const UID = require("./uid/UID.js");
+const WorkerManager = require("./worker/WorkerManager.js");
 
 class AppState {
     accountManager;
@@ -54,7 +55,15 @@ class AppState {
         // Create servers to serve the web pages and communicate between front and back ends.
         this.httpServer = new HTTPServer(certificateData);
         await this.httpServer.listen();
-        this.socketIOServer = new SocketIOServer(this.httpServer, this);
+
+        this.socketIOServer = new SocketIOServer(this.httpServer, this.accountManager, this.clientManager, this.serverManager);
+    }
+
+    terminate() {
+        this.httpServer?.terminate();
+        this.socketIOServer?.terminate();
+        RateLimit.terminate();
+        WorkerManager.terminateAllWorkers();
     }
 
     validateFilesAndFolders() {

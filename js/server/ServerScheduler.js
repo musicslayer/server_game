@@ -39,7 +39,12 @@ class ServerScheduler {
                 interval: 1000000000 / Constants.performance.TICK_RATE // In nanoseconds
             }
         });
+        this.worker.on("exit", (exitCode) => {
+            this.isCancelled = true;
+        });
         this.worker.on("error", (err) => {
+            this.isCancelled = true;
+
             // Just throw the error. Don't try to recover or log anything.
             throw(err);
         });
@@ -47,7 +52,6 @@ class ServerScheduler {
 
     endServerTick() {
         // We need to manually end worker threads when a server is no longer in use.
-        this.isCancelled = true;
         this.worker.terminate();
     }
 
