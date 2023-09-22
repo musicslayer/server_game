@@ -40,8 +40,8 @@ class ServerScheduler {
             }
         });
         this.worker.on("error", (err) => {
-            console.error(err);
-            console.error(err.stack);
+            // Just throw the error. Don't try to recover or log anything.
+            throw(err);
         });
     };
 
@@ -62,7 +62,13 @@ class ServerScheduler {
             // Increment the current tick now so that new tasks added during a task won't be executed until at least the next tick.
             this.currentTick++;
 
-            serverTaskList?.execute(this.server);
+            try {
+                serverTaskList?.execute(this.server);
+            }
+            catch(err) {
+                // TODO Log error...
+                console.error(err);
+            }
         }
     }
 

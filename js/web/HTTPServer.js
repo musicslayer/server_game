@@ -19,18 +19,20 @@ const HTTPS_PORT = 443;
 
 class HTTPServer {
     server;
+    isHTTPS;
 
     constructor(certificateData) {
-        let serverName = certificateData === undefined ? "HTTP" : "HTTPS";
-        let serverPort = certificateData === undefined ? HTTP_PORT : HTTPS_PORT;
-        let serverFcn = certificateData === undefined ? http.createServer : https.createServer;
-        let serverArgs = certificateData === undefined ? [] : [certificateData];
+        this.isHTTPS = certificateData === undefined;
+
+        let serverName = this.isHTTPS ? "HTTP" : "HTTPS";
+        let serverFcn = this.isHTTPS ? http.createServer : https.createServer;
+        let serverArgs = this.isHTTPS ? [] : [certificateData];
 
         this.server = serverFcn(...serverArgs, (req, res) => {
-            let ip = req.socket.remoteAddress
-            res.isEnded = false;
-    
             try {
+                let ip = req.socket.remoteAddress
+                res.isEnded = false;
+
                 if(RateLimit.isRateLimited("html", ip)) {
                     serveError(res, 400, "Too many HTML requests from this IP address. Please wait and try again.");
                     return;
@@ -80,14 +82,21 @@ class HTTPServer {
             catch(err) {
                 //console.log(serverName + " Serve Page Failure: " + pathname + "\n" + err);
     
+                // TODO Give generic error and log the real error to hide info from the user.
                 serveError(res, 400, "Error processing request.\n\n" + ErrorPrinter.createErrorString(err));
             }
         });
     
         this.server.timeout = Constants.server.REQUEST_TIMEOUT;
-    
-        this.server.listen(serverPort, () => {
-            console.log(serverName + " Server Listening On Port " + serverPort);
+    }
+
+    async listen() {
+        return new Promise((resolve) => {
+            let serverPort = this.isHTTPS ? HTTP_PORT : HTTPS_PORT;
+
+            this.server.listen(serverPort, () => {
+                resolve();
+            });
         });
     }
 }

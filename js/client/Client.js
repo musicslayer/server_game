@@ -7,6 +7,7 @@ const MoveAnimation = require("../animation/MoveAnimation.js");
 const ServerTask = require("../server/ServerTask.js");
 const Util = require("../util/Util.js");
 
+// TODO Don't pass in appState!
 class Client {
     socket;
     appState;

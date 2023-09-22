@@ -1,11 +1,19 @@
 const AppState = require("./AppState.js");
 
 // TODO Add in logging calls.
-// TODO Better error handling
-// --- Every client action should be independent and not allow server to crash.
-// --- Worker/Scheduled tasks erroring?
+
+// TODO Have a class to manage workers? And then we can end them directly here instead of in "AppState.end()"?
 
 async function init() {
-    await new AppState().init();
+    let appState = new AppState();
+    try {
+        await appState.init();
+        console.log("AppState init finished.");
+    }
+    catch(err) {
+        appState.end();
+        console.error(err);
+        process.exit(1);
+    }
 }
 init();

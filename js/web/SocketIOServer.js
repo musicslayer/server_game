@@ -9,6 +9,7 @@ const RateLimit = require("../security/RateLimit.js");
 const Reflection = require("../reflection/Reflection.js");
 const ServerTask = require("../server/ServerTask.js");
 
+// TODO Don't pass in appState!
 class SocketIOServer {
 	// Used to limit the amount of socket connections that an IP can form at once.
 	numSocketsMap = new Map();
@@ -33,22 +34,36 @@ class SocketIOServer {
 
 	attachConnectionListeners() {
 		this.server.on("connection", (socket) => {
-			let ip = socket.handshake.address;
-			let numSockets = this.numSocketsMap.get(ip) ?? 0;
-			if(numSockets >= Constants.server.numAllowedSockets) {
-				return;
-			}
-	
-			numSockets++;
-			this.numSocketsMap.set(ip, numSockets);
-	
-			socket.on("disconnect", (reason) => {
-				let numSockets = this.numSocketsMap.get(ip);
-				numSockets--;
+			try {
+				let ip = socket.handshake.address;
+				let numSockets = this.numSocketsMap.get(ip) ?? 0;
+				if(numSockets >= Constants.server.numAllowedSockets) {
+					return;
+				}
+		
+				numSockets++;
 				this.numSocketsMap.set(ip, numSockets);
-			});
-	
-			this.attachAppListeners(socket);
+		
+				socket.on("disconnect", (reason) => {
+					try {
+						let numSockets = this.numSocketsMap.get(ip);
+						numSockets--;
+						this.numSocketsMap.set(ip, numSockets);
+					}
+					catch(err) {
+						// TODO Log Error...
+						console.error(err);
+						socket.disconnect(true);
+					}
+				});
+		
+				this.attachAppListeners(socket);
+			}
+			catch(err) {
+				// TODO Log Error...
+				console.error(err);
+				socket.disconnect(true);
+			}
 		});
 	}
 
@@ -57,181 +72,202 @@ class SocketIOServer {
 
 		// Respond to account creation.
 		socket.on("on_account_creation", (username, password, callback) => {
-			if(RateLimit.isRateLimited("create_account", ip)) {
+			try {
+				if(RateLimit.isRateLimited("create_account", ip)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateStrings(username, password)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				let key = username + "-" + password;
+				if(this.appState.accountManager.getAccount(key)) {
+					// The account already exists.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				// Create a new account.
+				let account = new Account();
+				account.key = key;
+				this.appState.accountManager.addAccount(account);
+
+				callback({"isSuccess": true});
+			}
+			catch(err) {
+				// TODO Log Error...
+				console.error(err);
 				socket.disconnect(true);
-				return;
 			}
-
-			if(!validateCallback(callback)) {
-				socket.disconnect(true);
-				return;
-			}
-			if(!validateStrings(username, password)) {
-				socket.disconnect(true);
-				return;
-			}
-
-			let key = username + "-" + password;
-			if(this.appState.accountManager.getAccount(key)) {
-				// The account already exists.
-				callback({"isSuccess": false});
-				return;
-			}
-
-			// Create a new account.
-			let account = new Account();
-			account.key = key;
-			this.appState.accountManager.addAccount(account);
-
-			callback({"isSuccess": true});
 		});
 
 		// Respond to character creation.
 		socket.on("on_character_creation", (username, password, playerName, playerClass, callback) => {
-			if(RateLimit.isRateLimited("create_character", ip)) {
+			try {
+				if(RateLimit.isRateLimited("create_character", ip)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateStrings(username, password, playerName, playerClass)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				let key = username + "-" + password;
+				let account = this.appState.accountManager.getAccount(key);
+				if(!account) {
+					// The account does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				if(account.getCharacter(playerName)) {
+					// The character already exists.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				if(!Reflection.isSubclass(playerClass, "Player")) {
+					callback({"isSuccess": false});
+					return;
+				}
+
+				let player = Entity.createInstance(playerClass, 1);
+				let character = new Character(player);
+				account.addCharacter(playerName, character);
+
+				callback({"isSuccess": true});
+			}
+			catch(err) {
+				// TODO Log Error...
+				console.error(err);
 				socket.disconnect(true);
-				return;
 			}
-
-			if(!validateCallback(callback)) {
-				socket.disconnect(true);
-				return;
-			}
-			if(!validateStrings(username, password, playerName, playerClass)) {
-				socket.disconnect(true);
-				return;
-			}
-
-			let key = username + "-" + password;
-			let account = this.appState.accountManager.getAccount(key);
-			if(!account) {
-				// The account does not exist.
-				callback({"isSuccess": false});
-				return;
-			}
-
-			if(account.getCharacter(playerName)) {
-				// The character already exists.
-				callback({"isSuccess": false});
-				return;
-			}
-
-			if(!Reflection.isSubclass(playerClass, "Player")) {
-				callback({"isSuccess": false});
-				return;
-			}
-
-			let player = Entity.createInstance(playerClass, 1);
-			let character = new Character(player);
-			account.addCharacter(playerName, character);
-
-			callback({"isSuccess": true});
 		});
 
 		// Respond to login.
 		socket.on("on_login", (username, password, playerName, serverName, worldName, callback) => {
-			if(RateLimit.isRateLimited("login", ip)) {
-				socket.disconnect(true);
-				return;
-			}
-
-			if(!validateCallback(callback)) {
-				socket.disconnect(true);
-				return;
-			}
-
-			if(!validateStrings(username, password, playerName, serverName, worldName)) {
-				socket.disconnect(true);
-				return;
-			}
-
-			let key = username + "-" + password;
-			if(this.appState.clientManager.clientMap.has(key)) {
-				// User is already logged in.
-				callback({"isSuccess": false});
-				return;
-			}
-
-			let account = this.appState.accountManager.getAccount(key);
-			if(!account) {
-				// The account does not exist.
-				callback({"isSuccess": false});
-				return;
-			}
-
-			let character = account.getCharacter(playerName);
-			if(!character) {
-				// The character does not exist.
-				callback({"isSuccess": false});
-				return;
-			}
-
-			let server = this.appState.serverManager.getServerByName(serverName);
-			let world = server?.universe.getWorldByName(worldName);
-			if(!world) {
-				callback({"isSuccess": false});
-				return;
-			}
-
-			let player = character.player;
-
-			let screen;
-			if(player.mapName === undefined || player.screenName === undefined) {
-				// On the first login use a tutorial screen.
-				let tutorialWorld = world.universe.getWorldByID("tutorial");
-				let entrance = tutorialWorld.createEntrance(world);
-
-				screen = entrance.screen;
-				player.x = entrance.x;
-				player.y = entrance.y;
-			}
-			else {
-				let map = world.getMapByName(player.mapName);
-				screen = map?.getScreenByName(player.screenName);
-			}
-
-			if(!screen) {
-				// Use a fallback screen.
-				let fallbackWorld = world.universe.getWorldByID("fallback");
-				let entrance = fallbackWorld.createEntrance(world);
-
-				screen = entrance.screen;
-				player.x = entrance.x;
-				player.y = entrance.y;
-			}
-
-			player.setScreen(screen);
-			
-			let serverTask = new ServerTask(undefined, 0, 1, "spawn", player);
-			player.getServer().scheduleTask(serverTask);
-
-			let client = new Client(playerName, player);
-			client.key = key;
-			client.socket = socket;
-			client.appState = this.appState;
-			this.appState.clientManager.addClient(client);
-
-			player.client = client;
-
-			socket.on("disconnect", (reason) => {
-				let client = this.appState.clientManager.getClient(key);
-				this.appState.clientManager.removeClient(client);
-
-				// It's possible that a client is present but then a state is loaded where the player was despawned or did not exist.
-				if(client.player) {
-					if(client.player.isSpawned) {
-						let serverTask = new ServerTask(undefined, 0, 1, "despawn", client.player);
-						client.player.getServer().scheduleTask(serverTask);
-					}
-
-					client.player.client = undefined;
-					client.player = undefined;
+			try {
+				if(RateLimit.isRateLimited("login", ip)) {
+					socket.disconnect(true);
+					return;
 				}
-			});
 
-			this.attachClientListeners(socket, client);
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			callback({"isSuccess": true});
+				if(!validateStrings(username, password, playerName, serverName, worldName)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				let key = username + "-" + password;
+				if(this.appState.clientManager.clientMap.has(key)) {
+					// User is already logged in.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				let account = this.appState.accountManager.getAccount(key);
+				if(!account) {
+					// The account does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				let character = account.getCharacter(playerName);
+				if(!character) {
+					// The character does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				let server = this.appState.serverManager.getServerByName(serverName);
+				let world = server?.universe.getWorldByName(worldName);
+				if(!world) {
+					callback({"isSuccess": false});
+					return;
+				}
+
+				let player = character.player;
+
+				let screen;
+				if(player.mapName === undefined || player.screenName === undefined) {
+					// On the first login use a tutorial screen.
+					let tutorialWorld = world.universe.getWorldByID("tutorial");
+					let entrance = tutorialWorld.createEntrance(world);
+
+					screen = entrance.screen;
+					player.x = entrance.x;
+					player.y = entrance.y;
+				}
+				else {
+					let map = world.getMapByName(player.mapName);
+					screen = map?.getScreenByName(player.screenName);
+				}
+
+				if(!screen) {
+					// Use a fallback screen.
+					let fallbackWorld = world.universe.getWorldByID("fallback");
+					let entrance = fallbackWorld.createEntrance(world);
+
+					screen = entrance.screen;
+					player.x = entrance.x;
+					player.y = entrance.y;
+				}
+
+				player.setScreen(screen);
+				
+				let serverTask = new ServerTask(undefined, 0, 1, "spawn", player);
+				player.getServer().scheduleTask(serverTask);
+
+				let client = new Client(playerName, player);
+				client.key = key;
+				client.socket = socket;
+				client.appState = this.appState;
+				this.appState.clientManager.addClient(client);
+
+				player.client = client;
+
+				socket.on("disconnect", (reason) => {
+					let client = this.appState.clientManager.getClient(key);
+					this.appState.clientManager.removeClient(client);
+
+					// It's possible that a client is present but then a state is loaded where the player was despawned or did not exist.
+					if(client.player) {
+						if(client.player.isSpawned) {
+							let serverTask = new ServerTask(undefined, 0, 1, "despawn", client.player);
+							client.player.getServer().scheduleTask(serverTask);
+						}
+
+						client.player.client = undefined;
+						client.player = undefined;
+					}
+				});
+
+				this.attachClientListeners(socket, client);
+
+				callback({"isSuccess": true});
+			}
+			catch(err) {
+				// TODO Log Error...
+				console.error(err);
+				socket.disconnect(true);
+			}
 		});
 	}
 
@@ -240,139 +276,188 @@ class SocketIOServer {
 	
 		// Respond to key presses.
 		socket.on("on_key_press", (keys, callback) => {
-			if(RateLimit.isRateLimited("input", ip)) {
-				socket.disconnect(true);
-				return;
-			}
+			try {
+				if(RateLimit.isRateLimited("input", ip)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			if(!validateCallback(callback)) {
-				socket.disconnect(true);
-				return;
-			}
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			if(!validateKeys(keys)) {
-				socket.disconnect(true);
-				return;
-			}
+				if(!validateKeys(keys)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			client.onKeyPress(keys);
-			callback();
+				client.onKeyPress(keys);
+				callback();
+			}
+			catch(err) {
+				// TODO Log Error...
+				console.error(err);
+				socket.disconnect(true);
+			}
 		});
 	
 		// Respond to controller button presses.
 		socket.on("on_controller_press", (buttons, callback) => {
-			if(RateLimit.isRateLimited("input", ip)) {
-				socket.disconnect(true);
-				return;
-			}
+			try {
+				if(RateLimit.isRateLimited("input", ip)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			if(!validateCallback(callback)) {
-				socket.disconnect(true);
-				return;
-			}
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			if(!validateButtons(buttons)) {
-				socket.disconnect(true);
-				return;
-			}
+				if(!validateButtons(buttons)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			client.onControllerPress(buttons);
-			callback();
+				client.onControllerPress(buttons);
+				callback();
+			}
+			catch(err) {
+				// TODO Log Error...
+				console.error(err);
+				socket.disconnect(true);
+			}
 		});
 	
 		// Respond to controller analog sticks.
 		socket.on("on_controller_sticks", (axes, callback) => {
-			if(RateLimit.isRateLimited("input", ip)) {
-				socket.disconnect(true);
-				return;
-			}
+			try {
+				if(RateLimit.isRateLimited("input", ip)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			if(!validateCallback(callback)) {
-				socket.disconnect(true);
-				return;
-			}
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			if(!validateAxes(axes)) {
-				socket.disconnect(true);
-				return;
-			}
+				if(!validateAxes(axes)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			client.onControllerSticks(axes);
-			callback();
+				client.onControllerSticks(axes);
+				callback();
+			}
+			catch(err) {
+				// TODO Log Error...
+				console.error(err);
+				socket.disconnect(true);
+			}
 		});
 	
 		// Respond to mouse clicks.
 		socket.on("on_mouse_click", (button, location, info, callback) => {
-			if(RateLimit.isRateLimited("input", ip)) {
-				socket.disconnect(true);
-				return;
-			}
+			try {
+				if(RateLimit.isRateLimited("input", ip)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			if(!validateMouse(button, location, info)) {
-				socket.disconnect(true);
-				return;
-			}
+				if(!validateMouse(button, location, info)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			client.onClick(button, location, info);
-			callback();
+				client.onClick(button, location, info);
+				callback();
+			}
+			catch(err) {
+				// TODO Log Error...
+				console.error(err);
+				socket.disconnect(true);
+			}
 		});
 	
 		// Respond to mouse drags.
 		socket.on("on_mouse_drag", (button, location1, info1, location2, info2, callback) => {
-			if(RateLimit.isRateLimited("input", ip)) {
-				socket.disconnect(true);
-				return;
-			}
+			try {
+				if(RateLimit.isRateLimited("input", ip)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			if(!validateCallback(callback)) {
-				socket.disconnect(true);
-				return;
-			}
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			if(!validateMouse(button, location2, info2)) {
-				socket.disconnect(true);
-				return;
-			}
+				if(!validateMouse(button, location2, info2)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			if(!validateMouse(button, location2, info2)) {
-				socket.disconnect(true);
-				return;
-			}
+				if(!validateMouse(button, location2, info2)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			client.onDrag(button, location1, info1, location2, info2);
-			callback();
+				client.onDrag(button, location1, info1, location2, info2);
+				callback();
+			}
+			catch(err) {
+				// TODO Log Error...
+				console.error(err);
+				socket.disconnect(true);
+			}
 		});
 	
 		// Send the client all the data needed to draw the player's screen.
 		socket.on("get_client_data", (callback) => {
-			if(RateLimit.isRateLimited("data", ip)) {
-				socket.disconnect(true);
-				return;
-			}
+			try {
+				if(RateLimit.isRateLimited("data", ip)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			if(!validateCallback(callback)) {
-				socket.disconnect(true);
-				return;
-			}
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			let clientData = client.getClientData();
-			callback({"isSuccess": true, "clientData": clientData});
+				let clientData = client.getClientData();
+				callback({"isSuccess": true, "clientData": clientData});
+			}
+			catch(err) {
+				// TODO Log Error...
+				console.error(err);
+				socket.disconnect(true);
+			}
 		});
 	
 		// Send developer data to the client.
 		socket.on("get_dev_data", (callback) => {
-			if(RateLimit.isRateLimited("dev", ip)) {
-				socket.disconnect(true);
-				return;
-			}
+			try {
+				if(RateLimit.isRateLimited("dev", ip)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			if(!validateCallback(callback)) {
-				socket.disconnect(true);
-				return;
-			}
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
 
-			let devData = client.getDevData();
-			callback({"isSuccess": true, "devData": devData});
+				let devData = client.getDevData();
+				callback({"isSuccess": true, "devData": devData});
+			}
+			catch(err) {
+				// TODO Log Error...
+				console.error(err);
+				socket.disconnect(true);
+			}
 		});
 	}
 }
