@@ -161,6 +161,46 @@ class SocketIOServer {
 			}
 		});
 
+		// Respond to the user wanting to select a character.
+		socket.on("on_character_select", (username, password, callback) => {
+			try {
+				if(RateLimit.isRateLimited("select_character", ip)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				if(!validateStrings(username, password)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				let key = username + "-" + password;
+				let account = this.accountManager.getAccount(key);
+				if(!account) {
+					// The account does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				// Return to the client a list of characters they can log in as.
+				let characterNames = [];
+				for(let characterName of account.characterMap.keys()) {
+					characterNames.push(characterName);
+				}
+
+				callback({"isSuccess": true, "characterNames": characterNames});
+			}
+			catch(err) {
+				console.error(err);
+				socket.disconnect(true);
+			}
+		});
+
 		// Respond to login.
 		socket.on("on_login", (username, password, playerName, serverName, worldName, callback) => {
 			try {

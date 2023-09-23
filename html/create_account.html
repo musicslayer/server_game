@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en-US">    
+    <head>
+        <title>Canvas</title>
+    </head>
+
+    <body>
+        <!-- <h1>Canvas</h1> -->
+        
+        <canvas id="canvas" style="border:10px solid"></canvas>
+        
+        <!-- <button id="connectButton">Connect</button><br/> -->
+        
+        <button id="createAccount1Button">Account 1 Create</button>
+        <button id="createAccount1MageButton">Account 1 Mage Create</button>
+        <button id="createAccount1WarriorButton">Account 1 Warrior Create</button><br/>
+        
+        <button id="createAccount2Button">Account 2 Create</button>
+        <button id="createAccount2MageButton">Account 2 Mage Create</button>
+        <button id="createAccount2WarriorButton">Account 2 Warrior Create</button><br/>
+        
+        <button id="loginAccount1MageButton">Account 1 Mage</button>
+        <button id="loginAccount1WarriorButton">Account 1 Warrior</button><br/>
+        
+        <button id="loginAccount2MageButton">Account 2 Mage</button>
+        <button id="loginAccount2WarriorButton">Account 2 Warrior</button><br/>
+        
+        <text style="white-space: pre;" id="devText"></text>
+        
+        <script src="socket.io.min.js"></script>
+        
+        <script type="module">
+            import { ImageCatalog } from "./ImageCatalog.js";
+            
+            const devText = document.getElementById("devText");
+            //const connectButton = document.querySelector('#connectButton');
+            
+            const createAccount1Button = document.querySelector('#createAccount1Button');
+            const createAccount1MageButton = document.querySelector('#createAccount1MageButton');
+            const createAccount1WarriorButton = document.querySelector('#createAccount1WarriorButton');
+            
+            const createAccount2Button = document.querySelector('#createAccount2Button');
+            const createAccount2MageButton = document.querySelector('#createAccount2MageButton');
+            const createAccount2WarriorButton = document.querySelector('#createAccount2WarriorButton');
+            
+            const loginAccount1MageButton = document.querySelector('#loginAccount1MageButton');
+            const loginAccount1WarriorButton = document.querySelector('#loginAccount1WarriorButton');
+            
+            const loginAccount2MageButton = document.querySelector('#loginAccount2MageButton');
+            const loginAccount2WarriorButton = document.querySelector('#loginAccount2WarriorButton');
+            
+            const SOCKET_TIMEOUT = 10000;
+            const INPUT_FPS_RATE = 60; // times per second inputs are queried
+            const ANIMATION_TIME = 4; // seconds per animation cycle
+            const ANIMATION_FRAMES = 8; // frames per animation cycle
+            const NUM_TILES_X = 16;
+            const NUM_TILES_Y = 12;
+            const SIDE_PANEL_TILES = 10;
+            const IMAGE_SCALE_FACTOR = 64;
+            
+            // TODO "IMAGE_SCALE_FACTOR" and "128" and widths of text boxes needs to be fixed!
+            
+            const canvas_width = (NUM_TILES_X + SIDE_PANEL_TILES) * IMAGE_SCALE_FACTOR;
+            const canvas_height = NUM_TILES_Y * IMAGE_SCALE_FACTOR;
+            const canvas_showGrid = true;
+            
+            const canvas = document.getElementById("canvas");
+            canvas.width = canvas_width;
+            canvas.height = canvas_height;
+            
+            const ctx = canvas.getContext("2d");
+            
+            
+            
+            let imageCatalog;
+            
+            let socket;
+            let isSocketConnected = false;
+            let isSocketLoggedIn = false;
+            
+            let interval;
+            let intervalDev;
+            
+            //connectButton.addEventListener('click', () => {
+            //    connectSocket();
+            //});
+            
+            function connectSocket() {
+                if(socket) {
+                    socket.disconnect(true);
+                    
+                    isSocketConnected = false;
+                    isSocketLoggedIn = false;
+                }
+                
+                socket = io({
+                    // Use these options to only allow websockets and avoid memory leaks.
+                    upgrade: false,
+                    transports: ["websocket"]
+                });
+                
+                socket.on("connect", (err) => {
+                    // Display the rest of the game...
+                    isSocketConnected = true;
+                    
+                    drawLoginScreen();
+                });
+                
+                socket.on("disconnect", (err) => {
+                    socket.disconnect(true);
+                    isSocketConnected = false;
+                    
+                    drawDisconnectScreen();
+                });
+            }
+            
+            createAccount1Button.addEventListener('click', () => {
+                reactAccountCreation("smith", "password123");
+            });
+            
+            createAccount1MageButton.addEventListener('click', () => {
+                reactCharacterCreation("smith", "password123", "mage", "PlayerMage");
+            });
+            
+            createAccount1WarriorButton.addEventListener('click', () => {
+                reactCharacterCreation("smith", "password123", "warrior", "PlayerWarrior");
+            });
+            
+            createAccount2Button.addEventListener('click', () => {
+                reactAccountCreation("maria", "secret");
+            });
+            
+            createAccount2MageButton.addEventListener('click', () => {
+                reactCharacterCreation("maria", "secret", "mage", "PlayerMage");
+            });
+            
+            createAccount2WarriorButton.addEventListener('click', () => {
+                reactCharacterCreation("maria", "secret", "warrior", "PlayerWarrior");
+            });
+            
+            loginAccount1MageButton.addEventListener('click', () => {
+                reactLogin("smith", "password123", "mage", "origin", "world0");
+            });
+            
+            loginAccount1WarriorButton.addEventListener('click', () => {
+                reactLogin("smith", "password123", "warrior", "origin", "world0");
+            });
+            
+            loginAccount2MageButton.addEventListener('click', () => {
+                reactLogin("maria", "secret", "mage", "origin", "world0");
+            });
+            
+            loginAccount2WarriorButton.addEventListener('click', () => {
+                reactLogin("maria", "secret", "warrior", "origin", "world0");
+            });
+            
+            async function reactAccountCreation(username, password) {
+                if(socket && isSocketConnected) {
+                    await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_account_creation", username, password);
+                }
+            }
+            
+            async function reactCharacterCreation(username, password, playerName, playerClass) {
+                if(socket && isSocketConnected) {
+                    await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_character_creation", username, password, playerName, playerClass);
+                }
+            }
+            
+            async function reactLogin(username, password, playerName, serverName, worldName) {
+                if(socket && isSocketConnected) {
+                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login", username, password, playerName, serverName, worldName);
+                    if(R.isSuccess) {
+                        startInterval();
+                        startDevInterval();
+                        requestAnimationFrame(drawClient);
+                        
+                        isSocketLoggedIn = true;
+                        
+                        socket.on("disconnect", (err) => {
+                            isSocketLoggedIn = false;
+                            
+                            clearInterval(interval);
+                            clearInterval(intervalDev);
+                        });
+                    }
+                }
+            }
+            
+            window.addEventListener('load', async () => {
+                drawLoadingScreen();
+            
+                imageCatalog = new ImageCatalog();
+                await imageCatalog.createImageCatalog();
+                
+                connectSocket();
+            });
+            
+            canvas.addEventListener("contextmenu", function (e){
+                e.preventDefault();
+            }, false);
+            
+            const maxClickDeltaSpace = 10;
+            const maxClickDeltaTime = 100;
+            let deltaSpace;
+            let startX;
+            let startY;
+            let startT;
+            
+            let downButton;
+
+            canvas.addEventListener('mousedown', function (e) {
+                e.preventDefault()
+                
+                if(downButton === undefined) {
+                    downButton = e.button;
+                    const rect = canvas.getBoundingClientRect();
+                    startX = e.clientX - rect.left - 10;
+                    startY = e.clientY - rect.top - 10;
+                    startT = Date.now();
+                    deltaSpace = 0;
+                }
+            });
+            
+            canvas.addEventListener('mousemove', function (e) {
+                if(downButton !== undefined) {
+                    deltaSpace++;
+                }
+            });
+
+            canvas.addEventListener('mouseup', function (e) {
+                if(downButton !== e.button) {
+                    return;
+                }
+                
+                downButton = undefined;
+                
+                let endT = Date.now();
+                let deltaTime = endT - startT;
+            
+                const rect = canvas.getBoundingClientRect();
+                let endX = e.clientX - rect.left - 10;
+                let endY = e.clientY - rect.top - 10;
+                
+                
+                
+                let var_isScreen1 = isScreen(startX, startY);
+                let var_isInventory1 = isInventory(startX, startY);
+                let var_isPurse1 = isPurse(startX, startY);
+                
+                let location1;
+                let info1 = [];
+                
+                if(var_isScreen1 !== undefined) {
+                    location1 = "screen";
+                    info1.push(var_isScreen1[0]);
+                    info1.push(var_isScreen1[1]);
+                }
+                else if(var_isInventory1 !== undefined) {
+                    location1 = "inventory";
+                    info1.push(var_isInventory1);
+                }
+                else if(var_isPurse1 !== undefined) {
+                    location1 = "purse";
+                }
+                
+                
+                
+                let var_isScreen2 = isScreen(endX, endY);
+                let var_isInventory2 = isInventory(endX, endY);
+                let var_isPurse2 = isPurse(endX, endY);
+                
+                let location2;
+                let info2 = [];
+                
+                if(var_isScreen2 !== undefined) {
+                    location2 = "screen";
+                    info2.push(var_isScreen2[0]);
+                    info2.push(var_isScreen2[1]);
+                }
+                else if(var_isInventory2 !== undefined) {
+                    location2 = "inventory";
+                    info2.push(var_isInventory2);
+                }
+                else if(var_isPurse2 !== undefined) {
+                    location2 = "purse";
+                }
+
+                if (deltaSpace < maxClickDeltaSpace && deltaTime < maxClickDeltaTime) {
+                    // Click
+                    if(location1) {
+                        reactButtonClick(e.button, location1, info1)
+                    }
+                }
+                else {
+                    // Drag
+                    if(location1 && location2) {
+                        reactButtonDrag(e.button, location1, info1, location2, info2)
+                    }
+                }
+            });
+            
+            
+            
+            
+            let isKeyPressed = {};
+            
+            document.onkeydown = (evt) => {
+                if(inputsEnabled) {
+                    evt.preventDefault();
+                    isKeyPressed[evt.keyCode] = true;
+                }
+            }
+            
+            document.onkeyup = (evt) => {
+                evt.preventDefault();
+                isKeyPressed[evt.keyCode] = false;
+            }
+            
+            async function checkKeyPress() {
+                let keys = [];
+                for(let key in isKeyPressed) {
+                    if(isKeyPressed[key]) {
+                        keys.push(Number(key));
+                    }
+                }
+                
+                if(keys.length !== 0) {
+                    reactKeyPress(keys);
+                }
+            }
+            
+            async function checkControllerPress() {
+                const gamepads = navigator.getGamepads();
+                if (!gamepads) {
+                    return;
+                }
+
+                for(let gp of gamepads) {
+                    if(!gp) {
+                        continue;
+                    }
+                    
+                    let buttons = [];
+                    
+                    for(let i = 0; i < gp.buttons.length; i++) {
+                        if(controllerButtonPressed(gp.buttons[i])) {
+                            buttons.push(i);
+                        }
+                    }
+                    
+                    if(buttons.length !== 0) {
+                        reactControllerPress(buttons);
+                    }
+                }
+            }
+            
+            function controllerButtonPressed(b) {
+                if(typeof b === "object") {
+                    return b.pressed;
+                }
+                return b === 1.0;
+            }
+            
+            let deadzone = 0.2;
+            
+            async function checkControllerSticks() {
+                const gamepads = navigator.getGamepads();
+                if (!gamepads) {
+                    return;
+                }
+
+                for(let gp of gamepads) {
+                    if(!gp) {
+                        continue;
+                    }
+                    
+                    let axes = gp.axes;
+                    for(let axis of axes) {
+                        // If any one axis is outside the deadzone, send the server all of the axes.
+                        if(Math.abs(axis) > deadzone) {
+                            reactControllerSticks(axes);
+                            return;
+                        }
+                    }
+                }
+            }
+            
+            let inputsEnabled = true;
+            
+            window.addEventListener('blur', function (e) {
+                inputsEnabled = false;
+                isKeyPressed = {};
+            });
+            
+            window.addEventListener('focus', function (e) {
+                inputsEnabled = true;
+            });
+            
+            async function reactControllerPress(buttons) {
+                if(socket && isSocketLoggedIn && inputsEnabled) {
+                    await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_controller_press", buttons);
+                }
+            }
+            
+            async function reactControllerSticks(axes) {
+                if(socket && isSocketLoggedIn && inputsEnabled) {
+                    await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_controller_sticks", axes);
+                }
+            }
+
+            async function reactKeyPress(keys) {
+                if(socket && isSocketLoggedIn && inputsEnabled) {
+                    await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_key_press", keys);
+                }
+            }
+            
+            async function reactButtonClick(button, location, info) {
+                if(socket && isSocketLoggedIn && inputsEnabled) {
+                    await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_mouse_click", button, location, info);
+                }
+            }
+            
+            async function reactButtonDrag(button, location1, info1, location2, info2) {
+                if(socket && isSocketLoggedIn && inputsEnabled) {
+                    await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_mouse_drag", button, location1, info1, location2, info2);
+                }
+            }
+            
+            function isScreen(x, y) {
+                let nScreen;
+
+                if(x >= 0 && x < NUM_TILES_X * IMAGE_SCALE_FACTOR && y >= 0 && y < NUM_TILES_Y * IMAGE_SCALE_FACTOR) {
+                    // Return normalized (tile) x,y
+                    nScreen = [Math.floor(x / IMAGE_SCALE_FACTOR), Math.floor(y / IMAGE_SCALE_FACTOR)];
+                }
+
+                return nScreen;
+            }
+
+            function isInventory(x, y) {
+                let originInventoryX = 17;
+                let originInventoryY = 7;
+                let inventoryWidth = 9;
+                let inventoryHeight = 5;
+
+                let slot;
+
+                if(x >= originInventoryX * IMAGE_SCALE_FACTOR && x < (originInventoryX + inventoryWidth) * IMAGE_SCALE_FACTOR && y >= originInventoryY  * IMAGE_SCALE_FACTOR && y < (originInventoryY + inventoryHeight) * IMAGE_SCALE_FACTOR) {
+                    // Return inventory slot
+                    let nx = Math.floor((x / IMAGE_SCALE_FACTOR) - originInventoryX);
+                    let ny = Math.floor((y / IMAGE_SCALE_FACTOR) - originInventoryY);
+                    slot = ny * 9 + nx;
+                }
+
+                return slot;
+            }
+
+            function isPurse(x, y) {
+                let originPurseX = 17;
+                let originPurseY = 0;
+                let purseWidth = 1;
+                let purseHeight = 1;
+
+                let b = x >= originPurseX * IMAGE_SCALE_FACTOR && x < (originPurseX + purseWidth) * IMAGE_SCALE_FACTOR && y >= originPurseY  * IMAGE_SCALE_FACTOR && y < (originPurseY + purseHeight) * IMAGE_SCALE_FACTOR;
+                return b ? b : undefined;
+            }
+            
+            
+            
+            
+            
+            function startInterval() {
+                // Continuously check for client inputs to send to the server.
+                let interval = setInterval(() => {
+                    checkKeyPress();
+                    checkControllerPress();
+                    checkControllerSticks();
+                }, 1000 / INPUT_FPS_RATE);
+            }
+            
+            function startDevInterval() {
+                let intervalDev = setInterval(() => {
+                    checkDevInfo();
+                }, 1000 / INPUT_FPS_RATE);
+            }
+            
+            async function checkDevInfo() {
+                if(socket && isSocketLoggedIn) {
+                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("get_dev_data");
+                    if(R.isSuccess) {
+                        let devData = R.devData;
+                        
+                        let currentTick = Math.floor(Number(devData.info.currentTick) / 60);
+                        let serverInfo = devData.info.server;
+                        let worldInfo = devData.info.world;
+                        let mapInfo = devData.info.map;
+                        let screenInfo = devData.info.screen;
+                        let playerInfo = devData.info.player;
+                        
+                        devText.innerHTML = "Current Tick: " + currentTick 
+                        + "\nServer: " + serverInfo.id + " " + serverInfo.name
+                        + "\nWorld: " + worldInfo.id + " " + worldInfo.name
+                        + "\nMap: " + mapInfo.id + " " + mapInfo.name
+                        + "\nScreen: " + "(" + screenInfo.x + "," + screenInfo.y + ") " + screenInfo.name
+                        + "\nPlayer: " + "(" + playerInfo.x + "," + playerInfo.y + ")";
+                    }
+                }
+            }
+            
+            
+            
+            
+            
+            async function drawClient(time) {
+                if(socket && isSocketLoggedIn) {
+                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("get_client_data");
+                    if(R.isSuccess) {
+                        let clientData = R.clientData;
+                    
+                        let canvasBuffer = document.createElement('canvas');
+                        canvasBuffer.width = canvas_width;
+                        canvasBuffer.height = canvas_height;
+                        
+                        let ctxBuffer = canvasBuffer.getContext("2d");
+                        
+                        if(canvas_showGrid) {
+                            drawScreenGrid(ctxBuffer);
+                            drawInventoryGrid(ctxBuffer);
+                        }
+                        
+                        let animationFrame = Math.floor(ANIMATION_FRAMES * time / (1000 * ANIMATION_TIME)) % ANIMATION_FRAMES;
+                        drawScreen(ctxBuffer, animationFrame, clientData.tiles, clientData.entities, clientData.inventory, clientData.purse, clientData.info);
+                        
+                        // Clear current screen and draw new screen quickly to prevent flickering.
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(canvasBuffer, 0, 0);
+                        
+                        requestAnimationFrame(drawClient);
+                    }
+                }
+            }
+            
+            function drawLoadingScreen() {
+                let canvasBuffer = document.createElement('canvas');
+                canvasBuffer.width = canvas_width;
+                canvasBuffer.height = canvas_height;
+                
+                let ctxBuffer = canvasBuffer.getContext("2d");
+                ctxBuffer.font = "30px Arial";
+                ctxBuffer.fillText("Loading...", 5, 25);
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(canvasBuffer, 0, 0);
+            }
+            
+            function drawLoginScreen() {
+                let canvasBuffer = document.createElement('canvas');
+                canvasBuffer.width = canvas_width;
+                canvasBuffer.height = canvas_height;
+                
+                let ctxBuffer = canvasBuffer.getContext("2d");
+                ctxBuffer.font = "30px Arial";
+                ctxBuffer.fillText("Login to Play.", 5, 25);
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(canvasBuffer, 0, 0);
+            }
+            
+            function drawDisconnectScreen() {
+                let canvasBuffer = document.createElement('canvas');
+                canvasBuffer.width = canvas_width;
+                canvasBuffer.height = canvas_height;
+                
+                let ctxBuffer = canvasBuffer.getContext("2d");
+                ctxBuffer.font = "30px Arial";
+                ctxBuffer.fillText("You have been disconnected. Refresh the page to reconnect.", 5, 25);
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(canvasBuffer, 0, 0);
+            }
+            
+            function drawScreen(ctxBuffer, animationFrame, tiles, entities, inventory, purse, info) {
+                // Only draw the screen where the player is located at.
+                ctxBuffer.beginPath();
+
+                // Tiles
+                while(tiles.length > 0) {
+                    let tile = tiles.shift();
+                    
+                    while(tile.names.length > 0) {
+                        let name = tile.names.shift();
+                        let image = imageCatalog.getImageByTileName(name, animationFrame);
+                        
+                        ctxBuffer.drawImage(image, tile.x * IMAGE_SCALE_FACTOR, tile.y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                    }
+                }
+                
+                // Entities
+                while(entities.length > 0) {
+                    let entity = entities.shift();
+                    let image = imageCatalog.getImageByEntityClassName(entity.className, animationFrame);
+                    
+                    let x = entity.x + entity.animationShiftX;
+                    let y = entity.y + entity.animationShiftY;
+                    
+                    ctxBuffer.drawImage(image, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                    
+                    if(entity.stackSize !== 1) {
+                        ctxBuffer.drawImage(getStackSizeImage(entity.stackSize), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                    }
+                    
+                    if(isValid(entity.healthFraction)) {
+                        ctxBuffer.drawImage(getHealthBarImage(entity.healthFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                    }
+                    
+                    if(isValid(entity.manaFraction)) {
+                        ctxBuffer.drawImage(getManaBarImage(entity.manaFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                    }
+                    
+                    if(isValid(entity.experienceFraction)) {
+                        ctxBuffer.drawImage(getExperienceBarImage(entity.experienceFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                    }
+                    
+                    if(isValid(entity.level)) {
+                        ctxBuffer.drawImage(getLevelImage(entity.level), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                    }
+                    
+                    if(entity.statuses.includes("dead") || entity.statuses.includes("invincible")) {
+                        let haloImage = imageCatalog.getImageByStatusName("invincible", animationFrame);
+                        ctxBuffer.drawImage(haloImage, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                    }
+                }
+
+                // Screen Dividers
+                ctxBuffer.fillRect(NUM_TILES_X * IMAGE_SCALE_FACTOR, 0, IMAGE_SCALE_FACTOR, NUM_TILES_Y * IMAGE_SCALE_FACTOR);
+                ctxBuffer.fillRect((NUM_TILES_X + 1) * IMAGE_SCALE_FACTOR, 6 * IMAGE_SCALE_FACTOR, 9 * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                
+                // Inventory
+                let originInventoryX = 17;
+                let originInventoryY = 7;
+                let inventoryImages = getInventoryImages(inventory.items, animationFrame);
+                while(inventoryImages.length > 0) {
+                    let inventoryImage = inventoryImages.shift();
+                    ctxBuffer.drawImage(inventoryImage.image, (originInventoryX + inventoryImage.x) * IMAGE_SCALE_FACTOR, (originInventoryY + inventoryImage.y) * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                }
+                
+                drawInventoryCursor(ctxBuffer, inventory.currentSlot);
+                
+                // Purse
+                let originPurseX = 17;
+                let originPurseY = 0;
+                let purseImage = imageCatalog.getImageByEntityClassName("Gold", animationFrame);
+                ctxBuffer.drawImage(purseImage, originPurseX * IMAGE_SCALE_FACTOR, originPurseY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                ctxBuffer.drawImage(getGoldTotalImage(purse.goldTotal), (originPurseX + 1) * IMAGE_SCALE_FACTOR, originPurseY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                
+                // Info
+                if(info.className !== "Undefined") {
+                    const W = IMAGE_SCALE_FACTOR * 6;
+                    let originInfoX = 17;
+                    let originInfoY = 1;
+                    let infoImage = imageCatalog.getImageByEntityClassName(info.className, animationFrame);
+                    ctxBuffer.drawImage(infoImage, originInfoX * IMAGE_SCALE_FACTOR, originInfoY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                    ctxBuffer.drawImage(getInfoNameImage(info.name), (originInfoX + 1) * IMAGE_SCALE_FACTOR, originInfoY * IMAGE_SCALE_FACTOR, W, IMAGE_SCALE_FACTOR);
+                    ctxBuffer.drawImage(getInfoTextImage(info.text), (originInfoX + 1) * IMAGE_SCALE_FACTOR, originInfoY * IMAGE_SCALE_FACTOR, W, IMAGE_SCALE_FACTOR);
+                }
+                
+                ctxBuffer.stroke();
+            }
+            
+            function isValid(n) {
+                return n !== undefined && n !== NaN && n !== null;
+            }
+            
+            function drawScreenGrid(ctxBuffer) {
+                ctxBuffer.beginPath();
+
+                for(let x = 0; x < NUM_TILES_X + 1; x++) {
+                    ctxBuffer.moveTo(x * IMAGE_SCALE_FACTOR, 0);
+                    ctxBuffer.lineTo(x * IMAGE_SCALE_FACTOR, NUM_TILES_Y * IMAGE_SCALE_FACTOR);
+                }
+
+                for(let y = 0; y < NUM_TILES_Y + 1; y++) {
+                    ctxBuffer.moveTo(0, y * IMAGE_SCALE_FACTOR);
+                    ctxBuffer.lineTo(NUM_TILES_X * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR);
+                }
+
+                ctxBuffer.stroke();
+            }
+            
+            function drawInventoryGrid(ctxBuffer) {
+                ctxBuffer.beginPath();
+
+                for(let x = NUM_TILES_X + 1; x < NUM_TILES_X + SIDE_PANEL_TILES + 1; x++) {
+                    ctxBuffer.moveTo(x * IMAGE_SCALE_FACTOR, 7 * IMAGE_SCALE_FACTOR);
+                    ctxBuffer.lineTo(x * IMAGE_SCALE_FACTOR, NUM_TILES_Y * IMAGE_SCALE_FACTOR);
+                }
+
+                for(let y = 7; y < NUM_TILES_Y + 1; y++) {
+                    ctxBuffer.moveTo((NUM_TILES_X + 1) * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR);
+                    ctxBuffer.lineTo((NUM_TILES_X + SIDE_PANEL_TILES) * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR);
+                }
+
+                ctxBuffer.stroke();
+            }
+            
+            function drawInventoryCursor(ctxBuffer, currentSlot) {
+                if(currentSlot !== undefined) {
+                    let xy = slot2XY(currentSlot);
+
+                    ctxBuffer.beginPath();
+                    
+                    ctxBuffer.lineWidth = "3";
+                    ctxBuffer.strokeStyle = "red";
+
+                    ctxBuffer.rect(xy[0], xy[1], IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                    ctxBuffer.stroke();
+
+                    ctxBuffer.lineWidth = "1";
+                    ctxBuffer.strokeStyle = "black";
+                    
+                    ctxBuffer.stroke();
+                }
+            }
+
+            function slot2XY(slot) {
+                let originX = 17;
+                let originY = 7;
+
+                let nx = slot % 9;
+                let ny = Math.floor(slot / 9);
+
+                let x = (originX + nx) * IMAGE_SCALE_FACTOR;
+                let y = (originY + ny) * IMAGE_SCALE_FACTOR;
+
+                return [x, y];
+            }
+            
+            function getStackSizeImage(stackSize) {
+                let canvasTemp = document.createElement('canvas');
+                canvasTemp.width = 128;
+                canvasTemp.height = 128;
+                
+                let ctxTemp = canvasTemp.getContext("2d");
+                ctxTemp.font = "30px Arial";
+                ctxTemp.fillText("" + stackSize, 0, 20);
+                
+                return canvasTemp;
+            }
+            
+            function getHealthBarImage(healthFraction) {
+                let canvasTemp = document.createElement('canvas');
+                canvasTemp.width = 128;
+                canvasTemp.height = 128;
+                
+                let ctxTemp = canvasTemp.getContext("2d");
+                ctxTemp.fillStyle = "#222222";
+                ctxTemp.fillRect(20, 0, 88, 20);
+                ctxTemp.fillStyle = "#ff0000";
+                ctxTemp.fillRect(20, 0, 88 * healthFraction, 20);
+                
+                return canvasTemp;
+            }
+            
+            function getManaBarImage(manaFraction) {
+                let canvasTemp = document.createElement('canvas');
+                canvasTemp.width = 128;
+                canvasTemp.height = 128;
+                
+                let ctxTemp = canvasTemp.getContext("2d");
+                ctxTemp.fillStyle = "#222222";
+                ctxTemp.fillRect(20, 20, 88, 20);
+                ctxTemp.fillStyle = "#0000ff";
+                ctxTemp.fillRect(20, 20, 88 * manaFraction, 20);
+                
+                return canvasTemp;
+            }
+            
+            function getExperienceBarImage(experienceFraction) {
+                let canvasTemp = document.createElement('canvas');
+                canvasTemp.width = 128;
+                canvasTemp.height = 128;
+                
+                let ctxTemp = canvasTemp.getContext("2d");
+                ctxTemp.fillStyle = "#222222";
+                ctxTemp.fillRect(20, 40, 88, 20);
+                ctxTemp.fillStyle = "#00ff00";
+                ctxTemp.fillRect(20, 40, 88 * experienceFraction, 20);
+                
+                return canvasTemp;
+            }
+            
+            function getLevelImage(level) {
+                let canvasTemp = document.createElement('canvas');
+                canvasTemp.width = 128;
+                canvasTemp.height = 128;
+                
+                let ctxTemp = canvasTemp.getContext("2d");
+                ctxTemp.font = "30px Arial";
+                ctxTemp.fillText("Level: " + level, 20, 80);
+                
+                return canvasTemp;
+            }
+            
+            function getGoldTotalImage(goldTotal) {
+                let canvasTemp = document.createElement('canvas');
+                canvasTemp.width = 128;
+                canvasTemp.height = 128;
+
+                let ctxTemp = canvasTemp.getContext("2d");
+                ctxTemp.font = "30px Arial";
+                ctxTemp.fillText("Gold: " + goldTotal, 0, 70);
+                
+                return canvasTemp;
+            }
+            
+            function getInfoNameImage(text) {
+                let canvasTemp = document.createElement('canvas');
+                canvasTemp.width = 128 * 6;
+                canvasTemp.height = 128;
+
+                let ctxTemp = canvasTemp.getContext("2d");
+                ctxTemp.font = "30px Arial";
+                ctxTemp.fillText(text, 0, 50);
+                
+                return canvasTemp;
+            }
+            
+            function getInfoTextImage(text) {
+                let canvasTemp = document.createElement('canvas');
+                canvasTemp.width = 128 * 6;
+                canvasTemp.height = 128;
+
+                let ctxTemp = canvasTemp.getContext("2d");
+                ctxTemp.font = "30px Arial";
+                ctxTemp.fillText(text, 0, 90);
+                
+                return canvasTemp;
+            }
+            
+            function getInventoryImages(items, animationFrame) {
+                // Returns an array of all the images that should be drawn on this screen.
+                let images = [];
+
+                // Manually specify inventory slots.
+                let xSlots = [0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8];
+                let ySlots = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4];
+
+                for(let item of items) {
+                    let x = xSlots.shift();
+                    let y = ySlots.shift();
+                    
+                    if(item) {
+                        let itemImage = imageCatalog.getImageByEntityClassName(item.className, animationFrame);
+                        //for(let itemImage of itemImages) {
+                            images.push({
+                                x: x,
+                                y: y,
+                                image: itemImage
+                            });
+                        //}
+
+                        // For cosmetic reasons, only add the stackSize if it is not 1
+                        if(item.stackSize !== 1) {
+                            images.push({
+                                x: x,
+                                y: y,
+                                image: getStackSizeImage(item.stackSize)
+                            });
+                        }
+                    }
+                }
+
+                return images;
+            }
+        </script>
+    </body>
+</html>

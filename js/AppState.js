@@ -15,7 +15,6 @@ const ServerFunction = require("./server/ServerFunction.js");
 const ServerManager = require("./server/ServerManager.js");
 const ServerTask = require("./server/ServerTask.js");
 const UID = require("./uid/UID.js");
-const WorkerManager = require("./worker/WorkerManager.js");
 
 class AppState {
     accountManager;
@@ -62,8 +61,6 @@ class AppState {
     terminate() {
         this.httpServer?.terminate();
         this.socketIOServer?.terminate();
-        RateLimit.terminate();
-        WorkerManager.terminateAllWorkers();
     }
 
     validateFilesAndFolders() {

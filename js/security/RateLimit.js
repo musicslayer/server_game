@@ -1,16 +1,43 @@
+const path = require("path");
+
 const Constants = require("../constants/Constants.js");
+const WorkerManager = require("../worker/WorkerManager.js");
+
+const WORKER_FILE_PATH = path.resolve(path.join(__dirname, "..", "worker", "worker_interval.js"));
 
 class RateLimit {
-    static interval;
-
+    static isCancelled = false;
     static operationIPMap = new Map();
+
+    static worker;
 
     static init() {
         RateLimit.reset();
 
-        this.interval = setInterval(() => {
+        let shared = new Int32Array(new SharedArrayBuffer(4));
+        RateLimit.doWork(shared);
+
+        RateLimit.worker = WorkerManager.createWorker(WORKER_FILE_PATH, {
+            workerData: {
+                shared: shared,
+                intervalTime: 1000000000 // 1 second, in nanoseconds
+            }
+        });
+        RateLimit.worker.on("exit", (exitCode) => {
+            RateLimit.isCancelled = true;
+        });
+        RateLimit.worker.on("error", (err) => {
+            RateLimit.isCancelled = true;
+        });
+    }
+
+    static async doWork(shared) {
+        while(!RateLimit.isCancelled) {
+            // We must query "value" or else this statement will not actually wait for anything.
+            await Atomics.waitAsync(shared, 0, 0).value;
+
             RateLimit.reset();
-        }, 1000);
+        }
     }
 
     static reset() {
@@ -39,10 +66,6 @@ class RateLimit {
         }
 
         return isRateLimited;
-    }
-
-    static terminate() {
-        clearInterval(RateLimit.interval);
     }
 }
 

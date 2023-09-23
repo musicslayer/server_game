@@ -8,6 +8,9 @@ const RateLimit = require("../security/RateLimit.js");
 
 const FAVICON_FILE = "favicon.ico";
 const HTML_HOME = "html/index.html";
+const HTML_LOGIN = "html/login.html";
+const HTML_CREATE_ACCOUNT = "html/game.html";
+const HTML_GAME = "html/game.html";
 const HTML_IMAGE_CATALOG = "html/ImageCatalog.js";
 const HTML_UNZIP_STREAM = "html/UnzipStream.js";
 const HTML_SOCKETIO = "html/socket.io.min.js";
@@ -48,6 +51,18 @@ class HTTPServer {
                 switch(pathname) {
                     case "/":
                         serveFile(res, "text/html", HTML_HOME);
+                        break;
+
+                    case "/login":
+                        serveFile(res, "text/html", HTML_LOGIN);
+                        break;
+
+                    case "/create_account":
+                        serveFile(res, "text/html", HTML_CREATE_ACCOUNT);
+                        break;
+
+                    case "/game":
+                        serveFile(res, "text/html", HTML_GAME);
                         break;
 
                     case "/favicon.ico":

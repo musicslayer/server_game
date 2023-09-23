@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en-US">	
+	<head>
+		<title>Server Game</title>
+	</head>
+
+	<body>
+		<h1>Server Game</h1>
+		
+		<h2>Account Options</h2>
+		
+		<a href="/create_account">Create a new account.</a><br/>
+		<a href="/reset_password">Reset your password.</a><br/>
+		<a href="/change_email">Change your email.</a><br/>
+		<a href="/troubleshoot_account">Troubleshoot your account.</a>
+		
+		<h2>Login</h2>
+		
+		<table>
+		<tr>
+			<td>Username:</td>
+			<td><input id="ID_UsernameInput" type="text" maxlength="20" onKeyPress="inputCallback(event)"></input></td>
+		</tr>
+	
+		<tr>
+			<td>Password:</td>
+			<td><input id="ID_PasswordInput" type="text" maxlength="20" onKeyPress="inputCallback(event)"></input></td>
+		</tr>
+		</table>
+		
+		<br/>
+		
+		<button id="ID_LoginButton">Login</button>
+		
+		<p id="ID_LoginResultText" style='white-space: pre;'></p>
+        
+        <table id="ID_CharacterTable">
+        </table>
+		
+		<script src="socket.io.min.js"></script>
+		
+		<script>
+			const UsernameInput = document.querySelector('#ID_UsernameInput');
+			const PasswordInput = document.querySelector('#ID_PasswordInput');
+			
+			const LoginButton = document.querySelector('#ID_LoginButton');
+			
+			const LoginResultText = document.querySelector('#ID_LoginResultText');
+            
+            const CharacterTable = document.querySelector('#ID_CharacterTable');
+			
+			const BLACK = "#000000";
+			const RED = "#B00000";
+            
+            const SOCKET_TIMEOUT = 10000;
+			
+			let socket;
+            let isSocketConnected = false;
+            
+            window.addEventListener('load', async () => {
+                connectSocket();
+            });
+            
+            function connectSocket() {
+                if(socket) {
+                    socket.disconnect(true);
+                    
+                    isSocketConnected = false;
+                }
+                
+                socket = io({
+                    // Use these options to only allow websockets and avoid memory leaks.
+                    upgrade: false,
+                    transports: ["websocket"]
+                });
+                
+                socket.on("connect", (err) => {
+                    // Display the rest of the game...
+                    isSocketConnected = true;
+                });
+                
+                socket.on("disconnect", (err) => {
+                    socket.disconnect(true);
+                    isSocketConnected = false;
+                });
+            }
+            
+			LoginButton.addEventListener('click', async () => {
+                if(socket && isSocketConnected) {
+                    await characterSelect();
+                }
+			});
+			
+            // Allows the user to login with the ENTER key.
+			async function inputCallback(event) {
+				if(socket && isSocketConnected && event && event.keyCode == 13) {
+					await characterSelect()
+				}
+			}
+			
+			async function characterSelect() {
+				const username = UsernameInput.value;
+				const password = PasswordInput.value;
+				
+				if(username.trim() == "" || password.trim() == "") {
+					LoginResultText.style.color = RED;
+					LoginResultText.innerHTML = "Must supply a username and password.";
+				}
+				else {
+					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_character_select", username, password);
+                    
+                    if(R.isSuccess) {
+                        let characterNames = R.characterNames;
+                        if(characterNames.length > 0) {
+                            LoginResultText.style.color = BLACK;
+                            LoginResultText.innerHTML = "Choose a character to login as:";
+                    
+                            // Display each name along with a button that can be clicked to login.
+                            for(let characterName of characterNames) {
+                                let newRow = document.createElement("tr");
+                                
+                                let newButton = document.createElement("button");
+                                newButton.innerText = characterName;
+                                newButton.addEventListener('click', async () => {
+                                    if(socket && isSocketConnected) {
+                                        await login(username, password, characterName, "origin", "world0");
+                                    }
+                                });
+                                
+                                newRow.appendChild(newButton);
+                                CharacterTable.appendChild(newRow);
+                            }
+                        }
+                        else {
+                            LoginResultText.style.color = RED;
+                            LoginResultText.innerHTML = "This account does not have any characters.";
+                        }
+                    }
+                    else {
+                        LoginResultText.style.color = RED;
+                        LoginResultText.innerHTML = "This account does not exist.";
+                    }
+				}
+			}
+            
+            async function login(username, password, characterName, serverName, worldName) {
+                if(socket && isSocketConnected) {
+                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login", username, password, characterName, serverName, worldName);
+                    if(R.isSuccess) {
+                        window.location.assign("/game?username=" + username 
+                            + "&password=" + password
+                            + "&characterName=" + characterName
+                            + "&serverName=" + serverName
+                            + "&worldName=" + worldName
+                        );
+                    }
+                    else {
+                        LoginResultText.style.color = RED;
+                        LoginResultText.innerHTML = "Could not login as this character.";
+                    }
+                }
+            }
+		</script>
+	</body>
+</html>

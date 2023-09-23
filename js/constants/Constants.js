@@ -49,10 +49,12 @@ class Constants {
     };
 
     static ratelimit = {
+        // Each entry is the number of allowed operations per IP address per second.
         operationMap: new Map(Object.entries({
             "html": 100,
             "create_account": 1,
             "create_character": 1,
+            "select_character": 1,
             "login": 1,
             "input": 1000,
             "data": 1000,

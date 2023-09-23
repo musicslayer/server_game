@@ -4,7 +4,7 @@ const Constants = require("../constants/Constants.js");
 const ServerTaskList = require("./ServerTaskList.js");
 const WorkerManager = require("../worker/WorkerManager.js");
 
-const WORKER_FILE_PATH = path.resolve(path.join(__dirname, "server_tick.js"));
+const WORKER_FILE_PATH = path.resolve(path.join(__dirname, "..", "worker", "worker_interval.js"));
 
 class ServerScheduler {
     server;
@@ -36,7 +36,7 @@ class ServerScheduler {
         this.worker = WorkerManager.createWorker(WORKER_FILE_PATH, {
             workerData: {
                 shared: shared,
-                interval: 1000000000 / Constants.performance.TICK_RATE // In nanoseconds
+                intervalTime: 1000000000 / Constants.performance.TICK_RATE // In nanoseconds
             }
         });
         this.worker.on("exit", (exitCode) => {
@@ -44,9 +44,6 @@ class ServerScheduler {
         });
         this.worker.on("error", (err) => {
             this.isCancelled = true;
-
-            // Just throw the error. Don't try to recover or log anything.
-            throw(err);
         });
     };
 
