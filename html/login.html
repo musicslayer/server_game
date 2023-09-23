@@ -144,21 +144,12 @@
 			}
             
             async function login(username, password, characterName, serverName, worldName) {
-                if(socket && isSocketConnected) {
-                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login", username, password, characterName, serverName, worldName);
-                    if(R.isSuccess) {
-                        window.location.assign("/game?username=" + username 
-                            + "&password=" + password
-                            + "&characterName=" + characterName
-                            + "&serverName=" + serverName
-                            + "&worldName=" + worldName
-                        );
-                    }
-                    else {
-                        LoginResultText.style.color = RED;
-                        LoginResultText.innerHTML = "Could not login as this character.";
-                    }
-                }
+                window.location.assign("/game?username=" + username 
+                    + "&password=" + password
+                    + "&characterName=" + characterName
+                    + "&serverName=" + serverName
+                    + "&worldName=" + worldName
+                );
             }
 		</script>
 	</body>
