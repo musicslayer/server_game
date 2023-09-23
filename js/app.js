@@ -16,6 +16,9 @@ async function init() {
         WorkerManager.terminateAllWorkers();
     };
 
+    // If any admin command error then the entire program should be terminated.
+    appAdmin.setErrorFcn(errorFcn);
+
     // If any worker errors then the entire program should be terminated.
     WorkerManager.setErrorFcn(errorFcn);
 
