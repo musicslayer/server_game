@@ -4,6 +4,7 @@ const WorkerManager = require("./worker/WorkerManager.js");
 
 // Future Items:
 // --- Add in logging calls. This requires more storage space.
+// --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
 async function init() {
     let appState = new AppState();
