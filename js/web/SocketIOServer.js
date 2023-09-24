@@ -77,7 +77,7 @@ class SocketIOServer {
 		let ip = socket.handshake.address;
 
 		// Respond to account creation.
-		socket.on("on_account_creation", (username, password, callback) => {
+		socket.on("on_account_creation", (username, key, email, callback) => {
 			try {
 				if(RateLimit.isRateLimited("create_account", ip)) {
 					socket.disconnect(true);
@@ -88,21 +88,19 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, password)) {
+				if(!validateStrings(username, key, email)) {
 					socket.disconnect(true);
 					return;
 				}
 
-				let key = username + "-" + password;
-				if(this.accountManager.getAccount(key)) {
-					// The account already exists.
+				if(this.accountManager.hasAccountWithUsername(username)) {
+					// The account with this username already exists.
 					callback({"isSuccess": false});
 					return;
 				}
 
 				// Create a new account.
-				let account = new Account();
-				account.key = key;
+				let account = new Account(username, key, email);
 				this.accountManager.addAccount(account);
 
 				callback({"isSuccess": true});
@@ -113,8 +111,54 @@ class SocketIOServer {
 			}
 		});
 
+		// Respond to account deletion.
+		socket.on("on_account_deletion", (username, key, email, callback) => {
+			try {
+				if(RateLimit.isRateLimited("delete_account", ip)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateStrings(username, key, email)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!this.accountManager.hasAccountWithUsername(username)) {
+					// The account with this username does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				if(!this.accountManager.hasAccountWithKey(key)) {
+					// The account with this key does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				if(!this.accountManager.hasAccountWithEmail(email)) {
+					// The account with this email does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				// Delete the account.
+				let account = this.accountManager.getAccount(key);
+				this.accountManager.removeAccount(account);
+
+				callback({"isSuccess": true});
+			}
+			catch(err) {
+				console.error(err);
+				socket.disconnect(true);
+			}
+		});
+
 		// Respond to character creation.
-		socket.on("on_character_creation", (username, password, playerName, playerClass, callback) => {
+		socket.on("on_character_creation", (username, key, playerName, playerClass, callback) => {
 			try {
 				if(RateLimit.isRateLimited("create_character", ip)) {
 					socket.disconnect(true);
@@ -125,19 +169,24 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, password, playerName, playerClass)) {
+				if(!validateStrings(username, key, playerName, playerClass)) {
 					socket.disconnect(true);
 					return;
 				}
 
-				let key = username + "-" + password;
-				let account = this.accountManager.getAccount(key);
-				if(!account) {
-					// The account does not exist.
+				if(!this.accountManager.hasAccountWithUsername(username)) {
+					// The account with this username does not exist.
 					callback({"isSuccess": false});
 					return;
 				}
 
+				if(!this.accountManager.hasAccountWithKey(key)) {
+					// The account with this key does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				let account = this.accountManager.getAccount(key);
 				if(account.getCharacter(playerName)) {
 					// The character already exists.
 					callback({"isSuccess": false});
@@ -162,7 +211,7 @@ class SocketIOServer {
 		});
 
 		// Respond to the user wanting to select a character.
-		socket.on("on_character_select", (username, password, callback) => {
+		socket.on("on_character_select", (username, key, callback) => {
 			try {
 				if(RateLimit.isRateLimited("select_character", ip)) {
 					socket.disconnect(true);
@@ -174,20 +223,25 @@ class SocketIOServer {
 					return;
 				}
 
-				if(!validateStrings(username, password)) {
+				if(!validateStrings(username, key)) {
 					socket.disconnect(true);
 					return;
 				}
 
-				let key = username + "-" + password;
-				let account = this.accountManager.getAccount(key);
-				if(!account) {
-					// The account does not exist.
+				if(!this.accountManager.hasAccountWithUsername(username)) {
+					// The account with this username does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				if(!this.accountManager.hasAccountWithKey(key)) {
+					// The account with this key does not exist.
 					callback({"isSuccess": false});
 					return;
 				}
 
 				// Return to the client a list of characters they can log in as.
+				let account = this.accountManager.getAccount(key);
 				let characterNames = [];
 				for(let characterName of account.characterMap.keys()) {
 					characterNames.push(characterName);
@@ -202,7 +256,7 @@ class SocketIOServer {
 		});
 
 		// Respond to login.
-		socket.on("on_login", (username, password, playerName, serverName, worldName, callback) => {
+		socket.on("on_login", (username, key, playerName, serverName, worldName, callback) => {
 			try {
 				if(RateLimit.isRateLimited("login", ip)) {
 					socket.disconnect(true);
@@ -214,12 +268,23 @@ class SocketIOServer {
 					return;
 				}
 
-				if(!validateStrings(username, password, playerName, serverName, worldName)) {
+				if(!validateStrings(username, key, playerName, serverName, worldName)) {
 					socket.disconnect(true);
 					return;
 				}
 
-				let key = username + "-" + password;
+				if(!this.accountManager.hasAccountWithUsername(username)) {
+					// The account with this username does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				if(!this.accountManager.hasAccountWithKey(key)) {
+					// The account with this key does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+
 				if(this.clientManager.clientMap.has(key)) {
 					// User is already logged in.
 					callback({"isSuccess": false});
@@ -227,12 +292,6 @@ class SocketIOServer {
 				}
 
 				let account = this.accountManager.getAccount(key);
-				if(!account) {
-					// The account does not exist.
-					callback({"isSuccess": false});
-					return;
-				}
-
 				let character = account.getCharacter(playerName);
 				if(!character) {
 					// The character does not exist.
@@ -303,6 +362,54 @@ class SocketIOServer {
 				});
 
 				this.attachClientListeners(socket, client);
+
+				callback({"isSuccess": true});
+			}
+			catch(err) {
+				console.error(err);
+				socket.disconnect(true);
+			}
+		});
+
+		// Respond to forced logout.
+		socket.on("on_forced_logout", (username, key, email, callback) => {
+			try {
+				if(RateLimit.isRateLimited("forced_logout", ip)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				if(!validateStrings(username, key, email)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				if(!this.accountManager.hasAccountWithUsername(username)) {
+					// The account with this username does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				if(!this.accountManager.hasAccountWithKey(key)) {
+					// The account with this key does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				if(!this.accountManager.hasAccountWithEmail(email)) {
+					// The account with this email does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				// Regardless of whether the user is logged in or not, attempt to log them out.
+				let client = this.clientManager.getClient(key);
+				client?.socket.disconnect(true);
 
 				callback({"isSuccess": true});
 			}

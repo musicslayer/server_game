@@ -107,7 +107,8 @@
 					LoginResultText.innerHTML = "Must supply a username and password.";
 				}
 				else {
-					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_character_select", username, password);
+                    let key = username + "-" + password;
+					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_character_select", username, key);
                     
                     if(R.isSuccess) {
                         let characterNames = R.characterNames;
@@ -123,7 +124,7 @@
                                 newButton.innerText = characterName;
                                 newButton.addEventListener('click', async () => {
                                     if(socket && isSocketConnected) {
-                                        await login(username, password, characterName, "origin", "world0");
+                                        await login(username, key, characterName, "origin", "world0");
                                     }
                                 });
                                 
@@ -143,9 +144,9 @@
 				}
 			}
             
-            async function login(username, password, characterName, serverName, worldName) {
+            async function login(username, key, characterName, serverName, worldName) {
                 window.location.assign("/game?username=" + username 
-                    + "&password=" + password
+                    + "&key=" + key
                     + "&characterName=" + characterName
                     + "&serverName=" + serverName
                     + "&worldName=" + worldName

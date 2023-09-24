@@ -11,6 +11,42 @@ class AccountManager {
         this.accountMap.set(account.key, account);
     }
 
+    removeAccount(account) {
+        let index = this.accounts.indexOf(account);
+        this.accounts.splice(index, 1);
+        this.accountMap.delete(account.key);
+    }
+
+    hasAccountWithUsername(username) {
+        for(let account of this.accounts) {
+            if(account.username === username) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    hasAccountWithKey(key) {
+        for(let account of this.accounts) {
+            if(account.key === key) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    hasAccountWithEmail(email) {
+        for(let account of this.accounts) {
+            if(account.email === email) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     getAccount(key) {
         return this.accountMap.get(key);
     }
@@ -50,13 +86,11 @@ class AccountManager {
         let player2Mage = Entity.createInstance("PlayerMage", 1);
         let player2Warrior = Entity.createInstance("PlayerWarrior", 1);
         
-        let account1 = new Account();
-        account1.key = "smith-password123";
+        let account1 = new Account("smith", "smith-password123", "a@a.com");
         account1.addCharacter("mage", new Character(player1Mage));
         account1.addCharacter("warrior", new Character(player1Warrior));
 
-        let account2 = new Account();
-        account2.key = "maria-secret";
+        let account2 = new Account("maria", "maria-secret", "b@b.com");
         account2.addCharacter("mage", new Character(player2Mage));
         account2.addCharacter("warrior", new Character(player2Warrior));
 

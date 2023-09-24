@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en-US">	
+	<head>
+		<title>Server Game</title>
+	</head>
+
+	<body>
+		<h1>Server Game</h1>
+		
+		<a href="/login">Back to login page.</a>
+		
+		<h2>Create an Account</h2>
+		
+		<table>
+		<tr>
+			<td><b>Username:</b></td>
+			<td><input id="ID_UsernameInput" type="text" maxlength="40"></input></td>
+		</tr>
+	
+		<tr>
+			<td><b>Password:</b></td>
+			<td><input id="ID_PasswordInput" type="text" maxlength="40"></input></td>
+		</tr>
+		
+		<tr>
+			<td><b>Confirm Password:</b></td>
+			<td><input id="ID_ConfirmPasswordInput" type="text" maxlength="40"></input></td>
+		</tr>
+			
+		<tr>
+			<td colspan="2"><p>This email address will verify the account creation process and can be used to troubleshoot your account.</p></td>
+		</tr>
+		
+		<tr>
+			<td><b>Email:</b></td>
+			<td><input id="ID_EmailInput" type="text" maxlength="40"></input></td>
+		</tr>
+		</table>
+		
+		<br/>
+		
+		<button id="ID_CreateAccountButton">Create Account</button>
+		
+		<p id="ID_CreateAccountResultText" style='white-space: pre;'></p>
+		
+		<a id="ID_CreateAccountHyperlink" style="display:none">Click here to create account.</a>
+		
+		<script src="socket.io.min.js"></script>
+		
+		<script>
+			const UsernameInput = document.querySelector('#ID_UsernameInput');
+			const PasswordInput = document.querySelector('#ID_PasswordInput');
+			const ConfirmPasswordInput = document.querySelector('#ID_ConfirmPasswordInput');
+			const EmailInput = document.querySelector('#ID_EmailInput');
+			
+			const CreateAccountButton = document.querySelector('#ID_CreateAccountButton');
+			
+			const CreateAccountResultText = document.querySelector('#ID_CreateAccountResultText');
+			const CreateAccountHyperlink = document.querySelector('#ID_CreateAccountHyperlink');
+			
+			const BLACK = "#000000";
+			const RED = "#B00000";
+			
+            const SOCKET_TIMEOUT = 10000;
+            
+			let socket;
+            let isSocketConnected = false;
+			
+			window.addEventListener('load', () => {
+				connectSocket();
+			});
+            
+            function connectSocket() {
+                if(socket) {
+                    socket.disconnect(true);
+                    
+                    isSocketConnected = false;
+                }
+                
+                socket = io({
+                    // Use these options to only allow websockets and avoid memory leaks.
+                    upgrade: false,
+                    transports: ["websocket"]
+                });
+                
+                socket.on("connect", (err) => {
+                    // Display the rest of the game...
+                    isSocketConnected = true;
+                });
+                
+                socket.on("disconnect", (err) => {
+                    socket.disconnect(true);
+                    isSocketConnected = false;
+                });
+            }
+			
+			CreateAccountButton.addEventListener('click', async () => {
+                if(!isSocketConnected) {
+                    return;
+                }
+                
+				CreateAccountHyperlink.style.display = "none";
+			
+				const username = UsernameInput.value;
+				const password = PasswordInput.value;
+				const confirm_password = ConfirmPasswordInput.value;
+				const email = EmailInput.value;
+				
+				if(!isValidText(username)) {
+					CreateAccountResultText.style.color = RED;
+					CreateAccountResultText.innerHTML = "Must supply a nonempty username without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
+				}
+				else if(!isValidText(password)) {
+					CreateAccountResultText.style.color = RED;
+					CreateAccountResultText.innerHTML = "Must supply a nonempty password without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
+				}
+				else if(password != confirm_password) {
+					CreateAccountResultText.style.color = RED;
+					CreateAccountResultText.innerHTML = "Passwords do not match. Confirm you have typed the same password twice.";
+				}
+				else if(!isValidEmail(email)) {
+					CreateAccountResultText.style.color = RED;
+					CreateAccountResultText.innerHTML = "Must supply a valid email.";
+				}
+				else {
+					CreateAccountResultText.style.color = BLACK;
+					CreateAccountResultText.innerHTML = "Please wait...";
+                    
+                    let key = username + "-" + password;
+                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_account_creation", username, key, email);
+					if(R.isSuccess) {
+						CreateAccountResultText.style.color = BLACK;
+						CreateAccountResultText.innerHTML = "Account creation successful.";
+					}
+					else {
+						CreateAccountResultText.style.color = RED;
+						CreateAccountResultText.innerHTML = "There is a problem creating the account.";
+					}
+				}
+			});
+			
+			function isValidText(str) {
+				// Check that there are no spaces and that all characters are ASCII letters, numbers, or underscores (but not starting with an underscore).
+				if(str === "") {
+					return false;
+				}
+				
+				if(str.startsWith("_")) {
+					return false;
+				}
+				
+				return /^[a-zA-Z0-9_]*$/.test(str);
+			}
+			
+			function isValidEmail(str) {
+				// Check that there are no spaces and that all characters are ASCII letters/numbers.
+				if(str === "") {
+					return false;
+				}
+				
+				return true;
+			}
+		</script>
+	</body>
+</html>

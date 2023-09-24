@@ -1,6 +1,15 @@
 class Account {
+    // The password is not stored directly, we only store a hash.
+    username;
     key;
+    email;
     characterMap = new Map();
+
+    constructor(username, key, email) {
+        this.username = username;
+        this.key = key;
+        this.email = email;
+    }
 
     addCharacter(name, player) {
         this.characterMap.set(name, player);
@@ -13,7 +22,9 @@ class Account {
     serialize(writer) {
         writer.beginObject()
             .serialize("!V!", 1)
+            .serialize("username", this.username)
             .serialize("key", this.key)
+            .serialize("email", this.email)
             .serializeMap("characterMap", this.characterMap)
         .endObject();
     }
@@ -24,8 +35,11 @@ class Account {
 
         let version = reader.deserialize("!V!", "String");
         if(version === "1") {
-            account = new Account();
-            account.key = reader.deserialize("key", "String");
+            let username = reader.deserialize("username", "String");
+            let key = reader.deserialize("key", "String");
+            let email = reader.deserialize("email", "String");
+
+            account = new Account(username, key, email);
             account.characterMap = reader.deserializeMap("characterMap", "String", "Character");
         }
         else {

@@ -72,17 +72,17 @@
                     
                     // Login based on the URL
                     let username = getURLParameter("username");
-                    let password = getURLParameter("password");
+                    let key = getURLParameter("key");
                     let characterName = getURLParameter("characterName");
                     let serverName = getURLParameter("serverName");
                     let worldName = getURLParameter("worldName");
-                    reactLogin(username, password, characterName, serverName, worldName);
+                    reactLogin(username, key, characterName, serverName, worldName);
                 });
                 
                 socket.on("disconnect", (err) => {
                     socket.disconnect(true);
                     isSocketConnected = false;
-                    //window.location.assign("/login");
+                    window.location.assign("/login");
                 });
             }
 			
@@ -100,9 +100,9 @@
 				return "";
 			}
             
-            async function reactLogin(username, password, playerName, serverName, worldName) {
+            async function reactLogin(username, key, playerName, serverName, worldName) {
                 if(socket && isSocketConnected) {
-                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login", username, password, playerName, serverName, worldName);
+                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login", username, key, playerName, serverName, worldName);
                     if(R.isSuccess) {
                         startInterval();
                         startDevInterval();
@@ -132,7 +132,6 @@
             LogoutButton.addEventListener('click', () => {
                 socket.disconnect(true);
                 isSocketConnected = false;
-                window.location.assign("/login");
             });
             
             canvas.addEventListener("contextmenu", function (e){

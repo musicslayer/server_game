@@ -53,9 +53,11 @@ class Constants {
         operationMap: new Map(Object.entries({
             "html": 100,
             "create_account": 1,
+            "delete_account": 1,
             "create_character": 1,
             "select_character": 1,
             "login": 1,
+            "forced_logout": 1,
             "input": 1000,
             "data": 1000,
             "dev": 1000

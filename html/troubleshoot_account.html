@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en-US">	
+	<head>
+		<title>Server Game</title>
+	</head>
+
+	<body>
+		<h1>Server Game</h1>
+		
+		<a href="/login">Back to login page.</a>
+		
+		<h2>Troubleshoot an Account</h2>
+		
+		<p style='white-space: pre;'>If you are having problems with your account, the following options may help.</p>
+		
+		<br/><br/>
+		
+		<h3>Log Out</h3>
+		
+		<p style='white-space: pre;'>Forcibly log out of your account.</p>
+		
+		<table>
+		<tr>
+			<td><b>Username:</b></td>
+			<td><input id="ID_LogOutUsernameInput" type="text" maxlength="20"></input></td>
+		</tr>
+	
+		<tr>
+			<td><b>Password:</b></td>
+			<td><input id="ID_LogOutPasswordInput" type="text" maxlength="20"></input></td>
+		</tr>
+		
+		<tr>
+			<td><b>Email:</b></td>
+			<td><input id="ID_LogOutEmailInput" type="text" maxlength="20"></input></td>
+		</tr>
+		</table>
+		
+		<br/>
+		
+		<button id="ID_LogOutButton">Log Out</button>
+		
+		<p id="ID_LogOutResultText" style='white-space: pre;'></p>
+		
+		<br/><br/>
+		
+		<h3 style="color: #B00000">Delete Account</h3>
+		
+		<p style='white-space: pre; color: #B00000'>Permanently delete your account. This cannot be reversed.</p>
+		
+		<table>
+		<tr>
+			<td><b>Username:</b></td>
+			<td><input id="ID_DeleteAccountUsernameInput" type="text" maxlength="20"></input></td>
+		</tr>
+	
+		<tr>
+			<td><b>Password:</b></td>
+			<td><input id="ID_DeleteAccountPasswordInput" type="text" maxlength="20"></input></td>
+		</tr>
+		
+		<tr>
+			<td><b>Email:</b></td>
+			<td><input id="ID_DeleteAccountEmailInput" type="text" maxlength="20"></input></td>
+		</tr>
+		</table>
+		
+		<br/>
+		
+		<button id="ID_DeleteAccountButton">Delete Account</button>
+		
+		<p id="ID_DeleteAccountResultText" style='white-space: pre;'></p>
+		
+		<script src="socket.io.min.js"></script>
+		
+		<script>
+			const LogOutUsernameInput = document.querySelector('#ID_LogOutUsernameInput');
+			const LogOutPasswordInput = document.querySelector('#ID_LogOutPasswordInput');
+			const LogOutEmailInput = document.querySelector('#ID_LogOutEmailInput');
+			const LogOutButton = document.querySelector('#ID_LogOutButton');
+			const LogOutResultText = document.querySelector('#ID_LogOutResultText');
+			
+			const DeleteAccountUsernameInput = document.querySelector('#ID_DeleteAccountUsernameInput');
+			const DeleteAccountPasswordInput = document.querySelector('#ID_DeleteAccountPasswordInput');
+			const DeleteAccountEmailInput = document.querySelector('#ID_DeleteAccountEmailInput');
+			const DeleteAccountButton = document.querySelector('#ID_DeleteAccountButton');
+			const DeleteAccountResultText = document.querySelector('#ID_DeleteAccountResultText');
+			
+			const BLACK = "#000000";
+			const RED = "#B00000";
+			
+			const SOCKET_TIMEOUT = 10000;
+            
+			let socket;
+            let isSocketConnected = false;
+			
+			window.addEventListener('load', () => {
+				connectSocket();
+			});
+            
+            function connectSocket() {
+                if(socket) {
+                    socket.disconnect(true);
+                    
+                    isSocketConnected = false;
+                }
+                
+                socket = io({
+                    // Use these options to only allow websockets and avoid memory leaks.
+                    upgrade: false,
+                    transports: ["websocket"]
+                });
+                
+                socket.on("connect", (err) => {
+                    // Display the rest of the game...
+                    isSocketConnected = true;
+                });
+                
+                socket.on("disconnect", (err) => {
+                    socket.disconnect(true);
+                    isSocketConnected = false;
+                });
+            }
+			
+			LogOutButton.addEventListener('click', async () => {
+                if(!isSocketConnected) {
+                    return;
+                }
+                
+				const username = LogOutUsernameInput.value;
+				const password = LogOutPasswordInput.value;
+				const email = LogOutEmailInput.value;
+				
+				if(!isValidText(username)) {
+					LogOutResultText.style.color = RED;
+					LogOutResultText.innerHTML = "Must supply a nonempty username without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
+				}
+				else if(!isValidText(password)) {
+					LogOutResultText.style.color = RED;
+					LogOutResultText.innerHTML = "Must supply a nonempty password without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
+				}
+				else if(!isValidEmail(email)) {
+					LogOutResultText.style.color = RED;
+					LogOutResultText.innerHTML = "Must supply a valid current email.";
+				}
+				else {
+                    let key = username + "-" + password;
+					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_forced_logout", username, key, email);
+					if(R.isSuccess) {
+						LogOutResultText.style.color = BLACK;
+						LogOutResultText.innerHTML = "Account logout successful.";
+					}
+					else {
+						LogOutResultText.style.color = RED;
+						LogOutResultText.innerHTML = "There is a problem logging out the account.";
+					}
+				}
+			});
+			
+			DeleteAccountButton.addEventListener('click', async () => {
+                if(!isSocketConnected) {
+                    return;
+                }
+                
+				const username = DeleteAccountUsernameInput.value;
+				const password = DeleteAccountPasswordInput.value;
+				const email = DeleteAccountEmailInput.value;
+				
+				if(!isValidText(username)) {
+					DeleteAccountResultText.style.color = RED;
+					DeleteAccountResultText.innerHTML = "Must supply a nonempty username without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
+				}
+				else if(!isValidText(password)) {
+					DeleteAccountResultText.style.color = RED;
+					DeleteAccountResultText.innerHTML = "Must supply a nonempty password without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
+				}
+				else if(!isValidEmail(email)) {
+					DeleteAccountResultText.style.color = RED;
+					DeleteAccountResultText.innerHTML = "Must supply a valid current email.";
+				}
+				else {
+                    let key = username + "-" + password;
+					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_account_deletion", username, key, email);
+					if(R.isSuccess) {
+						DeleteAccountResultText.style.color = BLACK;
+						DeleteAccountResultText.innerHTML = "Account deletion successful.";
+					}
+					else {
+						DeleteAccountResultText.style.color = RED;
+						DeleteAccountResultText.innerHTML = "There is a problem deleting the account.";
+					}
+				}
+			});
+			
+			function isValidText(str) {
+				// Check that there are no spaces and that all characters are ASCII letters, numbers, or underscores (but not starting with an underscore).
+				if(str === "") {
+					return false;
+				}
+				
+				if(str.startsWith("_")) {
+					return false;
+				}
+				
+				return /^[a-zA-Z0-9_]*$/.test(str);
+			}
+			
+			function isValidEmail(str) {
+				// Check that there are no spaces and that all characters are ASCII letters/numbers.
+				if(str === "") {
+					return false;
+				}
+				
+				return true;
+			}
+		</script>
+	</body>
+</html>
