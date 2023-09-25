@@ -1,3 +1,5 @@
+const crypto = require("crypto");
+
 const Account = require("./Account.js");
 const Character = require("./Character.js");
 const Entity = require("../entity/Entity.js");
@@ -56,11 +58,11 @@ class AccountManager {
         let player2Mage = Entity.createInstance("PlayerMage", 1);
         let player2Warrior = Entity.createInstance("PlayerWarrior", 1);
         
-        let account1 = new Account("smith", "smith-password123", "a@a.com");
+        let account1 = new Account("smith", createHash("smith", "password123"), "a@a.com");
         account1.addCharacter("mage", new Character(player1Mage));
         account1.addCharacter("warrior", new Character(player1Warrior));
 
-        let account2 = new Account("maria", "maria-secret", "b@b.com");
+        let account2 = new Account("maria", createHash("maria", "secret"), "b@b.com");
         account2.addCharacter("mage", new Character(player2Mage));
         account2.addCharacter("warrior", new Character(player2Warrior));
 
@@ -70,6 +72,12 @@ class AccountManager {
 
         return accountManager;
     }
+}
+
+function createHash(username, password) {
+    // Use both the username and the password to create the hash.
+    let s = username + "-" + password;
+    return crypto.createHash("sha256").update(Buffer.from(s, "utf-8")).digest();
 }
 
 module.exports = AccountManager;

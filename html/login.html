@@ -111,7 +111,7 @@
 					LoginResultText.innerHTML = "Must supply a username and password.";
 				}
 				else {
-                    let hash = username + "-" + password;
+                    let hash = await createHash(username, password);
 					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_character_select", username, hash);
                     
                     if(R.isSuccess) {
@@ -157,6 +157,15 @@
                 window.sessionStorage.worldName = worldName;
                 
                 window.location.assign("/game");
+            }
+            
+            async function createHash(username, password) {
+                // Use both the username and the password to create the hash.
+                let s = username + "-" + password;
+                let encoder = new TextEncoder();
+                let data = encoder.encode(s);
+                let hash = await crypto.subtle.digest("SHA-256", data);
+                return hash;
             }
 		</script>
 	</body>
