@@ -12,11 +12,6 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // TODO Should clientMap be using user names (or maybe also with character names) instead of key?
 // --- The same user can log in with both characters, and it causes a problem because the clients would have the same key!
 
-// TODO Implement an actual hash function
-
-// TODO Buffer vs Uint8 array
-// TODO sha256 or sha512?
-
 async function init() {
     let appState = new AppState();
     let appAdmin = new AppAdmin(appState);
