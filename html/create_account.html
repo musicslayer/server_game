@@ -14,17 +14,17 @@
 		<table>
 		<tr>
 			<td><b>Username:</b></td>
-			<td><input id="ID_UsernameInput" type="text" maxlength="40"></input></td>
+			<td><input id="ID_UsernameInput" type="text" autocomplete="off" maxlength="40"></input></td>
 		</tr>
 	
 		<tr>
 			<td><b>Password:</b></td>
-			<td><input id="ID_PasswordInput" type="text" maxlength="40"></input></td>
+			<td><input id="ID_PasswordInput" type="text" autocomplete="off" maxlength="40"></input></td>
 		</tr>
 		
 		<tr>
 			<td><b>Confirm Password:</b></td>
-			<td><input id="ID_ConfirmPasswordInput" type="text" maxlength="40"></input></td>
+			<td><input id="ID_ConfirmPasswordInput" type="text" autocomplete="off" maxlength="40"></input></td>
 		</tr>
 			
 		<tr>
@@ -33,7 +33,7 @@
 		
 		<tr>
 			<td><b>Email:</b></td>
-			<td><input id="ID_EmailInput" type="text" maxlength="40"></input></td>
+			<td><input id="ID_EmailInput" type="text" autocomplete="off" maxlength="40"></input></td>
 		</tr>
 		</table>
 		
@@ -42,8 +42,6 @@
 		<button id="ID_CreateAccountButton">Create Account</button>
 		
 		<p id="ID_CreateAccountResultText" style='white-space: pre;'></p>
-		
-		<a id="ID_CreateAccountHyperlink" style="display:none">Click here to create account.</a>
 		
 		<script src="socket.io.min.js"></script>
 		
@@ -56,7 +54,6 @@
 			const CreateAccountButton = document.querySelector('#ID_CreateAccountButton');
 			
 			const CreateAccountResultText = document.querySelector('#ID_CreateAccountResultText');
-			const CreateAccountHyperlink = document.querySelector('#ID_CreateAccountHyperlink');
 			
 			const BLACK = "#000000";
 			const RED = "#B00000";
@@ -67,6 +64,7 @@
             let isSocketConnected = false;
 			
 			window.addEventListener('load', () => {
+                window.sessionStorage.clear();
 				connectSocket();
 			});
             
@@ -98,8 +96,6 @@
                 if(!isSocketConnected) {
                     return;
                 }
-                
-				CreateAccountHyperlink.style.display = "none";
 			
 				const username = UsernameInput.value;
 				const password = PasswordInput.value;
@@ -126,8 +122,8 @@
 					CreateAccountResultText.style.color = BLACK;
 					CreateAccountResultText.innerHTML = "Please wait...";
                     
-                    let key = username + "-" + password;
-                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_account_creation", username, key, email);
+                    let hash = username + "-" + password;
+                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_account_creation", username, hash, email);
 					if(R.isSuccess) {
 						CreateAccountResultText.style.color = BLACK;
 						CreateAccountResultText.innerHTML = "Account creation successful.";

@@ -10,6 +10,8 @@ const FAVICON_FILE = "favicon.ico";
 const HTML_HOME = "html/index.html";
 const HTML_LOGIN = "html/login.html";
 const HTML_CREATE_ACCOUNT = "html/create_account.html";
+const HTML_CHANGE_PASSWORD = "html/change_password.html";
+const HTML_CHANGE_EMAIL = "html/change_email.html";
 const HTML_TROUBLESHOOT_ACCOUNT = "html/troubleshoot_account.html";
 const HTML_GAME = "html/game.html";
 const HTML_IMAGE_CATALOG = "html/ImageCatalog.js";
@@ -60,6 +62,14 @@ class HTTPServer {
 
                     case "/create_account":
                         serveFile(res, "text/html", HTML_CREATE_ACCOUNT);
+                        break;
+
+                    case "/change_password":
+                        serveFile(res, "text/html", HTML_CHANGE_PASSWORD);
+                        break;
+
+                    case "/change_email":
+                        serveFile(res, "text/html", HTML_CHANGE_EMAIL);
                         break;
 
                     case "/troubleshoot_account":
@@ -125,6 +135,12 @@ function serveFile(res, contentType, file) {
 		res.isEnded = true;
 		res.statusCode = 200;
 		res.setHeader("Content-Type", contentType);
+
+        // Use these to disable caching.
+        res.setHeader("Surrogate-Control", "no-store");
+        res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+        res.setHeader("Expires", "0");
+
 		fs.createReadStream(file).pipe(res);
 	}
 }

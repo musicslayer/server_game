@@ -8,47 +8,17 @@ class AccountManager {
 
     addAccount(account) {
         this.accounts.push(account);
-        this.accountMap.set(account.key, account);
+        this.accountMap.set(account.username, account);
     }
 
     removeAccount(account) {
         let index = this.accounts.indexOf(account);
         this.accounts.splice(index, 1);
-        this.accountMap.delete(account.key);
+        this.accountMap.delete(account.username);
     }
 
-    hasAccountWithUsername(username) {
-        for(let account of this.accounts) {
-            if(account.username === username) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    hasAccountWithKey(key) {
-        for(let account of this.accounts) {
-            if(account.key === key) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    hasAccountWithEmail(email) {
-        for(let account of this.accounts) {
-            if(account.email === email) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    getAccount(key) {
-        return this.accountMap.get(key);
+    getAccount(username) {
+        return this.accountMap.get(username);
     }
 
     serialize(writer) {

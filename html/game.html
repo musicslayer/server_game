@@ -70,18 +70,22 @@
                     // Display the rest of the game...
                     isSocketConnected = true;
                     
-                    // Login based on the URL
-                    let username = getURLParameter("username");
-                    let key = getURLParameter("key");
-                    let characterName = getURLParameter("characterName");
-                    let serverName = getURLParameter("serverName");
-                    let worldName = getURLParameter("worldName");
-                    reactLogin(username, key, characterName, serverName, worldName);
+                    // Login based on the values in the sessionStorage.
+                    if(window.sessionStorage.isActive) {
+                        let username = window.sessionStorage.username;
+                        let hash = window.sessionStorage.hash;
+                        let characterName = window.sessionStorage.characterName;
+                        let serverName = window.sessionStorage.serverName;
+                        let worldName = window.sessionStorage.worldName;
+                        
+                        reactLogin(username, hash, characterName, serverName, worldName);
+                    }
                 });
                 
                 socket.on("disconnect", (err) => {
                     socket.disconnect(true);
                     isSocketConnected = false;
+                    window.sessionStorage.clear();
                     window.location.assign("/login");
                 });
             }
@@ -100,9 +104,9 @@
 				return "";
 			}
             
-            async function reactLogin(username, key, playerName, serverName, worldName) {
+            async function reactLogin(username, hash, playerName, serverName, worldName) {
                 if(socket && isSocketConnected) {
-                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login", username, key, playerName, serverName, worldName);
+                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login", username, hash, playerName, serverName, worldName);
                     if(R.isSuccess) {
                         startInterval();
                         startDevInterval();

@@ -10,7 +10,7 @@
 		<h2>Account Options</h2>
 		
 		<a href="/create_account">Create a new account.</a><br/>
-		<a href="/reset_password">Reset your password.</a><br/>
+		<a href="/change_password">Change your password.</a><br/>
 		<a href="/change_email">Change your email.</a><br/>
 		<a href="/troubleshoot_account">Troubleshoot your account.</a>
 		
@@ -19,12 +19,12 @@
 		<table>
 		<tr>
 			<td>Username:</td>
-			<td><input id="ID_UsernameInput" type="text" maxlength="20" onKeyPress="inputCallback(event)"></input></td>
+			<td><input id="ID_UsernameInput" type="text" autocomplete="off" maxlength="20" onKeyPress="inputCallback(event)"></input></td>
 		</tr>
 	
 		<tr>
 			<td>Password:</td>
-			<td><input id="ID_PasswordInput" type="text" maxlength="20" onKeyPress="inputCallback(event)"></input></td>
+			<td><input id="ID_PasswordInput" type="text" autocomplete="off" maxlength="20" onKeyPress="inputCallback(event)"></input></td>
 		</tr>
 		</table>
 		
@@ -58,6 +58,7 @@
             let isSocketConnected = false;
             
             window.addEventListener('load', async () => {
+                window.sessionStorage.clear();
                 connectSocket();
             });
             
@@ -99,6 +100,9 @@
 			}
 			
 			async function characterSelect() {
+                // Clear the table that shows available characters.
+                CharacterTable.replaceChildren();
+                
 				const username = UsernameInput.value;
 				const password = PasswordInput.value;
 				
@@ -107,8 +111,8 @@
 					LoginResultText.innerHTML = "Must supply a username and password.";
 				}
 				else {
-                    let key = username + "-" + password;
-					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_character_select", username, key);
+                    let hash = username + "-" + password;
+					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_character_select", username, hash);
                     
                     if(R.isSuccess) {
                         let characterNames = R.characterNames;
@@ -124,7 +128,7 @@
                                 newButton.innerText = characterName;
                                 newButton.addEventListener('click', async () => {
                                     if(socket && isSocketConnected) {
-                                        await login(username, key, characterName, "origin", "world0");
+                                        await login(username, hash, characterName, "origin", "world0");
                                     }
                                 });
                                 
@@ -144,13 +148,15 @@
 				}
 			}
             
-            async function login(username, key, characterName, serverName, worldName) {
-                window.location.assign("/game?username=" + username 
-                    + "&key=" + key
-                    + "&characterName=" + characterName
-                    + "&serverName=" + serverName
-                    + "&worldName=" + worldName
-                );
+            async function login(username, hash, characterName, serverName, worldName) {
+                window.sessionStorage.isActive = true;
+                window.sessionStorage.username = username;
+                window.sessionStorage.hash = hash;
+                window.sessionStorage.characterName = characterName;
+                window.sessionStorage.serverName = serverName;
+                window.sessionStorage.worldName = worldName;
+                
+                window.location.assign("/game");
             }
 		</script>
 	</body>

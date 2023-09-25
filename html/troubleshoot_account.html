@@ -22,17 +22,17 @@
 		<table>
 		<tr>
 			<td><b>Username:</b></td>
-			<td><input id="ID_LogOutUsernameInput" type="text" maxlength="20"></input></td>
+			<td><input id="ID_LogOutUsernameInput" type="text" autocomplete="off" maxlength="20"></input></td>
 		</tr>
 	
 		<tr>
 			<td><b>Password:</b></td>
-			<td><input id="ID_LogOutPasswordInput" type="text" maxlength="20"></input></td>
+			<td><input id="ID_LogOutPasswordInput" type="text" autocomplete="off" maxlength="20"></input></td>
 		</tr>
 		
 		<tr>
 			<td><b>Email:</b></td>
-			<td><input id="ID_LogOutEmailInput" type="text" maxlength="20"></input></td>
+			<td><input id="ID_LogOutEmailInput" type="text" autocomplete="off" maxlength="20"></input></td>
 		</tr>
 		</table>
 		
@@ -51,17 +51,17 @@
 		<table>
 		<tr>
 			<td><b>Username:</b></td>
-			<td><input id="ID_DeleteAccountUsernameInput" type="text" maxlength="20"></input></td>
+			<td><input id="ID_DeleteAccountUsernameInput" type="text" autocomplete="off" maxlength="20"></input></td>
 		</tr>
 	
 		<tr>
 			<td><b>Password:</b></td>
-			<td><input id="ID_DeleteAccountPasswordInput" type="text" maxlength="20"></input></td>
+			<td><input id="ID_DeleteAccountPasswordInput" type="text" autocomplete="off" maxlength="20"></input></td>
 		</tr>
 		
 		<tr>
 			<td><b>Email:</b></td>
-			<td><input id="ID_DeleteAccountEmailInput" type="text" maxlength="20"></input></td>
+			<td><input id="ID_DeleteAccountEmailInput" type="text" autocomplete="off" maxlength="20"></input></td>
 		</tr>
 		</table>
 		
@@ -95,6 +95,7 @@
             let isSocketConnected = false;
 			
 			window.addEventListener('load', () => {
+                window.sessionStorage.clear();
 				connectSocket();
 			});
             
@@ -144,8 +145,8 @@
 					LogOutResultText.innerHTML = "Must supply a valid current email.";
 				}
 				else {
-                    let key = username + "-" + password;
-					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_forced_logout", username, key, email);
+                    let hash = username + "-" + password;
+					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_forced_logout", username, hash, email);
 					if(R.isSuccess) {
 						LogOutResultText.style.color = BLACK;
 						LogOutResultText.innerHTML = "Account logout successful.";
@@ -179,8 +180,8 @@
 					DeleteAccountResultText.innerHTML = "Must supply a valid current email.";
 				}
 				else {
-                    let key = username + "-" + password;
-					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_account_deletion", username, key, email);
+                    let hash = username + "-" + password;
+					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_account_deletion", username, hash, email);
 					if(R.isSuccess) {
 						DeleteAccountResultText.style.color = BLACK;
 						DeleteAccountResultText.innerHTML = "Account deletion successful.";

@@ -139,7 +139,7 @@ class AppState {
     refresh() {
         // Each client needs to point to an updated player, and vice versa.
         for(let key of this.clientManager.clientMap.keys()) {
-            let client = this.clientManager.getClient(key);
+            let client = this.clientManager.getClient(key); // TODO This key can no longer get the account...
             let newPlayer = this.accountManager.getAccount(key)?.getCharacter(client.playerName)?.player;
 
             client.player = newPlayer;
