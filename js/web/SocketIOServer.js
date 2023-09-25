@@ -144,7 +144,7 @@ class SocketIOServer {
 					return;
 				}
 
-				if(account.hash !== hash) {
+				if(account.hash.compare(hash) !== 0) {
 					// The account exists but this hash is wrong.
 					callback({"isSuccess": false});
 					return;
@@ -195,7 +195,7 @@ class SocketIOServer {
 					return;
 				}
 
-				if(account.hash !== hash) {
+				if(account.hash.compare(hash) !== 0) {
 					// The account exists but this hash is wrong.
 					callback({"isSuccess": false});
 					return;
@@ -252,7 +252,7 @@ class SocketIOServer {
 					return;
 				}
 
-				if(account.hash !== hash) {
+				if(account.hash.compare(hash) !== 0) {
 					// The account exists but this hash is wrong.
 					callback({"isSuccess": false});
 					return;
@@ -300,7 +300,7 @@ class SocketIOServer {
 					return;
 				}
 
-				if(account.hash !== hash) {
+				if(account.hash.compare(hash) !== 0) {
 					// The account exists but this hash is wrong.
 					callback({"isSuccess": false});
 					return;
@@ -425,7 +425,7 @@ class SocketIOServer {
 					return;
 				}
 
-				if(account.hash === newHash) {
+				if(account.hash.compare(newHash) === 0) {
 					// The new hash is the same as the old hash.
 					callback({"isSuccess": false});
 					return;
@@ -470,7 +470,7 @@ class SocketIOServer {
 					return;
 				}
 
-				if(account.hash !== hash) {
+				if(account.hash.compare(hash) !== 0) {
 					// The account exists but this hash is wrong.
 					callback({"isSuccess": false});
 					return;
@@ -527,7 +527,7 @@ class SocketIOServer {
 					return;
 				}
 
-				if(account.hash !== hash) {
+				if(account.hash.compare(hash) !== 0) {
 					// The account exists but this hash is wrong.
 					callback({"isSuccess": false});
 					return;
@@ -783,8 +783,8 @@ function validateStrings(...args) {
 }
 
 function validateHash(hash) {
-	// Hashes are a Buffer array of 32 numbers from 0 to 255.
-	return Buffer.isBuffer(hash) && hash.length === 32 && hash.every((v) => v >= 0 && v <= 255);
+	// Hashes are a Buffer array of 64 numbers from 0 to 255.
+	return Buffer.isBuffer(hash) && hash.length === 64 && hash.every((v) => v >= 0 && v <= 255);
 }
 
 function isFunction(value) {

@@ -77,7 +77,7 @@ class AccountManager {
 function createHash(username, password) {
     // Use both the username and the password to create the hash.
     let s = username + "-" + password;
-    return crypto.createHash("sha256").update(Buffer.from(s, "utf-8")).digest();
+    return Buffer.from(crypto.createHash("sha512").update(Buffer.from(s, "utf-8")).digest());
 }
 
 module.exports = AccountManager;

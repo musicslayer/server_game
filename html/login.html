@@ -164,7 +164,7 @@
                 let s = username + "-" + password;
                 let encoder = new TextEncoder();
                 let data = encoder.encode(s);
-                let hash = await crypto.subtle.digest("SHA-256", data);
+                let hash = await crypto.subtle.digest("SHA-512", data);
                 return hash;
             }
 		</script>
