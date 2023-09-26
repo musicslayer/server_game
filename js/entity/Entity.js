@@ -119,7 +119,7 @@ class Entity extends UID {
     doMakeInvincible(invincibleSeconds) {
         this.isInvincible = true;
 
-        let serverTask = new ServerTask(undefined, invincibleSeconds, 1, "invincible_off", entity);
+        let serverTask = new ServerTask(undefined, invincibleSeconds, 1, "invincible_off", this);
         this.getServer().scheduleTask(serverTask);
     }
 

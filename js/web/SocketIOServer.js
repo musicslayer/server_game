@@ -88,11 +88,7 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, email)) {
-					socket.disconnect(true);
-					return;
-				}
-				if(!validateHash(hash)) {
+				if(!validateStrings(username, hash, email)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -128,11 +124,7 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, email)) {
-					socket.disconnect(true);
-					return;
-				}
-				if(!validateHash(hash)) {
+				if(!validateStrings(username, hash, email)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -144,7 +136,7 @@ class SocketIOServer {
 					return;
 				}
 
-				if(account.hash.compare(hash) !== 0) {
+				if(account.hash !== hash) {
 					// The account exists but this hash is wrong.
 					callback({"isSuccess": false});
 					return;
@@ -168,7 +160,7 @@ class SocketIOServer {
 		});
 
 		// Respond to character creation.
-		socket.on("on_character_creation", (username, hash, playerName, playerClass, callback) => {
+		socket.on("on_character_creation", (username, hash, characterName, characterClass, callback) => {
 			try {
 				if(RateLimit.isRateLimited("create_character", ip)) {
 					socket.disconnect(true);
@@ -179,11 +171,7 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, playerName, playerClass)) {
-					socket.disconnect(true);
-					return;
-				}
-				if(!validateHash(hash)) {
+				if(!validateStrings(username, hash, characterName, characterClass)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -195,26 +183,26 @@ class SocketIOServer {
 					return;
 				}
 
-				if(account.hash.compare(hash) !== 0) {
+				if(account.hash !== hash) {
 					// The account exists but this hash is wrong.
 					callback({"isSuccess": false});
 					return;
 				}
 
-				if(account.getCharacter(playerName)) {
+				if(account.getCharacter(characterName)) {
 					// The character already exists.
 					callback({"isSuccess": false});
 					return;
 				}
 
-				if(!Reflection.isSubclass(playerClass, "Player")) {
+				if(!Reflection.isSubclass(characterClass, "Player")) {
 					callback({"isSuccess": false});
 					return;
 				}
 
-				let player = Entity.createInstance(playerClass, 1);
+				let player = Entity.createInstance(characterClass, 1);
 				let character = new Character(player);
-				account.addCharacter(playerName, character);
+				account.addCharacter(characterName, character);
 
 				callback({"isSuccess": true});
 			}
@@ -236,11 +224,7 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username)) {
-					socket.disconnect(true);
-					return;
-				}
-				if(!validateHash(hash)) {
+				if(!validateStrings(username, hash)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -252,7 +236,7 @@ class SocketIOServer {
 					return;
 				}
 
-				if(account.hash.compare(hash) !== 0) {
+				if(account.hash !== hash) {
 					// The account exists but this hash is wrong.
 					callback({"isSuccess": false});
 					return;
@@ -273,7 +257,7 @@ class SocketIOServer {
 		});
 
 		// Respond to login.
-		socket.on("on_login", (username, hash, playerName, serverName, worldName, callback) => {
+		socket.on("on_login", (username, hash, characterName, serverName, worldName, callback) => {
 			try {
 				if(RateLimit.isRateLimited("login", ip)) {
 					socket.disconnect(true);
@@ -284,11 +268,7 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, playerName, serverName, worldName)) {
-					socket.disconnect(true);
-					return;
-				}
-				if(!validateHash(hash)) {
+				if(!validateStrings(username, hash, characterName, serverName, worldName)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -300,7 +280,7 @@ class SocketIOServer {
 					return;
 				}
 
-				if(account.hash.compare(hash) !== 0) {
+				if(account.hash !== hash) {
 					// The account exists but this hash is wrong.
 					callback({"isSuccess": false});
 					return;
@@ -312,7 +292,7 @@ class SocketIOServer {
 					return;
 				}
 
-				let character = account.getCharacter(playerName);
+				let character = account.getCharacter(characterName);
 				if(!character) {
 					// The character does not exist.
 					callback({"isSuccess": false});
@@ -358,7 +338,7 @@ class SocketIOServer {
 				let serverTask = new ServerTask(undefined, 0, 1, "spawn", player);
 				player.getServer().scheduleTask(serverTask);
 
-				let client = new Client(playerName, player);
+				let client = new Client(characterName, player);
 				client.key = hash; // TODO client keys
 				client.socket = socket;
 				this.clientManager.addClient(client);
@@ -403,11 +383,7 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, email)) {
-					socket.disconnect(true);
-					return;
-				}
-				if(!validateHash(newHash)) {
+				if(!validateStrings(username, newHash, email)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -425,7 +401,7 @@ class SocketIOServer {
 					return;
 				}
 
-				if(account.hash.compare(newHash) === 0) {
+				if(account.hash === newHash) {
 					// The new hash is the same as the old hash.
 					callback({"isSuccess": false});
 					return;
@@ -454,11 +430,7 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, currentEmail, newEmail)) {
-					socket.disconnect(true);
-					return;
-				}
-				if(!validateHash(hash)) {
+				if(!validateStrings(username, hash, currentEmail, newEmail)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -470,7 +442,7 @@ class SocketIOServer {
 					return;
 				}
 
-				if(account.hash.compare(hash) !== 0) {
+				if(account.hash !== hash) {
 					// The account exists but this hash is wrong.
 					callback({"isSuccess": false});
 					return;
@@ -511,11 +483,7 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, email)) {
-					socket.disconnect(true);
-					return;
-				}
-				if(!validateHash(hash)) {
+				if(!validateStrings(username, hash, email)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -527,7 +495,7 @@ class SocketIOServer {
 					return;
 				}
 
-				if(account.hash.compare(hash) !== 0) {
+				if(account.hash !== hash) {
 					// The account exists but this hash is wrong.
 					callback({"isSuccess": false});
 					return;
@@ -780,11 +748,6 @@ function validateMouseInputs(location, info) {
 
 function validateStrings(...args) {
 	return isStringArray(args, 5);
-}
-
-function validateHash(hash) {
-	// Hashes are a Buffer array of 64 numbers from 0 to 255.
-	return Buffer.isBuffer(hash) && hash.length === 64 && hash.every((v) => v >= 0 && v <= 255);
 }
 
 function isFunction(value) {

@@ -128,9 +128,9 @@
                     return;
                 }
                 
-				const username = LogOutUsernameInput.value;
-				const password = LogOutPasswordInput.value;
-				const email = LogOutEmailInput.value;
+				let username = LogOutUsernameInput.value;
+				let password = LogOutPasswordInput.value;
+				let email = LogOutEmailInput.value;
 				
 				if(!isValidText(username)) {
 					LogOutResultText.style.color = RED;
@@ -145,7 +145,7 @@
 					LogOutResultText.innerHTML = "Must supply a valid current email.";
 				}
 				else {
-                    let hash = username + "-" + password;
+                    let hash = await createHash(username, password);
 					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_forced_logout", username, hash, email);
 					if(R.isSuccess) {
 						LogOutResultText.style.color = BLACK;
@@ -163,9 +163,9 @@
                     return;
                 }
                 
-				const username = DeleteAccountUsernameInput.value;
-				const password = DeleteAccountPasswordInput.value;
-				const email = DeleteAccountEmailInput.value;
+				let username = DeleteAccountUsernameInput.value;
+				let password = DeleteAccountPasswordInput.value;
+				let email = DeleteAccountEmailInput.value;
 				
 				if(!isValidText(username)) {
 					DeleteAccountResultText.style.color = RED;
@@ -180,7 +180,7 @@
 					DeleteAccountResultText.innerHTML = "Must supply a valid current email.";
 				}
 				else {
-                    let hash = username + "-" + password;
+                    let hash = await createHash(username, password);
 					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_account_deletion", username, hash, email);
 					if(R.isSuccess) {
 						DeleteAccountResultText.style.color = BLACK;
@@ -214,6 +214,17 @@
 				
 				return true;
 			}
+            
+            async function createHash(username, password) {
+                // Use both the username and the password to create the hash.
+                let s = username + "-" + password;
+                let encoder = new TextEncoder();
+                let data = encoder.encode(s);
+                let hash = await crypto.subtle.digest("SHA-512", data);
+                let hashArray = Array.from(new Uint8Array(hash));
+                let hashString = hashArray.map((item) => item.toString(16).padStart(2, "0")).join("");
+                return hashString;
+            }
 		</script>
 	</body>
 </html>

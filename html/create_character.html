@@ -9,7 +9,7 @@
 		
 		<a href="/login">Back to login page.</a>
 		
-		<h2>Create an Account</h2>
+		<h2>Create a Character</h2>
 		
 		<table>
 		<tr>
@@ -21,39 +21,44 @@
 			<td><b>Password:</b></td>
 			<td><input id="ID_PasswordInput" type="text" autocomplete="off" maxlength="40"></input></td>
 		</tr>
-		
-		<tr>
-			<td><b>Confirm Password:</b></td>
-			<td><input id="ID_ConfirmPasswordInput" type="text" autocomplete="off" maxlength="40"></input></td>
-		</tr>
-			
-		<tr>
-			<td colspan="2"><p>This email address will verify the account creation process and can be used to troubleshoot your account.</p></td>
+        
+        <tr>
+			<td><b>Character Name:</b></td>
+			<td><input id="ID_CharacterNameInput" type="text" autocomplete="off" maxlength="40"></input></td>
 		</tr>
 		
-		<tr>
-			<td><b>Email:</b></td>
-			<td><input id="ID_EmailInput" type="text" autocomplete="off" maxlength="40"></input></td>
-		</tr>
-		</table>
+        <tr>
+            <td><b>Class:</b></td>
+        </tr>
+        </table>
+        
+        <input type="radio" id="ID_ClassMage" name="class" value="mage" checked="checked">
+        <label for="ID_ClassMage">Mage</label>
+        
+        <br/>
+        
+        <input type="radio" id="ID_ClassWarrior" name="class" value="warrior">
+        <label for="ID_ClassWarrior">Warrior</label>
 		
 		<br/>
 		
-		<button id="ID_CreateAccountButton">Create Account</button>
+		<button id="ID_CreateCharacterButton">Create Character</button>
 		
-		<p id="ID_CreateAccountResultText" style='white-space: pre;'></p>
+		<p id="ID_CreateCharacterResultText" style='white-space: pre;'></p>
 		
 		<script src="socket.io.min.js"></script>
 		
 		<script>
 			const UsernameInput = document.querySelector('#ID_UsernameInput');
 			const PasswordInput = document.querySelector('#ID_PasswordInput');
-			const ConfirmPasswordInput = document.querySelector('#ID_ConfirmPasswordInput');
-			const EmailInput = document.querySelector('#ID_EmailInput');
+            const CharacterNameInput = document.querySelector('#ID_CharacterNameInput');
+            
+            const ClassMage = document.querySelector('#ID_ClassMage');
+            const ClassWarrior = document.querySelector('#ID_ClassWarrior');
 			
-			const CreateAccountButton = document.querySelector('#ID_CreateAccountButton');
+			const CreateCharacterButton = document.querySelector('#ID_CreateCharacterButton');
 			
-			const CreateAccountResultText = document.querySelector('#ID_CreateAccountResultText');
+			const CreateCharacterResultText = document.querySelector('#ID_CreateCharacterResultText');
 			
 			const BLACK = "#000000";
 			const RED = "#B00000";
@@ -92,45 +97,41 @@
                 });
             }
 			
-			CreateAccountButton.addEventListener('click', async () => {
+			CreateCharacterButton.addEventListener('click', async () => {
                 if(!isSocketConnected) {
                     return;
                 }
 			
 				let username = UsernameInput.value;
 				let password = PasswordInput.value;
-				let confirm_password = ConfirmPasswordInput.value;
-				let email = EmailInput.value;
+                let characterName = CharacterNameInput.value;
+                let characterClass = getClassChoice();
 				
 				if(!isValidText(username)) {
-					CreateAccountResultText.style.color = RED;
-					CreateAccountResultText.innerHTML = "Must supply a nonempty username without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
+					CreateCharacterResultText.style.color = RED;
+					CreateCharacterResultText.innerHTML = "Must supply a nonempty username without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
 				}
 				else if(!isValidText(password)) {
-					CreateAccountResultText.style.color = RED;
-					CreateAccountResultText.innerHTML = "Must supply a nonempty password without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
+					CreateCharacterResultText.style.color = RED;
+					CreateCharacterResultText.innerHTML = "Must supply a nonempty password without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
 				}
-				else if(password != confirm_password) {
-					CreateAccountResultText.style.color = RED;
-					CreateAccountResultText.innerHTML = "Passwords do not match. Confirm you have typed the same password twice.";
-				}
-				else if(!isValidEmail(email)) {
-					CreateAccountResultText.style.color = RED;
-					CreateAccountResultText.innerHTML = "Must supply a valid email.";
+                else if(!isValidText(characterName)) {
+					CreateCharacterResultText.style.color = RED;
+					CreateCharacterResultText.innerHTML = "Must supply a nonempty character name without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
 				}
 				else {
-					CreateAccountResultText.style.color = BLACK;
-					CreateAccountResultText.innerHTML = "Please wait...";
+					CreateCharacterResultText.style.color = BLACK;
+					CreateCharacterResultText.innerHTML = "Please wait...";
                     
                     let hash = await createHash(username, password);
-                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_account_creation", username, hash, email);
+                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_character_creation", username, hash, characterName, characterClass);
 					if(R.isSuccess) {
-						CreateAccountResultText.style.color = BLACK;
-						CreateAccountResultText.innerHTML = "Account creation successful.";
+						CreateCharacterResultText.style.color = BLACK;
+						CreateCharacterResultText.innerHTML = "Character creation successful.";
 					}
 					else {
-						CreateAccountResultText.style.color = RED;
-						CreateAccountResultText.innerHTML = "There is a problem creating the account.";
+						CreateCharacterResultText.style.color = RED;
+						CreateCharacterResultText.innerHTML = "There is a problem creating the character.";
 					}
 				}
 			});
@@ -166,6 +167,21 @@
                 let hashArray = Array.from(new Uint8Array(hash));
                 let hashString = hashArray.map((item) => item.toString(16).padStart(2, "0")).join("");
                 return hashString;
+            }
+            
+            function getClassChoice() {
+                let classChoice;
+                if(ClassMage.checked) {
+                    classChoice = "PlayerMage";
+                }
+                else if(ClassWarrior.checked) {
+                    classChoice = "PlayerWarrior";
+                }
+                else {
+                    // Default to Mage
+                    classChoice = "Mage";
+                }
+                return classChoice;
             }
 		</script>
 	</body>

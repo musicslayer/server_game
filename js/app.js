@@ -12,6 +12,9 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // TODO Should clientMap be using user names (or maybe also with character names) instead of key?
 // --- The same user can log in with both characters, and it causes a problem because the clients would have the same key!
 
+// TODO Should client hold a Player obj or a character obj? What is the difference between a Player and a Character?
+// TODO Delete a character?
+
 async function init() {
     let appState = new AppState();
     let appAdmin = new AppAdmin(appState);

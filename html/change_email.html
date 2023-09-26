@@ -93,10 +93,10 @@
 			
 			// Accounts
 			ChangeEmailButton.addEventListener('click', async () => {
-				const username = UsernameInput.value;
-                const password = PasswordInput.value;
-				const currentEmail = CurrentEmailInput.value;
-                const newEmail = NewEmailInput.value;
+				let username = UsernameInput.value;
+                let password = PasswordInput.value;
+				let currentEmail = CurrentEmailInput.value;
+                let newEmail = NewEmailInput.value;
 				
 				if(!isValidText(username)) {
 					ChangeEmailResultText.style.color = RED;
@@ -115,7 +115,7 @@
 					ChangeEmailResultText.innerHTML = "Must supply a valid new email.";
 				}
 				else {
-                    let hash = username + "-" + password;
+                    let hash = await createHash(username, password);
 					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_change_email", username, hash, currentEmail, newEmail);
 					if(R.isSuccess) {
 						ChangeEmailResultText.style.color = BLACK;
@@ -149,6 +149,17 @@
 				
 				return true;
 			}
+            
+            async function createHash(username, password) {
+                // Use both the username and the password to create the hash.
+                let s = username + "-" + password;
+                let encoder = new TextEncoder();
+                let data = encoder.encode(s);
+                let hash = await crypto.subtle.digest("SHA-512", data);
+                let hashArray = Array.from(new Uint8Array(hash));
+                let hashString = hashArray.map((item) => item.toString(16).padStart(2, "0")).join("");
+                return hashString;
+            }
 		</script>
 	</body>
 </html>

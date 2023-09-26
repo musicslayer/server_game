@@ -71,12 +71,12 @@
                     isSocketConnected = true;
                     
                     // Login based on the values in the sessionStorage.
-                    if(window.sessionStorage.isActive) {
-                        let username = window.sessionStorage.username;
-                        let hash = window.sessionStorage.hash;
-                        let characterName = window.sessionStorage.characterName;
-                        let serverName = window.sessionStorage.serverName;
-                        let worldName = window.sessionStorage.worldName;
+                    if(window.sessionStorage.getItem("isActive")) {
+                        let username = window.sessionStorage.getItem("username");
+                        let hash = window.sessionStorage.getItem("hash");
+                        let characterName = window.sessionStorage.getItem("characterName");
+                        let serverName = window.sessionStorage.getItem("serverName");
+                        let worldName = window.sessionStorage.getItem("worldName");
                         
                         reactLogin(username, hash, characterName, serverName, worldName);
                     }
@@ -104,9 +104,9 @@
 				return "";
 			}
             
-            async function reactLogin(username, hash, playerName, serverName, worldName) {
+            async function reactLogin(username, hash, characterName, serverName, worldName) {
                 if(socket && isSocketConnected) {
-                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login", username, hash, playerName, serverName, worldName);
+                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login", username, hash, characterName, serverName, worldName);
                     if(R.isSuccess) {
                         startInterval();
                         startDevInterval();
@@ -156,7 +156,7 @@
                 
                 if(downButton === undefined) {
                     downButton = e.button;
-                    const rect = canvas.getBoundingClientRect();
+                    let rect = canvas.getBoundingClientRect();
                     startX = e.clientX - rect.left - 10;
                     startY = e.clientY - rect.top - 10;
                     startT = Date.now();
@@ -180,7 +180,7 @@
                 let endT = Date.now();
                 let deltaTime = endT - startT;
             
-                const rect = canvas.getBoundingClientRect();
+                let rect = canvas.getBoundingClientRect();
                 let endX = e.clientX - rect.left - 10;
                 let endY = e.clientY - rect.top - 10;
                 
@@ -273,7 +273,7 @@
             }
             
             async function checkControllerPress() {
-                const gamepads = navigator.getGamepads();
+                let gamepads = navigator.getGamepads();
                 if (!gamepads) {
                     return;
                 }
@@ -307,7 +307,7 @@
             let deadzone = 0.2;
             
             async function checkControllerSticks() {
-                const gamepads = navigator.getGamepads();
+                let gamepads = navigator.getGamepads();
                 if (!gamepads) {
                     return;
                 }
@@ -572,7 +572,7 @@
                 
                 // Info
                 if(info.className !== "Undefined") {
-                    const W = IMAGE_SCALE_FACTOR * 6;
+                    let W = IMAGE_SCALE_FACTOR * 6;
                     let originInfoX = 17;
                     let originInfoY = 1;
                     let infoImage = imageCatalog.getImageByEntityClassName(info.className, animationFrame);

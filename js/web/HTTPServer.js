@@ -10,6 +10,7 @@ const FAVICON_FILE = "favicon.ico";
 const HTML_HOME = "html/index.html";
 const HTML_LOGIN = "html/login.html";
 const HTML_CREATE_ACCOUNT = "html/create_account.html";
+const HTML_CREATE_CHARACTER = "html/create_character.html";
 const HTML_CHANGE_PASSWORD = "html/change_password.html";
 const HTML_CHANGE_EMAIL = "html/change_email.html";
 const HTML_TROUBLESHOOT_ACCOUNT = "html/troubleshoot_account.html";
@@ -62,6 +63,10 @@ class HTTPServer {
 
                     case "/create_account":
                         serveFile(res, "text/html", HTML_CREATE_ACCOUNT);
+                        break;
+
+                    case "/create_character":
+                        serveFile(res, "text/html", HTML_CREATE_CHARACTER);
                         break;
 
                     case "/change_password":

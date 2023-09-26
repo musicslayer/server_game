@@ -15,11 +15,11 @@ class Client {
     mouse = new Mouse();
     controller = new Controller();
     
-    playerName;
+    characterName;
     player;
 
-    constructor(playerName, player) {
-        this.playerName = playerName;
+    constructor(characterName, player) {
+        this.characterName = characterName;
         this.player = player;
     }
 

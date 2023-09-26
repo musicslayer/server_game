@@ -10,8 +10,15 @@
 		<h2>Account Options</h2>
 		
 		<a href="/create_account">Create a new account.</a><br/>
+        <a href="/create_character">Create a new character.</a><br/>
+        
+        <br/>
+        
 		<a href="/change_password">Change your password.</a><br/>
 		<a href="/change_email">Change your email.</a><br/>
+        
+        <br/>
+        
 		<a href="/troubleshoot_account">Troubleshoot your account.</a>
 		
 		<h2>Login</h2>
@@ -103,12 +110,16 @@
                 // Clear the table that shows available characters.
                 CharacterTable.replaceChildren();
                 
-				const username = UsernameInput.value;
-				const password = PasswordInput.value;
-				
-				if(username.trim() == "" || password.trim() == "") {
+				let username = UsernameInput.value;
+				let password = PasswordInput.value;
+                
+                if(!isValidText(username)) {
 					LoginResultText.style.color = RED;
-					LoginResultText.innerHTML = "Must supply a username and password.";
+					LoginResultText.innerHTML = "Must supply a nonempty username without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
+				}
+				else if(!isValidText(password)) {
+					LoginResultText.style.color = RED;
+					LoginResultText.innerHTML = "Must supply a nonempty password without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
 				}
 				else {
                     let hash = await createHash(username, password);
@@ -149,15 +160,28 @@
 			}
             
             async function login(username, hash, characterName, serverName, worldName) {
-                window.sessionStorage.isActive = true;
-                window.sessionStorage.username = username;
-                window.sessionStorage.hash = hash;
-                window.sessionStorage.characterName = characterName;
-                window.sessionStorage.serverName = serverName;
-                window.sessionStorage.worldName = worldName;
+                window.sessionStorage.setItem("isActive", true);
+                window.sessionStorage.setItem("username", username);
+                window.sessionStorage.setItem("hash", hash);
+                window.sessionStorage.setItem("characterName", characterName);
+                window.sessionStorage.setItem("serverName", serverName);
+                window.sessionStorage.setItem("worldName", worldName);
                 
                 window.location.assign("/game");
             }
+            
+            function isValidText(str) {
+				// Check that there are no spaces and that all characters are ASCII letters, numbers, or underscores (but not starting with an underscore).
+				if(str === "") {
+					return false;
+				}
+				
+				if(str.startsWith("_")) {
+					return false;
+				}
+				
+				return /^[a-zA-Z0-9_]*$/.test(str);
+			}
             
             async function createHash(username, password) {
                 // Use both the username and the password to create the hash.
@@ -165,7 +189,9 @@
                 let encoder = new TextEncoder();
                 let data = encoder.encode(s);
                 let hash = await crypto.subtle.digest("SHA-512", data);
-                return hash;
+                let hashArray = Array.from(new Uint8Array(hash));
+                let hashString = hashArray.map((item) => item.toString(16).padStart(2, "0")).join("");
+                return hashString;
             }
 		</script>
 	</body>
