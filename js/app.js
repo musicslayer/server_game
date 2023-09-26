@@ -6,7 +6,6 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- Add in logging calls. This requires more storage space.
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
-// TODO Create a new character in an account.
 // TODO If Socket operations have isSuccess = false, attach an error string?
 
 // TODO Should clientMap be using user names (or maybe also with character names) instead of key?
@@ -14,6 +13,7 @@ const WorkerManager = require("./worker/WorkerManager.js");
 
 // TODO Should client hold a Player obj or a character obj? What is the difference between a Player and a Character?
 // TODO Delete a character?
+// TODO Should it say "Troubleshoot and Configure your account?"
 
 async function init() {
     let appState = new AppState();

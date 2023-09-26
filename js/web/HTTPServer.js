@@ -155,6 +155,12 @@ function serveError(res, statusCode, str) {
 		res.isEnded = true;
 		res.statusCode = statusCode;
 		res.setHeader("Content-Type", "text/plain");
+
+        // Use these to disable caching.
+        res.setHeader("Surrogate-Control", "no-store");
+        res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+        res.setHeader("Expires", "0");
+        
 		res.write(str);
 		res.end();
 	}
