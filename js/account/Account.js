@@ -1,4 +1,6 @@
 class Account {
+    isEnabled = true;
+
     // The password is not stored directly, we only store a hash.
     username;
     hash;
@@ -31,6 +33,7 @@ class Account {
     serialize(writer) {
         writer.beginObject()
             .serialize("!V!", 1)
+            .serialize("isEnabled", this.isEnabled)
             .serialize("username", this.username)
             .serialize("hash", this.hash)
             .serialize("email", this.email)
@@ -44,11 +47,13 @@ class Account {
 
         let version = reader.deserialize("!V!", "String");
         if(version === "1") {
+            let isEnabled = reader.deserialize("isEnabled", "Boolean");
             let username = reader.deserialize("username", "String");
             let hash = reader.deserialize("hash", "String");
             let email = reader.deserialize("email", "String");
 
             account = new Account(username, hash, email);
+            account.isEnabled = isEnabled;
 
             let characters = reader.deserializeArray("characters", "Character");
             for(let character of characters) {

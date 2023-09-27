@@ -40,6 +40,36 @@
 		
 		<br/>
         
+        <h3>Enable/Disable Account</h3>
+		
+		<p style='white-space: pre;'>Enable or disable any usage of your account. Disabling an account will also immediately log out its characters.</p>
+		
+		<table>
+		<tr>
+			<td><b>Username:</b></td>
+			<td><input id="ID_EnableUsernameInput" type="text" autocomplete="off" maxlength="40"></input></td>
+		</tr>
+	
+		<tr>
+			<td><b>Password:</b></td>
+			<td><input id="ID_EnablePasswordInput" type="password" autocomplete="off" maxlength="40"></input></td>
+		</tr>
+		
+		<tr>
+			<td><b>Email:</b></td>
+			<td><input id="ID_EnableEmailInput" type="text" autocomplete="off" maxlength="40"></input></td>
+		</tr>
+		</table>
+		
+		<br/>
+		
+		<button id="ID_EnableButton">Enable Account</button>
+        <button id="ID_DisableButton">Disable Account</button>
+		
+		<p id="ID_EnableResultText" style='white-space: pre;'></p>
+		
+		<br/>
+        
         <h3 style="color: #B00000">Delete Character</h3>
 		
         <p style='white-space: pre; color: #B00000'>Permanently delete a character on your account. This cannot be reversed.</p>
@@ -109,6 +139,13 @@
 			const LogOutEmailInput = document.querySelector('#ID_LogOutEmailInput');
 			const LogOutButton = document.querySelector('#ID_LogOutButton');
 			const LogOutResultText = document.querySelector('#ID_LogOutResultText');
+            
+            const EnableUsernameInput = document.querySelector('#ID_EnableUsernameInput');
+			const EnablePasswordInput = document.querySelector('#ID_EnablePasswordInput');
+			const EnableEmailInput = document.querySelector('#ID_EnableEmailInput');
+			const EnableButton = document.querySelector('#ID_EnableButton');
+            const DisableButton = document.querySelector('#ID_DisableButton');
+			const EnableResultText = document.querySelector('#ID_EnableResultText');
             
             const DeleteCharacterUsernameInput = document.querySelector('#ID_DeleteCharacterUsernameInput');
 			const DeleteCharacterPasswordInput = document.querySelector('#ID_DeleteCharacterPasswordInput');
@@ -191,6 +228,76 @@
 					else {
 						LogOutResultText.style.color = RED;
 						LogOutResultText.innerHTML = "There is a problem logging out the account.";
+					}
+				}
+			});
+            
+            EnableButton.addEventListener('click', async () => {
+                if(!isSocketConnected) {
+                    return;
+                }
+                
+				let username = EnableUsernameInput.value;
+				let password = EnablePasswordInput.value;
+				let email = EnableEmailInput.value;
+				
+				if(!isValidText(username)) {
+					EnableResultText.style.color = RED;
+					EnableResultText.innerHTML = "Must supply a nonempty username without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
+				}
+				else if(!isValidText(password)) {
+					EnableResultText.style.color = RED;
+					EnableResultText.innerHTML = "Must supply a nonempty password without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
+				}
+				else if(!isValidEmail(email)) {
+					EnableResultText.style.color = RED;
+					EnableResultText.innerHTML = "Must supply a valid current email.";
+				}
+				else {
+                    let hash = await createHash(username, password);
+					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_enable_account", username, hash, email);
+					if(R.isSuccess) {
+						EnableResultText.style.color = BLACK;
+						EnableResultText.innerHTML = "Account enable successful.";
+					}
+					else {
+						EnableResultText.style.color = RED;
+						EnableResultText.innerHTML = "There is a problem enabling the account.";
+					}
+				}
+			});
+            
+            DisableButton.addEventListener('click', async () => {
+                if(!isSocketConnected) {
+                    return;
+                }
+                
+				let username = EnableUsernameInput.value;
+				let password = EnablePasswordInput.value;
+				let email = EnableEmailInput.value;
+				
+				if(!isValidText(username)) {
+					EnableResultText.style.color = RED;
+					EnableResultText.innerHTML = "Must supply a nonempty username without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
+				}
+				else if(!isValidText(password)) {
+					EnableResultText.style.color = RED;
+					EnableResultText.innerHTML = "Must supply a nonempty password without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
+				}
+				else if(!isValidEmail(email)) {
+					EnableResultText.style.color = RED;
+					EnableResultText.innerHTML = "Must supply a valid current email.";
+				}
+				else {
+                    let hash = await createHash(username, password);
+					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_disable_account", username, hash, email);
+					if(R.isSuccess) {
+						EnableResultText.style.color = BLACK;
+						EnableResultText.innerHTML = "Account disable successful.";
+					}
+					else {
+						EnableResultText.style.color = RED;
+						EnableResultText.innerHTML = "There is a problem disabling the account.";
 					}
 				}
 			});

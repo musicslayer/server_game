@@ -76,7 +76,6 @@ class SocketIOServer {
 	attachAppListeners(socket) {
 		let ip = socket.handshake.address;
 
-		// Respond to account creation.
 		socket.on("on_account_creation", (username, hash, email, callback) => {
 			try {
 				if(RateLimit.isRateLimited("create_account", ip)) {
@@ -112,7 +111,6 @@ class SocketIOServer {
 			}
 		});
 
-		// Respond to account deletion.
 		socket.on("on_account_deletion", (username, hash, email, callback) => {
 			try {
 				if(RateLimit.isRateLimited("delete_account", ip)) {
@@ -159,7 +157,6 @@ class SocketIOServer {
 			}
 		});
 
-		// Respond to character creation.
 		socket.on("on_character_creation", (username, hash, characterName, characterClass, callback) => {
 			try {
 				if(RateLimit.isRateLimited("create_character", ip)) {
@@ -212,10 +209,9 @@ class SocketIOServer {
 			}
 		});
 
-		// Respond to character deletion.
 		socket.on("on_character_deletion", (username, hash, email, characterName, callback) => {
 			try {
-				if(RateLimit.isRateLimited("delete_account", ip)) {
+				if(RateLimit.isRateLimited("delete_character", ip)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -266,7 +262,7 @@ class SocketIOServer {
 			}
 		});
 
-		// Respond to the user wanting to select a character.
+		// TODO Rename "on_character_listing"?
 		socket.on("on_character_select", (username, hash, callback) => {
 			try {
 				if(RateLimit.isRateLimited("select_character", ip)) {
@@ -310,7 +306,6 @@ class SocketIOServer {
 			}
 		});
 
-		// Respond to login.
 		socket.on("on_login", (username, hash, characterName, serverName, worldName, callback) => {
 			try {
 				if(RateLimit.isRateLimited("login", ip)) {
@@ -424,7 +419,6 @@ class SocketIOServer {
 			}
 		});
 
-		// Respond to password change.
 		socket.on("on_change_password", (username, newHash, email, callback) => {
 			try {
 				if(RateLimit.isRateLimited("change_password", ip)) {
@@ -471,7 +465,6 @@ class SocketIOServer {
 			}
 		});
 
-		// Respond to email change.
 		socket.on("on_change_email", (username, hash, currentEmail, newEmail, callback) => {
 			try {
 				if(RateLimit.isRateLimited("change_email", ip)) {
@@ -524,10 +517,9 @@ class SocketIOServer {
 			}
 		});
 
-		// Respond to forced logout.
 		socket.on("on_forced_logout", (username, hash, email, callback) => {
 			try {
-				if(RateLimit.isRateLimited("forced_logout", ip)) {
+				if(RateLimit.isRateLimited("force_logout", ip)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -573,12 +565,108 @@ class SocketIOServer {
 				socket.disconnect(true);
 			}
 		});
+
+		socket.on("on_enable_account", (username, hash, email, callback) => {
+			try {
+				if(RateLimit.isRateLimited("enable_account", ip)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateStrings(username, hash, email)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				let account = this.accountManager.getAccount(username);
+				if(!account) {
+					// The account with this username does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				if(account.hash !== hash) {
+					// The account exists but this hash is wrong.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				if(account.email !== email) {
+					// The account exists but this email is wrong.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				// Enable the account.
+				account.isEnabled = true;
+
+				callback({"isSuccess": true});
+			}
+			catch(err) {
+				console.error(err);
+				socket.disconnect(true);
+			}
+		});
+
+		socket.on("on_disable_account", (username, hash, email, callback) => {
+			try {
+				if(RateLimit.isRateLimited("disable_account", ip)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateStrings(username, hash, email)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				let account = this.accountManager.getAccount(username);
+				if(!account) {
+					// The account with this username does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				if(account.hash !== hash) {
+					// The account exists but this hash is wrong.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				if(account.email !== email) {
+					// The account exists but this email is wrong.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				// Disable the account and log out all characters on this account that are currently logged in.
+				account.isEnabled = false;
+				
+				for(let character of accounts.characters) {
+					let client = this.clientManager.getClient(username, character.name);
+					client?.socket.disconnect(true);
+				}
+
+				callback({"isSuccess": true});
+			}
+			catch(err) {
+				console.error(err);
+				socket.disconnect(true);
+			}
+		});
 	}
 
 	attachClientListeners(socket, client) {
 		let ip = socket.handshake.address;
-	
-		// Respond to key presses.
+
 		socket.on("on_key_press", (keys, callback) => {
 			try {
 				if(RateLimit.isRateLimited("input", ip)) {
@@ -604,8 +692,7 @@ class SocketIOServer {
 				socket.disconnect(true);
 			}
 		});
-	
-		// Respond to controller button presses.
+
 		socket.on("on_controller_press", (buttons, callback) => {
 			try {
 				if(RateLimit.isRateLimited("input", ip)) {
@@ -631,8 +718,7 @@ class SocketIOServer {
 				socket.disconnect(true);
 			}
 		});
-	
-		// Respond to controller analog sticks.
+
 		socket.on("on_controller_sticks", (axes, callback) => {
 			try {
 				if(RateLimit.isRateLimited("input", ip)) {
@@ -658,8 +744,7 @@ class SocketIOServer {
 				socket.disconnect(true);
 			}
 		});
-	
-		// Respond to mouse clicks.
+
 		socket.on("on_mouse_click", (button, location, info, callback) => {
 			try {
 				if(RateLimit.isRateLimited("input", ip)) {
@@ -680,8 +765,7 @@ class SocketIOServer {
 				socket.disconnect(true);
 			}
 		});
-	
-		// Respond to mouse drags.
+
 		socket.on("on_mouse_drag", (button, location1, info1, location2, info2, callback) => {
 			try {
 				if(RateLimit.isRateLimited("input", ip)) {
@@ -713,7 +797,6 @@ class SocketIOServer {
 			}
 		});
 	
-		// Send the client all the data needed to draw the player's screen.
 		socket.on("get_client_data", (callback) => {
 			try {
 				if(RateLimit.isRateLimited("data", ip)) {
@@ -734,8 +817,7 @@ class SocketIOServer {
 				socket.disconnect(true);
 			}
 		});
-	
-		// Send developer data to the client.
+
 		socket.on("get_dev_data", (callback) => {
 			try {
 				if(RateLimit.isRateLimited("dev", ip)) {

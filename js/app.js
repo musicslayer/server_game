@@ -9,6 +9,9 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // TODO If Socket operations have isSuccess = false, attach an error string?
 // TODO Enable/disable an account?
 
+
+// TODO Should it be called a "forced" logout?
+
 async function init() {
     let appState = new AppState();
     let appAdmin = new AppAdmin(appState);
