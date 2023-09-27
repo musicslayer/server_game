@@ -99,7 +99,7 @@
 			
 				let username = UsernameInput.value;
 				let password = PasswordInput.value;
-				let confirm_password = ConfirmPasswordInput.value;
+				let confirmPassword = ConfirmPasswordInput.value;
 				let email = EmailInput.value;
 				
 				if(!isValidText(username)) {
@@ -110,7 +110,7 @@
 					CreateAccountResultText.style.color = RED;
 					CreateAccountResultText.innerHTML = "Must supply a nonempty password without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
 				}
-				else if(password != confirm_password) {
+				else if(password != confirmPassword) {
 					CreateAccountResultText.style.color = RED;
 					CreateAccountResultText.innerHTML = "Passwords do not match. Confirm you have typed the same password twice.";
 				}
