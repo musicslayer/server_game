@@ -6,7 +6,7 @@ class ClientManager {
     }
 
     getClient(username, characterName) {
-        for(let client of clients) {
+        for(let client of this.clients) {
             if(client.username === username && client.characterName === characterName) {
                 return client;
             }

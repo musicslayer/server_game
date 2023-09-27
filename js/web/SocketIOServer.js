@@ -186,6 +186,12 @@ class SocketIOServer {
 					return;
 				}
 
+				if(!account.isEnabled) {
+					// The account is disabled.
+					callback({"isSuccess": false});
+					return;
+				}
+
 				if(account.getCharacter(characterName)) {
 					// The character already exists.
 					callback({"isSuccess": false});
@@ -292,6 +298,12 @@ class SocketIOServer {
 					return;
 				}
 
+				if(!account.isEnabled) {
+					// The account is disabled.
+					callback({"isSuccess": false});
+					return;
+				}
+
 				// Return to the client a list of characters they can log in as.
 				let characterNames = [];
 				for(let characterName of account.characterMap.keys()) {
@@ -335,6 +347,12 @@ class SocketIOServer {
 					return;
 				}
 
+				if(!account.isEnabled) {
+					// The account is disabled.
+					callback({"isSuccess": false});
+					return;
+				}
+
 				let character = account.getCharacter(characterName);
 				if(!character) {
 					// The character does not exist.
@@ -342,6 +360,7 @@ class SocketIOServer {
 					return;
 				}
 
+				// TODO Does this prevent a second login?
 				if(this.clientManager.getClient(username, characterName)) {
 					// The character on this account is already logged in.
 					callback({"isSuccess": false});
@@ -553,7 +572,7 @@ class SocketIOServer {
 				}
 
 				// Log out all characters on this account that are currently logged in.
-				for(let character of accounts.characters) {
+				for(let character of account.characters) {
 					let client = this.clientManager.getClient(username, character.name);
 					client?.socket.disconnect(true);
 				}
@@ -649,8 +668,8 @@ class SocketIOServer {
 
 				// Disable the account and log out all characters on this account that are currently logged in.
 				account.isEnabled = false;
-				
-				for(let character of accounts.characters) {
+
+				for(let character of account.characters) {
 					let client = this.clientManager.getClient(username, character.name);
 					client?.socket.disconnect(true);
 				}
