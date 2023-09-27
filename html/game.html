@@ -80,6 +80,9 @@
                         
                         reactLogin(username, hash, characterName, serverName, worldName);
                     }
+                    else {
+                        drawNoCharacterScreen();
+                    }
                 });
                 
                 socket.on("disconnect", (err) => {
@@ -120,6 +123,9 @@
                             clearInterval(interval);
                             clearInterval(intervalDev);
                         });
+                    }
+                    else {
+                        drawAlreadyConnectedScreen();
                     }
                 }
             }
@@ -491,6 +497,32 @@
                 let ctxBuffer = canvasBuffer.getContext("2d");
                 ctxBuffer.font = "30px Arial";
                 ctxBuffer.fillText("Loading...", 5, 25);
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(canvasBuffer, 0, 0);
+            }
+            
+            function drawNoCharacterScreen() {
+                let canvasBuffer = document.createElement('canvas');
+                canvasBuffer.width = canvas_width;
+                canvasBuffer.height = canvas_height;
+                
+                let ctxBuffer = canvasBuffer.getContext("2d");
+                ctxBuffer.font = "30px Arial";
+                ctxBuffer.fillText("You have not logged in as a character.", 5, 25);
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(canvasBuffer, 0, 0);
+            }
+            
+            function drawAlreadyConnectedScreen() {
+                let canvasBuffer = document.createElement('canvas');
+                canvasBuffer.width = canvas_width;
+                canvasBuffer.height = canvas_height;
+                
+                let ctxBuffer = canvasBuffer.getContext("2d");
+                ctxBuffer.font = "30px Arial";
+                ctxBuffer.fillText("This character is already logged in.", 5, 25);
                 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(canvasBuffer, 0, 0);

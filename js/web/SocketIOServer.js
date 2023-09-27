@@ -304,13 +304,16 @@ class SocketIOServer {
 					return;
 				}
 
-				// Return to the client a list of characters they can log in as.
-				let characterNames = [];
+				// Return to the client a list of character names and whether they are already logged in.
+				let characterData = [];
 				for(let characterName of account.characterMap.keys()) {
-					characterNames.push(characterName);
+					characterData.push({
+						name: characterName,
+						isLoggedIn: this.clientManager.getClient(username, characterName)
+					});
 				}
 
-				callback({"isSuccess": true, "characterNames": characterNames});
+				callback({"isSuccess": true, "characterData": characterData});
 			}
 			catch(err) {
 				console.error(err);
@@ -360,7 +363,6 @@ class SocketIOServer {
 					return;
 				}
 
-				// TODO Does this prevent a second login?
 				if(this.clientManager.getClient(username, characterName)) {
 					// The character on this account is already logged in.
 					callback({"isSuccess": false});

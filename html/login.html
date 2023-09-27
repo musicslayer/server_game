@@ -126,22 +126,29 @@
 					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_select_character", username, hash);
                     
                     if(R.isSuccess) {
-                        let characterNames = R.characterNames;
-                        if(characterNames.length > 0) {
+                        let characterData = R.characterData;
+                        if(characterData.length > 0) {
                             LoginResultText.style.color = BLACK;
                             LoginResultText.innerHTML = "Choose a character to login as:";
                     
-                            // Display each name along with a button that can be clicked to login.
-                            for(let characterName of characterNames) {
+                            // Display each name along with a button that can be clicked to login if they are not already.
+                            for(let characterEntry of characterData) {
                                 let newRow = document.createElement("tr");
                                 
                                 let newButton = document.createElement("button");
-                                newButton.innerText = characterName;
-                                newButton.addEventListener('click', async () => {
-                                    if(socket && isSocketConnected) {
-                                        await login(username, hash, characterName, "origin", "world0");
-                                    }
-                                });
+                                
+                                if(characterEntry.isLoggedIn) {
+                                    newButton.innerText = characterEntry.name + " (Already Logged In)";
+                                    newButton.disabled = true;
+                                }
+                                else {
+                                    newButton.innerText = characterEntry.name;
+                                    newButton.addEventListener('click', async () => {
+                                        if(socket && isSocketConnected) {
+                                            await login(username, hash, characterEntry.name, "origin", "world0");
+                                        }
+                                    });
+                                }
                                 
                                 newRow.appendChild(newButton);
                                 CharacterTable.appendChild(newRow);

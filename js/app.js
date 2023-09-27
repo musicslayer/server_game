@@ -7,8 +7,10 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
 // TODO If Socket operations have isSuccess = false, attach an error string?
+// --- In some failing cases, we say one thing when the failure was actually caused by something else.
 
 // TODO Can we choose server/world that we login?
+// --- Eliminate world jumping key bindings if they still exist.
 
 async function init() {
     let appState = new AppState();
