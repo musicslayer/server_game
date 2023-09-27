@@ -138,9 +138,8 @@ class AppState {
 
     refresh() {
         // Each client needs to point to an updated player, and vice versa.
-        for(let key of this.clientManager.clientMap.keys()) {
-            let client = this.clientManager.getClient(key); // TODO This key can no longer get the account...
-            let newPlayer = this.accountManager.getAccount(key)?.getCharacter(client.characterName)?.player;
+        for(let client of this.clientManager.clients) {
+            let newPlayer = this.accountManager.getAccount(client.username)?.getCharacter(client.characterName)?.player;
 
             client.player = newPlayer;
 
@@ -157,8 +156,8 @@ class AppState {
 
     close() {
         for(let account of this.accountManager.accounts) {
-            for(let key of account.characterMap.keys()) {
-                let player = account.getCharacter(key).player;
+            for(let character of account.characters) {
+                let player = character.player;
 
                 if(player.isSpawned && !player.client) {
                     // If a player is spawned but the client is no longer logged in, then despawn the player.

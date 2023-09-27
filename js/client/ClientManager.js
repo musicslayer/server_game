@@ -1,20 +1,22 @@
 class ClientManager {
     clients = [];
-    clientMap = new Map();
 
     addClient(client) {
         this.clients.push(client);
-        this.clientMap.set(client.key, client);
     }
 
-    getClient(key) {
-        return this.clientMap.get(key);
+    getClient(username, characterName) {
+        for(let client of clients) {
+            if(client.username === username && client.characterName === characterName) {
+                return client;
+            }
+        }
+        return undefined;
     }
 
     removeClient(client) {
         let index = this.clients.indexOf(client);
         this.clients.splice(index, 1);
-        this.clientMap.delete(client.key);
     }
 
     static createInitialClientManager() {

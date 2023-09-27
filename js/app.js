@@ -7,11 +7,7 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
 // TODO If Socket operations have isSuccess = false, attach an error string?
-
-// TODO Should clientMap be using user names (or maybe also with character names) instead of key?
-// --- The same user can log in with both characters, and it causes a problem because the clients would have the same key!
-
-// TODO Should client hold a Player obj or a character obj? What is the difference between a Player and a Character?
+// TODO Enable/disable an account?
 
 async function init() {
     let appState = new AppState();

@@ -8,17 +8,17 @@ const Util = require("../util/Util.js");
 
 class Client {
     socket;
-    
-    key;
 
     keyboard = new Keyboard();
     mouse = new Mouse();
     controller = new Controller();
     
+    username;
     characterName;
     player;
 
-    constructor(characterName, player) {
+    constructor(username, characterName, player) {
+        this.username = username;
         this.characterName = characterName;
         this.player = player;
     }

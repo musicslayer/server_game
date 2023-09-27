@@ -340,15 +340,15 @@ class SocketIOServer {
 					return;
 				}
 
-				if(this.clientManager.clientMap.has(hash)) { // TODO clientmap shouldn't have hashes?
-					// User is already logged in.
+				let character = account.getCharacter(characterName);
+				if(!character) {
+					// The character does not exist.
 					callback({"isSuccess": false});
 					return;
 				}
 
-				let character = account.getCharacter(characterName);
-				if(!character) {
-					// The character does not exist.
+				if(this.clientManager.getClient(username, characterName)) {
+					// The character on this account is already logged in.
 					callback({"isSuccess": false});
 					return;
 				}
@@ -392,15 +392,14 @@ class SocketIOServer {
 				let serverTask = new ServerTask(undefined, 0, 1, "spawn", player);
 				player.getServer().scheduleTask(serverTask);
 
-				let client = new Client(characterName, player);
-				client.key = hash; // TODO client keys
+				let client = new Client(username, characterName, player);
 				client.socket = socket;
 				this.clientManager.addClient(client);
 
 				player.client = client;
 
 				socket.on("disconnect", (reason) => {
-					let client = this.clientManager.getClient(hash); 
+					let client = this.clientManager.getClient(username, characterName); 
 					this.clientManager.removeClient(client);
 
 					// It's possible that a client is present but then a state is loaded where the player was despawned or did not exist.
@@ -561,9 +560,11 @@ class SocketIOServer {
 					return;
 				}
 
-				// Regardless of whether the user is logged in or not, attempt to log them out.
-				let client = this.clientManager.getClient(hash); // TODO Clients shouldnt use hashes
-				client?.socket.disconnect(true);
+				// Log out all characters on this account that are currently logged in.
+				for(let character of accounts.characters) {
+					let client = this.clientManager.getClient(username, character.name);
+					client?.socket.disconnect(true);
+				}
 
 				callback({"isSuccess": true});
 			}
