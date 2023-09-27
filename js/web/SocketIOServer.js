@@ -76,7 +76,7 @@ class SocketIOServer {
 	attachAppListeners(socket) {
 		let ip = socket.handshake.address;
 
-		socket.on("on_account_creation", (username, hash, email, callback) => {
+		socket.on("on_create_account", (username, hash, email, callback) => {
 			try {
 				if(RateLimit.isRateLimited("create_account", ip)) {
 					socket.disconnect(true);
@@ -111,7 +111,7 @@ class SocketIOServer {
 			}
 		});
 
-		socket.on("on_account_deletion", (username, hash, email, callback) => {
+		socket.on("on_delete_account", (username, hash, email, callback) => {
 			try {
 				if(RateLimit.isRateLimited("delete_account", ip)) {
 					socket.disconnect(true);
@@ -157,7 +157,7 @@ class SocketIOServer {
 			}
 		});
 
-		socket.on("on_character_creation", (username, hash, characterName, characterClass, callback) => {
+		socket.on("on_create_character", (username, hash, characterName, characterClass, callback) => {
 			try {
 				if(RateLimit.isRateLimited("create_character", ip)) {
 					socket.disconnect(true);
@@ -215,7 +215,7 @@ class SocketIOServer {
 			}
 		});
 
-		socket.on("on_character_deletion", (username, hash, email, characterName, callback) => {
+		socket.on("on_delete_character", (username, hash, email, characterName, callback) => {
 			try {
 				if(RateLimit.isRateLimited("delete_character", ip)) {
 					socket.disconnect(true);
@@ -269,7 +269,7 @@ class SocketIOServer {
 		});
 
 		// TODO Rename "on_character_listing"?
-		socket.on("on_character_select", (username, hash, callback) => {
+		socket.on("on_select_character", (username, hash, callback) => {
 			try {
 				if(RateLimit.isRateLimited("select_character", ip)) {
 					socket.disconnect(true);
@@ -318,9 +318,9 @@ class SocketIOServer {
 			}
 		});
 
-		socket.on("on_login", (username, hash, characterName, serverName, worldName, callback) => {
+		socket.on("on_login_character", (username, hash, characterName, serverName, worldName, callback) => {
 			try {
-				if(RateLimit.isRateLimited("login", ip)) {
+				if(RateLimit.isRateLimited("login_character", ip)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -536,9 +536,9 @@ class SocketIOServer {
 			}
 		});
 
-		socket.on("on_forced_logout", (username, hash, email, callback) => {
+		socket.on("on_logout_account", (username, hash, email, callback) => {
 			try {
-				if(RateLimit.isRateLimited("force_logout", ip)) {
+				if(RateLimit.isRateLimited("logout_account", ip)) {
 					socket.disconnect(true);
 					return;
 				}

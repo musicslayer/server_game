@@ -106,7 +106,7 @@
             
             async function reactLogin(username, hash, characterName, serverName, worldName) {
                 if(socket && isSocketConnected) {
-                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login", username, hash, characterName, serverName, worldName);
+                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login_character", username, hash, characterName, serverName, worldName);
                     if(R.isSuccess) {
                         startInterval();
                         startDevInterval();

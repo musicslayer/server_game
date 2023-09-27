@@ -13,7 +13,7 @@
 		
 		<h3>Log Out</h3>
 		
-		<p style='white-space: pre;'>Forcibly log out of all characters on your account.</p>
+		<p style='white-space: pre;'>Log out all of the characters on your account.</p>
 		
 		<table>
 		<tr>
@@ -220,7 +220,7 @@
 				}
 				else {
                     let hash = await createHash(username, password);
-					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_forced_logout", username, hash, email);
+					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_logout_account", username, hash, email);
 					if(R.isSuccess) {
 						LogOutResultText.style.color = BLACK;
 						LogOutResultText.innerHTML = "Account logout successful.";
@@ -330,7 +330,7 @@
 				}
 				else {
                     let hash = await createHash(username, password);
-					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_character_deletion", username, hash, email, characterName);
+					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_delete_character", username, hash, email, characterName);
 					if(R.isSuccess) {
 						DeleteCharacterResultText.style.color = BLACK;
 						DeleteCharacterResultText.innerHTML = "Character deletion successful.";
@@ -365,7 +365,7 @@
 				}
 				else {
                     let hash = await createHash(username, password);
-					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_account_deletion", username, hash, email);
+					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_delete_account", username, hash, email);
 					if(R.isSuccess) {
 						DeleteAccountResultText.style.color = BLACK;
 						DeleteAccountResultText.innerHTML = "Account deletion successful.";

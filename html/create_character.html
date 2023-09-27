@@ -124,7 +124,7 @@
 					CreateCharacterResultText.innerHTML = "Please wait...";
                     
                     let hash = await createHash(username, password);
-                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_character_creation", username, hash, characterName, characterClass);
+                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_create_character", username, hash, characterName, characterClass);
 					if(R.isSuccess) {
 						CreateCharacterResultText.style.color = BLACK;
 						CreateCharacterResultText.innerHTML = "Character creation successful.";

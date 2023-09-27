@@ -123,7 +123,7 @@
 					CreateAccountResultText.innerHTML = "Please wait...";
                     
                     let hash = await createHash(username, password);
-                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_account_creation", username, hash, email);
+                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_create_account", username, hash, email);
 					if(R.isSuccess) {
 						CreateAccountResultText.style.color = BLACK;
 						CreateAccountResultText.innerHTML = "Account creation successful.";

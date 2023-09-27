@@ -7,10 +7,8 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
 // TODO If Socket operations have isSuccess = false, attach an error string?
-// TODO Enable/disable an account?
 
-
-// TODO Should it be called a "forced" logout?
+// TODO Can we choose server/world that we login?
 
 async function init() {
     let appState = new AppState();

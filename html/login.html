@@ -123,7 +123,7 @@
 				}
 				else {
                     let hash = await createHash(username, password);
-					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_character_select", username, hash);
+					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_select_character", username, hash);
                     
                     if(R.isSuccess) {
                         let characterNames = R.characterNames;
