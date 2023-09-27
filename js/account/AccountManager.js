@@ -59,12 +59,12 @@ class AccountManager {
         let player2Warrior = Entity.createInstance("PlayerWarrior", 1);
         
         let account1 = new Account("smith", createHash("smith", "password123"), "a@a.com");
-        account1.addCharacter("mage", new Character(player1Mage));
-        account1.addCharacter("warrior", new Character(player1Warrior));
+        account1.addCharacter(new Character("mage", player1Mage));
+        account1.addCharacter(new Character("warrior", player1Warrior));
 
         let account2 = new Account("maria", createHash("maria", "secret"), "b@b.com");
-        account2.addCharacter("mage", new Character(player2Mage));
-        account2.addCharacter("warrior", new Character(player2Warrior));
+        account2.addCharacter(new Character("mage", player2Mage));
+        account2.addCharacter(new Character("warrior", player2Warrior));
 
         let accountManager = new AccountManager();
         accountManager.addAccount(account1);

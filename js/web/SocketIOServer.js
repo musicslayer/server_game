@@ -201,8 +201,62 @@ class SocketIOServer {
 				}
 
 				let player = Entity.createInstance(characterClass, 1);
-				let character = new Character(player);
-				account.addCharacter(characterName, character);
+				let character = new Character(characterName, player);
+				account.addCharacter(character);
+
+				callback({"isSuccess": true});
+			}
+			catch(err) {
+				console.error(err);
+				socket.disconnect(true);
+			}
+		});
+
+		// Respond to character deletion.
+		socket.on("on_character_deletion", (username, hash, email, characterName, callback) => {
+			try {
+				if(RateLimit.isRateLimited("delete_account", ip)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateStrings(username, hash, email, characterName)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				let account = this.accountManager.getAccount(username);
+				if(!account) {
+					// The account with this username does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				if(account.hash !== hash) {
+					// The account exists but this hash is wrong.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				if(account.email !== email) {
+					// The account exists but this email is wrong.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				let character = account.getCharacter(characterName);
+				if(!character) {
+					// The character does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+
+				// Delete the character.
+				account.removeCharacter(character);
 
 				callback({"isSuccess": true});
 			}

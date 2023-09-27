@@ -12,8 +12,6 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- The same user can log in with both characters, and it causes a problem because the clients would have the same key!
 
 // TODO Should client hold a Player obj or a character obj? What is the difference between a Player and a Character?
-// TODO Delete a character?
-// TODO Should it say "Troubleshoot and Configure your account?"
 
 async function init() {
     let appState = new AppState();

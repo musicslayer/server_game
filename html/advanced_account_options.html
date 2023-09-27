@@ -9,11 +9,7 @@
 		
 		<a href="/login">Back to login page.</a>
 		
-		<h2>Troubleshoot an Account</h2>
-		
-		<p style='white-space: pre;'>If you are having problems with your account, the following options may help.</p>
-		
-		<br/><br/>
+		<h2>Advanced Account Options</h2>
 		
 		<h3>Log Out</h3>
 		
@@ -22,17 +18,17 @@
 		<table>
 		<tr>
 			<td><b>Username:</b></td>
-			<td><input id="ID_LogOutUsernameInput" type="text" autocomplete="off" maxlength="20"></input></td>
+			<td><input id="ID_LogOutUsernameInput" type="text" autocomplete="off" maxlength="40"></input></td>
 		</tr>
 	
 		<tr>
 			<td><b>Password:</b></td>
-			<td><input id="ID_LogOutPasswordInput" type="text" autocomplete="off" maxlength="20"></input></td>
+			<td><input id="ID_LogOutPasswordInput" type="text" autocomplete="off" maxlength="40"></input></td>
 		</tr>
 		
 		<tr>
 			<td><b>Email:</b></td>
-			<td><input id="ID_LogOutEmailInput" type="text" autocomplete="off" maxlength="20"></input></td>
+			<td><input id="ID_LogOutEmailInput" type="text" autocomplete="off" maxlength="40"></input></td>
 		</tr>
 		</table>
 		
@@ -42,7 +38,41 @@
 		
 		<p id="ID_LogOutResultText" style='white-space: pre;'></p>
 		
-		<br/><br/>
+		<br/>
+        
+        <h3 style="color: #B00000">Delete Character</h3>
+		
+        <p style='white-space: pre; color: #B00000'>Permanently delete a character from your account. This cannot be reversed.</p>
+		
+		<table>
+		<tr>
+			<td><b>Username:</b></td>
+			<td><input id="ID_DeleteCharacterUsernameInput" type="text" autocomplete="off" maxlength="40"></input></td>
+		</tr>
+	
+		<tr>
+			<td><b>Password:</b></td>
+			<td><input id="ID_DeleteCharacterPasswordInput" type="text" autocomplete="off" maxlength="40"></input></td>
+		</tr>
+		
+		<tr>
+			<td><b>Email:</b></td>
+			<td><input id="ID_DeleteCharacterEmailInput" type="text" autocomplete="off" maxlength="40"></input></td>
+		</tr>
+        
+        <tr>
+			<td><b>Character Name:</b></td>
+			<td><input id="ID_DeleteCharacterNameInput" type="text" autocomplete="off" maxlength="40"></input></td>
+		</tr>
+		</table>
+		
+		<br/>
+		
+		<button id="ID_DeleteCharacterButton">Delete Character</button>
+		
+		<p id="ID_DeleteCharacterResultText" style='white-space: pre;'></p>
+		
+		<br/>
 		
 		<h3 style="color: #B00000">Delete Account</h3>
 		
@@ -51,17 +81,17 @@
 		<table>
 		<tr>
 			<td><b>Username:</b></td>
-			<td><input id="ID_DeleteAccountUsernameInput" type="text" autocomplete="off" maxlength="20"></input></td>
+			<td><input id="ID_DeleteAccountUsernameInput" type="text" autocomplete="off" maxlength="40"></input></td>
 		</tr>
 	
 		<tr>
 			<td><b>Password:</b></td>
-			<td><input id="ID_DeleteAccountPasswordInput" type="text" autocomplete="off" maxlength="20"></input></td>
+			<td><input id="ID_DeleteAccountPasswordInput" type="text" autocomplete="off" maxlength="40"></input></td>
 		</tr>
 		
 		<tr>
 			<td><b>Email:</b></td>
-			<td><input id="ID_DeleteAccountEmailInput" type="text" autocomplete="off" maxlength="20"></input></td>
+			<td><input id="ID_DeleteAccountEmailInput" type="text" autocomplete="off" maxlength="40"></input></td>
 		</tr>
 		</table>
 		
@@ -79,6 +109,13 @@
 			const LogOutEmailInput = document.querySelector('#ID_LogOutEmailInput');
 			const LogOutButton = document.querySelector('#ID_LogOutButton');
 			const LogOutResultText = document.querySelector('#ID_LogOutResultText');
+            
+            const DeleteCharacterUsernameInput = document.querySelector('#ID_DeleteCharacterUsernameInput');
+			const DeleteCharacterPasswordInput = document.querySelector('#ID_DeleteCharacterPasswordInput');
+			const DeleteCharacterEmailInput = document.querySelector('#ID_DeleteCharacterEmailInput');
+            const DeleteCharacterNameInput = document.querySelector('#ID_DeleteCharacterNameInput');
+			const DeleteCharacterButton = document.querySelector('#ID_DeleteCharacterButton');
+			const DeleteCharacterResultText = document.querySelector('#ID_DeleteCharacterResultText');
 			
 			const DeleteAccountUsernameInput = document.querySelector('#ID_DeleteAccountUsernameInput');
 			const DeleteAccountPasswordInput = document.querySelector('#ID_DeleteAccountPasswordInput');
@@ -154,6 +191,46 @@
 					else {
 						LogOutResultText.style.color = RED;
 						LogOutResultText.innerHTML = "There is a problem logging out the account.";
+					}
+				}
+			});
+            
+            DeleteCharacterButton.addEventListener('click', async () => {
+                if(!isSocketConnected) {
+                    return;
+                }
+                
+				let username = DeleteCharacterUsernameInput.value;
+				let password = DeleteCharacterPasswordInput.value;
+				let email = DeleteCharacterEmailInput.value;
+                let characterName = DeleteCharacterNameInput.value;
+				
+				if(!isValidText(username)) {
+					DeleteCharacterResultText.style.color = RED;
+					DeleteCharacterResultText.innerHTML = "Must supply a nonempty username without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
+				}
+				else if(!isValidText(password)) {
+					DeleteCharacterResultText.style.color = RED;
+					DeleteCharacterResultText.innerHTML = "Must supply a nonempty password without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
+				}
+				else if(!isValidEmail(email)) {
+					DeleteCharacterResultText.style.color = RED;
+					DeleteCharacterResultText.innerHTML = "Must supply a valid current email.";
+				}
+                else if(!isValidText(characterName)) {
+					DeleteCharacterResultText.style.color = RED;
+					DeleteCharacterResultText.innerHTML = "Must supply a nonempty character name without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
+				}
+				else {
+                    let hash = await createHash(username, password);
+					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_character_deletion", username, hash, email, characterName);
+					if(R.isSuccess) {
+						DeleteCharacterResultText.style.color = BLACK;
+						DeleteCharacterResultText.innerHTML = "Character deletion successful.";
+					}
+					else {
+						DeleteCharacterResultText.style.color = RED;
+						DeleteCharacterResultText.innerHTML = "There is a problem deleting the character.";
 					}
 				}
 			});

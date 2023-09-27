@@ -3,6 +3,8 @@ class Account {
     username;
     hash;
     email;
+
+    characters = [];
     characterMap = new Map();
 
     constructor(username, hash, email) {
@@ -11,8 +13,15 @@ class Account {
         this.email = email;
     }
 
-    addCharacter(name, player) {
-        this.characterMap.set(name, player);
+    addCharacter(character) {
+        this.characters.push(character);
+        this.characterMap.set(character.name, character);
+    }
+
+    removeCharacter(character) {
+        let index = this.characters.indexOf(character);
+        this.characters.splice(index, 1);
+        this.characterMap.delete(character.name);
     }
 
     getCharacter(name) {
@@ -25,7 +34,7 @@ class Account {
             .serialize("username", this.username)
             .serialize("hash", this.hash)
             .serialize("email", this.email)
-            .serializeMap("characterMap", this.characterMap)
+            .serializeArray("characters", this.characters)
         .endObject();
     }
 
@@ -40,7 +49,11 @@ class Account {
             let email = reader.deserialize("email", "String");
 
             account = new Account(username, hash, email);
-            account.characterMap = reader.deserializeMap("characterMap", "String", "Character");
+
+            let characters = reader.deserializeArray("characters", "Character");
+            for(let character of characters) {
+                account.addCharacter(character);
+            }
         }
         else {
             throw(new Error("Unknown version number: " + version));

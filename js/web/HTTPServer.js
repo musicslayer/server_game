@@ -13,7 +13,7 @@ const HTML_CREATE_ACCOUNT = "html/create_account.html";
 const HTML_CREATE_CHARACTER = "html/create_character.html";
 const HTML_CHANGE_PASSWORD = "html/change_password.html";
 const HTML_CHANGE_EMAIL = "html/change_email.html";
-const HTML_TROUBLESHOOT_ACCOUNT = "html/troubleshoot_account.html";
+const HTML_ADVANCED_ACCOUNT_OPTIONS = "html/advanced_account_options.html";
 const HTML_GAME = "html/game.html";
 const HTML_IMAGE_CATALOG = "html/ImageCatalog.js";
 const HTML_UNZIP_STREAM = "html/UnzipStream.js";
@@ -77,8 +77,8 @@ class HTTPServer {
                         serveFile(res, "text/html", HTML_CHANGE_EMAIL);
                         break;
 
-                    case "/troubleshoot_account":
-                        serveFile(res, "text/html", HTML_TROUBLESHOOT_ACCOUNT);
+                    case "/advanced_account_options":
+                        serveFile(res, "text/html", HTML_ADVANCED_ACCOUNT_OPTIONS);
                         break;
 
                     case "/game":
