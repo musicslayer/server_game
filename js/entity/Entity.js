@@ -315,13 +315,6 @@ class Entity extends UID {
         this.doTeleport(newScreen, this.x, this.y);
     }
 
-    doMoveWorld(direction) {
-        let newWorld = this.screen.map.world.getWorldInDirection(direction);
-        let newMap = newWorld.getMapByID(this.screen.map.id);
-        let newScreen = newMap.getScreenByID(this.screen.x, this.screen.y);
-        this.doTeleport(newScreen, this.x, this.y);
-    }
-
     doAddToPurse(gold) {
         if(this.purse) {
             this.purse.addToPurse(gold);

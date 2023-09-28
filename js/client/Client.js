@@ -194,14 +194,6 @@ class Client {
         else if(inputs.includes("map_down")) {
             this.scheduleMoveTask(undefined, 0, "move_map", this.player, "down");
         }
-
-        // **** Move Worlds (only one will be executed)
-        if(inputs.includes("world_up")) {
-            this.scheduleMoveTask(undefined, 0, "move_world", this.player, "up");
-        }
-        else if(inputs.includes("world_down")) {
-            this.scheduleMoveTask(undefined, 0, "move_world", this.player, "down");
-        }
     }
 
     onControllerPress(buttons) {

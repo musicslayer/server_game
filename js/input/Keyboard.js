@@ -77,9 +77,6 @@ class Keyboard {
 
         this.inputMap.set(this._m, "map_up");
         this.inputMap.set(this._n, "map_down");
-
-        this.inputMap.set(this._b, "world_up");
-        this.inputMap.set(this._v, "world_down");
     }
 
     processKeyPress(keys) {

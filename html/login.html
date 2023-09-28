@@ -20,6 +20,16 @@
         <br/>
         
 		<a href="/advanced_account_options">Advanced account options.</a>
+        
+        <h2>Choose a Server</h2>
+        
+        <table id="ID_ServerTable">
+        </table>
+        
+        <h2>Choose a World</h2>
+        
+        <table id="ID_WorldTable">
+        </table>
 		
 		<h2>Login</h2>
 		
@@ -47,6 +57,9 @@
 		<script src="socket.io.min.js"></script>
 		
 		<script>
+            const ServerTable = document.querySelector('#ID_ServerTable');
+            const WorldTable = document.querySelector('#ID_WorldTable');
+        
 			const UsernameInput = document.querySelector('#ID_UsernameInput');
 			const PasswordInput = document.querySelector('#ID_PasswordInput');
 			
@@ -67,6 +80,53 @@
             window.addEventListener('load', async () => {
                 window.sessionStorage.clear();
                 connectSocket();
+                
+                // Populate server and world options.
+                let serverChecked = "origin";
+                let servers = ["origin"];
+                for(let server of servers) {
+                    let id = "ID_SERVER_" + server;
+                
+                    let newRow = document.createElement("tr");
+                    
+                    let newRadioButton = document.createElement("input");
+                    newRadioButton.id = id;
+                    newRadioButton.type = "radio";
+                    newRadioButton.name = "server";
+                    newRadioButton.value = server;
+                    newRadioButton.checked = server === serverChecked;
+                    
+                    let newLabel = document.createElement("label");
+                    newLabel.for = id;
+                    newLabel.innerText = server;
+                    
+                    newRow.appendChild(newRadioButton);
+                    newRow.appendChild(newLabel);
+                    ServerTable.appendChild(newRow);
+                }
+                
+                let worldChecked = "world0";
+                let worlds = ["world0"];
+                for(let world of worlds) {
+                    let id = "ID_WORLD_" + world;
+                
+                    let newRow = document.createElement("tr");
+                    
+                    let newRadioButton = document.createElement("input");
+                    newRadioButton.id = id;
+                    newRadioButton.type = "radio";
+                    newRadioButton.name = "world";
+                    newRadioButton.value = world;
+                    newRadioButton.checked = world === worldChecked;
+                    
+                    let newLabel = document.createElement("label");
+                    newLabel.for = id;
+                    newLabel.innerText = world;
+                    
+                    newRow.appendChild(newRadioButton);
+                    newRow.appendChild(newLabel);
+                    WorldTable.appendChild(newRow);
+                }
             });
             
             function connectSocket() {
@@ -143,9 +203,16 @@
                                 }
                                 else {
                                     newButton.innerText = characterEntry.name;
-                                    newButton.addEventListener('click', async () => {
+                                    newButton.addEventListener('click', () => {
                                         if(socket && isSocketConnected) {
-                                            await login(username, hash, characterEntry.name, "origin", "world0");
+                                            window.sessionStorage.setItem("isActive", true);
+                                            window.sessionStorage.setItem("username", username);
+                                            window.sessionStorage.setItem("hash", hash);
+                                            window.sessionStorage.setItem("characterName", characterEntry.name);
+                                            window.sessionStorage.setItem("serverName", getServerChoice());
+                                            window.sessionStorage.setItem("worldName", getWorldChoice());
+                                            
+                                            window.location.assign("/game");
                                         }
                                     });
                                 }
@@ -166,15 +233,12 @@
 				}
 			}
             
-            async function login(username, hash, characterName, serverName, worldName) {
-                window.sessionStorage.setItem("isActive", true);
-                window.sessionStorage.setItem("username", username);
-                window.sessionStorage.setItem("hash", hash);
-                window.sessionStorage.setItem("characterName", characterName);
-                window.sessionStorage.setItem("serverName", serverName);
-                window.sessionStorage.setItem("worldName", worldName);
-                
-                window.location.assign("/game");
+            function getServerChoice() {
+                return document.querySelector('input[name="server"]:checked').value
+            }
+            
+            function getWorldChoice() {
+                return document.querySelector('input[name="world"]:checked').value
             }
             
             function isValidText(str) {

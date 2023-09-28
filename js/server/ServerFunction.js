@@ -94,10 +94,6 @@ class ServerFunction {
             entity.doMoveStep(direction);
         });
 
-        map.set("move_world", (entity, direction) => {
-            entity.doMoveWorld(direction);
-        });
-
         map.set("regen", (entity) => {
             entity.doAddHealth(entity.healthRegen)
             entity.doAddMana(entity.manaRegen)

@@ -9,8 +9,8 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // TODO If Socket operations have isSuccess = false, attach an error string?
 // --- In some failing cases, we say one thing when the failure was actually caused by something else.
 
-// TODO Can we choose server/world that we login?
-// --- Eliminate world jumping key bindings if they still exist.
+// TODO When selecting server, in theory each server can have different worlds...
+// --- Check first server/world by default? Or remember last choice?
 
 async function init() {
     let appState = new AppState();

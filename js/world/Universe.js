@@ -57,12 +57,6 @@ class Universe {
         this.worldIDMap.set(world.id, world);
     }
 
-    getWorldInDirection(world, direction) {
-        // If the new world does not exist, return the original world so nothing changes.
-        let [, shiftY] = Util.getDirectionalShift(direction);
-        return this.getWorldByID(world.id - shiftY) ?? world; // Use opposite of shift for world position.
-    }
-
     getWorldByName(name) {
         return this.worldNameMap.get(name);
     }

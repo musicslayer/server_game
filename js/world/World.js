@@ -126,10 +126,6 @@ class World {
         return this.getMapByID(id); 
     }
 
-    getWorldInDirection(direction) {
-        return this.universe.getWorldInDirection(this, direction);
-    }
-
     serialize(writer) {
         writer.beginObject()
             .serialize("!V!", 1)
