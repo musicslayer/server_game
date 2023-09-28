@@ -3,12 +3,10 @@ const Server = require("./Server.js");
 class ServerManager {
     servers = [];
     serverMap = new Map();
-    serverPosMap = new Map();
 
     addServer(server) {
         this.servers.push(server);
         this.serverMap.set(server.name, server);
-        this.serverPosMap.set(server.id, server);
     }
 
     getServerByName(name) {

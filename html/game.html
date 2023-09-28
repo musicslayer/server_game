@@ -67,7 +67,6 @@
                 });
                 
                 socket.on("connect", (err) => {
-                    // Display the rest of the game...
                     isSocketConnected = true;
                     
                     // Login based on the values in the sessionStorage.
@@ -125,6 +124,7 @@
                         });
                     }
                     else {
+                        // TODO In reality, there may be any number of things wrong.
                         drawAlreadyConnectedScreen();
                     }
                 }

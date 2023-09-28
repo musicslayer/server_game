@@ -8,9 +8,9 @@ const WorkerManager = require("./worker/WorkerManager.js");
 
 // TODO If Socket operations have isSuccess = false, attach an error string?
 // --- In some failing cases, we say one thing when the failure was actually caused by something else.
+// --- Do we really need to keep checking if "isSocketConnected" everywhere?
 
-// TODO When selecting server, in theory each server can have different worlds...
-// --- Check first server/world by default? Or remember last choice?
+// TODO Can a world be too full of players?
 
 async function init() {
     let appState = new AppState();

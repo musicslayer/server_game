@@ -268,10 +268,9 @@ class SocketIOServer {
 			}
 		});
 
-		// TODO Rename "on_character_listing"?
-		socket.on("on_select_character", (username, hash, callback) => {
+		socket.on("on_login_account", (username, hash, callback) => {
 			try {
-				if(RateLimit.isRateLimited("select_character", ip)) {
+				if(RateLimit.isRateLimited("login_account", ip)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -304,6 +303,33 @@ class SocketIOServer {
 					return;
 				}
 
+				// Return to the client:
+				// - Information from when the account was last logged in.
+				// - All available servers and their worlds, not including dynamic worlds.
+				// - A list of character names and whether they are already logged in.
+				let accountData = {
+					lastServerName: account.lastServerName,
+					lastWorldName: account.lastWorldName,
+					lastCharacterName: account.lastCharacterName
+				};
+
+				let serverData = [];
+				for(let server of this.serverManager.servers) {
+					let worldData = [];
+					for(let world of server.universe.worlds) {
+						if(!world.isDynamic) {
+							worldData.push({
+								name: world.name
+							});
+						}
+					}
+
+					serverData.push({
+						name: server.name,
+						worldData: worldData
+					});
+				}
+
 				// Return to the client a list of character names and whether they are already logged in.
 				let characterData = [];
 				for(let characterName of account.characterMap.keys()) {
@@ -313,7 +339,12 @@ class SocketIOServer {
 					});
 				}
 
-				callback({"isSuccess": true, "characterData": characterData});
+				callback({
+					"isSuccess": true, 
+					"accountData": accountData,
+					"serverData": serverData,
+					"characterData": characterData
+				});
 			}
 			catch(err) {
 				console.error(err);
@@ -431,6 +462,11 @@ class SocketIOServer {
 				});
 
 				this.attachClientListeners(socket, client);
+
+				// Update the account's last values.
+				account.lastServerName = serverName;
+				account.lastWorldName = worldName;
+				account.lastCharacterName = characterName;
 
 				callback({"isSuccess": true});
 			}

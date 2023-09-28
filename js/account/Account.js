@@ -1,10 +1,13 @@
 class Account {
     isEnabled = true;
 
-    // The password is not stored directly, we only store a hash.
     username;
-    hash;
+    hash; // The password is not stored directly, we only store a hash.
     email;
+
+    lastServerName;
+    lastWorldName;
+    lastCharacterName;
 
     characters = [];
     characterMap = new Map();
@@ -37,6 +40,9 @@ class Account {
             .serialize("username", this.username)
             .serialize("hash", this.hash)
             .serialize("email", this.email)
+            .serialize("lastServerName", this.lastServerName)
+            .serialize("lastWorldName", this.lastWorldName)
+            .serialize("lastCharacterName", this.lastCharacterName)
             .serializeArray("characters", this.characters)
         .endObject();
     }
@@ -51,9 +57,15 @@ class Account {
             let username = reader.deserialize("username", "String");
             let hash = reader.deserialize("hash", "String");
             let email = reader.deserialize("email", "String");
+            let lastServerName = reader.deserialize("lastServerName", "String");
+            let lastWorldName = reader.deserialize("lastWorldName", "String");
+            let lastCharacterName = reader.deserialize("lastCharacterName", "String");
 
             account = new Account(username, hash, email);
             account.isEnabled = isEnabled;
+            account.lastServerName = lastServerName;
+            account.lastWorldName = lastWorldName;
+            account.lastCharacterName = lastCharacterName;
 
             let characters = reader.deserializeArray("characters", "Character");
             for(let character of characters) {

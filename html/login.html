@@ -20,16 +20,6 @@
         <br/>
         
 		<a href="/advanced_account_options">Advanced account options.</a>
-        
-        <h2>Choose a Server</h2>
-        
-        <table id="ID_ServerTable">
-        </table>
-        
-        <h2>Choose a World</h2>
-        
-        <table id="ID_WorldTable">
-        </table>
 		
 		<h2>Login</h2>
 		
@@ -51,15 +41,11 @@
 		
 		<p id="ID_LoginResultText" style='white-space: pre;'></p>
         
-        <table id="ID_CharacterTable">
-        </table>
+        <div id="ID_LoginDiv"></div>
 		
 		<script src="socket.io.min.js"></script>
 		
 		<script>
-            const ServerTable = document.querySelector('#ID_ServerTable');
-            const WorldTable = document.querySelector('#ID_WorldTable');
-        
 			const UsernameInput = document.querySelector('#ID_UsernameInput');
 			const PasswordInput = document.querySelector('#ID_PasswordInput');
 			
@@ -67,7 +53,10 @@
 			
 			const LoginResultText = document.querySelector('#ID_LoginResultText');
             
-            const CharacterTable = document.querySelector('#ID_CharacterTable');
+            const LoginDiv = document.querySelector('#ID_LoginDiv');
+            
+            //const ServerWorldTable = document.querySelector('#ID_ServerWorldTable');
+            //const CharacterTable = document.querySelector('#ID_CharacterTable');
 			
 			const BLACK = "#000000";
 			const RED = "#B00000";
@@ -80,53 +69,6 @@
             window.addEventListener('load', async () => {
                 window.sessionStorage.clear();
                 connectSocket();
-                
-                // Populate server and world options.
-                let serverChecked = "origin";
-                let servers = ["origin"];
-                for(let server of servers) {
-                    let id = "ID_SERVER_" + server;
-                
-                    let newRow = document.createElement("tr");
-                    
-                    let newRadioButton = document.createElement("input");
-                    newRadioButton.id = id;
-                    newRadioButton.type = "radio";
-                    newRadioButton.name = "server";
-                    newRadioButton.value = server;
-                    newRadioButton.checked = server === serverChecked;
-                    
-                    let newLabel = document.createElement("label");
-                    newLabel.for = id;
-                    newLabel.innerText = server;
-                    
-                    newRow.appendChild(newRadioButton);
-                    newRow.appendChild(newLabel);
-                    ServerTable.appendChild(newRow);
-                }
-                
-                let worldChecked = "world0";
-                let worlds = ["world0"];
-                for(let world of worlds) {
-                    let id = "ID_WORLD_" + world;
-                
-                    let newRow = document.createElement("tr");
-                    
-                    let newRadioButton = document.createElement("input");
-                    newRadioButton.id = id;
-                    newRadioButton.type = "radio";
-                    newRadioButton.name = "world";
-                    newRadioButton.value = world;
-                    newRadioButton.checked = world === worldChecked;
-                    
-                    let newLabel = document.createElement("label");
-                    newLabel.for = id;
-                    newLabel.innerText = world;
-                    
-                    newRow.appendChild(newRadioButton);
-                    newRow.appendChild(newLabel);
-                    WorldTable.appendChild(newRow);
-                }
             });
             
             function connectSocket() {
@@ -142,8 +84,7 @@
                     transports: ["websocket"]
                 });
                 
-                socket.on("connect", (err) => {
-                    // Display the rest of the game...
+                socket.on("connect", async (err) => {
                     isSocketConnected = true;
                 });
                 
@@ -153,23 +94,120 @@
                 });
             }
             
+            function populateServersAndWorlds(serverData, lastServerName, lastWorldName) {
+                let serverWorldTable = document.createElement("table");
+                
+                let newRow = document.createElement("tr");
+                
+                let newText = document.createElement("text");
+                newText.style.fontWeight = "bold";
+                newText.innerText = "Choose a world:"
+                
+                newRow.appendChild(newText);
+                serverWorldTable.appendChild(newRow);
+                
+                for(let serverEntry of serverData) {
+                    let serverName = serverEntry.name;
+                
+                    let newRow = document.createElement("tr");
+                    
+                    let newText = document.createElement("text");
+                    newText.style.fontWeight = "bold";
+                    newText.innerText = "Server: " + serverName;
+                    
+                    newRow.appendChild(newText);
+                    serverWorldTable.appendChild(newRow);
+                    
+                    for(let worldEntry of serverEntry.worldData) {
+                        let worldName = worldEntry.name;
+                        let id = "ID_WORLD_" + worldName;
+                    
+                        let newRow = document.createElement("tr");
+                        
+                        let newRadioButton = document.createElement("input");
+                        newRadioButton.id = id;
+                        newRadioButton.type = "radio";
+                        newRadioButton.name = "world";
+                        newRadioButton.value = [serverName, worldName].join(",");
+                        newRadioButton.checked = serverName === lastServerName && worldName === lastWorldName;
+                        
+                        let newLabel = document.createElement("label");
+                        newLabel.for = id;
+                        newLabel.innerText = worldName;
+                        
+                        newRow.appendChild(newRadioButton);
+                        newRow.appendChild(newLabel);
+                        serverWorldTable.appendChild(newRow);
+                    }
+                }
+                
+                LoginDiv.appendChild(serverWorldTable);
+            }
+            
+            function populateCharacters(characterData, lastCharacterName) {
+                let characterTable = document.createElement("table");
+                
+                let newRow = document.createElement("tr");
+                
+                let newText = document.createElement("text");
+                newText.style.fontWeight = "bold";
+                newText.innerText = "Choose a character:"
+                
+                newRow.appendChild(newText);
+                characterTable.appendChild(newRow);
+                
+                for(let characterEntry of characterData) {
+                    let characterName = characterEntry.name;
+                    let id = "ID_CHARACTER_" + characterName;
+                
+                    let newRow = document.createElement("tr");
+                    
+                    let newRadioButton = document.createElement("input");
+                    newRadioButton.id = id;
+                    newRadioButton.type = "radio";
+                    newRadioButton.name = "character";
+                    newRadioButton.value = characterName;
+                    newRadioButton.checked = characterName === lastCharacterName;
+                    
+                    /*
+                        if(characterData.length === 0) Say there are no characters
+                    */
+
+                    /*                    
+                    if(characterEntry.isLoggedIn) {
+                        newButton.innerText = characterEntry.name + " (Already Logged In)";
+                        newButton.disabled = true;
+                    }
+                    */
+                    
+                    let newLabel = document.createElement("label");
+                    newLabel.for = id;
+                    newLabel.innerText = characterName;
+                    
+                    newRow.appendChild(newRadioButton);
+                    newRow.appendChild(newLabel);
+                    characterTable.appendChild(newRow);
+                }
+                
+                LoginDiv.appendChild(characterTable);
+            }
+            
 			LoginButton.addEventListener('click', async () => {
                 if(socket && isSocketConnected) {
-                    await characterSelect();
+                    await reactLogin();
                 }
 			});
 			
             // Allows the user to login with the ENTER key.
 			async function inputCallback(event) {
 				if(socket && isSocketConnected && event && event.keyCode == 13) {
-					await characterSelect()
+					await reactLogin()
 				}
 			}
 			
-			async function characterSelect() {
-                // Clear the table that shows available characters.
-                CharacterTable.replaceChildren();
-                
+			async function reactLogin() {
+                LoginDiv.replaceChildren();
+            
 				let username = UsernameInput.value;
 				let password = PasswordInput.value;
                 
@@ -183,43 +221,52 @@
 				}
 				else {
                     let hash = await createHash(username, password);
-					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_select_character", username, hash);
+					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login_account", username, hash);
                     
                     if(R.isSuccess) {
+                        let accountData = R.accountData;
+                        let serverData = R.serverData;
                         let characterData = R.characterData;
+                        
                         if(characterData.length > 0) {
                             LoginResultText.style.color = BLACK;
-                            LoginResultText.innerHTML = "Choose a character to login as:";
-                    
-                            // Display each name along with a button that can be clicked to login if they are not already.
-                            for(let characterEntry of characterData) {
-                                let newRow = document.createElement("tr");
+                            LoginResultText.innerHTML = "Login successful.";
+                            
+                            populateServersAndWorlds(serverData, accountData.lastServerName, accountData.lastWorldName);
+                            LoginDiv.appendChild(document.createElement("br"));
+                            populateCharacters(characterData, accountData.lastCharacterName);
+                            LoginDiv.appendChild(document.createElement("br"));
+                            
+                            let newText = document.createElement("text");
+                            
+                            let newButton = document.createElement("button");
+                            newButton.innerText = "Enter";
+                            newButton.addEventListener('click', () => {
+                                //if(socket && isSocketConnected) {
+                                let characterName = getCharacterChoice();
+                                let [serverName, worldName] = getServerWorldChoice();
                                 
-                                let newButton = document.createElement("button");
-                                
-                                if(characterEntry.isLoggedIn) {
-                                    newButton.innerText = characterEntry.name + " (Already Logged In)";
-                                    newButton.disabled = true;
+                                if(characterName !== undefined && serverName !== undefined && worldName !== undefined) {
+                                    window.sessionStorage.setItem("isActive", true);
+                                    window.sessionStorage.setItem("username", username);
+                                    window.sessionStorage.setItem("hash", hash);
+                                    window.sessionStorage.setItem("characterName", characterName);
+                                    window.sessionStorage.setItem("serverName", serverName);
+                                    window.sessionStorage.setItem("worldName", worldName);
+                                    
+                                    window.location.assign("/game");
                                 }
                                 else {
-                                    newButton.innerText = characterEntry.name;
-                                    newButton.addEventListener('click', () => {
-                                        if(socket && isSocketConnected) {
-                                            window.sessionStorage.setItem("isActive", true);
-                                            window.sessionStorage.setItem("username", username);
-                                            window.sessionStorage.setItem("hash", hash);
-                                            window.sessionStorage.setItem("characterName", characterEntry.name);
-                                            window.sessionStorage.setItem("serverName", getServerChoice());
-                                            window.sessionStorage.setItem("worldName", getWorldChoice());
-                                            
-                                            window.location.assign("/game");
-                                        }
-                                    });
+                                    newText.style.color = RED;
+                                    newText.innerText = "The world and character must both be selected."
                                 }
                                 
-                                newRow.appendChild(newButton);
-                                CharacterTable.appendChild(newRow);
-                            }
+                                //}
+                            });
+                            
+                            LoginDiv.appendChild(newButton);
+                            LoginDiv.appendChild(document.createElement("br"));
+                            LoginDiv.appendChild(newText);
                         }
                         else {
                             LoginResultText.style.color = RED;
@@ -233,12 +280,18 @@
 				}
 			}
             
-            function getServerChoice() {
-                return document.querySelector('input[name="server"]:checked').value
+            function getServerWorldChoice() {
+                let query = document.querySelector('input[name="world"]:checked');
+                if(query === null) {
+                    return [undefined, undefined];
+                }
+                else {
+                    return query.value.split(",");
+                }
             }
             
-            function getWorldChoice() {
-                return document.querySelector('input[name="world"]:checked').value
+            function getCharacterChoice() {
+                return document.querySelector('input[name="character"]:checked')?.value;
             }
             
             function isValidText(str) {

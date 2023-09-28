@@ -56,7 +56,7 @@ class Constants {
             "delete_account": 1000,
             "create_character": 1000,
             "delete_character": 1000,
-            "select_character": 1000,
+            "login_account": 1000,
             "login_character": 1000,
             "change_password": 1000,
             "change_email": 1000,
