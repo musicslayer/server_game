@@ -5,20 +5,22 @@
     </head>
 
     <body>
-        <canvas id="canvas" style="border:10px solid"></canvas>
-        
+        <p id="ID_GameResultText" style='white-space: pre;'></p>
+        <canvas id="canvas" style="border:10px solid;display:none"></canvas>
         <button id="ID_LogoutButton">Log Out</button><br/>
-        
-        <text style="white-space: pre;" id="devText"></text>
+        <text id="ID_DevText" style="white-space: pre;"></text>
         
         <script src="socket.io.min.js"></script>
         
         <script type="module">
             import { ImageCatalog } from "./ImageCatalog.js";
             
-            const devText = document.getElementById("devText");
-            
+            const GameResultText = document.querySelector('#ID_GameResultText');
             const LogoutButton = document.querySelector('#ID_LogoutButton');
+            const DevText = document.getElementById("ID_DevText");
+            
+            const BLACK = "#000000";
+			const RED = "#B00000";
             
             const SOCKET_TIMEOUT = 10000;
             const INPUT_FPS_RATE = 60; // times per second inputs are queried
@@ -66,7 +68,7 @@
                     transports: ["websocket"]
                 });
                 
-                socket.on("connect", (err) => {
+                socket.on("connect", async (err) => {
                     isSocketConnected = true;
                     
                     // Login based on the values in the sessionStorage.
@@ -77,10 +79,34 @@
                         let serverName = window.sessionStorage.getItem("serverName");
                         let worldName = window.sessionStorage.getItem("worldName");
                         
-                        reactLogin(username, hash, characterName, serverName, worldName);
+                        let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login_character", username, hash, characterName, serverName, worldName);
+                        if(R.isSuccess) {
+                            canvas.style.display = "inline";
+                            GameResultText.style.display = "inline";
+                            GameResultText.style.color = BLACK;
+                            GameResultText.innerHTML = "";
+                            
+                            startInterval();
+                            startDevInterval();
+                            requestAnimationFrame(drawClient);
+                            
+                            isSocketLoggedIn = true;
+                            
+                            socket.on("disconnect", (err) => {
+                                isSocketLoggedIn = false;
+                                
+                                clearInterval(interval);
+                                clearInterval(intervalDev);
+                            });
+                        }
+                        else {
+                            GameResultText.style.color = RED;
+                            GameResultText.innerHTML = R.errString;
+                        }
                     }
                     else {
-                        drawNoCharacterScreen();
+                        GameResultText.style.color = RED;
+                        GameResultText.innerHTML = "You have not logged in as a character.";
                     }
                 });
                 
@@ -106,33 +132,9 @@
 				return "";
 			}
             
-            async function reactLogin(username, hash, characterName, serverName, worldName) {
-                if(socket && isSocketConnected) {
-                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login_character", username, hash, characterName, serverName, worldName);
-                    if(R.isSuccess) {
-                        startInterval();
-                        startDevInterval();
-                        requestAnimationFrame(drawClient);
-                        
-                        isSocketLoggedIn = true;
-                        
-                        socket.on("disconnect", (err) => {
-                            isSocketLoggedIn = false;
-                            
-                            clearInterval(interval);
-                            clearInterval(intervalDev);
-                        });
-                    }
-                    else {
-                        // TODO In reality, there may be any number of things wrong.
-                        //R.errString
-                        drawAlreadyConnectedScreen();
-                    }
-                }
-            }
-            
             window.addEventListener('load', async () => {
-                drawLoadingScreen();
+                GameResultText.style.color = BLACK;
+                GameResultText.innerHTML = "Loading...";
             
                 imageCatalog = new ImageCatalog();
                 await imageCatalog.createImageCatalog();
@@ -447,7 +449,7 @@
                         let screenInfo = devData.info.screen;
                         let playerInfo = devData.info.player;
                         
-                        devText.innerHTML = "Current Tick: " + currentTick 
+                        DevText.innerHTML = "Current Tick: " + currentTick 
                         + "\nServer: " + serverInfo.id + " " + serverInfo.name
                         + "\nWorld: " + worldInfo.id + " " + worldInfo.name
                         + "\nMap: " + mapInfo.id + " " + mapInfo.name
@@ -488,45 +490,6 @@
                         requestAnimationFrame(drawClient);
                     }
                 }
-            }
-            
-            function drawLoadingScreen() {
-                let canvasBuffer = document.createElement('canvas');
-                canvasBuffer.width = canvas_width;
-                canvasBuffer.height = canvas_height;
-                
-                let ctxBuffer = canvasBuffer.getContext("2d");
-                ctxBuffer.font = "30px Arial";
-                ctxBuffer.fillText("Loading...", 5, 25);
-                
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(canvasBuffer, 0, 0);
-            }
-            
-            function drawNoCharacterScreen() {
-                let canvasBuffer = document.createElement('canvas');
-                canvasBuffer.width = canvas_width;
-                canvasBuffer.height = canvas_height;
-                
-                let ctxBuffer = canvasBuffer.getContext("2d");
-                ctxBuffer.font = "30px Arial";
-                ctxBuffer.fillText("You have not logged in as a character.", 5, 25);
-                
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(canvasBuffer, 0, 0);
-            }
-            
-            function drawAlreadyConnectedScreen() {
-                let canvasBuffer = document.createElement('canvas');
-                canvasBuffer.width = canvas_width;
-                canvasBuffer.height = canvas_height;
-                
-                let ctxBuffer = canvasBuffer.getContext("2d");
-                ctxBuffer.font = "30px Arial";
-                ctxBuffer.fillText("This character is already logged in.", 5, 25);
-                
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(canvasBuffer, 0, 0);
             }
             
             function drawScreen(ctxBuffer, animationFrame, tiles, entities, inventory, purse, info) {
