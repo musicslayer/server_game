@@ -54,9 +54,6 @@
 			const LoginResultText = document.querySelector('#ID_LoginResultText');
             
             const LoginDiv = document.querySelector('#ID_LoginDiv');
-            
-            //const ServerWorldTable = document.querySelector('#ID_ServerWorldTable');
-            //const CharacterTable = document.querySelector('#ID_CharacterTable');
 			
 			const BLACK = "#000000";
 			const RED = "#B00000";
@@ -171,17 +168,6 @@
                     newRadioButton.value = characterName;
                     newRadioButton.checked = characterName === lastCharacterName;
                     
-                    /*
-                        if(characterData.length === 0) Say there are no characters
-                    */
-
-                    /*                    
-                    if(characterEntry.isLoggedIn) {
-                        newButton.innerText = characterEntry.name + " (Already Logged In)";
-                        newButton.disabled = true;
-                    }
-                    */
-                    
                     let newLabel = document.createElement("label");
                     newLabel.for = id;
                     newLabel.innerText = characterName;
@@ -277,7 +263,7 @@
                     }
                     else {
                         LoginResultText.style.color = RED;
-                        LoginResultText.innerHTML = "This account does not exist.";
+                        LoginResultText.innerHTML = R.errString;
                     }
 				}
 			}

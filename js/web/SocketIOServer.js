@@ -94,8 +94,10 @@ class SocketIOServer {
 
 				let account = this.accountManager.getAccount(username);
 				if(account) {
-					// The account with this username already exists.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "An account with this username already exists."
+					});
 					return;
 				}
 
@@ -129,20 +131,26 @@ class SocketIOServer {
 
 				let account = this.accountManager.getAccount(username);
 				if(!account) {
-					// The account with this username does not exist.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "An account with this username does not exist."
+					});
 					return;
 				}
 
 				if(account.hash !== hash) {
-					// The account exists but this hash is wrong.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The password is incorrect."
+					});
 					return;
 				}
 
 				if(account.email !== email) {
-					// The account exists but this email is wrong.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The email is incorrect."
+					});
 					return;
 				}
 
@@ -175,31 +183,42 @@ class SocketIOServer {
 
 				let account = this.accountManager.getAccount(username);
 				if(!account) {
-					// The account with this username does not exist.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "An account with this username does not exist."
+					});
 					return;
 				}
 
 				if(account.hash !== hash) {
-					// The account exists but this hash is wrong.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The password is incorrect."
+					});
 					return;
 				}
 
 				if(!account.isEnabled) {
-					// The account is disabled.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The account is disabled."
+					});
 					return;
 				}
 
 				if(account.getCharacter(characterName)) {
-					// The character already exists.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "A character with this name already exists." // TODO Mention "on this account"
+					});
 					return;
 				}
 
 				if(!Reflection.isSubclass(characterClass, "Player")) {
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The character class is invalid."
+					});
 					return;
 				}
 
@@ -233,27 +252,35 @@ class SocketIOServer {
 
 				let account = this.accountManager.getAccount(username);
 				if(!account) {
-					// The account with this username does not exist.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "An account with this username does not exist."
+					});
 					return;
 				}
 
 				if(account.hash !== hash) {
-					// The account exists but this hash is wrong.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The password is incorrect."
+					});
 					return;
 				}
 
 				if(account.email !== email) {
-					// The account exists but this email is wrong.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The email is incorrect."
+					});
 					return;
 				}
 
 				let character = account.getCharacter(characterName);
 				if(!character) {
-					// The character does not exist.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "A character with this name does not exist."
+					});
 					return;
 				}
 
@@ -286,20 +313,26 @@ class SocketIOServer {
 
 				let account = this.accountManager.getAccount(username);
 				if(!account) {
-					// The account with this username does not exist.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "An account with this username does not exist."
+					});
 					return;
 				}
 
 				if(account.hash !== hash) {
-					// The account exists but this hash is wrong.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The password is incorrect."
+					});
 					return;
 				}
 
 				if(!account.isEnabled) {
-					// The account is disabled.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The account is disabled."
+					});
 					return;
 				}
 
@@ -372,46 +405,68 @@ class SocketIOServer {
 
 				let account = this.accountManager.getAccount(username);
 				if(!account) {
-					// The account with this username does not exist.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "An account with this username does not exist."
+					});
 					return;
 				}
 
 				if(account.hash !== hash) {
-					// The account exists but this hash is wrong.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The password is incorrect."
+					});
 					return;
 				}
 
 				if(!account.isEnabled) {
-					// The account is disabled.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The account is disabled."
+					});
 					return;
 				}
 
 				let character = account.getCharacter(characterName);
 				if(!character) {
-					// The character does not exist.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "A character with this name does not exist."
+					});
 					return;
 				}
 
 				if(this.clientManager.getClient(username, characterName)) {
-					// The character on this account is already logged in.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The character is already logged in."
+					});
 					return;
 				}
 
 				let server = this.serverManager.getServerByName(serverName);
-				let world = server?.universe.getWorldByName(worldName);
+				if(!server) {
+					callback({
+						"isSuccess": false,
+						"errString": "The server does not exist."
+					});
+					return;
+				}
+
+				let world = server.universe.getWorldByName(worldName);
 				if(!world) {
-					// The server or world does not exist.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The world does not exist."
+					});
 					return;
 				}
 				if(world.isFull()) {
-					// The world is full.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The world is full."
+					});
 					return;
 				}
 
@@ -506,20 +561,26 @@ class SocketIOServer {
 
 				let account = this.accountManager.getAccount(username);
 				if(!account) {
-					// The account with this username does not exist.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "An account with this username does not exist."
+					});
 					return;
 				}
 
 				if(account.email !== email) {
-					// The account exists but this email is wrong.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The email is incorrect."
+					});
 					return;
 				}
 
 				if(account.hash === newHash) {
-					// The new hash is the same as the old hash.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The new password is the same as the old password."
+					});
 					return;
 				}
 
@@ -552,26 +613,34 @@ class SocketIOServer {
 
 				let account = this.accountManager.getAccount(username);
 				if(!account) {
-					// The account with this username does not exist.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "An account with this username does not exist."
+					});
 					return;
 				}
 
 				if(account.hash !== hash) {
-					// The account exists but this hash is wrong.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The password is incorrect."
+					});
 					return;
 				}
 
 				if(account.email !== currentEmail) {
-					// The account exists but this email is wrong.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The email is incorrect."
+					});
 					return;
 				}
 
 				if(currentEmail === newEmail) {
-					// The new email is the same as the old email.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The new email is the same as the old email."
+					});
 					return;
 				}
 
@@ -604,20 +673,26 @@ class SocketIOServer {
 
 				let account = this.accountManager.getAccount(username);
 				if(!account) {
-					// The account with this username does not exist.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "An account with this username does not exist."
+					});
 					return;
 				}
 
 				if(account.hash !== hash) {
-					// The account exists but this hash is wrong.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The password is incorrect."
+					});
 					return;
 				}
 
 				if(account.email !== email) {
-					// The account exists but this email is wrong.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The email is incorrect."
+					});
 					return;
 				}
 
@@ -653,20 +728,26 @@ class SocketIOServer {
 
 				let account = this.accountManager.getAccount(username);
 				if(!account) {
-					// The account with this username does not exist.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "An account with this username does not exist."
+					});
 					return;
 				}
 
 				if(account.hash !== hash) {
-					// The account exists but this hash is wrong.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The password is incorrect."
+					});
 					return;
 				}
 
 				if(account.email !== email) {
-					// The account exists but this email is wrong.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The email is incorrect."
+					});
 					return;
 				}
 
@@ -699,20 +780,26 @@ class SocketIOServer {
 
 				let account = this.accountManager.getAccount(username);
 				if(!account) {
-					// The account with this username does not exist.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "An account with this username does not exist."
+					});
 					return;
 				}
 
 				if(account.hash !== hash) {
-					// The account exists but this hash is wrong.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The password is incorrect."
+					});
 					return;
 				}
 
 				if(account.email !== email) {
-					// The account exists but this email is wrong.
-					callback({"isSuccess": false});
+					callback({
+						"isSuccess": false,
+						"errString": "The email is incorrect."
+					});
 					return;
 				}
 

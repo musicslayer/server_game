@@ -6,9 +6,7 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- Add in logging calls. This requires more storage space.
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
-// TODO If Socket operations have isSuccess = false, attach an error string?
-// --- In some failing cases, we say one thing when the failure was actually caused by something else.
-// --- Do we really need to keep checking if "isSocketConnected" everywhere?
+// TODO Do we really need to keep checking if "isSocketConnected" everywhere?
 
 async function init() {
     let appState = new AppState();
