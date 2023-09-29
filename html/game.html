@@ -464,7 +464,7 @@
             async function queryServerAfterLogIn(eventName, ...args) {
                 let response;
                 
-                if(socket && isSocketLoggedIn) {
+                if(socket && isSocketConnected && isSocketLoggedIn) {
                     response = await socket.timeout(SOCKET_TIMEOUT).emitWithAck(eventName, ...args);
                 }
                 else {
