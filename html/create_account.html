@@ -92,10 +92,6 @@
             }
 			
 			CreateAccountButton.addEventListener('click', async () => {
-                if(!isSocketConnected) {
-                    return;
-                }
-			
 				let username = UsernameInput.value;
 				let password = PasswordInput.value;
 				let confirmPassword = ConfirmPasswordInput.value;
@@ -122,7 +118,7 @@
 					CreateAccountResultText.innerHTML = "Please wait...";
                     
                     let hash = await createHash(username, password);
-                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_create_account", username, hash, email);
+                    let R = await queryServer("on_create_account", username, hash, email);
 					if(R.isSuccess) {
 						CreateAccountResultText.style.color = BLACK;
 						CreateAccountResultText.innerHTML = "Account creation successful.";
@@ -165,6 +161,22 @@
                 let hashArray = Array.from(new Uint8Array(hash));
                 let hashString = hashArray.map((item) => item.toString(16).padStart(2, "0")).join("");
                 return hashString;
+            }
+            
+            async function queryServer(eventName, ...args) {
+                let response;
+                
+                if(socket && isSocketConnected) {
+                    response = await socket.timeout(SOCKET_TIMEOUT).emitWithAck(eventName, ...args);
+                }
+                else {
+                    response = {
+                        "isSuccess": false,
+						"errString": "Unable to connect to the server."
+                    }
+                }
+                
+                return response;
             }
 		</script>
 	</body>

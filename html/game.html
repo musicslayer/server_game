@@ -43,7 +43,7 @@
             
             const ctx = canvas.getContext("2d");
             
-            
+            let inputsEnabled = true;
             
             let imageCatalog;
             
@@ -79,7 +79,7 @@
                         let serverName = window.sessionStorage.getItem("serverName");
                         let worldName = window.sessionStorage.getItem("worldName");
                         
-                        let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login_character", username, hash, characterName, serverName, worldName);
+                        let R = await queryServer("on_login_character", username, hash, characterName, serverName, worldName);
                         if(R.isSuccess) {
                             canvas.style.display = "inline";
                             GameResultText.style.display = "inline";
@@ -144,7 +144,7 @@
             
             LogoutButton.addEventListener('click', () => {
                 socket.disconnect(true);
-                isSocketConnected = false;
+                isSocketConnected = false; // TODO Do we need this?
             });
             
             canvas.addEventListener("contextmenu", function (e){
@@ -257,10 +257,8 @@
             let isKeyPressed = {};
             
             document.onkeydown = (evt) => {
-                if(inputsEnabled) {
-                    evt.preventDefault();
-                    isKeyPressed[evt.keyCode] = true;
-                }
+                evt.preventDefault();
+                isKeyPressed[evt.keyCode] = true;
             }
             
             document.onkeyup = (evt) => {
@@ -337,8 +335,6 @@
                 }
             }
             
-            let inputsEnabled = true;
-            
             window.addEventListener('blur', function (e) {
                 inputsEnabled = false;
                 isKeyPressed = {};
@@ -349,33 +345,23 @@
             });
             
             async function reactControllerPress(buttons) {
-                if(socket && isSocketLoggedIn && inputsEnabled) {
-                    await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_controller_press", buttons);
-                }
+                await queryServerAfterLogIn("on_controller_press", buttons);
             }
             
             async function reactControllerSticks(axes) {
-                if(socket && isSocketLoggedIn && inputsEnabled) {
-                    await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_controller_sticks", axes);
-                }
+                await queryServerAfterLogIn("on_controller_sticks", axes);
             }
 
             async function reactKeyPress(keys) {
-                if(socket && isSocketLoggedIn && inputsEnabled) {
-                    await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_key_press", keys);
-                }
+                await queryServerAfterLogIn("on_key_press", keys);
             }
             
             async function reactButtonClick(button, location, info) {
-                if(socket && isSocketLoggedIn && inputsEnabled) {
-                    await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_mouse_click", button, location, info);
-                }
+                await queryServerAfterLogIn("on_mouse_click", button, location, info);
             }
             
             async function reactButtonDrag(button, location1, info1, location2, info2) {
-                if(socket && isSocketLoggedIn && inputsEnabled) {
-                    await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_mouse_drag", button, location1, info1, location2, info2);
-                }
+                await queryServerAfterLogIn("on_mouse_drag", button, location1, info1, location2, info2);
             }
             
             function isScreen(x, y) {
@@ -424,9 +410,11 @@
             function startInterval() {
                 // Continuously check for client inputs to send to the server.
                 let interval = setInterval(() => {
-                    checkKeyPress();
-                    checkControllerPress();
-                    checkControllerSticks();
+                    if(inputsEnabled) {
+                        checkKeyPress();
+                        checkControllerPress();
+                        checkControllerSticks();
+                    }
                 }, 1000 / INPUT_FPS_RATE);
             }
             
@@ -437,26 +425,56 @@
             }
             
             async function checkDevInfo() {
-                if(socket && isSocketLoggedIn) {
-                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("get_dev_data");
-                    if(R.isSuccess) {
-                        let devData = R.devData;
-                        
-                        let currentTick = Math.floor(Number(devData.info.currentTick) / 60);
-                        let serverInfo = devData.info.server;
-                        let worldInfo = devData.info.world;
-                        let mapInfo = devData.info.map;
-                        let screenInfo = devData.info.screen;
-                        let playerInfo = devData.info.player;
-                        
-                        DevText.innerHTML = "Current Tick: " + currentTick 
-                        + "\nServer: " + serverInfo.id + " " + serverInfo.name
-                        + "\nWorld: " + worldInfo.id + " " + worldInfo.name
-                        + "\nMap: " + mapInfo.id + " " + mapInfo.name
-                        + "\nScreen: " + "(" + screenInfo.x + "," + screenInfo.y + ") " + screenInfo.name
-                        + "\nPlayer: " + "(" + playerInfo.x + "," + playerInfo.y + ")";
+                let R = await queryServerAfterLogIn("get_dev_data");
+                if(R.isSuccess) {
+                    let devData = R.devData;
+                    
+                    let currentTick = Math.floor(Number(devData.info.currentTick) / 60);
+                    let serverInfo = devData.info.server;
+                    let worldInfo = devData.info.world;
+                    let mapInfo = devData.info.map;
+                    let screenInfo = devData.info.screen;
+                    let playerInfo = devData.info.player;
+                    
+                    DevText.innerHTML = "Current Tick: " + currentTick 
+                    + "\nServer: " + serverInfo.id + " " + serverInfo.name
+                    + "\nWorld: " + worldInfo.id + " " + worldInfo.name
+                    + "\nMap: " + mapInfo.id + " " + mapInfo.name
+                    + "\nScreen: " + "(" + screenInfo.x + "," + screenInfo.y + ") " + screenInfo.name
+                    + "\nPlayer: " + "(" + playerInfo.x + "," + playerInfo.y + ")";
+                }
+            }
+            
+            async function queryServer(eventName, ...args) {
+                let response;
+                
+                if(socket && isSocketConnected) {
+                    response = await socket.timeout(SOCKET_TIMEOUT).emitWithAck(eventName, ...args);
+                }
+                else {
+                    response = {
+                        "isSuccess": false,
+						"errString": "Unable to connect to the server."
                     }
                 }
+                
+                return response;
+            }
+            
+            async function queryServerAfterLogIn(eventName, ...args) {
+                let response;
+                
+                if(socket && isSocketLoggedIn) {
+                    response = await socket.timeout(SOCKET_TIMEOUT).emitWithAck(eventName, ...args);
+                }
+                else {
+                    response = {
+                        "isSuccess": false,
+						"errString": "Unable to connect to the server."
+                    }
+                }
+                
+                return response;
             }
             
             
@@ -464,31 +482,29 @@
             
             
             async function drawClient(time) {
-                if(socket && isSocketLoggedIn) {
-                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("get_client_data");
-                    if(R.isSuccess) {
-                        let clientData = R.clientData;
+                let R = await queryServerAfterLogIn("get_client_data");
+                if(R.isSuccess) {
+                    let clientData = R.clientData;
+                
+                    let canvasBuffer = document.createElement('canvas');
+                    canvasBuffer.width = canvas_width;
+                    canvasBuffer.height = canvas_height;
                     
-                        let canvasBuffer = document.createElement('canvas');
-                        canvasBuffer.width = canvas_width;
-                        canvasBuffer.height = canvas_height;
-                        
-                        let ctxBuffer = canvasBuffer.getContext("2d");
-                        
-                        if(canvas_showGrid) {
-                            drawScreenGrid(ctxBuffer);
-                            drawInventoryGrid(ctxBuffer);
-                        }
-                        
-                        let animationFrame = Math.floor(ANIMATION_FRAMES * time / (1000 * ANIMATION_TIME)) % ANIMATION_FRAMES;
-                        drawScreen(ctxBuffer, animationFrame, clientData.tiles, clientData.entities, clientData.inventory, clientData.purse, clientData.info);
-                        
-                        // Clear current screen and draw new screen quickly to prevent flickering.
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        ctx.drawImage(canvasBuffer, 0, 0);
-                        
-                        requestAnimationFrame(drawClient);
+                    let ctxBuffer = canvasBuffer.getContext("2d");
+                    
+                    if(canvas_showGrid) {
+                        drawScreenGrid(ctxBuffer);
+                        drawInventoryGrid(ctxBuffer);
                     }
+                    
+                    let animationFrame = Math.floor(ANIMATION_FRAMES * time / (1000 * ANIMATION_TIME)) % ANIMATION_FRAMES;
+                    drawScreen(ctxBuffer, animationFrame, clientData.tiles, clientData.entities, clientData.inventory, clientData.purse, clientData.info);
+                    
+                    // Clear current screen and draw new screen quickly to prevent flickering.
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(canvasBuffer, 0, 0);
+                    
+                    requestAnimationFrame(drawClient);
                 }
             }
             

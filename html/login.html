@@ -72,7 +72,7 @@
                 if(socket) {
                     socket.disconnect(true);
                     
-                    isSocketConnected = false;
+                    isSocketConnected = false; // TODO Do we need this?
                 }
                 
                 socket = io({
@@ -181,14 +181,12 @@
             }
             
 			LoginButton.addEventListener('click', async () => {
-                if(socket && isSocketConnected) {
-                    await reactLogin();
-                }
+                await reactLogin();
 			});
 			
             // Allows the user to login with the ENTER key.
 			async function inputCallback(event) {
-				if(socket && isSocketConnected && event && event.keyCode == 13) {
+				if(event && event.keyCode == 13) {
 					await reactLogin()
 				}
 			}
@@ -209,7 +207,7 @@
 				}
 				else {
                     let hash = await createHash(username, password);
-					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_login_account", username, hash);
+                    let R = await queryServer("on_login_account", username, hash);
                     
                     if(R.isSuccess) {
                         let accountData = R.accountData;
@@ -230,7 +228,6 @@
                             let newButton = document.createElement("button");
                             newButton.innerText = "Enter";
                             newButton.addEventListener('click', () => {
-                                //if(socket && isSocketConnected) {
                                 let characterName = getCharacterChoice();
                                 let [serverName, worldName] = getServerWorldChoice();
                                 
@@ -248,8 +245,6 @@
                                     newText.style.color = RED;
                                     newText.innerText = "The world and character must both be selected."
                                 }
-                                
-                                //}
                             });
                             
                             LoginDiv.appendChild(newButton);
@@ -304,6 +299,22 @@
                 let hashArray = Array.from(new Uint8Array(hash));
                 let hashString = hashArray.map((item) => item.toString(16).padStart(2, "0")).join("");
                 return hashString;
+            }
+            
+            async function queryServer(eventName, ...args) {
+                let response;
+                
+                if(socket && isSocketConnected) {
+                    response = await socket.timeout(SOCKET_TIMEOUT).emitWithAck(eventName, ...args);
+                }
+                else {
+                    response = {
+                        "isSuccess": false,
+						"errString": "Unable to connect to the server."
+                    }
+                }
+                
+                return response;
             }
 		</script>
 	</body>

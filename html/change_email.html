@@ -115,7 +115,7 @@
 				}
 				else {
                     let hash = await createHash(username, password);
-					let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_change_email", username, hash, currentEmail, newEmail);
+                    let R = await queryServer("on_change_email", username, hash, currentEmail, newEmail);
 					if(R.isSuccess) {
 						ChangeEmailResultText.style.color = BLACK;
                         ChangeEmailResultText.innerHTML = "Email change successful.";
@@ -158,6 +158,22 @@
                 let hashArray = Array.from(new Uint8Array(hash));
                 let hashString = hashArray.map((item) => item.toString(16).padStart(2, "0")).join("");
                 return hashString;
+            }
+            
+            async function queryServer(eventName, ...args) {
+                let response;
+                
+                if(socket && isSocketConnected) {
+                    response = await socket.timeout(SOCKET_TIMEOUT).emitWithAck(eventName, ...args);
+                }
+                else {
+                    response = {
+                        "isSuccess": false,
+						"errString": "Unable to connect to the server."
+                    }
+                }
+                
+                return response;
             }
 		</script>
 	</body>

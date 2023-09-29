@@ -97,10 +97,6 @@
             }
 			
 			CreateCharacterButton.addEventListener('click', async () => {
-                if(!isSocketConnected) {
-                    return;
-                }
-			
 				let username = UsernameInput.value;
 				let password = PasswordInput.value;
                 let characterName = CharacterNameInput.value;
@@ -123,7 +119,7 @@
 					CreateCharacterResultText.innerHTML = "Please wait...";
                     
                     let hash = await createHash(username, password);
-                    let R = await socket.timeout(SOCKET_TIMEOUT).emitWithAck("on_create_character", username, hash, characterName, characterClass);
+                    let R = await queryServer("on_create_character", username, hash, characterName, characterClass);
 					if(R.isSuccess) {
 						CreateCharacterResultText.style.color = BLACK;
 						CreateCharacterResultText.innerHTML = "Character creation successful.";
@@ -181,6 +177,22 @@
                     classChoice = "Mage";
                 }
                 return classChoice;
+            }
+            
+            async function queryServer(eventName, ...args) {
+                let response;
+                
+                if(socket && isSocketConnected) {
+                    response = await socket.timeout(SOCKET_TIMEOUT).emitWithAck(eventName, ...args);
+                }
+                else {
+                    response = {
+                        "isSuccess": false,
+						"errString": "Unable to connect to the server."
+                    }
+                }
+                
+                return response;
             }
 		</script>
 	</body>
