@@ -69,12 +69,6 @@
 			});
             
             function connectSocket() {
-                if(socket) {
-                    socket.disconnect(true);
-                    
-                    isSocketConnected = false;
-                }
-                
                 socket = io({
                     // Use these options to only allow websockets and avoid memory leaks.
                     upgrade: false,
@@ -86,7 +80,6 @@
                 });
                 
                 socket.on("disconnect", (err) => {
-                    socket.disconnect(true);
                     isSocketConnected = false;
                 });
             }

@@ -6,9 +6,8 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- Add in logging calls. This requires more storage space.
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
-// TODO No label associated with a form field
-// --- A <label> isn't associated with a form field.
-// --- To fix this issue, nest the <input> in the <label> or provide a for attribute on the <label> that matches a form field id.
+// TODO In game, should "Log out" be "Exit Game"?
+// --- Instead of forcibly going back to login, just say that we have been disconnected?
 
 async function init() {
     let appState = new AppState();

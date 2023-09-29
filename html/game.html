@@ -55,13 +55,6 @@
             let intervalDev;
             
             function connectSocket() {
-                if(socket) {
-                    socket.disconnect(true);
-                    
-                    isSocketConnected = false;
-                    isSocketLoggedIn = false;
-                }
-                
                 socket = io({
                     // Use these options to only allow websockets and avoid memory leaks.
                     upgrade: false,
@@ -91,13 +84,6 @@
                             requestAnimationFrame(drawClient);
                             
                             isSocketLoggedIn = true;
-                            
-                            socket.on("disconnect", (err) => {
-                                isSocketLoggedIn = false;
-                                
-                                clearInterval(interval);
-                                clearInterval(intervalDev);
-                            });
                         }
                         else {
                             GameResultText.style.color = RED;
@@ -111,8 +97,12 @@
                 });
                 
                 socket.on("disconnect", (err) => {
-                    socket.disconnect(true);
                     isSocketConnected = false;
+                    isSocketLoggedIn = false;
+                    
+                    clearInterval(interval);
+                    clearInterval(intervalDev);
+                    
                     window.sessionStorage.clear();
                     window.location.assign("/login");
                 });
@@ -144,7 +134,6 @@
             
             LogoutButton.addEventListener('click', () => {
                 socket.disconnect(true);
-                isSocketConnected = false; // TODO Do we need this?
             });
             
             canvas.addEventListener("contextmenu", function (e){

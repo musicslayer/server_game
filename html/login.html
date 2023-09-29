@@ -63,18 +63,12 @@
 			let socket;
             let isSocketConnected = false;
             
-            window.addEventListener('load', async () => {
+            window.addEventListener('load', () => {
                 window.sessionStorage.clear();
                 connectSocket();
             });
             
             function connectSocket() {
-                if(socket) {
-                    socket.disconnect(true);
-                    
-                    isSocketConnected = false; // TODO Do we need this?
-                }
-                
                 socket = io({
                     // Use these options to only allow websockets and avoid memory leaks.
                     upgrade: false,
@@ -86,7 +80,6 @@
                 });
                 
                 socket.on("disconnect", (err) => {
-                    socket.disconnect(true);
                     isSocketConnected = false;
                 });
             }
@@ -131,7 +124,7 @@
                         newRadioButton.checked = serverName === lastServerName && worldName === lastWorldName;
                         
                         let newLabel = document.createElement("label");
-                        newLabel.for = id;
+                        newLabel.htmlFor = id;
                         newLabel.innerText = worldName + " (" + worldPlayerCount + "/" + worldMaxPlayerCount + ")";
                         
                         newRow.appendChild(newRadioButton);
@@ -169,7 +162,7 @@
                     newRadioButton.checked = characterName === lastCharacterName;
                     
                     let newLabel = document.createElement("label");
-                    newLabel.for = id;
+                    newLabel.htmlFor = id;
                     newLabel.innerText = characterName;
                     
                     newRow.appendChild(newRadioButton);
