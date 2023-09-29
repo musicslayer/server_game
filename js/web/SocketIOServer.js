@@ -365,7 +365,6 @@ class SocketIOServer {
 					});
 				}
 
-				// Return to the client a list of character names and whether they are already logged in.
 				let characterData = [];
 				for(let characterName of account.characterMap.keys()) {
 					characterData.push({
@@ -812,6 +811,58 @@ class SocketIOServer {
 				}
 
 				callback({"isSuccess": true});
+			}
+			catch(err) {
+				console.error(err);
+				socket.disconnect(true);
+			}
+		});
+
+		socket.on("on_get_character_classes", (username, hash, callback) => {
+			try {
+				if(RateLimit.isRateLimited("get_character_classes", ip)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateStrings(username, hash)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				let account = this.accountManager.getAccount(username);
+				if(!account) {
+					callback({
+						"isSuccess": false,
+						"errString": "An account with this username does not exist."
+					});
+					return;
+				}
+
+				if(account.hash !== hash) {
+					callback({
+						"isSuccess": false,
+						"errString": "The password is incorrect."
+					});
+					return;
+				}
+
+				// Return to the client a list of available character classes.
+				let characterClassData = [];
+				for(let characterClass of ["PlayerMage", "PlayerWarrior"]) {
+					characterClassData.push({
+						name: characterClass
+					});
+				}
+
+				callback({
+					"isSuccess": true, 
+					"characterClassData": characterClassData
+				});
 			}
 			catch(err) {
 				console.error(err);

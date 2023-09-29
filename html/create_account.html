@@ -96,6 +96,7 @@
                     
                     let hash = await createHash(username, password);
                     let R = await queryServer("on_create_account", username, hash, email);
+                    
 					if(R.isSuccess) {
 						CreateAccountResultText.style.color = BLACK;
 						CreateAccountResultText.innerHTML = "Account creation successful.";

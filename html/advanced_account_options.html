@@ -322,8 +322,12 @@
 					DeleteAccountResultText.innerHTML = "Must supply a valid current email.";
 				}
 				else {
+                    DeleteAccountResultText.style.color = BLACK;
+					DeleteAccountResultText.innerHTML = "Please wait...";
+                    
                     let hash = await createHash(username, password);
                     let R = await queryServer("on_delete_account", username, hash, email);
+                    
 					if(R.isSuccess) {
 						DeleteAccountResultText.style.color = BLACK;
 						DeleteAccountResultText.innerHTML = "Account deletion successful.";

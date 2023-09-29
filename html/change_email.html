@@ -90,8 +90,12 @@
 					ChangeEmailResultText.innerHTML = "Must supply a valid new email.";
 				}
 				else {
+                    ChangeEmailResultText.style.color = BLACK;
+					ChangeEmailResultText.innerHTML = "Please wait...";
+                    
                     let hash = await createHash(username, password);
                     let R = await queryServer("on_change_email", username, hash, currentEmail, newEmail);
+                    
 					if(R.isSuccess) {
 						ChangeEmailResultText.style.color = BLACK;
                         ChangeEmailResultText.innerHTML = "Email change successful.";

@@ -61,6 +61,9 @@
                 });
                 
                 socket.on("connect", async (err) => {
+                    GameResultText.style.color = BLACK;
+                    GameResultText.innerHTML = "Please wait...";
+                    
                     // Login based on the values in the sessionStorage.
                     if(window.sessionStorage.getItem("isActive")) {
                         let username = window.sessionStorage.getItem("username");

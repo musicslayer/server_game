@@ -64,6 +64,7 @@ class Constants {
             "logout_account": 1000,
             "enable_account": 1000,
             "disable_account": 1000,
+            "get_character_classes": 1000,
             "input": 1000,
             "data": 1000,
             "dev": 1000
