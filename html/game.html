@@ -117,7 +117,7 @@
                 window.location.assign("/login");
             });
             
-            canvas.addEventListener("contextmenu", function (e){
+            canvas.addEventListener("contextmenu", (e) => {
                 e.preventDefault();
             }, false);
             
@@ -130,7 +130,7 @@
             
             let downButton;
 
-            canvas.addEventListener("mousedown", function (e) {
+            canvas.addEventListener("mousedown", (e) => {
                 e.preventDefault()
                 
                 if(downButton === undefined) {
@@ -143,13 +143,13 @@
                 }
             });
             
-            canvas.addEventListener("mousemove", function (e) {
+            canvas.addEventListener("mousemove", (e) => {
                 if(downButton !== undefined) {
                     deltaSpace++;
                 }
             });
 
-            canvas.addEventListener("mouseup", function (e) {
+            canvas.addEventListener("mouseup", async (e) => {
                 if(downButton !== e.button) {
                     return;
                 }
@@ -210,13 +210,13 @@
                 if (deltaSpace < maxClickDeltaSpace && deltaTime < maxClickDeltaTime) {
                     // Click
                     if(location1) {
-                        reactButtonClick(e.button, location1, info1)
+                        await reactButtonClick(e.button, location1, info1)
                     }
                 }
                 else {
                     // Drag
                     if(location1 && location2) {
-                        reactButtonDrag(e.button, location1, info1, location2, info2)
+                        await reactButtonDrag(e.button, location1, info1, location2, info2)
                     }
                 }
             });
@@ -245,7 +245,7 @@
                 }
                 
                 if(keys.length !== 0) {
-                    reactKeyPress(keys);
+                    await reactKeyPress(keys);
                 }
             }
             
@@ -269,7 +269,7 @@
                     }
                     
                     if(buttons.length !== 0) {
-                        reactControllerPress(buttons);
+                        await reactControllerPress(buttons);
                     }
                 }
             }
@@ -298,19 +298,19 @@
                     for(let axis of axes) {
                         // If any one axis is outside the deadzone, send the server all of the axes.
                         if(Math.abs(axis) > deadzone) {
-                            reactControllerSticks(axes);
+                            await reactControllerSticks(axes);
                             return;
                         }
                     }
                 }
             }
             
-            window.addEventListener("blur", function (e) {
+            window.addEventListener("blur", (e) => {
                 inputsEnabled = false;
                 isKeyPressed = {};
             });
             
-            window.addEventListener("focus", function (e) {
+            window.addEventListener("focus", (e) => {
                 inputsEnabled = true;
             });
             
@@ -379,18 +379,18 @@
             
             function startInterval() {
                 // Continuously check for client inputs to send to the server.
-                let interval = setInterval(() => {
+                let interval = setInterval(async () => {
                     if(inputsEnabled) {
-                        checkKeyPress();
-                        checkControllerPress();
-                        checkControllerSticks();
+                        await checkKeyPress();
+                        await checkControllerPress();
+                        await checkControllerSticks();
                     }
                 }, 1000 / INPUT_FPS_RATE);
             }
             
             function startDevInterval() {
-                let intervalDev = setInterval(() => {
-                    checkDevInfo();
+                let intervalDev = setInterval(async () => {
+                    await checkDevInfo();
                 }, 1000 / INPUT_FPS_RATE);
             }
             

@@ -106,6 +106,21 @@
 					}
 				}
 			});
+            
+            function getClassChoice() {
+                let classChoice;
+                if(ClassMage.checked) {
+                    classChoice = "PlayerMage";
+                }
+                else if(ClassWarrior.checked) {
+                    classChoice = "PlayerWarrior";
+                }
+                else {
+                    // Default to PlayerMage
+                    classChoice = "PlayerMage";
+                }
+                return classChoice;
+            }
 			
 			function isValidText(str) {
 				// Check that there are no spaces and that all characters are ASCII letters, numbers, or underscores (but not starting with an underscore).
@@ -129,21 +144,6 @@
                 let hashArray = Array.from(new Uint8Array(hash));
                 let hashString = hashArray.map((item) => item.toString(16).padStart(2, "0")).join("");
                 return hashString;
-            }
-            
-            function getClassChoice() {
-                let classChoice;
-                if(ClassMage.checked) {
-                    classChoice = "PlayerMage";
-                }
-                else if(ClassWarrior.checked) {
-                    classChoice = "PlayerWarrior";
-                }
-                else {
-                    // Default to PlayerMage
-                    classChoice = "PlayerMage";
-                }
-                return classChoice;
             }
             
             async function queryServer(eventName, ...args) {
