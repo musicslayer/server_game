@@ -65,29 +65,15 @@
 			
             const SOCKET_TIMEOUT = 10000;
             
-			let socket;
-            let isSocketConnected = false;
+			let socket = io({
+                // Use these options to only allow websockets and avoid memory leaks.
+                upgrade: false,
+                transports: ["websocket"]
+            });
 			
 			window.addEventListener('load', () => {
                 window.sessionStorage.clear();
-				connectSocket();
 			});
-            
-            function connectSocket() {
-                socket = io({
-                    // Use these options to only allow websockets and avoid memory leaks.
-                    upgrade: false,
-                    transports: ["websocket"]
-                });
-                
-                socket.on("connect", (err) => {
-                    isSocketConnected = true;
-                });
-                
-                socket.on("disconnect", (err) => {
-                    isSocketConnected = false;
-                });
-            }
 			
 			CreateCharacterButton.addEventListener('click', async () => {
 				let username = UsernameInput.value;
@@ -175,7 +161,7 @@
             async function queryServer(eventName, ...args) {
                 let response;
                 
-                if(socket && isSocketConnected) {
+                if(socket.connected) {
                     response = await socket.timeout(SOCKET_TIMEOUT).emitWithAck(eventName, ...args);
                 }
                 else {

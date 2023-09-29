@@ -5,7 +5,7 @@
     </head>
 
     <body>
-        <p id="ID_GameResultText" style='white-space: pre;'></p>
+        <p id="ID_GameResultText" style='white-space: pre;'>Loading...</p>
         <canvas id="canvas" style="border:10px solid;display:none"></canvas>
         <button id="ID_ExitButton">Exit Game</button><br/>
         <text id="ID_DevText" style="white-space: pre;"></text>
@@ -47,23 +47,20 @@
             
             let imageCatalog;
             
-            let socket;
-            let isSocketConnected = false;
+            let socket = createSocket();
             let isSocketLoggedIn = false;
             
             let interval;
             let intervalDev;
             
-            function connectSocket() {
-                socket = io({
+            function createSocket() {
+                let socket = io({
                     // Use these options to only allow websockets and avoid memory leaks.
                     upgrade: false,
                     transports: ["websocket"]
                 });
                 
                 socket.on("connect", async (err) => {
-                    isSocketConnected = true;
-                    
                     // Login based on the values in the sessionStorage.
                     if(window.sessionStorage.getItem("isActive")) {
                         let username = window.sessionStorage.getItem("username");
@@ -74,6 +71,9 @@
                         
                         let R = await queryServer("on_login_character", username, hash, characterName, serverName, worldName);
                         if(R.isSuccess) {
+                            imageCatalog = new ImageCatalog();
+                            await imageCatalog.createImageCatalog();
+                
                             canvas.style.display = "inline";
                             GameResultText.style.color = BLACK;
                             GameResultText.innerHTML = "";
@@ -97,8 +97,7 @@
                 
                 socket.on("disconnect", (err) => {
                     window.sessionStorage.clear();
-                
-                    isSocketConnected = false;
+                    
                     isSocketLoggedIn = false;
                     
                     clearInterval(interval);
@@ -108,6 +107,8 @@
                     GameResultText.style.color = RED;
                     GameResultText.innerHTML = "You have been disconnected from the server.";
                 });
+                
+                return socket;
             }
 			
 			function getURLParameter(sParam) {
@@ -123,16 +124,6 @@
 				
 				return "";
 			}
-            
-            window.addEventListener('load', async () => {
-                GameResultText.style.color = BLACK;
-                GameResultText.innerHTML = "Loading...";
-            
-                imageCatalog = new ImageCatalog();
-                await imageCatalog.createImageCatalog();
-                
-                connectSocket();
-            });
             
             ExitButton.addEventListener('click', () => {
                 // Disconnect and then navigate back to the login page.
@@ -441,7 +432,7 @@
             async function queryServer(eventName, ...args) {
                 let response;
                 
-                if(socket && isSocketConnected) {
+                if(socket.connected) {
                     response = await socket.timeout(SOCKET_TIMEOUT).emitWithAck(eventName, ...args);
                 }
                 else {
@@ -457,7 +448,7 @@
             async function queryServerAfterLogIn(eventName, ...args) {
                 let response;
                 
-                if(socket && isSocketConnected && isSocketLoggedIn) {
+                if(socket.connected && isSocketLoggedIn) {
                     response = await socket.timeout(SOCKET_TIMEOUT).emitWithAck(eventName, ...args);
                 }
                 else {

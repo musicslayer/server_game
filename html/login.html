@@ -48,11 +48,8 @@
 		<script>
 			const UsernameInput = document.querySelector('#ID_UsernameInput');
 			const PasswordInput = document.querySelector('#ID_PasswordInput');
-			
 			const LoginButton = document.querySelector('#ID_LoginButton');
-			
 			const LoginResultText = document.querySelector('#ID_LoginResultText');
-            
             const LoginDiv = document.querySelector('#ID_LoginDiv');
 			
 			const BLACK = "#000000";
@@ -60,29 +57,15 @@
             
             const SOCKET_TIMEOUT = 10000;
 			
-			let socket;
-            let isSocketConnected = false;
+			let socket = io({
+                // Use these options to only allow websockets and avoid memory leaks.
+                upgrade: false,
+                transports: ["websocket"]
+            });
             
             window.addEventListener('load', () => {
                 window.sessionStorage.clear();
-                connectSocket();
             });
-            
-            function connectSocket() {
-                socket = io({
-                    // Use these options to only allow websockets and avoid memory leaks.
-                    upgrade: false,
-                    transports: ["websocket"]
-                });
-                
-                socket.on("connect", async (err) => {
-                    isSocketConnected = true;
-                });
-                
-                socket.on("disconnect", (err) => {
-                    isSocketConnected = false;
-                });
-            }
             
             function populateServersAndWorlds(serverData, lastServerName, lastWorldName) {
                 let serverWorldTable = document.createElement("table");
@@ -297,7 +280,7 @@
             async function queryServer(eventName, ...args) {
                 let response;
                 
-                if(socket && isSocketConnected) {
+                if(socket.connected) {
                     response = await socket.timeout(SOCKET_TIMEOUT).emitWithAck(eventName, ...args);
                 }
                 else {
