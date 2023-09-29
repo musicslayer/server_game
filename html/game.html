@@ -7,7 +7,7 @@
     <body>
         <p id="ID_GameResultText" style='white-space: pre;'></p>
         <canvas id="canvas" style="border:10px solid;display:none"></canvas>
-        <button id="ID_LogoutButton">Log Out</button><br/>
+        <button id="ID_ExitButton">Exit Game</button><br/>
         <text id="ID_DevText" style="white-space: pre;"></text>
         
         <script src="socket.io.min.js"></script>
@@ -16,7 +16,7 @@
             import { ImageCatalog } from "./ImageCatalog.js";
             
             const GameResultText = document.querySelector('#ID_GameResultText');
-            const LogoutButton = document.querySelector('#ID_LogoutButton');
+            const ExitButton = document.querySelector('#ID_ExitButton');
             const DevText = document.getElementById("ID_DevText");
             
             const BLACK = "#000000";
@@ -75,7 +75,6 @@
                         let R = await queryServer("on_login_character", username, hash, characterName, serverName, worldName);
                         if(R.isSuccess) {
                             canvas.style.display = "inline";
-                            GameResultText.style.display = "inline";
                             GameResultText.style.color = BLACK;
                             GameResultText.innerHTML = "";
                             
@@ -97,14 +96,17 @@
                 });
                 
                 socket.on("disconnect", (err) => {
+                    window.sessionStorage.clear();
+                
                     isSocketConnected = false;
                     isSocketLoggedIn = false;
                     
                     clearInterval(interval);
                     clearInterval(intervalDev);
-                    
-                    window.sessionStorage.clear();
-                    window.location.assign("/login");
+
+                    canvas.style.display = "none";
+                    GameResultText.style.color = RED;
+                    GameResultText.innerHTML = "You have been disconnected from the server.";
                 });
             }
 			
@@ -132,8 +134,10 @@
                 connectSocket();
             });
             
-            LogoutButton.addEventListener('click', () => {
+            ExitButton.addEventListener('click', () => {
+                // Disconnect and then navigate back to the login page.
                 socket.disconnect(true);
+                window.location.assign("/login");
             });
             
             canvas.addEventListener("contextmenu", function (e){

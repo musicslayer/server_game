@@ -6,9 +6,6 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- Add in logging calls. This requires more storage space.
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
-// TODO In game, should "Log out" be "Exit Game"?
-// --- Instead of forcibly going back to login, just say that we have been disconnected?
-
 async function init() {
     let appState = new AppState();
     let appAdmin = new AppAdmin(appState);
