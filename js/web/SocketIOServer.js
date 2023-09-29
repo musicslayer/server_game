@@ -209,7 +209,7 @@ class SocketIOServer {
 				if(account.getCharacter(characterName)) {
 					callback({
 						"isSuccess": false,
-						"errString": "A character with this name already exists." // TODO Mention "on this account"
+						"errString": "A character with this name already exists on the account."
 					});
 					return;
 				}
@@ -279,7 +279,7 @@ class SocketIOServer {
 				if(!character) {
 					callback({
 						"isSuccess": false,
-						"errString": "A character with this name does not exist."
+						"errString": "A character with this name does not exist on the account."
 					});
 					return;
 				}
@@ -432,7 +432,7 @@ class SocketIOServer {
 				if(!character) {
 					callback({
 						"isSuccess": false,
-						"errString": "A character with this name does not exist."
+						"errString": "A character with this name does not exist on the account."
 					});
 					return;
 				}
