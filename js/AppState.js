@@ -163,6 +163,7 @@ class AppState {
                     // If a player is spawned but the client is no longer logged in, then despawn the player.
                     let serverTask = new ServerTask(undefined, 0, 1, "despawn", player);
                     player.getServer().scheduleTask(serverTask);
+                    player.screen.map.world.playerCount--;
                 }
                 else if(!player.isSpawned && player.client) {
                     // If a player is not spawned but the client is logged in, then log out the client.

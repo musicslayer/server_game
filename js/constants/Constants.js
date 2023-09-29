@@ -45,7 +45,8 @@ class Constants {
         TICK_RATE: 60, // ticks per second
         TICK_SPEED: 1, // speed multiplier for scheduled tasks (should be set to 1 for production)
         LOOT_TIME: 300, // (5 minutes) seconds that spawned loot will remain in the world before despawning
-        MOVEMENT_FRAMES: 60 // animation frames per 1 movement step
+        MOVEMENT_FRAMES: 60, // animation frames per 1 movement step
+        MAX_WORLD_PLAYER_COUNT: 20 // The max number of simultaneous players allowed to log into a world.
     };
 
     static ratelimit = {

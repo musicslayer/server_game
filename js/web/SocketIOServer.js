@@ -319,7 +319,9 @@ class SocketIOServer {
 					for(let world of server.universe.worlds) {
 						if(!world.isDynamic) {
 							worldData.push({
-								name: world.name
+								name: world.name,
+								playerCount: world.playerCount,
+								maxPlayerCount: world.maxPlayerCount
 							});
 						}
 					}
@@ -335,7 +337,7 @@ class SocketIOServer {
 				for(let characterName of account.characterMap.keys()) {
 					characterData.push({
 						name: characterName,
-						isLoggedIn: this.clientManager.getClient(username, characterName)
+						isLoggedIn: this.clientManager.getClient(username, characterName) !== undefined
 					});
 				}
 
@@ -403,6 +405,12 @@ class SocketIOServer {
 				let server = this.serverManager.getServerByName(serverName);
 				let world = server?.universe.getWorldByName(worldName);
 				if(!world) {
+					// The server or world does not exist.
+					callback({"isSuccess": false});
+					return;
+				}
+				if(world.isFull()) {
+					// The world is full.
 					callback({"isSuccess": false});
 					return;
 				}
@@ -454,6 +462,7 @@ class SocketIOServer {
 						if(client.player.isSpawned) {
 							let serverTask = new ServerTask(undefined, 0, 1, "despawn", client.player);
 							client.player.getServer().scheduleTask(serverTask);
+							client.player.screen.map.world.playerCount--;
 						}
 
 						client.player.client = undefined;
@@ -467,6 +476,9 @@ class SocketIOServer {
 				account.lastServerName = serverName;
 				account.lastWorldName = worldName;
 				account.lastCharacterName = characterName;
+
+				// Update world population count.
+				world.playerCount++;
 
 				callback({"isSuccess": true});
 			}

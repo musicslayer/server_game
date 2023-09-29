@@ -10,8 +10,6 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- In some failing cases, we say one thing when the failure was actually caused by something else.
 // --- Do we really need to keep checking if "isSocketConnected" everywhere?
 
-// TODO Can a world be too full of players?
-
 async function init() {
     let appState = new AppState();
     let appAdmin = new AppAdmin(appState);

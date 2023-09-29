@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
+const Constants = require("../constants/Constants.js");
 const Reflection = require("../reflection/Reflection.js");
 const GameMap = require("./GameMap.js");
 const Util = require("../util/Util.js");
@@ -19,6 +20,9 @@ class World {
     gameMapIDMap = new Map();
 
     worldFolder;
+
+    playerCount = 0;
+    maxPlayerCount = Constants.performance.MAX_WORLD_PLAYER_COUNT;
 
     static loadWorldFromFolder(universe, className, worldFolder) {
         let world = Reflection.createInstance(className);
@@ -126,6 +130,10 @@ class World {
         return this.getMapByID(id); 
     }
 
+    isFull() {
+        return this.playerCount === this.maxPlayerCount;
+    }
+
     serialize(writer) {
         writer.beginObject()
             .serialize("!V!", 1)
@@ -134,6 +142,8 @@ class World {
             .serialize("name", this.name)
             .serializeArray("maps", this.gameMaps)
             .serialize("worldFolder", this.worldFolder)
+            .serialize("playerCount", this.playerCount)
+            .serialize("maxPlayerCount", this.maxPlayerCount)
         .endObject();
     }
 
@@ -150,6 +160,8 @@ class World {
             world.name = reader.deserialize("name", "String");
             let maps = reader.deserializeArray("maps", "GameMap");
             world.worldFolder = reader.deserialize("worldFolder", "String");
+            world.playerCount = reader.deserialize("playerCount", "Number");
+            world.maxPlayerCount = reader.deserialize("maxPlayerCount", "Number");
 
             for(let map of maps) {
                 map.world = world;
