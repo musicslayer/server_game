@@ -6,6 +6,10 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- Add in logging calls. This requires more storage space.
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
+// TODO await crypto.subtle.digest   Do we need await?
+
+// TODO create_character Do this more elegantly...? Ask server which classes are available?
+
 async function init() {
     let appState = new AppState();
     let appAdmin = new AppAdmin(appState);

@@ -49,9 +49,7 @@
             const PasswordInput = document.querySelector("#ID_PasswordInput");
 			const CurrentEmailInput = document.querySelector("#ID_CurrentEmailInput");
             const NewEmailInput = document.querySelector("#ID_NewEmailInput");
-			
 			const ChangeEmailButton = document.querySelector("#ID_ChangeEmailButton");
-			
 			const ChangeEmailResultText = document.querySelector("#ID_ChangeEmailResultText");
 			
 			const BLACK = "#000000";
@@ -69,7 +67,6 @@
                 window.sessionStorage.clear();
 			});
 			
-			// Accounts
 			ChangeEmailButton.addEventListener("click", async () => {
 				let username = UsernameInput.value;
                 let password = PasswordInput.value;

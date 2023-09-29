@@ -52,12 +52,9 @@
 			const UsernameInput = document.querySelector("#ID_UsernameInput");
 			const PasswordInput = document.querySelector("#ID_PasswordInput");
             const CharacterNameInput = document.querySelector("#ID_CharacterNameInput");
-            
             const ClassMage = document.querySelector("#ID_ClassMage");
             const ClassWarrior = document.querySelector("#ID_ClassWarrior");
-			
 			const CreateCharacterButton = document.querySelector("#ID_CreateCharacterButton");
-			
 			const CreateCharacterResultText = document.querySelector("#ID_CreateCharacterResultText");
 			
 			const BLACK = "#000000";
@@ -122,15 +119,6 @@
 				
 				return /^[a-zA-Z0-9_]*$/.test(str);
 			}
-			
-			function isValidEmail(str) {
-				// Check that there are no spaces and that all characters are ASCII letters/numbers.
-				if(str === "") {
-					return false;
-				}
-				
-				return true;
-			}
             
             async function createHash(username, password) {
                 // Use both the username and the password to create the hash.
@@ -152,8 +140,8 @@
                     classChoice = "PlayerWarrior";
                 }
                 else {
-                    // Default to Mage
-                    classChoice = "Mage";
+                    // Default to PlayerMage
+                    classChoice = "PlayerMage";
                 }
                 return classChoice;
             }
