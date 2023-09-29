@@ -41,19 +41,19 @@
 		
 		<button id="ID_CreateAccountButton">Create Account</button>
 		
-		<p id="ID_CreateAccountResultText" style='white-space: pre;'></p>
+		<p id="ID_CreateAccountResultText" style="white-space: pre;"></p>
 		
 		<script src="socket.io.min.js"></script>
 		
 		<script>
-			const UsernameInput = document.querySelector('#ID_UsernameInput');
-			const PasswordInput = document.querySelector('#ID_PasswordInput');
-			const ConfirmPasswordInput = document.querySelector('#ID_ConfirmPasswordInput');
-			const EmailInput = document.querySelector('#ID_EmailInput');
+			const UsernameInput = document.querySelector("#ID_UsernameInput");
+			const PasswordInput = document.querySelector("#ID_PasswordInput");
+			const ConfirmPasswordInput = document.querySelector("#ID_ConfirmPasswordInput");
+			const EmailInput = document.querySelector("#ID_EmailInput");
 			
-			const CreateAccountButton = document.querySelector('#ID_CreateAccountButton');
+			const CreateAccountButton = document.querySelector("#ID_CreateAccountButton");
 			
-			const CreateAccountResultText = document.querySelector('#ID_CreateAccountResultText');
+			const CreateAccountResultText = document.querySelector("#ID_CreateAccountResultText");
 			
 			const BLACK = "#000000";
 			const RED = "#B00000";
@@ -66,11 +66,11 @@
                 transports: ["websocket"]
             });
 			
-			window.addEventListener('load', () => {
+			window.addEventListener("load", () => {
                 window.sessionStorage.clear();
 			});
 			
-			CreateAccountButton.addEventListener('click', async () => {
+			CreateAccountButton.addEventListener("click", async () => {
 				let username = UsernameInput.value;
 				let password = PasswordInput.value;
 				let confirmPassword = ConfirmPasswordInput.value;

@@ -11,7 +11,7 @@
 		
 		<h2>Change Email</h2>
 		
-		<p style='white-space: pre;'>Change the email associated with your account. You must have access to both the current email and the new email to complete the process.</p>
+		<p style="white-space: pre;">Change the email associated with your account. You must have access to both the current email and the new email to complete the process.</p>
 		
 		<table>
 		<tr>
@@ -40,19 +40,19 @@
 		
 		<button id="ID_ChangeEmailButton">Change Email</button>
 		
-		<p id="ID_ChangeEmailResultText" style='white-space: pre;'></p>
+		<p id="ID_ChangeEmailResultText" style="white-space: pre;"></p>
 		
 		<script src="socket.io.min.js"></script>
 		
 		<script>
-			const UsernameInput = document.querySelector('#ID_UsernameInput');
-            const PasswordInput = document.querySelector('#ID_PasswordInput');
-			const CurrentEmailInput = document.querySelector('#ID_CurrentEmailInput');
-            const NewEmailInput = document.querySelector('#ID_NewEmailInput');
+			const UsernameInput = document.querySelector("#ID_UsernameInput");
+            const PasswordInput = document.querySelector("#ID_PasswordInput");
+			const CurrentEmailInput = document.querySelector("#ID_CurrentEmailInput");
+            const NewEmailInput = document.querySelector("#ID_NewEmailInput");
 			
-			const ChangeEmailButton = document.querySelector('#ID_ChangeEmailButton');
+			const ChangeEmailButton = document.querySelector("#ID_ChangeEmailButton");
 			
-			const ChangeEmailResultText = document.querySelector('#ID_ChangeEmailResultText');
+			const ChangeEmailResultText = document.querySelector("#ID_ChangeEmailResultText");
 			
 			const BLACK = "#000000";
 			const RED = "#B00000";
@@ -65,12 +65,12 @@
                 transports: ["websocket"]
             });
 			
-			window.addEventListener('load', () => {
+			window.addEventListener("load", () => {
                 window.sessionStorage.clear();
 			});
 			
 			// Accounts
-			ChangeEmailButton.addEventListener('click', async () => {
+			ChangeEmailButton.addEventListener("click", async () => {
 				let username = UsernameInput.value;
                 let password = PasswordInput.value;
 				let currentEmail = CurrentEmailInput.value;

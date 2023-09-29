@@ -44,21 +44,21 @@
 		
 		<button id="ID_CreateCharacterButton">Create Character</button>
 		
-		<p id="ID_CreateCharacterResultText" style='white-space: pre;'></p>
+		<p id="ID_CreateCharacterResultText" style="white-space: pre;"></p>
 		
 		<script src="socket.io.min.js"></script>
 		
 		<script>
-			const UsernameInput = document.querySelector('#ID_UsernameInput');
-			const PasswordInput = document.querySelector('#ID_PasswordInput');
-            const CharacterNameInput = document.querySelector('#ID_CharacterNameInput');
+			const UsernameInput = document.querySelector("#ID_UsernameInput");
+			const PasswordInput = document.querySelector("#ID_PasswordInput");
+            const CharacterNameInput = document.querySelector("#ID_CharacterNameInput");
             
-            const ClassMage = document.querySelector('#ID_ClassMage');
-            const ClassWarrior = document.querySelector('#ID_ClassWarrior');
+            const ClassMage = document.querySelector("#ID_ClassMage");
+            const ClassWarrior = document.querySelector("#ID_ClassWarrior");
 			
-			const CreateCharacterButton = document.querySelector('#ID_CreateCharacterButton');
+			const CreateCharacterButton = document.querySelector("#ID_CreateCharacterButton");
 			
-			const CreateCharacterResultText = document.querySelector('#ID_CreateCharacterResultText');
+			const CreateCharacterResultText = document.querySelector("#ID_CreateCharacterResultText");
 			
 			const BLACK = "#000000";
 			const RED = "#B00000";
@@ -71,11 +71,11 @@
                 transports: ["websocket"]
             });
 			
-			window.addEventListener('load', () => {
+			window.addEventListener("load", () => {
                 window.sessionStorage.clear();
 			});
 			
-			CreateCharacterButton.addEventListener('click', async () => {
+			CreateCharacterButton.addEventListener("click", async () => {
 				let username = UsernameInput.value;
 				let password = PasswordInput.value;
                 let characterName = CharacterNameInput.value;

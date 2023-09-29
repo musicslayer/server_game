@@ -13,7 +13,7 @@
 		
 		<h3>Log Out</h3>
 		
-		<p style='white-space: pre;'>Log out all of the characters on your account.</p>
+		<p style="white-space: pre;">Log out all of the characters on your account.</p>
 		
 		<table>
 		<tr>
@@ -36,13 +36,13 @@
 		
 		<button id="ID_LogOutButton">Log Out</button>
 		
-		<p id="ID_LogOutResultText" style='white-space: pre;'></p>
+		<p id="ID_LogOutResultText" style="white-space: pre;"></p>
 		
 		<br/>
         
         <h3>Enable/Disable Account</h3>
 		
-		<p style='white-space: pre;'>Enable or disable any usage of your account. Disabling an account will also immediately log out its characters.</p>
+		<p style="white-space: pre;">Enable or disable any usage of your account. Disabling an account will also immediately log out its characters.</p>
 		
 		<table>
 		<tr>
@@ -66,13 +66,13 @@
 		<button id="ID_EnableButton">Enable Account</button>
         <button id="ID_DisableButton">Disable Account</button>
 		
-		<p id="ID_EnableResultText" style='white-space: pre;'></p>
+		<p id="ID_EnableResultText" style="white-space: pre;"></p>
 		
 		<br/>
         
         <h3 style="color: #B00000">Delete Character</h3>
 		
-        <p style='white-space: pre; color: #B00000'>Permanently delete a character on your account. This cannot be reversed.</p>
+        <p style="white-space: pre; color: #B00000">Permanently delete a character on your account. This cannot be reversed.</p>
 		
 		<table>
 		<tr>
@@ -100,13 +100,13 @@
 		
 		<button id="ID_DeleteCharacterButton">Delete Character</button>
 		
-		<p id="ID_DeleteCharacterResultText" style='white-space: pre;'></p>
+		<p id="ID_DeleteCharacterResultText" style="white-space: pre;"></p>
 		
 		<br/>
 		
 		<h3 style="color: #B00000">Delete Account</h3>
 		
-		<p style='white-space: pre; color: #B00000'>Permanently delete your account and all its characters. This cannot be reversed.</p>
+		<p style="white-space: pre; color: #B00000">Permanently delete your account and all its characters. This cannot be reversed.</p>
 		
 		<table>
 		<tr>
@@ -129,36 +129,36 @@
 		
 		<button id="ID_DeleteAccountButton">Delete Account</button>
 		
-		<p id="ID_DeleteAccountResultText" style='white-space: pre;'></p>
+		<p id="ID_DeleteAccountResultText" style="white-space: pre;"></p>
 		
 		<script src="socket.io.min.js"></script>
 		
 		<script>
-			const LogOutUsernameInput = document.querySelector('#ID_LogOutUsernameInput');
-			const LogOutPasswordInput = document.querySelector('#ID_LogOutPasswordInput');
-			const LogOutEmailInput = document.querySelector('#ID_LogOutEmailInput');
-			const LogOutButton = document.querySelector('#ID_LogOutButton');
-			const LogOutResultText = document.querySelector('#ID_LogOutResultText');
+			const LogOutUsernameInput = document.querySelector("#ID_LogOutUsernameInput");
+			const LogOutPasswordInput = document.querySelector("#ID_LogOutPasswordInput");
+			const LogOutEmailInput = document.querySelector("#ID_LogOutEmailInput");
+			const LogOutButton = document.querySelector("#ID_LogOutButton");
+			const LogOutResultText = document.querySelector("#ID_LogOutResultText");
             
-            const EnableUsernameInput = document.querySelector('#ID_EnableUsernameInput');
-			const EnablePasswordInput = document.querySelector('#ID_EnablePasswordInput');
-			const EnableEmailInput = document.querySelector('#ID_EnableEmailInput');
-			const EnableButton = document.querySelector('#ID_EnableButton');
-            const DisableButton = document.querySelector('#ID_DisableButton');
-			const EnableResultText = document.querySelector('#ID_EnableResultText');
+            const EnableUsernameInput = document.querySelector("#ID_EnableUsernameInput");
+			const EnablePasswordInput = document.querySelector("#ID_EnablePasswordInput");
+			const EnableEmailInput = document.querySelector("#ID_EnableEmailInput");
+			const EnableButton = document.querySelector("#ID_EnableButton");
+            const DisableButton = document.querySelector("#ID_DisableButton");
+			const EnableResultText = document.querySelector("#ID_EnableResultText");
             
-            const DeleteCharacterUsernameInput = document.querySelector('#ID_DeleteCharacterUsernameInput');
-			const DeleteCharacterPasswordInput = document.querySelector('#ID_DeleteCharacterPasswordInput');
-			const DeleteCharacterEmailInput = document.querySelector('#ID_DeleteCharacterEmailInput');
-            const DeleteCharacterNameInput = document.querySelector('#ID_DeleteCharacterNameInput');
-			const DeleteCharacterButton = document.querySelector('#ID_DeleteCharacterButton');
-			const DeleteCharacterResultText = document.querySelector('#ID_DeleteCharacterResultText');
+            const DeleteCharacterUsernameInput = document.querySelector("#ID_DeleteCharacterUsernameInput");
+			const DeleteCharacterPasswordInput = document.querySelector("#ID_DeleteCharacterPasswordInput");
+			const DeleteCharacterEmailInput = document.querySelector("#ID_DeleteCharacterEmailInput");
+            const DeleteCharacterNameInput = document.querySelector("#ID_DeleteCharacterNameInput");
+			const DeleteCharacterButton = document.querySelector("#ID_DeleteCharacterButton");
+			const DeleteCharacterResultText = document.querySelector("#ID_DeleteCharacterResultText");
 			
-			const DeleteAccountUsernameInput = document.querySelector('#ID_DeleteAccountUsernameInput');
-			const DeleteAccountPasswordInput = document.querySelector('#ID_DeleteAccountPasswordInput');
-			const DeleteAccountEmailInput = document.querySelector('#ID_DeleteAccountEmailInput');
-			const DeleteAccountButton = document.querySelector('#ID_DeleteAccountButton');
-			const DeleteAccountResultText = document.querySelector('#ID_DeleteAccountResultText');
+			const DeleteAccountUsernameInput = document.querySelector("#ID_DeleteAccountUsernameInput");
+			const DeleteAccountPasswordInput = document.querySelector("#ID_DeleteAccountPasswordInput");
+			const DeleteAccountEmailInput = document.querySelector("#ID_DeleteAccountEmailInput");
+			const DeleteAccountButton = document.querySelector("#ID_DeleteAccountButton");
+			const DeleteAccountResultText = document.querySelector("#ID_DeleteAccountResultText");
 			
 			const BLACK = "#000000";
 			const RED = "#B00000";
@@ -171,11 +171,11 @@
                 transports: ["websocket"]
             });
 			
-			window.addEventListener('load', () => {
+			window.addEventListener("load", () => {
                 window.sessionStorage.clear();
 			});
 			
-			LogOutButton.addEventListener('click', async () => {
+			LogOutButton.addEventListener("click", async () => {
 				let username = LogOutUsernameInput.value;
 				let password = LogOutPasswordInput.value;
 				let email = LogOutEmailInput.value;
@@ -206,7 +206,7 @@
 				}
 			});
             
-            EnableButton.addEventListener('click', async () => {
+            EnableButton.addEventListener("click", async () => {
 				let username = EnableUsernameInput.value;
 				let password = EnablePasswordInput.value;
 				let email = EnableEmailInput.value;
@@ -237,7 +237,7 @@
 				}
 			});
             
-            DisableButton.addEventListener('click', async () => {
+            DisableButton.addEventListener("click", async () => {
 				let username = EnableUsernameInput.value;
 				let password = EnablePasswordInput.value;
 				let email = EnableEmailInput.value;
@@ -268,7 +268,7 @@
 				}
 			});
             
-            DeleteCharacterButton.addEventListener('click', async () => {
+            DeleteCharacterButton.addEventListener("click", async () => {
 				let username = DeleteCharacterUsernameInput.value;
 				let password = DeleteCharacterPasswordInput.value;
 				let email = DeleteCharacterEmailInput.value;
@@ -304,7 +304,7 @@
 				}
 			});
 			
-			DeleteAccountButton.addEventListener('click', async () => {
+			DeleteAccountButton.addEventListener("click", async () => {
 				let username = DeleteAccountUsernameInput.value;
 				let password = DeleteAccountPasswordInput.value;
 				let email = DeleteAccountEmailInput.value;

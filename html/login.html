@@ -39,18 +39,18 @@
 		
 		<button id="ID_LoginButton">Login</button>
 		
-		<p id="ID_LoginResultText" style='white-space: pre;'></p>
+		<p id="ID_LoginResultText" style="white-space: pre;"></p>
         
         <div id="ID_LoginDiv"></div>
 		
 		<script src="socket.io.min.js"></script>
 		
 		<script>
-			const UsernameInput = document.querySelector('#ID_UsernameInput');
-			const PasswordInput = document.querySelector('#ID_PasswordInput');
-			const LoginButton = document.querySelector('#ID_LoginButton');
-			const LoginResultText = document.querySelector('#ID_LoginResultText');
-            const LoginDiv = document.querySelector('#ID_LoginDiv');
+			const UsernameInput = document.querySelector("#ID_UsernameInput");
+			const PasswordInput = document.querySelector("#ID_PasswordInput");
+			const LoginButton = document.querySelector("#ID_LoginButton");
+			const LoginResultText = document.querySelector("#ID_LoginResultText");
+            const LoginDiv = document.querySelector("#ID_LoginDiv");
 			
 			const BLACK = "#000000";
 			const RED = "#B00000";
@@ -63,7 +63,7 @@
                 transports: ["websocket"]
             });
             
-            window.addEventListener('load', () => {
+            window.addEventListener("load", () => {
                 window.sessionStorage.clear();
             });
             
@@ -156,7 +156,7 @@
                 LoginDiv.appendChild(characterTable);
             }
             
-			LoginButton.addEventListener('click', async () => {
+			LoginButton.addEventListener("click", async () => {
                 await reactLogin();
 			});
 			
@@ -203,7 +203,7 @@
                             
                             let newButton = document.createElement("button");
                             newButton.innerText = "Enter";
-                            newButton.addEventListener('click', () => {
+                            newButton.addEventListener("click", () => {
                                 let characterName = getCharacterChoice();
                                 let [serverName, worldName] = getServerWorldChoice();
                                 
@@ -240,7 +240,7 @@
 			}
             
             function getServerWorldChoice() {
-                let query = document.querySelector('input[name="world"]:checked');
+                let query = document.querySelector("input[name=\"world\"]:checked");
                 if(query === null) {
                     return [undefined, undefined];
                 }
@@ -250,7 +250,7 @@
             }
             
             function getCharacterChoice() {
-                return document.querySelector('input[name="character"]:checked')?.value;
+                return document.querySelector("input[name=\"character\"]:checked")?.value;
             }
             
             function isValidText(str) {
