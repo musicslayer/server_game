@@ -74,6 +74,18 @@ class Reflection {
         let classDataB = Reflection.getClassData(classNameB);
         return classDataA && classDataB && classDataB.isPrototypeOf(classDataA);
     }
+
+    static getSubclasses(classNameB) {
+        let subclasses = [];
+
+        for(let classNameA of Reflection.classMap.keys()) {
+            if(Reflection.isSubclass(classNameA, classNameB)) {
+                subclasses.push(classNameA);
+            }
+        }
+
+        return subclasses;
+    }
 }
 
 function isFunction(value, fcnName) {

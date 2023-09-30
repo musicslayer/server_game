@@ -6,9 +6,6 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- Add in logging calls. This requires more storage space.
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
-// TODO create_character Do this more elegantly...? Ask server which classes are available?
-// --- Actually query subclasses of Player?
-
 async function init() {
     let appState = new AppState();
     let appAdmin = new AppAdmin(appState);

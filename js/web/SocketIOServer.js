@@ -853,7 +853,7 @@ class SocketIOServer {
 
 				// Return to the client a list of available character classes.
 				let characterClassData = [];
-				for(let characterClass of ["PlayerMage", "PlayerWarrior"]) {
+				for(let characterClass of Reflection.getSubclasses("Player")) {
 					characterClassData.push({
 						name: characterClass
 					});
