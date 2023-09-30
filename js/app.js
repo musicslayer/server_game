@@ -11,8 +11,6 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // TODO Button spacing
 // TODO On server timeout, we should just say we cannot connect to the server.
 
-// TODO When creating character, if you change the name, the old name is used.
-
 async function init() {
     let appState = new AppState();
     let appAdmin = new AppAdmin(appState);

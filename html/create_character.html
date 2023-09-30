@@ -21,11 +21,6 @@
 			<td><b>Password:</b></td>
 			<td><input id="ID_PasswordInput" type="password" autocomplete="off" maxlength="40"></input></td>
 		</tr>
-        
-        <tr>
-			<td><b>Character Name:</b></td>
-			<td><input id="ID_CharacterNameInput" type="text" autocomplete="off" maxlength="40"></input></td>
-		</tr>
         </table>
 		
 		<button id="ID_CreateCharacterProceedButton">Proceed</button>
@@ -64,14 +59,34 @@
             function populateCharacterClasses(characterClassData) {
                 let characterClassTable = document.createElement("table");
                 
-                let newRow = document.createElement("tr");
+                let newRow1 = document.createElement("tr");
+                
+                let newTD1 = document.createElement("td");
+                let newInputText = document.createElement("text");
+                newInputText.style.fontWeight = "bold";
+                newInputText.innerText = "Choose a character name:"
+                
+                let newTD2 = document.createElement("td");
+                let newInput = document.createElement("input");
+                newInput.type = "text";
+                newInput.autocomplete = "off";
+                newInput.maxlength = "40";
+                newInput.name = "character_name";
+                
+                newTD1.appendChild(newInputText);
+                newTD2.appendChild(newInput);
+                newRow1.appendChild(newTD1);
+                newRow1.appendChild(newTD2);
+                characterClassTable.appendChild(newRow1);
+                
+                let newRow2 = document.createElement("tr");
                 
                 let newText = document.createElement("text");
                 newText.style.fontWeight = "bold";
                 newText.innerText = "Choose a character class:"
                 
-                newRow.appendChild(newText);
-                characterClassTable.appendChild(newRow);
+                newRow2.appendChild(newText);
+                characterClassTable.appendChild(newRow2);
                 
                 for(let characterClassEntry of characterClassData) {
                     let characterClassName = characterClassEntry.name;
@@ -102,7 +117,6 @@
             
 				let username = UsernameInput.value;
 				let password = PasswordInput.value;
-                let characterName = CharacterNameInput.value;
 				
 				if(!isValidText(username)) {
 					CreateCharacterResultText.style.color = RED;
@@ -111,10 +125,6 @@
 				else if(!isValidText(password)) {
 					CreateCharacterResultText.style.color = RED;
 					CreateCharacterResultText.innerHTML = "Must supply a nonempty password without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
-				}
-                else if(!isValidText(characterName)) {
-					CreateCharacterResultText.style.color = RED;
-					CreateCharacterResultText.innerHTML = "Must supply a nonempty character name without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
 				}
 				else {
 					CreateCharacterResultText.style.color = BLACK;
@@ -133,33 +143,38 @@
                             populateCharacterClasses(characterClassData);
                             CreateCharacterDiv.appendChild(document.createElement("br"));
                             
-                            let newText = document.createElement("text");
+                            let newResultText = document.createElement("text");
                             
                             let newButton = document.createElement("button");
                             newButton.innerText = "Create Character";
                             newButton.addEventListener("click", async () => {
+                                let characterName = getCharacterNameChoice();
                                 let characterClass = getCharacterClassChoice();
                                 
-                                if(characterClass !== undefined) {
-                                    let R = await queryServer("on_create_character", username, hash, characterName, characterClass);
-                                    if(R.isSuccess) {
-                                        newText.style.color = BLACK;
-                                        newText.innerHTML = "Character creation successful.";
-                                    }
-                                    else {
-                                        newText.style.color = RED;
-                                        newText.innerHTML = R.errString;
-                                    }
+                                if(!isValidText(characterName)) {
+                                    newResultText.style.color = RED;
+                                    newResultText.innerHTML = "Must supply a nonempty character name without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
+                                }
+                                else if(characterClass === undefined) {
+                                    newResultText.style.color = RED;
+                                    newResultText.innerText = "The character class must be selected."
                                 }
                                 else {
-                                    newText.style.color = RED;
-                                    newText.innerText = "The character class must be selected."
+                                    let R = await queryServer("on_create_character", username, hash, characterName, characterClass);
+                                    if(R.isSuccess) {
+                                        newResultText.style.color = BLACK;
+                                        newResultText.innerHTML = "Character creation successful.";
+                                    }
+                                    else {
+                                        newResultText.style.color = RED;
+                                        newResultText.innerHTML = R.errString;
+                                    }
                                 }
                             });
                             
                             CreateCharacterDiv.appendChild(newButton);
                             CreateCharacterDiv.appendChild(document.createElement("br"));
-                            CreateCharacterDiv.appendChild(newText);
+                            CreateCharacterDiv.appendChild(newResultText);
                         }
                         else {
                             CreateCharacterResultText.style.color = RED;
@@ -172,6 +187,10 @@
 					}
 				}
 			});
+            
+            function getCharacterNameChoice() {
+                return document.querySelector("input[name=\"character_name\"]")?.value;
+            }
             
             function getCharacterClassChoice() {
                 return document.querySelector("input[name=\"character_class\"]:checked")?.value;
