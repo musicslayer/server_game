@@ -193,6 +193,9 @@
 					LogOutResultText.innerHTML = "Must supply a valid current email.";
 				}
 				else {
+                    LogOutResultText.style.color = BLACK;
+					LogOutResultText.innerHTML = "Please wait...";
+                    
                     let hash = await createHash(username, password);
                     let R = await queryServer("on_logout_account", username, hash, email);
 					if(R.isSuccess) {
@@ -224,6 +227,9 @@
 					EnableResultText.innerHTML = "Must supply a valid current email.";
 				}
 				else {
+                    EnableResultText.style.color = BLACK;
+					EnableResultText.innerHTML = "Please wait...";
+                    
                     let hash = await createHash(username, password);
                     let R = await queryServer("on_enable_account", username, hash, email);
 					if(R.isSuccess) {
@@ -255,6 +261,9 @@
 					EnableResultText.innerHTML = "Must supply a valid current email.";
 				}
 				else {
+                    EnableResultText.style.color = BLACK;
+					EnableResultText.innerHTML = "Please wait...";
+                    
                     let hash = await createHash(username, password);
                     let R = await queryServer("on_disable_account", username, hash, email);
 					if(R.isSuccess) {
@@ -291,6 +300,9 @@
 					DeleteCharacterResultText.innerHTML = "Must supply a nonempty character name without spaces and containing only ASCII letters, numbers, and underscores (but not starting with an underscore).";
 				}
 				else {
+                    DeleteCharacterResultText.style.color = BLACK;
+					DeleteCharacterResultText.innerHTML = "Please wait...";
+                    
                     let hash = await createHash(username, password);
                     let R = await queryServer("on_delete_character", username, hash, email, characterName);
 					if(R.isSuccess) {

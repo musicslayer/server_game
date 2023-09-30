@@ -160,6 +160,9 @@
                                     newResultText.innerText = "The character class must be selected."
                                 }
                                 else {
+                                    newResultText.style.color = BLACK;
+                                    newResultText.innerHTML = "Please wait...";
+                                
                                     let R = await queryServer("on_create_character", username, hash, characterName, characterClass);
                                     if(R.isSuccess) {
                                         newResultText.style.color = BLACK;

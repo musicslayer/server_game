@@ -9,7 +9,6 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // TODO create_character Do this more elegantly...? Ask server which classes are available?
 // --- Actually query subclasses of Player?
 
-// TODO Use "Please wait..." in more places (HTML)?
 // TODO Button spacing
 
 async function init() {
