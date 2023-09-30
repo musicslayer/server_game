@@ -9,8 +9,6 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // TODO create_character Do this more elegantly...? Ask server which classes are available?
 // --- Actually query subclasses of Player?
 
-// TODO Button spacing
-
 async function init() {
     let appState = new AppState();
     let appAdmin = new AppAdmin(appState);
