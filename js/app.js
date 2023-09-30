@@ -7,9 +7,10 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
 // TODO create_character Do this more elegantly...? Ask server which classes are available?
+// --- Actually query subclasses of Player?
+
 // TODO Use "Please wait..." in more places (HTML)?
 // TODO Button spacing
-// TODO On server timeout, we should just say we cannot connect to the server.
 
 async function init() {
     let appState = new AppState();

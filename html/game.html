@@ -419,15 +419,16 @@
             }
             
             async function queryServer(eventName, ...args) {
-                let response;
+                let response = {
+                    "isSuccess": false,
+                    "errString": "Unable to connect to the server."
+                };
                 
                 if(socket.connected) {
-                    response = await socket.timeout(SOCKET_TIMEOUT).emitWithAck(eventName, ...args);
-                }
-                else {
-                    response = {
-                        "isSuccess": false,
-						"errString": "Unable to connect to the server."
+                    try {
+                        response = await socket.timeout(SOCKET_TIMEOUT).emitWithAck(eventName, ...args);
+                    }
+                    catch(err) {
                     }
                 }
                 
@@ -435,15 +436,16 @@
             }
             
             async function queryServerAfterLogIn(eventName, ...args) {
-                let response;
+                let response = {
+                    "isSuccess": false,
+                    "errString": "Unable to connect to the server."
+                };
                 
                 if(socket.connected && isSocketLoggedIn) {
-                    response = await socket.timeout(SOCKET_TIMEOUT).emitWithAck(eventName, ...args);
-                }
-                else {
-                    response = {
-                        "isSuccess": false,
-						"errString": "Unable to connect to the server."
+                    try {
+                        response = await socket.timeout(SOCKET_TIMEOUT).emitWithAck(eventName, ...args);
+                    }
+                    catch(err) {
                     }
                 }
                 
