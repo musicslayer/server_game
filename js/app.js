@@ -7,6 +7,7 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
 // TODO Create DevAccount class (and DevPlayers?) that use DevClient.
+// TODO Can we encrypt client-visible code so they cannot alter it?
 
 async function init() {
     let appState = new AppState();

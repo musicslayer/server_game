@@ -53,6 +53,12 @@ class AccountManager {
 
     static createInitialAccountManager() {
         // Load some initial player accounts.
+        let devPlayer1Mage = Entity.createInstance("PlayerMage", 1);
+
+        let devAccount1 = new Account("dev", createHash("dev", "dev"), "dev@dev.com");
+        devAccount1.isDevAccount = true;
+        devAccount1.addCharacter(new Character("mage", devPlayer1Mage));
+
         let player1Mage = Entity.createInstance("PlayerMage", 1);
         let player1Warrior = Entity.createInstance("PlayerWarrior", 1);
         let player2Mage = Entity.createInstance("PlayerMage", 1);
@@ -67,6 +73,7 @@ class AccountManager {
         account2.addCharacter(new Character("warrior", player2Warrior));
 
         let accountManager = new AccountManager();
+        accountManager.addAccount(devAccount1);
         accountManager.addAccount(account1);
         accountManager.addAccount(account2);
 

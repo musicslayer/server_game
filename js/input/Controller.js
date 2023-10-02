@@ -22,7 +22,7 @@ class Controller {
 
     inputMap = new Map();
 
-    constructor() {
+    constructor(isDevMode) {
         this.inputMap.set(this._y, "inventory_previous");
         this.inputMap.set(this._b, "inventory_next");
         this.inputMap.set(this._a, "inventory_use");

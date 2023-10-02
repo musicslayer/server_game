@@ -1,7 +1,7 @@
 const Keyboard = require("../input/Keyboard.js");
 const Mouse = require("../input/Mouse.js");
 const Controller = require("../input/Controller.js");
-const Entity = require("../entity/Entity");
+const Entity = require("../entity/Entity.js");
 const MoveAnimation = require("../animation/MoveAnimation.js");
 const ServerTask = require("../server/ServerTask.js");
 const Util = require("../util/Util.js");
@@ -9,15 +9,19 @@ const Util = require("../util/Util.js");
 class Client {
     socket;
 
-    keyboard = new Keyboard();
-    mouse = new Mouse();
-    controller = new Controller();
+    keyboard;
+    mouse;
+    controller;
     
     username;
     characterName;
     player;
 
-    constructor(username, characterName, player) {
+    constructor(isDevMode, username, characterName, player) {
+        this.keyboard = new Keyboard(isDevMode);
+        this.mouse = new Mouse(isDevMode);
+        this.controller = new Controller(isDevMode);
+
         this.username = username;
         this.characterName = characterName;
         this.player = player;
@@ -106,6 +110,28 @@ class Client {
             this.scheduleMoveTask(undefined, 0, "teleport_home", this.player);
         }
 
+        // **** Player Boosts
+        if(inputs.includes("boost_experience")) {
+            this.scheduleActionTask(undefined, 0, "add_experience", this.player, 10);
+        }
+        if(inputs.includes("boost_health")) {
+            this.scheduleActionTask(undefined, 0, "add_health", this.player, 10);
+        }
+        if(inputs.includes("boost_mana")) {
+            this.scheduleActionTask(undefined, 0, "add_mana", this.player, 10);
+        }
+        if(inputs.includes("add_gold")) {
+            let gold = Entity.createInstance("Gold", 1000);
+            gold.setScreen(this.player.screen);
+            gold.x = this.player.getMovementX();
+            gold.y = this.player.getMovementY();
+
+            this.scheduleCreateTask(undefined, 0, "spawn_entity", this.player, gold);
+        }
+        if(inputs.includes("invincible_on")) {
+            this.scheduleActionTask(undefined, 0, "invincible_on", this.player, 10);
+        }
+
         // Move Position (only one will be executed)
         // Change player direction if needed, or take a step if we are already facing that way.
         if(inputs.includes("move_up")) {
@@ -139,6 +165,28 @@ class Client {
             else {
                 this.scheduleDirectionTask(undefined, 0, "change_direction", this.player, "right");
             }
+        }
+
+        // **** Move Screens (only one will be executed)
+        if(inputs.includes("screen_up")) {
+            this.scheduleMoveTask(undefined, 0, "move_screen", this.player, "up");
+        }
+        else if(inputs.includes("screen_down")) {
+            this.scheduleMoveTask(undefined, 0, "move_screen", this.player, "down");
+        }
+        else if(inputs.includes("screen_left")) {
+            this.scheduleMoveTask(undefined, 0, "move_screen", this.player, "left");
+        }
+        else if(inputs.includes("screen_right")) {
+            this.scheduleMoveTask(undefined, 0, "move_screen", this.player, "right");
+        }
+
+        // **** Move Maps (only one will be executed)
+        if(inputs.includes("map_up")) {
+            this.scheduleMoveTask(undefined, 0, "move_map", this.player, "up");
+        }
+        else if(inputs.includes("map_down")) {
+            this.scheduleMoveTask(undefined, 0, "move_map", this.player, "down");
         }
     }
 
@@ -218,6 +266,10 @@ class Client {
             this.player.x += axes[2] / speedFactor;
             this.player.y += axes[3] / speedFactor;
         }
+    }
+
+    scheduleCreateTask(animation, time, fcnName, ...args) {
+        this.scheduleTask("create", this.player.createTime, animation, time, fcnName, ...args);
     }
 
     scheduleMoveTask(animation, time, fcnName, ...args) {

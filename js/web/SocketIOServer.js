@@ -501,7 +501,7 @@ class SocketIOServer {
 				let serverTask = new ServerTask(undefined, 0, 1, "spawn", player);
 				player.getServer().scheduleTask(serverTask);
 
-				let client = new Client(username, characterName, player);
+				let client = new Client(account.isDevAccount, username, characterName, player);
 				client.socket = socket;
 				this.clientManager.addClient(client);
 

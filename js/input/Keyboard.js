@@ -49,7 +49,7 @@ class Keyboard {
 
     inputMap = new Map();
 
-    constructor() {
+    constructor(isDevMode) {
         this.inputMap.set(this._f, "inventory_previous");
         this.inputMap.set(this._g, "inventory_next");
         this.inputMap.set(this._h, "inventory_use");
@@ -61,6 +61,25 @@ class Keyboard {
         this.inputMap.set(this._s, "move_down");
         this.inputMap.set(this._a, "move_left");
         this.inputMap.set(this._d, "move_right");
+
+        if(isDevMode) {
+            this.inputMap.set(this._dash, "kill");
+            this.inputMap.set(this._equals, "revive");
+
+            this.inputMap.set(this._z, "boost_experience");
+            this.inputMap.set(this._x, "boost_health");
+            this.inputMap.set(this._c, "boost_mana");
+            this.inputMap.set(this._q, "add_gold");
+            this.inputMap.set(this._e, "invincible_on");
+
+            this.inputMap.set(this._i, "screen_up");
+            this.inputMap.set(this._k, "screen_down");
+            this.inputMap.set(this._j, "screen_left");
+            this.inputMap.set(this._l, "screen_right");
+
+            this.inputMap.set(this._m, "map_up");
+            this.inputMap.set(this._n, "map_down");
+        }
     }
 
     processKeyPress(keys) {
