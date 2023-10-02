@@ -28,6 +28,7 @@ class Controller {
         this.inputMap.set(this._a, "inventory_use");
 
         this.inputMap.set(this._x, "action");
+        this.inputMap.set(this._l1, "teleport_home");
 
         this.inputMap.set(this._up, "move_up");
         this.inputMap.set(this._down, "move_down");
