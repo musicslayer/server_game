@@ -403,6 +403,8 @@ class SocketIOServer {
 				}
 
 				let account = this.accountManager.getAccount(username);
+				let isDevAccount = account.isDevAccount;
+
 				if(!account) {
 					callback({
 						"isSuccess": false,
@@ -461,7 +463,7 @@ class SocketIOServer {
 					});
 					return;
 				}
-				if(world.isFull()) {
+				if(world.isFull() && !isDevAccount) {
 					callback({
 						"isSuccess": false,
 						"errString": "The world is full."
@@ -516,7 +518,9 @@ class SocketIOServer {
 						if(client.player.isSpawned) {
 							let serverTask = new ServerTask(undefined, 0, 1, "despawn", client.player);
 							client.player.getServer().scheduleTask(serverTask);
-							client.player.screen.map.world.playerCount--;
+							if(!isDevAccount) {
+								client.player.screen.map.world.playerCount--;
+							}
 						}
 
 						client.player.client = undefined;
@@ -532,7 +536,9 @@ class SocketIOServer {
 				account.lastCharacterName = characterName;
 
 				// Update world population count.
-				world.playerCount++;
+				if(!isDevAccount) {
+					world.playerCount++;
+				}
 
 				callback({"isSuccess": true});
 			}
