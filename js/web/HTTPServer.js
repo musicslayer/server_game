@@ -15,8 +15,9 @@ const HTML_CHANGE_PASSWORD = "html/change_password.html";
 const HTML_CHANGE_EMAIL = "html/change_email.html";
 const HTML_ADVANCED_ACCOUNT_OPTIONS = "html/advanced_account_options.html";
 const HTML_GAME = "html/game.html";
-const HTML_CANVAS_PAINTER = "html/CanvasPainter.js";
 const HTML_IMAGE_CATALOG = "html/ImageCatalog.js";
+const HTML_CANVAS_PAINTER = "html/CanvasPainter.js";
+const HTML_INPUT_MANAGER = "html/InputManager.js";
 const HTML_UNZIP_STREAM = "html/UnzipStream.js";
 const HTML_SOCKETIO = "html/socket.io.min.js";
 const IMAGE_ZIP = "assets/image.zip";
@@ -90,12 +91,16 @@ class HTTPServer {
                         serveFile(res, "image/x-icon", FAVICON_FILE);
                         break;
 
+                    case "/ImageCatalog.js":
+                        serveFile(res, "application/javascript", HTML_IMAGE_CATALOG);
+                        break;
+
                     case "/CanvasPainter.js":
                         serveFile(res, "application/javascript", HTML_CANVAS_PAINTER);
                         break;
 
-                    case "/ImageCatalog.js":
-                        serveFile(res, "application/javascript", HTML_IMAGE_CATALOG);
+                    case "/InputManager.js":
+                        serveFile(res, "application/javascript", HTML_INPUT_MANAGER);
                         break;
 
                     case "/UnzipStream.js":

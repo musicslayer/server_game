@@ -13,6 +13,7 @@ class CanvasPainter {
     canvas;
     ctx;
 
+    // TODO Just construct imageCatalog here...?
     constructor(canvas, imageCatalog) {
         this.canvas = canvas;
         this.canvas.width = canvas_width;
