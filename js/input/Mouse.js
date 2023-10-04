@@ -7,8 +7,11 @@ class Mouse {
 
     constructor(isDevMode) {
         this.inputMap.set(this._leftclick, "left");
-        this.inputMap.set(this._middleclick, "middle");
         this.inputMap.set(this._rightclick, "right");
+
+        if(isDevMode) {
+            this.inputMap.set(this._middleclick, "middle");
+        }
     }
 
     processButton(button) {

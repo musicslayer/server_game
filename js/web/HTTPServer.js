@@ -15,7 +15,9 @@ const HTML_CHANGE_PASSWORD = "html/change_password.html";
 const HTML_CHANGE_EMAIL = "html/change_email.html";
 const HTML_ADVANCED_ACCOUNT_OPTIONS = "html/advanced_account_options.html";
 const HTML_GAME = "html/game.html";
+const HTML_GAME_CLIENT = "html/GameClient.js";
 const HTML_IMAGE_CATALOG = "html/ImageCatalog.js";
+const HTML_GAME_SCREEN = "html/GameScreen.js";
 const HTML_CANVAS_PAINTER = "html/CanvasPainter.js";
 const HTML_INPUT_MANAGER = "html/InputManager.js";
 const HTML_UNZIP_STREAM = "html/UnzipStream.js";
@@ -91,8 +93,16 @@ class HTTPServer {
                         serveFile(res, "image/x-icon", FAVICON_FILE);
                         break;
 
+                    case "/GameClient.js":
+                        serveFile(res, "application/javascript", HTML_GAME_CLIENT);
+                        break;
+
                     case "/ImageCatalog.js":
                         serveFile(res, "application/javascript", HTML_IMAGE_CATALOG);
+                        break;
+
+                    case "/GameScreen.js":
+                        serveFile(res, "application/javascript", HTML_GAME_SCREEN);
                         break;
 
                     case "/CanvasPainter.js":

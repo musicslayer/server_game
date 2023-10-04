@@ -13,8 +13,7 @@
         <script src="socket.io.min.js"></script>
         
         <script type="module">
-            import { CanvasPainter } from "./CanvasPainter.js";
-            import { InputManager } from "./InputManager.js";
+            import { GameClient } from "./GameClient.js";
             
             const GameResultText = document.querySelector("#ID_GameResultText");
             const Canvas = document.querySelector("#ID_Canvas");
@@ -26,19 +25,17 @@
             
             const SOCKET_TIMEOUT = 10000;
             const INPUT_FPS_RATE = 60; // times per second inputs are queried
-            
-            let canvasPainter;
-            let inputManager;
+            const IMAGE_SCALE_FACTOR = 64;
             
             let inputInterval;
             let devInterval;
             
+            let gameClient;
             let socket = await createSocket();
             
             async function createSocket() {
-                canvasPainter = new CanvasPainter(Canvas);
-                await canvasPainter.createImageCatalog();
-                inputManager = new InputManager(Canvas);
+                gameClient = new GameClient(Canvas, IMAGE_SCALE_FACTOR)
+                await gameClient.canvasPainter.createImageCatalog();
                             
                 let socket = io({
                     // Use these options to only allow websockets and avoid memory leaks.
@@ -60,7 +57,7 @@
                         
                         let R = await queryServer("on_login_character", username, hash, characterName, serverName, worldName);
                         if(R.isSuccess) {
-                            canvasPainter.setVisible(true);
+                            gameClient.canvasPainter.setVisible(true);
                             GameResultText.style.color = BLACK;
                             GameResultText.innerHTML = "";
                             
@@ -85,7 +82,7 @@
                     clearInterval(inputInterval);
                     clearInterval(devInterval);
 
-                    canvasPainter.setVisible(false);
+                    gameClient.canvasPainter.setVisible(false);
                     GameResultText.style.color = RED;
                     GameResultText.innerHTML = "You have been disconnected from the server.";
                 });
@@ -95,7 +92,7 @@
             
             function startInputInterval() {
                 let inputInterval = setInterval(async () => {
-                    if(inputManager.inputsEnabled) {
+                    if(gameClient.inputManager.inputsEnabled) {
                         await checkKeys();
                         await checkGamepadButtons();
                         await checkGamepadAxes();
@@ -121,17 +118,17 @@
             
             Canvas.addEventListener("mousedown", (event) => {
                 event.preventDefault()
-                inputManager.onMouseDown(event);
+                gameClient.inputManager.onMouseDown(event);
             });
             
             Canvas.addEventListener("mousemove", (event) => {
                 event.preventDefault()
-                inputManager.onMouseMove(event);
+                gameClient.inputManager.onMouseMove(event);
             });
             
             Canvas.addEventListener("mouseup", async (event) => {
                 event.preventDefault()
-                let [mouseAction, button, deltaSpace, deltaTime, location1, info1, location2, info2] = inputManager.onMouseUp(event);
+                let [mouseAction, button, location1, info1, location2, info2] = gameClient.inputManager.onMouseUp(event);
                 
                 // Perform an action right after the mouseup event instead of waiting for the interval.
                 if(mouseAction === "click") {
@@ -144,26 +141,26 @@
             
             document.onkeydown = (event) => {
                 event.preventDefault();
-                inputManager.onKeyDown(event);
+                gameClient.inputManager.onKeyDown(event);
             }
             
             document.onkeyup = (event) => {
                 event.preventDefault();
-                inputManager.onKeyUp(event);
+                gameClient.inputManager.onKeyUp(event);
             }
             
             window.addEventListener("blur", (event) => {
                 event.preventDefault();
-                inputManager.onBlur(event);
+                gameClient.inputManager.onBlur(event);
             });
             
             window.addEventListener("focus", (event) => {
                 event.preventDefault();
-                inputManager.onFocus(event);
+                gameClient.inputManager.onFocus(event);
             });
             
             async function checkKeys() {
-                let keys = inputManager.getKeys();
+                let keys = gameClient.inputManager.getKeys();
                 if(keys.length !== 0) {
                     await reactKeys(keys);
                 }
@@ -173,7 +170,7 @@
                 // Check all gamepads that are connected.
                 for(let gamepad of navigator.getGamepads()) {
                     if(gamepad) {
-                        let buttons = inputManager.getGamepadButtons(gamepad);
+                        let buttons = gameClient.inputManager.getGamepadButtons(gamepad);
                         if(buttons.length !== 0) {
                             await reactGamepadButtons(buttons);
                         }
@@ -185,7 +182,7 @@
                 // Check all gamepads that are connected.
                 for(let gamepad of navigator.getGamepads()) {
                     if(gamepad) {
-                        let axes = inputManager.getGamepadAxes(gamepad);
+                        let axes = gameClient.inputManager.getGamepadAxes(gamepad);
                         if(axes.length !== 0) {
                             await reactGamepadAxes(axes);
                         }
@@ -217,7 +214,7 @@
                 let R = await queryServer("get_client_data");
                 if(R.isSuccess) {
                     let clientData = R.clientData;
-                    canvasPainter.drawClient(time, clientData);
+                    gameClient.canvasPainter.drawClient(time, clientData);
                     requestAnimationFrame(drawClient);
                 }
             }

@@ -28,13 +28,13 @@ class Client {
     }
 
     // location vs. info:
-    // "screen" => [x, y] (normalized)
+    // "screen" => [x, y]
     // "inventory" => [slot]
-    // "purse" => []
+    // "purse" => [number] (unused)
 
     onMouseClick(button, location, info) {
         // Left clicking on the screen or inventory selects an entity.
-        // Middle clicking on the screen is a teleport.
+        // [DEV] Middle clicking on the screen is a teleport.
         // Right clicking on an inventory slot uses an item.
         // Right clicking on the purse drops up to 100 gold.
         let inputs = this.mouse.processButton(button);
@@ -110,7 +110,7 @@ class Client {
             this.scheduleMoveTask(undefined, 0, "teleport_home", this.player);
         }
 
-        // **** Player Boosts
+        // [DEV] Player Boosts
         if(inputs.includes("boost_experience")) {
             this.scheduleActionTask(undefined, 0, "add_experience", this.player, 10);
         }
@@ -167,7 +167,7 @@ class Client {
             }
         }
 
-        // **** Move Screens (only one will be executed)
+        // [DEV] Move Screens (only one will be executed)
         if(inputs.includes("screen_up")) {
             this.scheduleMoveTask(undefined, 0, "move_screen", this.player, "up");
         }
@@ -181,7 +181,7 @@ class Client {
             this.scheduleMoveTask(undefined, 0, "move_screen", this.player, "right");
         }
 
-        // **** Move Maps (only one will be executed)
+        // [DEV] Move Maps (only one will be executed)
         if(inputs.includes("map_up")) {
             this.scheduleMoveTask(undefined, 0, "move_map", this.player, "up");
         }

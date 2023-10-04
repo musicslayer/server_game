@@ -2,31 +2,27 @@ import { ImageCatalog } from "./ImageCatalog.js";
 
 const ANIMATION_TIME = 4; // seconds per animation cycle
 const ANIMATION_FRAMES = 8; // frames per animation cycle
-const SHOW_GRID = true;
-const NUM_TILES_X = 16;
-const NUM_TILES_Y = 12;
-const SIDE_PANEL_TILES = 10;
-const IMAGE_SCALE_FACTOR = 64;
+const SHOW_SCREEN_GRID = true;
+const SHOW_INVENTORY_GRID = true;
 
 // TODO "IMAGE_SCALE_FACTOR" and "128" and widths of text boxes needs to be fixed!
+// TODO Organize better.
+// TODO Where should ImageCatalog be constructed?
 
 class CanvasPainter {
     canvas;
     ctx;
-
+    gameScreen;
     imageCatalog;
 
-    constructor(canvas) {
+    constructor(canvas, gameScreen) {
         this.canvas = canvas;
-        this.canvas.width = (NUM_TILES_X + SIDE_PANEL_TILES) * IMAGE_SCALE_FACTOR;
-        this.canvas.height = NUM_TILES_Y * IMAGE_SCALE_FACTOR;
-
-        this.imageCatalog = new ImageCatalog();
-
         this.ctx = this.canvas.getContext("2d");
+        this.gameScreen = gameScreen;
     }
 
     async createImageCatalog() {
+        this.imageCatalog = new ImageCatalog();
         await this.imageCatalog.createImageCatalog();
     }
 
@@ -41,8 +37,10 @@ class CanvasPainter {
         
         let ctxBuffer = canvasBuffer.getContext("2d");
         
-        if(SHOW_GRID) {
+        if(SHOW_SCREEN_GRID) {
             this.drawScreenGrid(ctxBuffer);
+        }
+        if(SHOW_INVENTORY_GRID) {
             this.drawInventoryGrid(ctxBuffer);
         }
         
@@ -66,7 +64,7 @@ class CanvasPainter {
                 let name = tile.names.shift();
                 let image = this.imageCatalog.getImageByTileName(name, animationFrame);
                 
-                ctxBuffer.drawImage(image, tile.x * IMAGE_SCALE_FACTOR, tile.y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                ctxBuffer.drawImage(image, tile.x * this.gameScreen.imageScaleFactor, tile.y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
             }
         }
         
@@ -78,65 +76,61 @@ class CanvasPainter {
             let x = entity.x + entity.animationShiftX;
             let y = entity.y + entity.animationShiftY;
             
-            ctxBuffer.drawImage(image, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+            ctxBuffer.drawImage(image, x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
             
             if(entity.stackSize !== 1) {
-                ctxBuffer.drawImage(this.getStackSizeImage(entity.stackSize), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                ctxBuffer.drawImage(this.getStackSizeImage(entity.stackSize), x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
             }
             
             if(isValid(entity.healthFraction)) {
-                ctxBuffer.drawImage(this.getHealthBarImage(entity.healthFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                ctxBuffer.drawImage(this.getHealthBarImage(entity.healthFraction), x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
             }
             
             if(isValid(entity.manaFraction)) {
-                ctxBuffer.drawImage(this.getManaBarImage(entity.manaFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                ctxBuffer.drawImage(this.getManaBarImage(entity.manaFraction), x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
             }
             
             if(isValid(entity.experienceFraction)) {
-                ctxBuffer.drawImage(this.getExperienceBarImage(entity.experienceFraction), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                ctxBuffer.drawImage(this.getExperienceBarImage(entity.experienceFraction), x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
             }
             
             if(isValid(entity.level)) {
-                ctxBuffer.drawImage(this.getLevelImage(entity.level), x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                ctxBuffer.drawImage(this.getLevelImage(entity.level), x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
             }
             
             if(entity.statuses.includes("dead") || entity.statuses.includes("invincible")) {
                 let haloImage = this.imageCatalog.getImageByStatusName("invincible", animationFrame);
-                ctxBuffer.drawImage(haloImage, x * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+                ctxBuffer.drawImage(haloImage, x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
             }
         }
 
         // Screen Dividers
-        ctxBuffer.fillRect(NUM_TILES_X * IMAGE_SCALE_FACTOR, 0, IMAGE_SCALE_FACTOR, NUM_TILES_Y * IMAGE_SCALE_FACTOR);
-        ctxBuffer.fillRect((NUM_TILES_X + 1) * IMAGE_SCALE_FACTOR, 6 * IMAGE_SCALE_FACTOR, 9 * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+        ctxBuffer.fillRect(this.gameScreen.screenTilesX * this.gameScreen.imageScaleFactor, 0, this.gameScreen.imageScaleFactor, this.gameScreen.screenTilesY * this.gameScreen.imageScaleFactor);
+        ctxBuffer.fillRect((this.gameScreen.screenTilesX + 1) * this.gameScreen.imageScaleFactor, 6 * this.gameScreen.imageScaleFactor, 9 * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
         
         // Inventory
-        let originInventoryX = 17;
-        let originInventoryY = 7;
         let inventoryImages = this.getInventoryImages(inventory.items, animationFrame);
         while(inventoryImages.length > 0) {
             let inventoryImage = inventoryImages.shift();
-            ctxBuffer.drawImage(inventoryImage.image, (originInventoryX + inventoryImage.x) * IMAGE_SCALE_FACTOR, (originInventoryY + inventoryImage.y) * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+            ctxBuffer.drawImage(inventoryImage.image, (this.gameScreen.inventoryOriginX + inventoryImage.x) * this.gameScreen.imageScaleFactor, (this.gameScreen.inventoryOriginY + inventoryImage.y) * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
         }
         
         this.drawInventoryCursor(ctxBuffer, inventory.currentSlot);
         
         // Purse
-        let originPurseX = 17;
-        let originPurseY = 0;
         let purseImage = this.imageCatalog.getImageByEntityClassName("Gold", animationFrame);
-        ctxBuffer.drawImage(purseImage, originPurseX * IMAGE_SCALE_FACTOR, originPurseY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
-        ctxBuffer.drawImage(this.getGoldTotalImage(purse.goldTotal), (originPurseX + 1) * IMAGE_SCALE_FACTOR, originPurseY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+        ctxBuffer.drawImage(purseImage, this.gameScreen.purseOriginX * this.gameScreen.imageScaleFactor, this.gameScreen.purseOriginY * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
+        ctxBuffer.drawImage(this.getGoldTotalImage(purse.goldTotal), (this.gameScreen.purseOriginX + 1) * this.gameScreen.imageScaleFactor, this.gameScreen.purseOriginY * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
         
         // Info
         if(info.className !== "Undefined") {
-            let W = IMAGE_SCALE_FACTOR * 6;
+            let W = this.gameScreen.imageScaleFactor * 6;
             let originInfoX = 17;
             let originInfoY = 1;
             let infoImage = this.imageCatalog.getImageByEntityClassName(info.className, animationFrame);
-            ctxBuffer.drawImage(infoImage, originInfoX * IMAGE_SCALE_FACTOR, originInfoY * IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
-            ctxBuffer.drawImage(this.getInfoNameImage(info.name), (originInfoX + 1) * IMAGE_SCALE_FACTOR, originInfoY * IMAGE_SCALE_FACTOR, W, IMAGE_SCALE_FACTOR);
-            ctxBuffer.drawImage(this.getInfoTextImage(info.text), (originInfoX + 1) * IMAGE_SCALE_FACTOR, originInfoY * IMAGE_SCALE_FACTOR, W, IMAGE_SCALE_FACTOR);
+            ctxBuffer.drawImage(infoImage, originInfoX * this.gameScreen.imageScaleFactor, originInfoY * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
+            ctxBuffer.drawImage(this.getInfoNameImage(info.name), (originInfoX + 1) * this.gameScreen.imageScaleFactor, originInfoY * this.gameScreen.imageScaleFactor, W, this.gameScreen.imageScaleFactor);
+            ctxBuffer.drawImage(this.getInfoTextImage(info.text), (originInfoX + 1) * this.gameScreen.imageScaleFactor, originInfoY * this.gameScreen.imageScaleFactor, W, this.gameScreen.imageScaleFactor);
         }
         
         ctxBuffer.stroke();
@@ -145,14 +139,14 @@ class CanvasPainter {
     drawScreenGrid(ctxBuffer) {
         ctxBuffer.beginPath();
 
-        for(let x = 0; x < NUM_TILES_X + 1; x++) {
-            ctxBuffer.moveTo(x * IMAGE_SCALE_FACTOR, 0);
-            ctxBuffer.lineTo(x * IMAGE_SCALE_FACTOR, NUM_TILES_Y * IMAGE_SCALE_FACTOR);
+        for(let x = 0; x < this.gameScreen.screenTilesX + 1; x++) {
+            ctxBuffer.moveTo(x * this.gameScreen.imageScaleFactor, 0);
+            ctxBuffer.lineTo(x * this.gameScreen.imageScaleFactor, this.gameScreen.screenTilesY * this.gameScreen.imageScaleFactor);
         }
 
-        for(let y = 0; y < NUM_TILES_Y + 1; y++) {
-            ctxBuffer.moveTo(0, y * IMAGE_SCALE_FACTOR);
-            ctxBuffer.lineTo(NUM_TILES_X * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR);
+        for(let y = 0; y < this.gameScreen.screenTilesY + 1; y++) {
+            ctxBuffer.moveTo(0, y * this.gameScreen.imageScaleFactor);
+            ctxBuffer.lineTo(this.gameScreen.screenTilesX * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor);
         }
 
         ctxBuffer.stroke();
@@ -161,14 +155,14 @@ class CanvasPainter {
     drawInventoryGrid(ctxBuffer) {
         ctxBuffer.beginPath();
 
-        for(let x = NUM_TILES_X + 1; x < NUM_TILES_X + SIDE_PANEL_TILES + 1; x++) {
-            ctxBuffer.moveTo(x * IMAGE_SCALE_FACTOR, 7 * IMAGE_SCALE_FACTOR);
-            ctxBuffer.lineTo(x * IMAGE_SCALE_FACTOR, NUM_TILES_Y * IMAGE_SCALE_FACTOR);
+        for(let x = this.gameScreen.screenTilesX + 1; x < this.gameScreen.screenTilesX + this.gameScreen.inventoryTilesX + 1; x++) {
+            ctxBuffer.moveTo(x * this.gameScreen.imageScaleFactor, 7 * this.gameScreen.imageScaleFactor);
+            ctxBuffer.lineTo(x * this.gameScreen.imageScaleFactor, this.gameScreen.screenTilesY * this.gameScreen.imageScaleFactor);
         }
 
-        for(let y = 7; y < NUM_TILES_Y + 1; y++) {
-            ctxBuffer.moveTo((NUM_TILES_X + 1) * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR);
-            ctxBuffer.lineTo((NUM_TILES_X + SIDE_PANEL_TILES) * IMAGE_SCALE_FACTOR, y * IMAGE_SCALE_FACTOR);
+        for(let y = 7; y < this.gameScreen.screenTilesY + 1; y++) {
+            ctxBuffer.moveTo((this.gameScreen.screenTilesX + 1) * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor);
+            ctxBuffer.lineTo((this.gameScreen.screenTilesX + this.gameScreen.inventoryTilesX) * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor);
         }
 
         ctxBuffer.stroke();
@@ -176,14 +170,14 @@ class CanvasPainter {
     
     drawInventoryCursor(ctxBuffer, currentSlot) {
         if(currentSlot !== undefined) {
-            let xy = slot2XY(currentSlot);
+            let xy = this.gameScreen.getInventoryXY(currentSlot);
 
             ctxBuffer.beginPath();
             
             ctxBuffer.lineWidth = "3";
             ctxBuffer.strokeStyle = "red";
 
-            ctxBuffer.rect(xy[0], xy[1], IMAGE_SCALE_FACTOR, IMAGE_SCALE_FACTOR);
+            ctxBuffer.rect(xy[0], xy[1], this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
             ctxBuffer.stroke();
 
             ctxBuffer.lineWidth = "1";
@@ -330,21 +324,9 @@ class CanvasPainter {
     }
 }
 
+// TODO We shouldn't need this anymore...?
 function isValid(n) {
     return n !== undefined && n !== NaN && n !== null;
-}
-
-function slot2XY(slot) {
-    let originX = 17;
-    let originY = 7;
-
-    let nx = slot % 9;
-    let ny = Math.floor(slot / 9);
-
-    let x = (originX + nx) * IMAGE_SCALE_FACTOR;
-    let y = (originY + ny) * IMAGE_SCALE_FACTOR;
-
-    return [x, y];
 }
 
 export { CanvasPainter };

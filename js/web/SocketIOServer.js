@@ -1089,7 +1089,7 @@ function validateMouseInputs(location, info) {
 		return info.length === 1;
 	}
 	else if(location === "purse") {
-		return info.length === 0;
+		return info.length === 1;
 	}
 	else {
 		return false;
