@@ -11,13 +11,13 @@ class GameClient {
     canvasPainter;
     inputManager;
 
-    constructor(canvas, imageScaleFactor) {
+    constructor(canvas, imageCatalog, imageScaleFactor) {
         canvas.width = NUM_TILES_X * imageScaleFactor;
         canvas.height = NUM_TILES_Y * imageScaleFactor;
         canvas.style.border = CANVAS_BORDER_PIXELS + "px solid";
 
         this.gameScreen = new GameScreen(canvas, CANVAS_BORDER_PIXELS, CANVAS_BORDER_PIXELS, imageScaleFactor);
-        this.canvasPainter = new CanvasPainter(canvas, this.gameScreen);
+        this.canvasPainter = new CanvasPainter(canvas, this.gameScreen, imageCatalog);
         this.inputManager = new InputManager(this.gameScreen);
     }
 }

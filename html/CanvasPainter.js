@@ -1,5 +1,3 @@
-import { ImageCatalog } from "./ImageCatalog.js";
-
 const ANIMATION_TIME = 4; // seconds per animation cycle
 const ANIMATION_FRAMES = 8; // frames per animation cycle
 const SHOW_SCREEN_GRID = true;
@@ -7,7 +5,6 @@ const SHOW_INVENTORY_GRID = true;
 
 // TODO "IMAGE_SCALE_FACTOR" and "128" and widths of text boxes needs to be fixed!
 // TODO Organize better.
-// TODO Where should ImageCatalog be constructed?
 
 class CanvasPainter {
     canvas;
@@ -15,15 +12,11 @@ class CanvasPainter {
     gameScreen;
     imageCatalog;
 
-    constructor(canvas, gameScreen) {
+    constructor(canvas, gameScreen, imageCatalog) {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext("2d");
         this.gameScreen = gameScreen;
-    }
-
-    async createImageCatalog() {
-        this.imageCatalog = new ImageCatalog();
-        await this.imageCatalog.createImageCatalog();
+        this.imageCatalog = imageCatalog;
     }
 
     setVisible(bool) {

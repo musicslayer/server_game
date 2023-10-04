@@ -34,8 +34,10 @@
             let socket = await createSocket();
             
             async function createSocket() {
-                gameClient = new GameClient(Canvas, IMAGE_SCALE_FACTOR)
-                await gameClient.canvasPainter.createImageCatalog();
+                let imageCatalog = new ImageCatalog();
+                await imageCatalog.createImageCatalog();
+                
+                gameClient = new GameClient(Canvas, imageCatalog, IMAGE_SCALE_FACTOR)
                             
                 let socket = io({
                     // Use these options to only allow websockets and avoid memory leaks.
