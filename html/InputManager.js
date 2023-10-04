@@ -49,7 +49,7 @@ class InputManager {
 
     onMouseUp(event) {
         if(this.downButton !== event.button) {
-            return;
+            return [undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined];
         }
         
         this.downButton = undefined;

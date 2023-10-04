@@ -36,7 +36,7 @@ class Gamepad {
         this.inputMap.set(this._right, "move_right");
     }
 
-    processButtonPress(buttons) {
+    processButtons(buttons) {
         let inputs = [];
 
         for(let button of buttons) {

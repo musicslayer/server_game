@@ -82,7 +82,7 @@ class Keyboard {
         }
     }
 
-    processKeyPress(keys) {
+    processKeys(keys) {
         let inputs = [];
 
         for(let key of keys) {

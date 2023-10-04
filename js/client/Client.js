@@ -37,7 +37,7 @@ class Client {
         // Middle clicking on the screen is a teleport.
         // Right clicking on an inventory slot uses an item.
         // Right clicking on the purse drops up to 100 gold.
-        let inputs = this.mouse.processClick(button);
+        let inputs = this.mouse.processButton(button);
         
         if(inputs.includes("left")) {
             if(location === "screen") {
@@ -68,7 +68,7 @@ class Client {
 
     onMouseDrag(button, location1, info1, location2, info2) {
         // A left click drag can switch inventory slots or drop an entire slot, depending on where the drag motion ends.
-        let inputs = this.mouse.processClick(button);
+        let inputs = this.mouse.processButton(button);
 
         if(inputs.includes("left")) {
             if(location1 === "inventory" && location2 === "inventory" && info1[0] !== info2[0]) {
@@ -85,7 +85,7 @@ class Client {
     }
 
     onKeys(keys) {
-        let inputs = this.keyboard.processKeyPress(keys);
+        let inputs = this.keyboard.processKeys(keys);
 
         // Inventory (only one will be executed)
         if(inputs.includes("inventory_previous")) {
@@ -191,7 +191,7 @@ class Client {
     }
 
     onGamepadButtons(buttons) {
-        let inputs = this.gamepad.processButtonPress(buttons);
+        let inputs = this.gamepad.processButtons(buttons);
 
         // Inventory (only one will be executed)
         if(inputs.includes("inventory_previous")) {

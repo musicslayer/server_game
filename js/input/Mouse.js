@@ -11,7 +11,7 @@ class Mouse {
         this.inputMap.set(this._rightclick, "right");
     }
 
-    processClick(button) {
+    processButton(button) {
         // Note that "button" will only be a single button, not an array.
         let inputs = [];
         inputs.push(this.inputMap.get(button));
