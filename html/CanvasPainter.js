@@ -1,31 +1,37 @@
+import { ImageCatalog } from "./ImageCatalog.js";
+
 const ANIMATION_TIME = 4; // seconds per animation cycle
 const ANIMATION_FRAMES = 8; // frames per animation cycle
+const SHOW_GRID = true;
 const NUM_TILES_X = 16;
 const NUM_TILES_Y = 12;
 const SIDE_PANEL_TILES = 10;
 const IMAGE_SCALE_FACTOR = 64;
 
-const canvas_width = (NUM_TILES_X + SIDE_PANEL_TILES) * IMAGE_SCALE_FACTOR;
-const canvas_height = NUM_TILES_Y * IMAGE_SCALE_FACTOR;
-const canvas_showGrid = true;
+// TODO "IMAGE_SCALE_FACTOR" and "128" and widths of text boxes needs to be fixed!
 
 class CanvasPainter {
     canvas;
     ctx;
 
-    // TODO Just construct imageCatalog here...?
-    constructor(canvas, imageCatalog) {
-        this.canvas = canvas;
-        this.canvas.width = canvas_width;
-        this.canvas.height = canvas_height;
+    imageCatalog;
 
-        this.imageCatalog = imageCatalog;
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.canvas.width = (NUM_TILES_X + SIDE_PANEL_TILES) * IMAGE_SCALE_FACTOR;
+        this.canvas.height = NUM_TILES_Y * IMAGE_SCALE_FACTOR;
+
+        this.imageCatalog = new ImageCatalog();
 
         this.ctx = this.canvas.getContext("2d");
     }
 
+    async createImageCatalog() {
+        await this.imageCatalog.createImageCatalog();
+    }
+
     setVisible(bool) {
-        canvas.style.display = bool ? "inline" : "none";
+        this.canvas.style.display = bool ? "inline" : "none";
     }
 
     drawClient(time, clientData) {
@@ -35,7 +41,7 @@ class CanvasPainter {
         
         let ctxBuffer = canvasBuffer.getContext("2d");
         
-        if(canvas_showGrid) {
+        if(SHOW_GRID) {
             this.drawScreenGrid(ctxBuffer);
             this.drawInventoryGrid(ctxBuffer);
         }

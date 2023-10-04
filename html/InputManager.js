@@ -1,5 +1,4 @@
 const DEADZONE = 0.2;
-
 const NUM_TILES_X = 16;
 const NUM_TILES_Y = 12;
 const IMAGE_SCALE_FACTOR = 64;

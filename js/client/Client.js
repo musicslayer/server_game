@@ -1,6 +1,6 @@
 const Keyboard = require("../input/Keyboard.js");
 const Mouse = require("../input/Mouse.js");
-const Controller = require("../input/Controller.js");
+const Gamepad = require("../input/Gamepad.js");
 const Entity = require("../entity/Entity.js");
 const MoveAnimation = require("../animation/MoveAnimation.js");
 const ServerTask = require("../server/ServerTask.js");
@@ -9,18 +9,18 @@ const Util = require("../util/Util.js");
 class Client {
     socket;
 
-    keyboard;
     mouse;
-    controller;
+    keyboard;
+    gamepad;
     
     username;
     characterName;
     player;
 
     constructor(isDevMode, username, characterName, player) {
-        this.keyboard = new Keyboard(isDevMode);
         this.mouse = new Mouse(isDevMode);
-        this.controller = new Controller(isDevMode);
+        this.keyboard = new Keyboard(isDevMode);
+        this.gamepad = new Gamepad(isDevMode);
 
         this.username = username;
         this.characterName = characterName;
@@ -32,7 +32,7 @@ class Client {
     // "inventory" => [slot]
     // "purse" => []
 
-    onClick(button, location, info) {
+    onMouseClick(button, location, info) {
         // Left clicking on the screen or inventory selects an entity.
         // Middle clicking on the screen is a teleport.
         // Right clicking on an inventory slot uses an item.
@@ -66,7 +66,7 @@ class Client {
         }
     }
 
-    onDrag(button, location1, info1, location2, info2) {
+    onMouseDrag(button, location1, info1, location2, info2) {
         // A left click drag can switch inventory slots or drop an entire slot, depending on where the drag motion ends.
         let inputs = this.mouse.processClick(button);
 
@@ -84,7 +84,7 @@ class Client {
         }
     }
 
-    onKeyPress(keys) {
+    onKeys(keys) {
         let inputs = this.keyboard.processKeyPress(keys);
 
         // Inventory (only one will be executed)
@@ -190,8 +190,8 @@ class Client {
         }
     }
 
-    onControllerPress(buttons) {
-        let inputs = this.controller.processButtonPress(buttons);
+    onGamepadButtons(buttons) {
+        let inputs = this.gamepad.processButtonPress(buttons);
 
         // Inventory (only one will be executed)
         if(inputs.includes("inventory_previous")) {
@@ -252,7 +252,7 @@ class Client {
     }
 
     // This method is for demonstration purposes only and breaks the game logic.
-    onControllerSticks(axes) {
+    onGamepadAxes(axes) {
         // axes is [leftStickX, leftStickY, rightStickX, rightStickY]
         let deadzone = 0.2;
         let speedFactor = 10;

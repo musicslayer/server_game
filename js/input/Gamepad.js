@@ -1,4 +1,4 @@
-class Controller {
+class Gamepad {
     _a = 0;
     _b = 1;
     _x = 2;
@@ -47,4 +47,4 @@ class Controller {
     }
 }
 
-module.exports = Controller;
+module.exports = Gamepad;

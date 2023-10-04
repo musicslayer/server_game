@@ -880,84 +880,6 @@ class SocketIOServer {
 	attachClientListeners(socket, client) {
 		let ip = socket.handshake.address;
 
-		socket.on("on_key_press", (keys, callback) => {
-			try {
-				if(RateLimit.isRateLimited("input", ip)) {
-					socket.disconnect(true);
-					return;
-				}
-
-				if(!validateCallback(callback)) {
-					socket.disconnect(true);
-					return;
-				}
-
-				if(!validateKeys(keys)) {
-					socket.disconnect(true);
-					return;
-				}
-
-				client.onKeyPress(keys);
-				callback();
-			}
-			catch(err) {
-				console.error(err);
-				socket.disconnect(true);
-			}
-		});
-
-		socket.on("on_controller_press", (buttons, callback) => {
-			try {
-				if(RateLimit.isRateLimited("input", ip)) {
-					socket.disconnect(true);
-					return;
-				}
-
-				if(!validateCallback(callback)) {
-					socket.disconnect(true);
-					return;
-				}
-
-				if(!validateButtons(buttons)) {
-					socket.disconnect(true);
-					return;
-				}
-
-				client.onControllerPress(buttons);
-				callback();
-			}
-			catch(err) {
-				console.error(err);
-				socket.disconnect(true);
-			}
-		});
-
-		socket.on("on_controller_sticks", (axes, callback) => {
-			try {
-				if(RateLimit.isRateLimited("input", ip)) {
-					socket.disconnect(true);
-					return;
-				}
-
-				if(!validateCallback(callback)) {
-					socket.disconnect(true);
-					return;
-				}
-
-				if(!validateAxes(axes)) {
-					socket.disconnect(true);
-					return;
-				}
-
-				client.onControllerSticks(axes);
-				callback();
-			}
-			catch(err) {
-				console.error(err);
-				socket.disconnect(true);
-			}
-		});
-
 		socket.on("on_mouse_click", (button, location, info, callback) => {
 			try {
 				if(RateLimit.isRateLimited("input", ip)) {
@@ -970,7 +892,7 @@ class SocketIOServer {
 					return;
 				}
 
-				client.onClick(button, location, info);
+				client.onMouseClick(button, location, info);
 				callback();
 			}
 			catch(err) {
@@ -1001,7 +923,7 @@ class SocketIOServer {
 					return;
 				}
 
-				client.onDrag(button, location1, info1, location2, info2);
+				client.onMouseDrag(button, location1, info1, location2, info2);
 				callback();
 			}
 			catch(err) {
@@ -1009,7 +931,85 @@ class SocketIOServer {
 				socket.disconnect(true);
 			}
 		});
-	
+
+		socket.on("on_keys", (keys, callback) => {
+			try {
+				if(RateLimit.isRateLimited("input", ip)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				if(!validateKeys(keys)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				client.onKeys(keys);
+				callback();
+			}
+			catch(err) {
+				console.error(err);
+				socket.disconnect(true);
+			}
+		});
+
+		socket.on("on_gamepad_buttons", (buttons, callback) => {
+			try {
+				if(RateLimit.isRateLimited("input", ip)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				if(!validateButtons(buttons)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				client.onGamepadButtons(buttons);
+				callback();
+			}
+			catch(err) {
+				console.error(err);
+				socket.disconnect(true);
+			}
+		});
+
+		socket.on("on_gamepad_axes", (axes, callback) => {
+			try {
+				if(RateLimit.isRateLimited("input", ip)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				if(!validateCallback(callback)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				if(!validateAxes(axes)) {
+					socket.disconnect(true);
+					return;
+				}
+
+				client.onGamepadAxes(axes);
+				callback();
+			}
+			catch(err) {
+				console.error(err);
+				socket.disconnect(true);
+			}
+		});
+
 		socket.on("get_client_data", (callback) => {
 			try {
 				if(RateLimit.isRateLimited("data", ip)) {

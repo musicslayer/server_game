@@ -6,7 +6,9 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- Add in logging calls. This requires more storage space.
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
-// TODO Can we encrypt client-visible code so they cannot alter it?
+// TODO Clicking both mouse buttons causes error.
+//  game:142 Uncaught (in promise) TypeError: undefined is not iterable (cannot read property Symbol(Symbol.iterator))
+//  at HTMLCanvasElement.<anonymous> (game:142:91)
 
 async function init() {
     let appState = new AppState();
