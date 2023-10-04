@@ -1,3 +1,5 @@
+const MAX_CLICK_DELTA_SPACE = 10;
+const MAX_CLICK_DELTA_TIME = 100;
 const DEADZONE = 0.2;
 const NUM_TILES_X = 16;
 const NUM_TILES_Y = 12;
@@ -103,7 +105,15 @@ class InputManager {
             location2 = "purse";
         }
 
-        return [event.button, this.deltaSpace, deltaTime, location1, info1, location2, info2];
+        let mouseAction = undefined;
+        if(location1 && this.deltaSpace < MAX_CLICK_DELTA_SPACE && deltaTime < MAX_CLICK_DELTA_TIME) {
+            mouseAction = "click";
+        }
+        else if(location1 && location2 && (this.deltaSpace >= MAX_CLICK_DELTA_SPACE || deltaTime >= MAX_CLICK_DELTA_TIME)) {
+            mouseAction = "drag";
+        }
+
+        return [mouseAction, event.button, this.deltaSpace, deltaTime, location1, info1, location2, info2];
     }
     
     onKeyDown(event) {

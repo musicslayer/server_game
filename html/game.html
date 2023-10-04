@@ -27,9 +27,6 @@
             const SOCKET_TIMEOUT = 10000;
             const INPUT_FPS_RATE = 60; // times per second inputs are queried
             
-            const MAX_CLICK_DELTA_SPACE = 10;
-            const MAX_CLICK_DELTA_TIME = 100;
-            
             let canvasPainter;
             let inputManager;
             
@@ -134,20 +131,14 @@
             
             Canvas.addEventListener("mouseup", async (event) => {
                 event.preventDefault()
-                let [button, deltaSpace, deltaTime, location1, info1, location2, info2] = inputManager.onMouseUp(event);
+                let [mouseAction, button, deltaSpace, deltaTime, location1, info1, location2, info2] = inputManager.onMouseUp(event);
                 
                 // Perform an action right after the mouseup event instead of waiting for the interval.
-                if(deltaSpace < MAX_CLICK_DELTA_SPACE && deltaTime < MAX_CLICK_DELTA_TIME) {
-                    // Click
-                    if(location1) {
-                        await reactMouseClick(button, location1, info1)
-                    }
+                if(mouseAction === "click") {
+                    await reactMouseClick(button, location1, info1)
                 }
-                else {
-                    // Drag
-                    if(location1 && location2) {
-                        await reactMouseDrag(button, location1, info1, location2, info2)
-                    }
+                else if(mouseAction === "drag") {
+                    await reactMouseDrag(button, location1, info1, location2, info2)
                 }
             });
             
@@ -191,22 +182,12 @@
             }
             
             async function checkGamepadAxes() {
-                let gamepads = navigator.getGamepads();
-                if (!gamepads) {
-                    return;
-                }
-
-                for(let gp of gamepads) {
-                    if(!gp) {
-                        continue;
-                    }
-                    
-                    let axes = gp.axes;
-                    for(let axis of axes) {
-                        // If any one axis is outside the deadzone, send the server all of the axes.
-                        if(Math.abs(axis) > DEADZONE) {
+                // Check all gamepads that are connected.
+                for(let gamepad of navigator.getGamepads()) {
+                    if(gamepad) {
+                        let axes = inputManager.getGamepadAxes(gamepad);
+                        if(axes.length !== 0) {
                             await reactGamepadAxes(axes);
-                            return;
                         }
                     }
                 }
