@@ -100,6 +100,28 @@ class Entity extends UID {
         return this.screen.map.world.universe.server;
     }
 
+    getHealthFraction() {
+        return this.maxHealth === 0 ? undefined : this.health / this.maxHealth;
+    }
+
+    getManaFraction() {
+        return this.maxMana === 0 ? undefined : this.mana / this.maxMana;
+    }
+
+    getExperienceFraction() {
+        let experienceFraction;
+
+        if(this.progress) {
+            experienceFraction = this.progress.nextExperience === 0 ? undefined : this.progress.experience / this.progress.nextExperience;
+        }
+
+        return experienceFraction;
+    }
+
+    getLevel() {
+        return this.progress?.level;
+    }
+
     /*
         These "doX" methods can change the state of the server and thus should always be scheduled.
     */

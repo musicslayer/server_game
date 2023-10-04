@@ -350,10 +350,10 @@ class Client {
                 y: entity.y,
                 animationShiftX: entity.animationShiftX,
                 animationShiftY: entity.animationShiftY,
-                healthFraction: entity.health / entity.maxHealth,
-                manaFraction: entity.mana / entity.maxMana,
-                experienceFraction: entity.progress?.experience / 100,
-                level: entity.progress?.level,
+                healthFraction: entity.getHealthFraction(),
+                manaFraction: entity.getManaFraction(),
+                experienceFraction: entity.getExperienceFraction(),
+                level: entity.getLevel(),
                 statuses: statuses
             });
         }

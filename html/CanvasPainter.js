@@ -82,19 +82,19 @@ class CanvasPainter {
                 ctxBuffer.drawImage(this.getStackSizeImage(entity.stackSize), x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
             }
             
-            if(isValid(entity.healthFraction)) {
+            if(entity.healthFraction !== undefined) {
                 ctxBuffer.drawImage(this.getHealthBarImage(entity.healthFraction), x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
             }
             
-            if(isValid(entity.manaFraction)) {
+            if(entity.manaFraction !== undefined) {
                 ctxBuffer.drawImage(this.getManaBarImage(entity.manaFraction), x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
             }
             
-            if(isValid(entity.experienceFraction)) {
+            if(entity.experienceFraction !== undefined) {
                 ctxBuffer.drawImage(this.getExperienceBarImage(entity.experienceFraction), x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
             }
             
-            if(isValid(entity.level)) {
+            if(entity.level !== undefined) {
                 ctxBuffer.drawImage(this.getLevelImage(entity.level), x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
             }
             
@@ -322,11 +322,6 @@ class CanvasPainter {
 
         return images;
     }
-}
-
-// TODO We shouldn't need this anymore...?
-function isValid(n) {
-    return n !== undefined && n !== NaN && n !== null;
 }
 
 export { CanvasPainter };

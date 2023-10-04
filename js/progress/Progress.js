@@ -1,12 +1,13 @@
 class Progress {
     level = 1;
     experience = 0;
+    nextExperience = 100;
 
     doAddExperience(experience) {
         this.experience += experience;
 
-        if(this.experience >= 100) {
-            this.experience -= 100;
+        if(this.experience >= this.nextExperience) {
+            this.experience -= this.nextExperience;
             this.level++; 
         }
     }
