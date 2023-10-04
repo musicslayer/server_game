@@ -33,11 +33,10 @@
             let canvasPainter;
             let inputManager;
             
-            let socket = await createSocket();
-            let isSocketLoggedIn = false;
-            
             let inputInterval;
             let devInterval;
+            
+            let socket = await createSocket();
             
             async function createSocket() {
                 canvasPainter = new CanvasPainter(Canvas);
@@ -71,8 +70,6 @@
                             startInputInterval();
                             startDevInterval();
                             requestAnimationFrame(drawClient);
-                            
-                            isSocketLoggedIn = true;
                         }
                         else {
                             GameResultText.style.color = RED;
@@ -87,8 +84,6 @@
                 
                 socket.on("disconnect", (err) => {
                     window.sessionStorage.clear();
-                    
-                    isSocketLoggedIn = false;
                     
                     clearInterval(inputInterval);
                     clearInterval(devInterval);
@@ -218,27 +213,27 @@
             }
             
             async function reactMouseClick(button, location, info) {
-                await queryServerAfterLogIn("on_mouse_click", button, location, info);
+                await queryServer("on_mouse_click", button, location, info);
             }
             
             async function reactMouseDrag(button, location1, info1, location2, info2) {
-                await queryServerAfterLogIn("on_mouse_drag", button, location1, info1, location2, info2);
+                await queryServer("on_mouse_drag", button, location1, info1, location2, info2);
             }
             
             async function reactKeys(keys) {
-                await queryServerAfterLogIn("on_keys", keys);
+                await queryServer("on_keys", keys);
             }
             
             async function reactGamepadButtons(buttons) {
-                await queryServerAfterLogIn("on_gamepad_buttons", buttons);
+                await queryServer("on_gamepad_buttons", buttons);
             }
             
             async function reactGamepadAxes(axes) {
-                await queryServerAfterLogIn("on_gamepad_axes", axes);
+                await queryServer("on_gamepad_axes", axes);
             }
             
             async function drawClient(time) {
-                let R = await queryServerAfterLogIn("get_client_data");
+                let R = await queryServer("get_client_data");
                 if(R.isSuccess) {
                     let clientData = R.clientData;
                     canvasPainter.drawClient(time, clientData);
@@ -247,7 +242,7 @@
             }
             
             async function checkDevInfo() {
-                let R = await queryServerAfterLogIn("get_dev_data");
+                let R = await queryServer("get_dev_data");
                 if(R.isSuccess) {
                     let devData = R.devData;
                     
@@ -274,23 +269,6 @@
                 };
                 
                 if(socket.connected) {
-                    try {
-                        response = await socket.timeout(SOCKET_TIMEOUT).emitWithAck(eventName, ...args);
-                    }
-                    catch(err) {
-                    }
-                }
-                
-                return response;
-            }
-            
-            async function queryServerAfterLogIn(eventName, ...args) {
-                let response = {
-                    "isSuccess": false,
-                    "errString": "Unable to connect to the server."
-                };
-                
-                if(socket.connected && isSocketLoggedIn) {
                     try {
                         response = await socket.timeout(SOCKET_TIMEOUT).emitWithAck(eventName, ...args);
                     }
