@@ -7,6 +7,9 @@ On the server: run app.js
 On the client (i.e. a web browser): Navigate to https://localhost/
 
 ## Features
+### Overall
+The code's only external dependency is on socket.io, which can be found here: https://socket.io/
+
 ### Admin
 The server terminal allows for admin commands. Currently the following commands are supported:
 
