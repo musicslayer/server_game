@@ -3,8 +3,10 @@ const ANIMATION_FRAMES = 8; // frames per animation cycle
 const SHOW_SCREEN_GRID = true;
 const SHOW_INVENTORY_GRID = true;
 
-// TODO Organize better!
 // TODO Scale text?
+// TODO Scale bars?
+
+// TODO Fix bug with fraction bars.
 
 class CanvasPainter {
     canvas;
@@ -60,6 +62,21 @@ class CanvasPainter {
 
     fillRectScaled(ctxBuffer, x, y, width, height) {
         ctxBuffer.fillRect(x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, width * this.gameScreen.imageScaleFactor, height * this.gameScreen.imageScaleFactor);
+    }
+
+    getFractionBarImage(x, y, fraction, color) {
+        // x, y is the upper-left corner of the bar.
+        let canvasTemp = document.createElement("canvas");
+        canvasTemp.width = this.gameScreen.imageScaleFactor;
+        canvasTemp.height = this.gameScreen.imageScaleFactor;
+        
+        let ctxTemp = canvasTemp.getContext("2d");
+        ctxTemp.fillStyle = "#222222";
+        ctxTemp.fillRect(x, y, this.gameScreen.imageScaleFactor - 2 * x, y + 10);
+        ctxTemp.fillStyle = color;
+        ctxTemp.fillRect(x, y, (this.gameScreen.imageScaleFactor - 2 * x) * fraction, y + 10);
+        
+        return canvasTemp;
     }
 
     getTextImage(text, x, y, width, height) {
@@ -165,7 +182,9 @@ class CanvasPainter {
             this.drawInventoryImageScaled(ctxBuffer, inventoryImage.image, inventoryImage.x, inventoryImage.y);
         }
         
-        this.drawInventoryCursor(ctxBuffer, inventory.currentSlot);
+        if(inventory.currentSlot !== undefined) {
+            this.drawInventoryCursor(ctxBuffer, inventory.currentSlot);
+        }
         
         // Purse
         let purseImage = this.imageCatalog.getImageByEntityClassName("Gold", animationFrame);
@@ -217,63 +236,31 @@ class CanvasPainter {
     }
     
     drawInventoryCursor(ctxBuffer, currentSlot) {
-        if(currentSlot !== undefined) {
-            // xy will be relative to the entire canvas, not any particular region.
-            let xy = this.gameScreen.getInventoryXY(currentSlot);
+        // xy will be relative to the entire canvas, not any particular region.
+        let xy = this.gameScreen.getInventoryXY(currentSlot);
 
-            ctxBuffer.beginPath();
-            ctxBuffer.rect(xy[0], xy[1], this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
-            
-            ctxBuffer.lineWidth = "3";
-            ctxBuffer.strokeStyle = "red";
-            ctxBuffer.stroke();
+        ctxBuffer.beginPath();
+        ctxBuffer.rect(xy[0], xy[1], this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
+        
+        ctxBuffer.lineWidth = "3";
+        ctxBuffer.strokeStyle = "red";
+        ctxBuffer.stroke();
 
-            ctxBuffer.lineWidth = "1";
-            ctxBuffer.strokeStyle = "black";
-            ctxBuffer.stroke();
-        }
+        ctxBuffer.lineWidth = "1";
+        ctxBuffer.strokeStyle = "black";
+        ctxBuffer.stroke();
     }
     
     getHealthBarImage(healthFraction) {
-        let canvasTemp = document.createElement("canvas");
-        canvasTemp.width = this.gameScreen.imageScaleFactor;
-        canvasTemp.height = this.gameScreen.imageScaleFactor;
-        
-        let ctxTemp = canvasTemp.getContext("2d");
-        ctxTemp.fillStyle = "#222222";
-        ctxTemp.fillRect(10, 0, 44, 10);
-        ctxTemp.fillStyle = "#ff0000";
-        ctxTemp.fillRect(10, 0, 44 * healthFraction, 10);
-        
-        return canvasTemp;
+        return this.getFractionBarImage(10, 0, healthFraction, "#ff0000");
     }
     
     getManaBarImage(manaFraction) {
-        let canvasTemp = document.createElement("canvas");
-        canvasTemp.width = this.gameScreen.imageScaleFactor;
-        canvasTemp.height = this.gameScreen.imageScaleFactor;
-        
-        let ctxTemp = canvasTemp.getContext("2d");
-        ctxTemp.fillStyle = "#222222";
-        ctxTemp.fillRect(10, 10, 44, 10);
-        ctxTemp.fillStyle = "#0000ff";
-        ctxTemp.fillRect(10, 10, 44 * manaFraction, 10);
-        
-        return canvasTemp;
+        return this.getFractionBarImage(10, 10, manaFraction, "#0000ff");
     }
     
     getExperienceBarImage(experienceFraction) {
-        let canvasTemp = document.createElement("canvas");
-        canvasTemp.width = this.gameScreen.imageScaleFactor;
-        canvasTemp.height = this.gameScreen.imageScaleFactor;
-        
-        let ctxTemp = canvasTemp.getContext("2d");
-        ctxTemp.fillStyle = "#222222";
-        ctxTemp.fillRect(10, 20, 44, 10);
-        ctxTemp.fillStyle = "#00ff00";
-        ctxTemp.fillRect(10, 20, 44 * experienceFraction, 10);
-        
-        return canvasTemp;
+        return this.getFractionBarImage(10, 20, experienceFraction, "#00ff00");
     }
 
     getStackSizeImage(stackSize) {
