@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { EOL } = require("os");
 
 const Constants = require("../constants/Constants.js");
 const Reflection = require("../reflection/Reflection.js");
@@ -7,7 +8,6 @@ const GameMap = require("./GameMap.js");
 const Util = require("../util/Util.js");
 
 const COMMA = ",";
-const CRLF = "\r\n";
 const PIPE = "|";
 
 class World {
@@ -31,7 +31,7 @@ class World {
 
         let worldFile = path.join(worldFolder, "_world.txt");
         let worldData = fs.readFileSync(worldFile, "ascii");
-        let lines = worldData ? worldData.split(CRLF) : [];
+        let lines = worldData ? worldData.split(EOL) : [];
 
         // Each line represents a map within this world.
         while(lines.length > 0) {

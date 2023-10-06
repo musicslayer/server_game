@@ -1,4 +1,5 @@
 const fs = require("fs");
+const { EOL } = require("os");
 
 const Reflection = require("../reflection/Reflection.js");
 const Entity = require("../entity/Entity.js");
@@ -7,7 +8,6 @@ const Tile = require("./Tile.js");
 const Util = require("../util/Util.js");
 
 const COMMA = ",";
-const CRLF = "\r\n";
 const PIPE = "|";
 
 class Screen {
@@ -30,7 +30,7 @@ class Screen {
         screen.map = map;
 
         let screenData = fs.readFileSync(screenFile, "ascii");
-        let lines = screenData ? screenData.split(CRLF) : [];
+        let lines = screenData ? screenData.split(EOL) : [];
 
         // Each line represents a square within this screen.
         while(lines.length > 0) {

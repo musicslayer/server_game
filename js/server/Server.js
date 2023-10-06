@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { EOL } = require("os");
 
 const ServerEntropy = require("./ServerEntropy.js");
 const ServerFunction = require("./ServerFunction.js");
@@ -9,7 +10,6 @@ const Universe = require("../world/Universe.js");
 const Util = require("../util/Util.js");
 
 const COMMA = ",";
-const CRLF = "\r\n";
 const PIPE = "|";
 
 class Server {
@@ -28,7 +28,7 @@ class Server {
 
         let serverFile = path.join(serverFolder, "_server.txt");
         let serverData = fs.readFileSync(serverFile, "ascii");
-        let lines = serverData ? serverData.split(CRLF) : [];
+        let lines = serverData ? serverData.split(EOL) : [];
 
         // Each line represents a world within this server.
         while(lines.length > 0) {

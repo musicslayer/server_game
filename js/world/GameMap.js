@@ -1,12 +1,12 @@
 const fs = require("fs");
 const path = require("path");
+const { EOL } = require("os");
 
 const Reflection = require("../reflection/Reflection.js");
 const Screen = require("./Screen.js");
 const Util = require("../util/Util.js");
 
 const COMMA = ",";
-const CRLF = "\r\n";
 const PIPE = "|";
 
 class GameMap {
@@ -27,7 +27,7 @@ class GameMap {
 
         let mapFile = path.join(mapFolder, "_map.txt");
         let mapData = fs.readFileSync(mapFile, "ascii");
-        let lines = mapData ? mapData.split(CRLF) : [];
+        let lines = mapData ? mapData.split(EOL) : [];
 
         // Each line represents a screen within this map.
         while(lines.length > 0) {

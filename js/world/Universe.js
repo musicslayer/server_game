@@ -1,12 +1,12 @@
 const fs = require("fs");
 const path = require("path");
+const { EOL } = require("os");
 
 const Reflection = require("../reflection/Reflection.js");
 const World = require("./World.js");
 const Util = require("../util/Util.js");
 
 const COMMA = ",";
-const CRLF = "\r\n";
 const PIPE = "|";
 
 class Universe {
@@ -24,7 +24,7 @@ class Universe {
 
         let universeFile = path.join(universeFolder, "_universe.txt");
         let universeData = fs.readFileSync(universeFile, "ascii");
-        let lines = universeData ? universeData.split(CRLF) : [];
+        let lines = universeData ? universeData.split(EOL) : [];
 
         // Each line represents a world within this universe.
         while(lines.length > 0) {
