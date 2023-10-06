@@ -17,6 +17,23 @@ load: Retreives and deserializes the entire server state from a file.
 exit: Instantly ends the server app.
 
 ### Server
+clients: The server handles client inputs and requests for information.
+
+accounts: The server stores player accounts. Each account can have multiple characters.
+
+security: If any client sends invalid inputs or sends too many requests per second (measured per IP address), the server will instantly disconnect the client.
+
+animations: The motion of entities (including projectiles) is smoothly animated across grid spaces.
+
+serialization: The entire server state can be serialized to a JSON string or deserialized from a JSON string. This is done by allowing each class to define methods to handle any state it stores. Primitive values such as strings, numbers, and booleans are handled directly, as are any structures such as arrays and maps.
+
+server code: Each server instance has its own clock and RNG capabilities. The server clock makes sure that any change in state caused by players, monsters, or anything else is scheduled to occur at a specific frame. The clock uses a worker thread to ensure a steady 60 FPS. The RNG is deterministic but is affected by (among other things) player actions, so in practice the RNG is difficult to manipulate.
+
+inputs: Client inputs from the mouse, keyboard, and gamepads are handled. The server converts input number values to actions (such as "move_left" and "action"). The server also allows special "developer" accounts to have additional actions not available to normal accounts (such as unrestricted teleporting).
+
+zip: The server gives the client all the sprite graphics by zipping the images (and the client in turn unzips them). Zip/unzip code available in its own repository: https://github.com/musicslayer/zip
+
+worlds: Each server instance can have multiple worlds, which each have multiple maps, which each have multiple screens. Instance maps exist that will disappear when the last player leaves. Dynamic maps exist that dynamically generate screens.
 
 ### Client
 inputs: The client can handle mouse clicks, keyboard clicks, and gamepad buttons and analog sticks.
