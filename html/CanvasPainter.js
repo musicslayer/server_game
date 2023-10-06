@@ -4,7 +4,7 @@ const SHOW_SCREEN_GRID = true;
 const SHOW_INVENTORY_GRID = true;
 
 // TODO "IMAGE_SCALE_FACTOR" and "128" and widths of text boxes needs to be fixed!
-// TODO Organize better.
+// TODO Organize better!
 
 class CanvasPainter {
     canvas;
