@@ -15,6 +15,11 @@ class GameScreen {
     purseTilesX = 1;
     purseTilesY = 1;
 
+    infoOriginX = 17;
+    infoOriginY = 1;
+    infoTilesX = 1;
+    infoTilesY = 1;
+
     canvas;
     canvasBorderPixelsX;
     canvasBorderPixelsY;

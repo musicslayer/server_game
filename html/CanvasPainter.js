@@ -23,7 +23,47 @@ class CanvasPainter {
         this.canvas.style.display = bool ? "inline" : "none";
     }
 
+    drawScreenImageScaled(ctxBuffer, image, x, y) {
+        // Draws the image on the screen but scales it based on the GameScreen.
+        // Width and height before scaling is always 1.
+        ctxBuffer.drawImage(image, (this.gameScreen.screenOriginX + x) * this.gameScreen.imageScaleFactor, (this.gameScreen.screenOriginY + y) * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
+    }
+
+    drawInventoryImageScaled(ctxBuffer, image, x, y) {
+        // Draws the image on the inventory but scales it based on the GameScreen.
+        // Width and height before scaling is always 1.
+        ctxBuffer.drawImage(image, (this.gameScreen.inventoryOriginX + x) * this.gameScreen.imageScaleFactor, (this.gameScreen.inventoryOriginY + y) * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
+    }
+
+    drawPurseImageScaled(ctxBuffer, image, x, y) {
+        // Draws the image on the purse but scales it based on the GameScreen.
+        // Width and height before scaling is always 1.
+        ctxBuffer.drawImage(image, (this.gameScreen.purseOriginX + x) * this.gameScreen.imageScaleFactor, (this.gameScreen.purseOriginY + y) * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
+    }
+
+    drawInfoImageScaled(ctxBuffer, image, x, y, width, height) {
+        // Draws the image on the info area but scales it based on the GameScreen.
+        ctxBuffer.drawImage(image, (this.gameScreen.infoOriginX + x) * this.gameScreen.imageScaleFactor, (this.gameScreen.infoOriginY + y) * this.gameScreen.imageScaleFactor, width * this.gameScreen.imageScaleFactor, height * this.gameScreen.imageScaleFactor);
+    }
+
+    drawScreenLineScaled(ctxBuffer, x1, y1, x2, y2) {
+        // Draws a line on the screen but scales it based on the GameScreen.
+        ctxBuffer.moveTo((this.gameScreen.screenOriginX + x1) * this.gameScreen.imageScaleFactor, (this.gameScreen.screenOriginY + y1) * this.gameScreen.imageScaleFactor);
+        ctxBuffer.lineTo((this.gameScreen.screenOriginX + x2) * this.gameScreen.imageScaleFactor, (this.gameScreen.screenOriginY + y2) * this.gameScreen.imageScaleFactor);
+    }
+
+    drawInventoryLineScaled(ctxBuffer, x1, y1, x2, y2) {
+        // Draws a line on the inventory but scales it based on the GameScreen.
+        ctxBuffer.moveTo((this.gameScreen.inventoryOriginX + x1) * this.gameScreen.imageScaleFactor, (this.gameScreen.inventoryOriginY + y1) * this.gameScreen.imageScaleFactor);
+        ctxBuffer.lineTo((this.gameScreen.inventoryOriginX + x2) * this.gameScreen.imageScaleFactor, (this.gameScreen.inventoryOriginY + y2) * this.gameScreen.imageScaleFactor);
+    }
+
+    fillRectScaled(ctxBuffer, x, y, width, height) {
+        ctxBuffer.fillRect(x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, width * this.gameScreen.imageScaleFactor, height * this.gameScreen.imageScaleFactor);
+    }
+
     drawClient(time, clientData) {
+        // Draw everything on a temporary canvas so that the current canvas can be updated all at once.
         let canvasBuffer = document.createElement("canvas");
         canvasBuffer.width = this.canvas.width;
         canvasBuffer.height = this.canvas.height;
@@ -57,7 +97,7 @@ class CanvasPainter {
                 let name = tile.names.shift();
                 let image = this.imageCatalog.getImageByTileName(name, animationFrame);
                 
-                ctxBuffer.drawImage(image, tile.x * this.gameScreen.imageScaleFactor, tile.y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
+                this.drawScreenImageScaled(ctxBuffer, image, tile.x, tile.y);
             }
         }
         
@@ -68,62 +108,69 @@ class CanvasPainter {
             
             let x = entity.x + entity.animationShiftX;
             let y = entity.y + entity.animationShiftY;
-            
-            ctxBuffer.drawImage(image, x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
+
+            this.drawScreenImageScaled(ctxBuffer, image, x, y);
             
             if(entity.stackSize !== 1) {
-                ctxBuffer.drawImage(this.getStackSizeImage(entity.stackSize), x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
+                let stackSizeImage = this.getStackSizeImage(entity.stackSize);
+                this.drawScreenImageScaled(ctxBuffer, stackSizeImage, x, y);
             }
             
             if(entity.healthFraction !== undefined) {
-                ctxBuffer.drawImage(this.getHealthBarImage(entity.healthFraction), x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
+                let healthBarImage = this.getHealthBarImage(entity.healthFraction);
+                this.drawScreenImageScaled(ctxBuffer, healthBarImage, x, y);
             }
             
             if(entity.manaFraction !== undefined) {
-                ctxBuffer.drawImage(this.getManaBarImage(entity.manaFraction), x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
+                let manaBarImage = this.getManaBarImage(entity.manaFraction);
+                this.drawScreenImageScaled(ctxBuffer, manaBarImage, x, y);
             }
             
             if(entity.experienceFraction !== undefined) {
-                ctxBuffer.drawImage(this.getExperienceBarImage(entity.experienceFraction), x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
+                let experienceBarImage = this.getExperienceBarImage(entity.experienceFraction)
+                this.drawScreenImageScaled(ctxBuffer, experienceBarImage, x, y);
             }
             
             if(entity.level !== undefined) {
-                ctxBuffer.drawImage(this.getLevelImage(entity.level), x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
+                let levelImage = this.getLevelImage(entity.level)
+                this.drawScreenImageScaled(ctxBuffer, levelImage, x, y);
             }
             
             if(entity.statuses.includes("dead") || entity.statuses.includes("invincible")) {
                 let haloImage = this.imageCatalog.getImageByStatusName("invincible", animationFrame);
-                ctxBuffer.drawImage(haloImage, x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
+                this.drawScreenImageScaled(ctxBuffer, haloImage, x, y);
             }
         }
 
         // Screen Dividers
-        ctxBuffer.fillRect(this.gameScreen.screenTilesX * this.gameScreen.imageScaleFactor, 0, this.gameScreen.imageScaleFactor, this.gameScreen.screenTilesY * this.gameScreen.imageScaleFactor);
-        ctxBuffer.fillRect((this.gameScreen.screenTilesX + 1) * this.gameScreen.imageScaleFactor, 6 * this.gameScreen.imageScaleFactor, 9 * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
+        this.fillRectScaled(ctxBuffer, this.gameScreen.screenTilesX, 0, 1, this.gameScreen.screenTilesY);
+        this.fillRectScaled(ctxBuffer, this.gameScreen.screenTilesX + 1, 6, 9, 1);
         
         // Inventory
         let inventoryImages = this.getInventoryImages(inventory.items, animationFrame);
         while(inventoryImages.length > 0) {
             let inventoryImage = inventoryImages.shift();
-            ctxBuffer.drawImage(inventoryImage.image, (this.gameScreen.inventoryOriginX + inventoryImage.x) * this.gameScreen.imageScaleFactor, (this.gameScreen.inventoryOriginY + inventoryImage.y) * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
+            this.drawInventoryImageScaled(ctxBuffer, inventoryImage.image, inventoryImage.x, inventoryImage.y);
         }
         
         this.drawInventoryCursor(ctxBuffer, inventory.currentSlot);
         
         // Purse
         let purseImage = this.imageCatalog.getImageByEntityClassName("Gold", animationFrame);
-        ctxBuffer.drawImage(purseImage, this.gameScreen.purseOriginX * this.gameScreen.imageScaleFactor, this.gameScreen.purseOriginY * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
-        ctxBuffer.drawImage(this.getGoldTotalImage(purse.goldTotal), (this.gameScreen.purseOriginX + 1) * this.gameScreen.imageScaleFactor, this.gameScreen.purseOriginY * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
+        let goldTotalImage = this.getGoldTotalImage(purse.goldTotal);
+        this.drawPurseImageScaled(ctxBuffer, purseImage, 0, 0);
+        this.drawPurseImageScaled(ctxBuffer, goldTotalImage, 1, 0);
         
         // Info
         if(info.className !== "Undefined") {
-            let W = this.gameScreen.imageScaleFactor * 6;
-            let originInfoX = 17;
-            let originInfoY = 1;
+            let infoWidth = 6;
             let infoImage = this.imageCatalog.getImageByEntityClassName(info.className, animationFrame);
-            ctxBuffer.drawImage(infoImage, originInfoX * this.gameScreen.imageScaleFactor, originInfoY * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
-            ctxBuffer.drawImage(this.getInfoNameImage(info.name), (originInfoX + 1) * this.gameScreen.imageScaleFactor, originInfoY * this.gameScreen.imageScaleFactor, W, this.gameScreen.imageScaleFactor);
-            ctxBuffer.drawImage(this.getInfoTextImage(info.text), (originInfoX + 1) * this.gameScreen.imageScaleFactor, originInfoY * this.gameScreen.imageScaleFactor, W, this.gameScreen.imageScaleFactor);
+            let infoNameImage = this.getInfoNameImage(info.name);
+            let infoTextImage = this.getInfoTextImage(info.text);
+
+            this.drawInfoImageScaled(ctxBuffer, infoImage, 0, 0, 1, 1);
+            this.drawInfoImageScaled(ctxBuffer, infoNameImage, 1, 0, infoWidth, 1);
+            this.drawInfoImageScaled(ctxBuffer, infoTextImage, 1, 0, infoWidth, 1);
         }
         
         ctxBuffer.stroke();
@@ -133,13 +180,11 @@ class CanvasPainter {
         ctxBuffer.beginPath();
 
         for(let x = 0; x < this.gameScreen.screenTilesX + 1; x++) {
-            ctxBuffer.moveTo(x * this.gameScreen.imageScaleFactor, 0);
-            ctxBuffer.lineTo(x * this.gameScreen.imageScaleFactor, this.gameScreen.screenTilesY * this.gameScreen.imageScaleFactor);
+            this.drawScreenLineScaled(ctxBuffer, x, 0, x, this.gameScreen.screenTilesY);
         }
 
         for(let y = 0; y < this.gameScreen.screenTilesY + 1; y++) {
-            ctxBuffer.moveTo(0, y * this.gameScreen.imageScaleFactor);
-            ctxBuffer.lineTo(this.gameScreen.screenTilesX * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor);
+            this.drawScreenLineScaled(ctxBuffer, 0, y, this.gameScreen.screenTilesX, y);
         }
 
         ctxBuffer.stroke();
@@ -148,19 +193,18 @@ class CanvasPainter {
     drawInventoryGrid(ctxBuffer) {
         ctxBuffer.beginPath();
 
-        for(let x = this.gameScreen.screenTilesX + 1; x < this.gameScreen.screenTilesX + this.gameScreen.inventoryTilesX + 1; x++) {
-            ctxBuffer.moveTo(x * this.gameScreen.imageScaleFactor, 7 * this.gameScreen.imageScaleFactor);
-            ctxBuffer.lineTo(x * this.gameScreen.imageScaleFactor, this.gameScreen.screenTilesY * this.gameScreen.imageScaleFactor);
+        for(let x = 0; x < this.gameScreen.inventoryTilesX + 1; x++) {
+            this.drawInventoryLineScaled(ctxBuffer, x, 0, x, this.gameScreen.inventoryTilesY);
         }
 
-        for(let y = 7; y < this.gameScreen.screenTilesY + 1; y++) {
-            ctxBuffer.moveTo((this.gameScreen.screenTilesX + 1) * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor);
-            ctxBuffer.lineTo((this.gameScreen.screenTilesX + this.gameScreen.inventoryTilesX) * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor);
+        for(let y = 0; y < this.gameScreen.inventoryTilesY + 1; y++) {
+            this.drawInventoryLineScaled(ctxBuffer, 0, y, this.gameScreen.inventoryTilesX, y);
         }
 
         ctxBuffer.stroke();
     }
     
+    // TODO Everything below this line.
     drawInventoryCursor(ctxBuffer, currentSlot) {
         if(currentSlot !== undefined) {
             let xy = this.gameScreen.getInventoryXY(currentSlot);
