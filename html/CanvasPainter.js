@@ -3,8 +3,8 @@ const ANIMATION_FRAMES = 8; // frames per animation cycle
 const SHOW_SCREEN_GRID = true;
 const SHOW_INVENTORY_GRID = true;
 
-// TODO "IMAGE_SCALE_FACTOR" and "128" and widths of text boxes needs to be fixed!
 // TODO Organize better!
+// TODO Scale text?
 
 class CanvasPainter {
     canvas;
@@ -60,6 +60,18 @@ class CanvasPainter {
 
     fillRectScaled(ctxBuffer, x, y, width, height) {
         ctxBuffer.fillRect(x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, width * this.gameScreen.imageScaleFactor, height * this.gameScreen.imageScaleFactor);
+    }
+
+    getTextImage(text, x, y, width, height) {
+        let canvasTemp = document.createElement("canvas");
+        canvasTemp.width = width * this.gameScreen.imageScaleFactor;
+        canvasTemp.height = height * this.gameScreen.imageScaleFactor;
+
+        let ctxTemp = canvasTemp.getContext("2d");
+        ctxTemp.font = "15px Arial";
+        ctxTemp.fillText(text, x, y);
+        
+        return canvasTemp;
     }
 
     drawClient(time, clientData) {
@@ -204,128 +216,87 @@ class CanvasPainter {
         ctxBuffer.stroke();
     }
     
-    // TODO Everything below this line.
     drawInventoryCursor(ctxBuffer, currentSlot) {
         if(currentSlot !== undefined) {
+            // xy will be relative to the entire canvas, not any particular region.
             let xy = this.gameScreen.getInventoryXY(currentSlot);
 
             ctxBuffer.beginPath();
+            ctxBuffer.rect(xy[0], xy[1], this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
             
             ctxBuffer.lineWidth = "3";
             ctxBuffer.strokeStyle = "red";
-
-            ctxBuffer.rect(xy[0], xy[1], this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
             ctxBuffer.stroke();
 
             ctxBuffer.lineWidth = "1";
             ctxBuffer.strokeStyle = "black";
-            
             ctxBuffer.stroke();
         }
     }
     
-    getStackSizeImage(stackSize) {
-        let canvasTemp = document.createElement("canvas");
-        canvasTemp.width = 128;
-        canvasTemp.height = 128;
-        
-        let ctxTemp = canvasTemp.getContext("2d");
-        ctxTemp.font = "30px Arial";
-        ctxTemp.fillText("" + stackSize, 0, 20);
-        
-        return canvasTemp;
-    }
-    
     getHealthBarImage(healthFraction) {
         let canvasTemp = document.createElement("canvas");
-        canvasTemp.width = 128;
-        canvasTemp.height = 128;
+        canvasTemp.width = this.gameScreen.imageScaleFactor;
+        canvasTemp.height = this.gameScreen.imageScaleFactor;
         
         let ctxTemp = canvasTemp.getContext("2d");
         ctxTemp.fillStyle = "#222222";
-        ctxTemp.fillRect(20, 0, 88, 20);
+        ctxTemp.fillRect(10, 0, 44, 10);
         ctxTemp.fillStyle = "#ff0000";
-        ctxTemp.fillRect(20, 0, 88 * healthFraction, 20);
+        ctxTemp.fillRect(10, 0, 44 * healthFraction, 10);
         
         return canvasTemp;
     }
     
     getManaBarImage(manaFraction) {
         let canvasTemp = document.createElement("canvas");
-        canvasTemp.width = 128;
-        canvasTemp.height = 128;
+        canvasTemp.width = this.gameScreen.imageScaleFactor;
+        canvasTemp.height = this.gameScreen.imageScaleFactor;
         
         let ctxTemp = canvasTemp.getContext("2d");
         ctxTemp.fillStyle = "#222222";
-        ctxTemp.fillRect(20, 20, 88, 20);
+        ctxTemp.fillRect(10, 10, 44, 10);
         ctxTemp.fillStyle = "#0000ff";
-        ctxTemp.fillRect(20, 20, 88 * manaFraction, 20);
+        ctxTemp.fillRect(10, 10, 44 * manaFraction, 10);
         
         return canvasTemp;
     }
     
     getExperienceBarImage(experienceFraction) {
         let canvasTemp = document.createElement("canvas");
-        canvasTemp.width = 128;
-        canvasTemp.height = 128;
+        canvasTemp.width = this.gameScreen.imageScaleFactor;
+        canvasTemp.height = this.gameScreen.imageScaleFactor;
         
         let ctxTemp = canvasTemp.getContext("2d");
         ctxTemp.fillStyle = "#222222";
-        ctxTemp.fillRect(20, 40, 88, 20);
+        ctxTemp.fillRect(10, 20, 44, 10);
         ctxTemp.fillStyle = "#00ff00";
-        ctxTemp.fillRect(20, 40, 88 * experienceFraction, 20);
+        ctxTemp.fillRect(10, 20, 44 * experienceFraction, 10);
         
         return canvasTemp;
+    }
+
+    getStackSizeImage(stackSize) {
+        return this.getTextImage("" + stackSize, 0, 10, 1, 1);
     }
     
     getLevelImage(level) {
-        let canvasTemp = document.createElement("canvas");
-        canvasTemp.width = 128;
-        canvasTemp.height = 128;
-        
-        let ctxTemp = canvasTemp.getContext("2d");
-        ctxTemp.font = "30px Arial";
-        ctxTemp.fillText("Level: " + level, 20, 80);
-        
-        return canvasTemp;
+        return this.getTextImage("Level: " + level, 10, 40, 1, 1);
     }
     
     getGoldTotalImage(goldTotal) {
-        let canvasTemp = document.createElement("canvas");
-        canvasTemp.width = 128;
-        canvasTemp.height = 128;
-
-        let ctxTemp = canvasTemp.getContext("2d");
-        ctxTemp.font = "30px Arial";
-        ctxTemp.fillText("Gold: " + goldTotal, 0, 70);
-        
-        return canvasTemp;
+        return this.getTextImage("Gold: " + goldTotal, 0, 35, 1, 1);
     }
     
     getInfoNameImage(text) {
-        let canvasTemp = document.createElement("canvas");
-        canvasTemp.width = 128 * 6;
-        canvasTemp.height = 128;
-
-        let ctxTemp = canvasTemp.getContext("2d");
-        ctxTemp.font = "30px Arial";
-        ctxTemp.fillText(text, 0, 50);
-        
-        return canvasTemp;
+        return this.getTextImage(text, 0, 25, 6, 1);
     }
     
     getInfoTextImage(text) {
-        let canvasTemp = document.createElement("canvas");
-        canvasTemp.width = 128 * 6;
-        canvasTemp.height = 128;
-
-        let ctxTemp = canvasTemp.getContext("2d");
-        ctxTemp.font = "30px Arial";
-        ctxTemp.fillText(text, 0, 90);
-        
-        return canvasTemp;
+        return this.getTextImage(text, 0, 45, 6, 1);
     }
     
+    // TODO Everything below this line.
     getInventoryImages(items, animationFrame) {
         // Returns an array of all the images that should be drawn on this screen.
         let images = [];
