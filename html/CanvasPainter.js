@@ -280,35 +280,30 @@ class CanvasPainter {
     getInfoTextImage(text) {
         return this.getTextImage(text, 0, 45, 6, 1);
     }
-    
-    // TODO Everything below this line.
+
     getInventoryImages(items, animationFrame) {
         // Returns an array of all the images that should be drawn on this screen.
         let images = [];
 
-        // Manually specify inventory slots.
-        let xSlots = [0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8];
-        let ySlots = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4];
-
-        for(let item of items) {
-            let x = xSlots.shift();
-            let y = ySlots.shift();
-            
-            if(item) {
-                let itemImage = this.imageCatalog.getImageByEntityClassName(item.className, animationFrame);
-                images.push({
-                    x: x,
-                    y: y,
-                    image: itemImage
-                });
-
-                // For cosmetic reasons, only add the stackSize if it is not 1
-                if(item.stackSize !== 1) {
+        for(let y = 0; y < this.gameScreen.inventoryTilesY; y++) {
+            for(let x = 0; x < this.gameScreen.inventoryTilesX; x++) {
+                let item = items.shift();
+                if(item) {
+                    let itemImage = this.imageCatalog.getImageByEntityClassName(item.className, animationFrame);
                     images.push({
                         x: x,
                         y: y,
-                        image: this.getStackSizeImage(item.stackSize)
+                        image: itemImage
                     });
+
+                    // For cosmetic reasons, only add the stackSize if it is not 1
+                    if(item.stackSize !== 1) {
+                        images.push({
+                            x: x,
+                            y: y,
+                            image: this.getStackSizeImage(item.stackSize)
+                        });
+                    }
                 }
             }
         }

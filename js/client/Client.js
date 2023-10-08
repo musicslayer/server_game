@@ -96,7 +96,7 @@ class Client {
         }
         else if(inputs.includes("inventory_use")) {
             if(!this.player.screen.isDynamic) {
-                this.scheduleInventoryTask(undefined, 0, "consume_from_inventory", this.player, player.selectedSlot);
+                this.scheduleInventoryTask(undefined, 0, "consume_from_inventory", this.player, this.player.selectedSlot);
             }
         }
 
@@ -202,7 +202,7 @@ class Client {
         }
         else if(inputs.includes("inventory_use")) {
             if(!this.player.screen.isDynamic) {
-                this.scheduleInventoryTask(undefined, 0, "consume_from_inventory", this.player, player.selectedSlot);
+                this.scheduleInventoryTask(undefined, 0, "consume_from_inventory", this.player, this.player.selectedSlot);
             }
         }
 

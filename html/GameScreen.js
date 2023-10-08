@@ -7,8 +7,8 @@ class GameScreen {
 
     inventoryOriginX = 17;
     inventoryOriginY = 7;
-    inventoryTilesX = 9;
-    inventoryTilesY = 5;
+    inventoryTilesX = 9; // This matches the number of slots across.
+    inventoryTilesY = 5; // This matches the number of slots down.
 
     purseOriginX = 17;
     purseOriginY = 0;
