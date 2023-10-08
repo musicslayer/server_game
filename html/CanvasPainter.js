@@ -6,8 +6,6 @@ const SHOW_INVENTORY_GRID = true;
 // TODO Scale text?
 // TODO Scale bars?
 
-// TODO Fix bug with fraction bars.
-
 class CanvasPainter {
     canvas;
     ctx;
@@ -72,9 +70,9 @@ class CanvasPainter {
         
         let ctxTemp = canvasTemp.getContext("2d");
         ctxTemp.fillStyle = "#222222";
-        ctxTemp.fillRect(x, y, this.gameScreen.imageScaleFactor - 2 * x, y + 10);
+        ctxTemp.fillRect(x, y, this.gameScreen.imageScaleFactor - 2 * x, 10);
         ctxTemp.fillStyle = color;
-        ctxTemp.fillRect(x, y, (this.gameScreen.imageScaleFactor - 2 * x) * fraction, y + 10);
+        ctxTemp.fillRect(x, y, (this.gameScreen.imageScaleFactor - 2 * x) * fraction, 10);
         
         return canvasTemp;
     }
