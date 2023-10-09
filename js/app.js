@@ -6,6 +6,7 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- Add in logging calls. This requires more storage space.
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
+// TODO If a player teleports and then the server times out, it will be removed from the same screen twice.
 async function init() {
     let appState = new AppState();
     let appAdmin = new AppAdmin(appState);

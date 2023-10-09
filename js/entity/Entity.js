@@ -165,9 +165,12 @@ class Entity extends UID {
         this.screen.removeEntity(this);
         this.cancelAllServerTasks();
 
-        // Non-players will never be used again so remove them from the map.
-        // Players are still stored in the Character objects so we need to maintain their entry in the map.
-        if(!this.isPlayer) {
+        // When players are removed we notify the screen in case instances should be destroyed.
+        // Non-players will never be used again so remove them from the UID map.
+        if(this.isPlayer) {
+            this.screen.notifyPlayerRemoval();
+        }
+        else {
             this.remove();
         }
     }
@@ -226,9 +229,18 @@ class Entity extends UID {
             // If the screen does not change, skip this for performance reasons.
             // Also, we do not want to cause any instance screens to be removed by calling "removeEntity".
             if(this.screen !== screen) {
+                let oldScreen = this.screen;
+
                 this.screen.removeEntity(this);
                 this.setScreen(screen);
                 this.screen.addEntity(this, x, y);
+
+                // TODO Can we do this all unconditionally now?!
+
+                // When players are removed we notify the screen in case instances should be destroyed.
+                if(this.isPlayer) {
+                    oldScreen.notifyPlayerRemoval();
+                }
             }
         }
     }

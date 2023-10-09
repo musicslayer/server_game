@@ -2,7 +2,7 @@ const World = require("../World.js");
 const Util = require("../../util/Util.js");
 
 class DynamicWorld extends World {
-    // A dynamic world is a world used to generate dynamic maps.
+    // A dynamic world is a world used to generate maps.
     // These are fixed non-instance worlds that are used to generate maps that will be attached to the entity's current world.
     isDynamic = true;
 

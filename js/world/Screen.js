@@ -86,13 +86,11 @@ class Screen {
 
     addEntity(entity) {
         this.entities.push(entity);
-        this.registerEntity(entity);
     }
 
     removeEntity(entity) {
         let index = this.entities.indexOf(entity);
         this.entities.splice(index, 1);
-        this.deregisterEntity(entity);
     }
 
     isFacingEdge(entity, direction) {
@@ -160,12 +158,21 @@ class Screen {
         return x >= 0 && x < this.numTilesX && y >= 0 && y < this.numTilesY;
     }
 
-    registerEntity(entity) {
-        // By default, do nothing.
+    getPlayerCount() {
+        let playerCount = 0;
+
+        for(let entity of this.entities) {
+            if(entity.isPlayer) {
+                playerCount++;
+            }
+        }
+
+        return playerCount;
     }
 
-    deregisterEntity(entity) {
-        // By default, do nothing.
+    notifyPlayerRemoval() {
+        // By default, just call the same method on the map.
+        this.map.notifyPlayerRemoval();
     }
 
     allowsItemUse() {

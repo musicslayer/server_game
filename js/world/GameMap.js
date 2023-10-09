@@ -137,6 +137,20 @@ class GameMap {
         return this.world.getMapInDirection(this, direction);
     }
 
+    getPlayerCount() {
+        let playerCount = 0;
+
+        for(let screen of this.screens) {
+            playerCount += screen.getPlayerCount();
+        }
+
+        return playerCount;
+    }
+
+    notifyPlayerRemoval() {
+        // By default, do nothing.
+    }
+
     serialize(writer) {
         writer.beginObject()
             .serialize("!V!", 1)
