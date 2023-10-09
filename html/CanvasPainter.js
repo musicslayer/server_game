@@ -69,9 +69,9 @@ class CanvasPainter {
         
         let ctxTemp = canvasTemp.getContext("2d");
         ctxTemp.fillStyle = "#222222";
-        ctxTemp.fillRect(x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor * (1 - 2 * x), 0.15625  * this.gameScreen.imageScaleFactor);
+        ctxTemp.fillRect(x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor * (1 - 2 * x), 0.15 * this.gameScreen.imageScaleFactor);
         ctxTemp.fillStyle = color;
-        ctxTemp.fillRect(x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, fraction * this.gameScreen.imageScaleFactor * (1 - 2 * x), 0.15625  * this.gameScreen.imageScaleFactor);
+        ctxTemp.fillRect(x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, fraction * this.gameScreen.imageScaleFactor * (1 - 2 * x), 0.15 * this.gameScreen.imageScaleFactor);
         
         return canvasTemp;
     }
@@ -82,7 +82,7 @@ class CanvasPainter {
         canvasTemp.width = width * this.gameScreen.imageScaleFactor;
         canvasTemp.height = height * this.gameScreen.imageScaleFactor;
 
-        // As a baseline reference, if the image scale factor is 64 than the font size is 15.
+        // As a baseline reference, if the image scale factor is 64 then the font size is 15.
         let fontSize = 15 * (this.gameScreen.imageScaleFactor / 64);
 
         let ctxTemp = canvasTemp.getContext("2d");
@@ -253,35 +253,35 @@ class CanvasPainter {
     }
     
     getHealthBarImage(healthFraction) {
-        return this.getFractionBarImage(0.15625, 0, healthFraction, "#ff0000");
+        return this.getFractionBarImage(0.15, 0, healthFraction, "#ff0000");
     }
     
     getManaBarImage(manaFraction) {
-        return this.getFractionBarImage(0.15625, 0.15625, manaFraction, "#0000ff");
+        return this.getFractionBarImage(0.15, 0.15, manaFraction, "#0000ff");
     }
     
     getExperienceBarImage(experienceFraction) {
-        return this.getFractionBarImage(0.15625, 0.3125, experienceFraction, "#00ff00");
+        return this.getFractionBarImage(0.15, 0.30, experienceFraction, "#00ff00");
     }
 
     getStackSizeImage(stackSize) {
-        return this.getTextImage("" + stackSize, 0, 0.15625, 1, 1);
+        return this.getTextImage("" + stackSize, 0, 0.15, 1, 1);
     }
     
     getLevelImage(level) {
-        return this.getTextImage("Level: " + level, 0.15625, 0.625, 1, 1);
+        return this.getTextImage("Level: " + level, 0.15, 0.625, 1, 1);
     }
     
     getGoldTotalImage(goldTotal) {
-        return this.getTextImage("Gold: " + goldTotal, 0, 0.546875, 1, 1);
+        return this.getTextImage("Gold: " + goldTotal, 0, 0.55, 1, 1);
     }
     
     getInfoNameImage(text) {
-        return this.getTextImage(text, 0, 0.390625, 6, 1);
+        return this.getTextImage(text, 0, 0.4, 6, 1);
     }
     
     getInfoTextImage(text) {
-        return this.getTextImage(text, 0, 0.703125, 6, 1);
+        return this.getTextImage(text, 0, 0.70, 6, 1);
     }
 
     getInventoryImages(items, animationFrame) {
