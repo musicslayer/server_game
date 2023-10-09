@@ -3,8 +3,7 @@ const ANIMATION_FRAMES = 8; // frames per animation cycle
 const SHOW_SCREEN_GRID = true;
 const SHOW_INVENTORY_GRID = true;
 
-// TODO Scale text?
-// TODO Scale bars?
+// TODO Scale text/bars is good but values are quite arbitrary...
 
 class CanvasPainter {
     canvas;
@@ -63,28 +62,32 @@ class CanvasPainter {
     }
 
     getFractionBarImage(x, y, fraction, color) {
-        // x, y is the upper-left corner of the bar.
+        // x, y is the upper-left corner of the bar, and is a fraction between 0 and 1.
         let canvasTemp = document.createElement("canvas");
         canvasTemp.width = this.gameScreen.imageScaleFactor;
         canvasTemp.height = this.gameScreen.imageScaleFactor;
         
         let ctxTemp = canvasTemp.getContext("2d");
         ctxTemp.fillStyle = "#222222";
-        ctxTemp.fillRect(x, y, this.gameScreen.imageScaleFactor - 2 * x, 10);
+        ctxTemp.fillRect(x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor * (1 - 2 * x), 0.15625  * this.gameScreen.imageScaleFactor);
         ctxTemp.fillStyle = color;
-        ctxTemp.fillRect(x, y, (this.gameScreen.imageScaleFactor - 2 * x) * fraction, 10);
+        ctxTemp.fillRect(x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, fraction * this.gameScreen.imageScaleFactor * (1 - 2 * x), 0.15625  * this.gameScreen.imageScaleFactor);
         
         return canvasTemp;
     }
 
     getTextImage(text, x, y, width, height) {
+        // x, y is the lower-left corner of the text baseline, and is a fraction between 0 and 1.
         let canvasTemp = document.createElement("canvas");
         canvasTemp.width = width * this.gameScreen.imageScaleFactor;
         canvasTemp.height = height * this.gameScreen.imageScaleFactor;
 
+        // As a baseline reference, if the image scale factor is 64 than the font size is 15.
+        let fontSize = 15 * (this.gameScreen.imageScaleFactor / 64);
+
         let ctxTemp = canvasTemp.getContext("2d");
-        ctxTemp.font = "15px Arial";
-        ctxTemp.fillText(text, x, y);
+        ctxTemp.font = fontSize + "px Arial";
+        ctxTemp.fillText(text, x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor);
         
         return canvasTemp;
     }
@@ -250,35 +253,35 @@ class CanvasPainter {
     }
     
     getHealthBarImage(healthFraction) {
-        return this.getFractionBarImage(10, 0, healthFraction, "#ff0000");
+        return this.getFractionBarImage(0.15625, 0, healthFraction, "#ff0000");
     }
     
     getManaBarImage(manaFraction) {
-        return this.getFractionBarImage(10, 10, manaFraction, "#0000ff");
+        return this.getFractionBarImage(0.15625, 0.15625, manaFraction, "#0000ff");
     }
     
     getExperienceBarImage(experienceFraction) {
-        return this.getFractionBarImage(10, 20, experienceFraction, "#00ff00");
+        return this.getFractionBarImage(0.15625, 0.3125, experienceFraction, "#00ff00");
     }
 
     getStackSizeImage(stackSize) {
-        return this.getTextImage("" + stackSize, 0, 10, 1, 1);
+        return this.getTextImage("" + stackSize, 0, 0.15625, 1, 1);
     }
     
     getLevelImage(level) {
-        return this.getTextImage("Level: " + level, 10, 40, 1, 1);
+        return this.getTextImage("Level: " + level, 0.15625, 0.625, 1, 1);
     }
     
     getGoldTotalImage(goldTotal) {
-        return this.getTextImage("Gold: " + goldTotal, 0, 35, 1, 1);
+        return this.getTextImage("Gold: " + goldTotal, 0, 0.546875, 1, 1);
     }
     
     getInfoNameImage(text) {
-        return this.getTextImage(text, 0, 25, 6, 1);
+        return this.getTextImage(text, 0, 0.390625, 6, 1);
     }
     
     getInfoTextImage(text) {
-        return this.getTextImage(text, 0, 45, 6, 1);
+        return this.getTextImage(text, 0, 0.703125, 6, 1);
     }
 
     getInventoryImages(items, animationFrame) {
