@@ -26,8 +26,6 @@ class Secret {
         Secret.secretMap.set("ssl_key", readFileSyncIfExists(SECRET_SSL_KEY_FILE));
         Secret.secretMap.set("ssl_cert", readFileSyncIfExists(SECRET_SSL_CERT_FILE));
         Secret.secretMap.set("ssl_ca", readFileSyncIfExists(SECRET_SSL_CA_FILE));
-        Secret.secretMap.set("dkim_private_key", readFileSyncIfExists(SECRET_DKIM_PRIVATE_KEY_FILE));
-        Secret.secretMap.set("dkim_key_selector", readFileSyncIfExists(SECRET_DKIM_SELECTOR_FILE));
     }
 
     static getSecret(key) {
