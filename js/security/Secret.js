@@ -13,18 +13,34 @@ class Secret {
     static secretMap;
 
     static init() {
-        let secretsJSON = fs.readFileSync(SECRET_JSON_FILE);
-        Secret.secretMap = new Map(Object.entries(JSON.parse(secretsJSON)));
+        Secret.secretMap = new Map();
 
-        Secret.secretMap.set("ssl_key", fs.readFileSync(SECRET_SSL_KEY_FILE));
-        Secret.secretMap.set("ssl_cert", fs.readFileSync(SECRET_SSL_CERT_FILE));
-        Secret.secretMap.set("ssl_ca", fs.readFileSync(SECRET_SSL_CA_FILE));
-        Secret.secretMap.set("dkim_private_key", fs.readFileSync(SECRET_DKIM_PRIVATE_KEY_FILE));
-        Secret.secretMap.set("dkim_key_selector", fs.readFileSync(SECRET_DKIM_SELECTOR_FILE));
+        let secretsJSON = readFileSyncIfExists(SECRET_JSON_FILE);
+        if(secretsJSON !== undefined) {
+            let fileEntries = Object.entries(JSON.parse(secretsJSON))
+            for(let fileEntry of fileEntries) {
+                Secret.secretMap.set(fileEntry[0], fileEntry[1]);
+            }
+        }
+
+        Secret.secretMap.set("ssl_key", readFileSyncIfExists(SECRET_SSL_KEY_FILE));
+        Secret.secretMap.set("ssl_cert", readFileSyncIfExists(SECRET_SSL_CERT_FILE));
+        Secret.secretMap.set("ssl_ca", readFileSyncIfExists(SECRET_SSL_CA_FILE));
+        Secret.secretMap.set("dkim_private_key", readFileSyncIfExists(SECRET_DKIM_PRIVATE_KEY_FILE));
+        Secret.secretMap.set("dkim_key_selector", readFileSyncIfExists(SECRET_DKIM_SELECTOR_FILE));
     }
 
     static getSecret(key) {
         return Secret.secretMap.get(key);
+    }
+}
+
+function readFileSyncIfExists(filename) {
+    if(fs.existsSync(filename)) {
+        return fs.readFileSync(filename);
+    }
+    else {
+        return undefined;
     }
 }
 

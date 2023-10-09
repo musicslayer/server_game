@@ -32,10 +32,10 @@ class HTTPServer {
     isHTTPS;
 
     constructor(certificateData) {
-        this.isHTTPS = certificateData === undefined;
+        this.isHTTPS = isCertificateDataValid(certificateData);
 
-        let serverFcn = this.isHTTPS ? http.createServer : https.createServer;
-        let serverArgs = this.isHTTPS ? [] : [certificateData];
+        let serverFcn = this.isHTTPS ? https.createServer : http.createServer;
+        let serverArgs = this.isHTTPS ? [certificateData] : [];
 
         this.server = serverFcn(...serverArgs, (req, res) => {
             try {
@@ -142,7 +142,7 @@ class HTTPServer {
 
     async listen() {
         return new Promise((resolve) => {
-            let serverPort = this.isHTTPS ? HTTP_PORT : HTTPS_PORT;
+            let serverPort = this.isHTTPS ? HTTPS_PORT : HTTP_PORT;
 
             this.server.listen(serverPort, () => {
                 resolve();
@@ -153,6 +153,13 @@ class HTTPServer {
     terminate() {
         this.server.close();
     }
+}
+
+function isCertificateDataValid(certificateData) {
+    return certificateData !== undefined
+    && certificateData.cert !== undefined
+    && certificateData.key !== undefined
+    && certificateData.ca !== undefined;
 }
 
 function serveFile(res, contentType, file) {
