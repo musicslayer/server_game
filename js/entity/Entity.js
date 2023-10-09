@@ -227,15 +227,12 @@ class Entity extends UID {
             this.y = y;
 
             // If the screen does not change, skip this for performance reasons.
-            // Also, we do not want to cause any instance screens to be removed by calling "removeEntity".
             if(this.screen !== screen) {
                 let oldScreen = this.screen;
 
                 this.screen.removeEntity(this);
                 this.setScreen(screen);
                 this.screen.addEntity(this, x, y);
-
-                // TODO Can we do this all unconditionally now?!
 
                 // When players are removed we notify the screen in case instances should be destroyed.
                 if(this.isPlayer) {
