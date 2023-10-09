@@ -168,6 +168,12 @@ class Screen {
         // By default, do nothing.
     }
 
+    allowsItemUse() {
+        // Returns whether a player can drop or consume items from the inventory or purse on this screen.
+        // By default, we allow this.
+        return true;
+    }
+
     serialize(writer) {
         // Only serialize non-players here.
         writer.beginObject()

@@ -54,12 +54,12 @@ class Client {
         }
         else if(inputs.includes("right")) {
             if(location === "inventory") {
-                if(!this.player.screen.isDynamic) {
+                if(!this.player.screen.allowsItemUse()) {
                     this.scheduleInventoryTask(undefined, 0, "consume_from_inventory", this.player, info[0]);
                 }
             }
             else if(location === "purse") {
-                if(!this.player.screen.isDynamic) {
+                if(!this.player.screen.allowsItemUse()) {
                     this.schedulePurseTask(undefined, 0, "drop_from_purse", this.player, 100);
                 }
             }
@@ -77,7 +77,7 @@ class Client {
             }
             else if(location1 === "inventory" && location2 === "screen") {
                 // Drop entire stack on the player's current location.
-                if(!this.player.screen.isDynamic) {
+                if(!this.player.screen.allowsItemUse()) {
                     this.scheduleInventoryTask(undefined, 0, "drop_from_inventory", this.player, info1[0], -1);
                 }
             }
@@ -95,7 +95,7 @@ class Client {
             this.scheduleInventoryTask(undefined, 0, "inventory_next", this.player);
         }
         else if(inputs.includes("inventory_use")) {
-            if(!this.player.screen.isDynamic) {
+            if(!this.player.screen.allowsItemUse()) {
                 this.scheduleInventoryTask(undefined, 0, "consume_from_inventory", this.player, this.player.selectedSlot);
             }
         }
@@ -201,7 +201,7 @@ class Client {
             this.scheduleInventoryTask(undefined, 0, "inventory_next", this.player);
         }
         else if(inputs.includes("inventory_use")) {
-            if(!this.player.screen.isDynamic) {
+            if(!this.player.screen.allowsItemUse()) {
                 this.scheduleInventoryTask(undefined, 0, "consume_from_inventory", this.player, this.player.selectedSlot);
             }
         }

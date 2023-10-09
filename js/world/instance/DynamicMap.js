@@ -2,7 +2,6 @@ const InstanceMap = require("./InstanceMap.js");
 
 class DynamicMap extends InstanceMap {
     // A dynamic map is a map used to generate dynamic screens.
-    isDynamic = true;
 
     getScreenByName(name) {
         // Return a dynamically generated screen if the name starts with the expected prefix.
