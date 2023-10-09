@@ -3,8 +3,6 @@ const ANIMATION_FRAMES = 8; // frames per animation cycle
 const SHOW_SCREEN_GRID = true;
 const SHOW_INVENTORY_GRID = true;
 
-// TODO Scale text/bars is good but values are quite arbitrary...
-
 class CanvasPainter {
     canvas;
     ctx;
