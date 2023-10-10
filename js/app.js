@@ -7,7 +7,6 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
 // TODO GameMap -> Maps in more places?
-// TODO Dev moving screens cannot go out of bounds?
 
 async function init() {
     let appState = new AppState();
