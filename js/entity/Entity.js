@@ -291,6 +291,18 @@ class Entity extends UID {
         }
     }
 
+    doTeleportLocation(mapName, screenName, x, y) {
+        let map = this.screen.map.world.getMapByName(mapName);
+        let screen = map?.getScreenByName(screenName);
+        
+        if(screen) {
+            this.doTeleport(screen, x, y);
+        }
+        else {
+            this.doTeleportFallback();
+        }
+    }
+
     doKill() {
         // Called when an entity is killed but not despawned, for example players who die and get sent to the death plane.
         this.health = 0;
