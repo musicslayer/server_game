@@ -69,6 +69,9 @@ class ImageCatalog {
             case "HomePortal":
                 image = this.getImage("portal", "teleporter");
                 break;
+            case "InfoSign":
+                image = this.getImage("info", "sign");
+                break;
             case "InvinciblePotion":
                 image = this.getImage("item", "invincible_potion");
                 break;

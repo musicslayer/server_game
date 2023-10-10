@@ -482,6 +482,12 @@ class SocketIOServer {
 					screen = entrance.screen;
 					player.x = entrance.x;
 					player.y = entrance.y;
+
+					// Set the player's home location to the tutorial screen.
+					player.homeMapName = screen.map.name;
+					player.homeScreenName = screen.name;
+					player.homeX = 0;
+					player.homeY = 0;
 				}
 				else {
 					let map = world.getMapByName(player.mapName);

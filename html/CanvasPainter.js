@@ -85,7 +85,7 @@ class CanvasPainter {
 
         let ctxTemp = canvasTemp.getContext("2d");
         ctxTemp.font = fontSize + "px Arial";
-        ctxTemp.fillText(text, x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor);
+        ctxTemp.fillText(text, x * this.gameScreen.imageScaleFactor, y * this.gameScreen.imageScaleFactor, width * this.gameScreen.imageScaleFactor);
         
         return canvasTemp;
     }
@@ -194,13 +194,14 @@ class CanvasPainter {
         // Info
         if(info.className !== "Undefined") {
             let infoWidth = 6;
+            let infoHeight = 3;
             let infoImage = this.imageCatalog.getImageByEntityClassName(info.className, animationFrame);
             let infoNameImage = this.getInfoNameImage(info.name);
             let infoTextImage = this.getInfoTextImage(info.text);
 
             this.drawInfoImageScaled(ctxBuffer, infoImage, 0, 0, 1, 1);
             this.drawInfoImageScaled(ctxBuffer, infoNameImage, 1, 0, infoWidth, 1);
-            this.drawInfoImageScaled(ctxBuffer, infoTextImage, 1, 0, infoWidth, 1);
+            this.drawInfoImageScaled(ctxBuffer, infoTextImage, 1, 0, infoWidth, infoHeight);
         }
         
         ctxBuffer.stroke();
@@ -279,7 +280,7 @@ class CanvasPainter {
     }
     
     getInfoTextImage(text) {
-        return this.getTextImage(text, 0, 0.70, 6, 1);
+        return this.getTextImage(text, 0, 0.70, 6, 3);
     }
 
     getInventoryImages(items, animationFrame) {

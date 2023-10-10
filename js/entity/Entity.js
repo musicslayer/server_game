@@ -276,7 +276,7 @@ class Entity extends UID {
         this.homeX = Constants.start.START_LOCATION_X;
         this.homeY = Constants.start.START_LOCATION_Y;
 
-        this.doTeleportHome()
+        this.doTeleportHome();
     }
 
     doTeleportHome() {
