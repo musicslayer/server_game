@@ -1,6 +1,6 @@
 const Entity = require("../Entity.js");
 
-class InfoSign extends Entity {
+class InfoSign_Tutorial1 extends Entity {
     getName() {
         return "Info Sign";
     }
@@ -18,4 +18,4 @@ class InfoSign extends Entity {
     }
 }
 
-module.exports = InfoSign;
+module.exports = InfoSign_Tutorial1;

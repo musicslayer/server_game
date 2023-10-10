@@ -46,6 +46,8 @@ class ImageCatalog {
     
     getImageByEntityClassName(className, animationFrame) {
         let image;
+
+        className = normalizeClassName(className);
         
         switch(className) {
             case "DeathTrap":
@@ -235,6 +237,20 @@ class ImageCatalog {
         
         return image;
     }
+}
+
+function normalizeClassName(className) {
+    // Some groups of class names all have the same image.
+    let newClassName = className;
+
+    if(newClassName.startsWith("InfoSign")) {
+        newClassName = "InfoSign";
+    }
+    else if(newClassName.startsWith("Teleporter")) {
+        newClassName = "Teleporter";
+    }
+
+    return newClassName;
 }
 
 export { ImageCatalog };

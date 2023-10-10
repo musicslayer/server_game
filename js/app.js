@@ -7,8 +7,6 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
 // TODO ImageCatalog -> Do we need all the switch cases? 
-// --- And what about InfoSigns - how can we have different info messages.
-// --- Same with Teleporters?
 
 // TODO Inventory/Purse usage no longer works!
 async function init() {
