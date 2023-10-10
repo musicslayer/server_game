@@ -15,7 +15,7 @@ class World {
     id;
     name;
 
-    maps = []; // TODO
+    maps = [];
     mapNameMap = new Map();
     mapIDMap = new Map();
 

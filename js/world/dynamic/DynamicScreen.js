@@ -1,4 +1,4 @@
-const InstanceScreen = require("./InstanceScreen.js");
+const InstanceScreen = require("../instance/InstanceScreen.js");
 
 class DynamicScreen extends InstanceScreen {
     // A dynamic screen is an instance screen where there is always another screen available in any direction.

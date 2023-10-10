@@ -1,4 +1,4 @@
-const InstanceMap = require("./InstanceMap.js");
+const InstanceMap = require("../instance/InstanceMap.js");
 
 class DynamicMap extends InstanceMap {
     // A dynamic map is a map used to generate screens.
