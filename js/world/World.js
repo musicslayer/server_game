@@ -15,9 +15,9 @@ class World {
     id;
     name;
 
-    gameMaps = [];
-    gameMapNameMap = new Map();
-    gameMapIDMap = new Map();
+    maps = []; // TODO
+    mapNameMap = new Map();
+    mapIDMap = new Map();
 
     worldFolder;
 
@@ -59,21 +59,21 @@ class World {
     }
 
     addMap(map) {
-        this.gameMaps.push(map);
-        this.gameMapNameMap.set(map.name, map);
-        this.gameMapIDMap.set(map.id, map);
+        this.maps.push(map);
+        this.mapNameMap.set(map.name, map);
+        this.mapIDMap.set(map.id, map);
     }
 
     removeMap(map) {
-        let index = this.gameMaps.indexOf(map);
-        this.gameMaps.splice(index, 1);
+        let index = this.maps.indexOf(map);
+        this.maps.splice(index, 1);
 
-        this.gameMapNameMap.delete(map.name);
-        this.gameMapIDMap.delete(map.id);
+        this.mapNameMap.delete(map.name);
+        this.mapIDMap.delete(map.id);
     }
 
     getMapByName(name) {
-        let map = this.gameMapNameMap.get(name);
+        let map = this.mapNameMap.get(name);
 
         // If the map does not exist in this world then try to generate a map.
         // It's possible that the map is still undefined. This occurs if the map name used to exist but was later removed.
@@ -96,7 +96,7 @@ class World {
     }
 
     getMapByID(id) {
-        let map = this.gameMapIDMap.get(id);
+        let map = this.mapIDMap.get(id);
 
         // If the map does not exist in this world then generate a map.
         // Note that at least one generator world will be able to create a map.
@@ -140,7 +140,7 @@ class World {
             .serialize("className", Util.getClassName(this))
             .serialize("id", this.id)
             .serialize("name", this.name)
-            .serializeArray("maps", this.gameMaps)
+            .serializeArray("maps", this.maps)
             .serialize("worldFolder", this.worldFolder)
             .serialize("playerCount", this.playerCount)
             .serialize("maxPlayerCount", this.maxPlayerCount)

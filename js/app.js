@@ -6,8 +6,6 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- Add in logging calls. This requires more storage space.
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
-// TODO GameMap -> Maps in more places?
-
 async function init() {
     let appState = new AppState();
     let appAdmin = new AppAdmin(appState);
