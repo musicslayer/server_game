@@ -338,7 +338,7 @@ class SocketIOServer {
 
 				// Return to the client:
 				// - Information from when the account was last logged in.
-				// - All available servers and their worlds, not including dynamic worlds.
+				// - All available servers and their worlds, not including generator worlds.
 				// - A list of character names and whether they are already logged in.
 				let accountData = {
 					lastServerName: account.lastServerName,
@@ -350,7 +350,7 @@ class SocketIOServer {
 				for(let server of this.serverManager.servers) {
 					let worldData = [];
 					for(let world of server.universe.worlds) {
-						if(!world.isDynamic) {
+						if(!world.isGeneratorWorld) {
 							worldData.push({
 								name: world.name,
 								playerCount: world.playerCount,

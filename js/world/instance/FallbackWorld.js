@@ -1,9 +1,9 @@
 const path = require("path");
 
 const GameMap = require("../GameMap.js");
-const DynamicWorld = require("./DynamicWorld.js");
+const GeneratorWorld = require("./GeneratorWorld.js");
 
-class FallbackWorld extends DynamicWorld {
+class FallbackWorld extends GeneratorWorld {
     getNamePrefix() {
         return "_fallback_";
     }
@@ -34,7 +34,7 @@ class FallbackWorld extends DynamicWorld {
         entity.doTeleport(entrance.screen, entrance.x, entrance.y);
     }
 
-    createDynamicMap(id) {
+    createMap(id) {
         let fallbackMap = GameMap.loadMapFromFolder(this, "FallbackMap", path.join(this.worldFolder, "_fallback"))
         fallbackMap.name = this.getNamePrefix() + id;
         fallbackMap.id = id;

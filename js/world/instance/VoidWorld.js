@@ -1,10 +1,10 @@
 const path = require("path");
 
 const GameMap = require("../GameMap.js");
-const DynamicWorld = require("./DynamicWorld.js");
+const GeneratorWorld = require("./GeneratorWorld.js");
 const Util = require("../../util/Util.js");
 
-class VoidWorld extends DynamicWorld {
+class VoidWorld extends GeneratorWorld {
     getNamePrefix() {
         return "_void_";
     }
@@ -13,7 +13,7 @@ class VoidWorld extends DynamicWorld {
         return Util.getClassName(id) === "Number";
     }
 
-    createDynamicMap(id) {
+    createMap(id) {
         let voidMap = GameMap.loadMapFromFolder(this, "VoidMap", path.join(this.worldFolder, "_void"))
         voidMap.name = this.getNamePrefix() + id;
         voidMap.id = id;

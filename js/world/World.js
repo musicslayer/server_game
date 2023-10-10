@@ -75,11 +75,11 @@ class World {
     getMapByName(name) {
         let map = this.gameMapNameMap.get(name);
 
-        // If the map does not exist in this world, try dynamically generating a map.
+        // If the map does not exist in this world then try to generate a map.
         // It's possible that the map is still undefined. This occurs if the map name used to exist but was later removed.
         if(!map) {
-            for(let dynamicWorld of this.universe.getDynamicWorlds()) {
-                map = dynamicWorld.getMapByName(name);
+            for(let generatorWorld of this.universe.getGeneratorWorlds()) {
+                map = generatorWorld.getMapByName(name);
                 if(!map) {
                     continue;
                 }
@@ -98,11 +98,11 @@ class World {
     getMapByID(id) {
         let map = this.gameMapIDMap.get(id);
 
-        // If the map does not exist in this world, dynamically generate a map.
-        // Note that at least one dynamic world will be able to create a map.
+        // If the map does not exist in this world then generate a map.
+        // Note that at least one generator world will be able to create a map.
         if(!map) {
-            for(let dynamicWorld of this.universe.getDynamicWorlds()) {
-                map = dynamicWorld.getMapByID(id);
+            for(let generatorWorld of this.universe.getGeneratorWorlds()) {
+                map = generatorWorld.getMapByID(id);
                 if(!map) {
                     continue;
                 }

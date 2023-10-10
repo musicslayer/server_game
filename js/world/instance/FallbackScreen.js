@@ -1,6 +1,6 @@
 const DynamicScreen = require("./DynamicScreen.js");
 
-class DeathScreen extends DynamicScreen {
+class FallbackScreen extends DynamicScreen {
 }
 
-module.exports = DeathScreen;
+module.exports = FallbackScreen;

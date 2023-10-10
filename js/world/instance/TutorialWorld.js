@@ -1,9 +1,9 @@
 const path = require("path");
 
 const GameMap = require("../GameMap.js");
-const DynamicWorld = require("./DynamicWorld.js");
+const GeneratorWorld = require("./GeneratorWorld.js");
 
-class TutorialWorld extends DynamicWorld {
+class TutorialWorld extends GeneratorWorld {
     getNamePrefix() {
         return "_tutorial_";
     }
@@ -34,8 +34,7 @@ class TutorialWorld extends DynamicWorld {
         entity.doTeleport(entrance.screen, entrance.x, entrance.y);
     }
 
-    // TODO Rename this to remove "dynamic"?
-    createDynamicMap(id) {
+    createMap(id) {
         let tutorialMap = GameMap.loadMapFromFolder(this, "TutorialMap", path.join(this.worldFolder, "_tutorial"))
         tutorialMap.name = this.getNamePrefix() + id;
         tutorialMap.id = id;

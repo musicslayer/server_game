@@ -65,16 +65,16 @@ class Universe {
         return this.worldIDMap.get(id);
     }
 
-    getDynamicWorlds() {
-        let dynamicWorlds = [];
+    getGeneratorWorlds() {
+        let generatorWorlds = [];
 
         for(let world of this.worlds) {
-            if(world.isDynamic) {
-                dynamicWorlds.push(world);
+            if(world.isGeneratorWorld) {
+                generatorWorlds.push(world);
             }
         }
 
-        return dynamicWorlds;
+        return generatorWorlds;
     }
 
     serialize(writer) {

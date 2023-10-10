@@ -30,7 +30,7 @@ class Entity extends UID {
 
     // Certain entities (i.e. players) can teleport home, so store the desired location here.
     homeMapName;
-    homeScreenName; // Cannot be a dynamic screen
+    homeScreenName;
     homeX;
     homeY;
     
