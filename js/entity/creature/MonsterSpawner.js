@@ -1,5 +1,5 @@
-const Entity = require("./Entity.js");
-const MonsterSpawnerAI = require("../ai/MonsterSpawnerAI.js");
+const Entity = require("../Entity.js");
+const MonsterSpawnerAI = require("../../ai/MonsterSpawnerAI.js");
 
 class MonsterSpawner extends Entity {
     isAI = true;

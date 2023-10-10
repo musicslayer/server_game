@@ -8,6 +8,9 @@ const WorkerManager = require("./worker/WorkerManager.js");
 
 // TODO ImageCatalog -> Do we need all the switch cases? 
 // --- And what about InfoSigns - how can we have different info messages.
+// --- Same with Teleporters?
+
+// TODO Inventory/Purse usage no longer works!
 async function init() {
     let appState = new AppState();
     let appAdmin = new AppAdmin(appState);

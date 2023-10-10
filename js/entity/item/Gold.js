@@ -1,4 +1,4 @@
-const Entity = require("./Entity.js");
+const Entity = require("../Entity.js");
 
 class Gold extends Entity {
     maxStackSize = 100000;

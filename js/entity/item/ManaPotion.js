@@ -1,4 +1,4 @@
-const Entity = require("./Entity.js");
+const Entity = require("../Entity.js");
 
 class ManaPotion extends Entity {
     maxStackNumber = 1;

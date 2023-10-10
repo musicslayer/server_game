@@ -1,4 +1,4 @@
-const Entity = require("./Entity.js");
+const Entity = require("../Entity.js");
 
 class InfoSign extends Entity {
     getName() {

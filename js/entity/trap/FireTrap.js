@@ -1,4 +1,4 @@
-const Entity = require("./Entity.js");
+const Entity = require("../Entity.js");
 
 class FireTrap extends Entity {
     damage = 40;

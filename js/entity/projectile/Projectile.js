@@ -1,6 +1,6 @@
-const Entity = require("./Entity.js");
-const ProjectileAI = require("../ai/ProjectileAI.js");
-const Util = require("../util/Util.js");
+const Entity = require("../Entity.js");
+const ProjectileAI = require("../../ai/ProjectileAI.js");
+const Util = require("../../util/Util.js");
 
 class Projectile extends Entity {
     isAI = true;

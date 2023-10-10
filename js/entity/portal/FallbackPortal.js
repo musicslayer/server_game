@@ -1,4 +1,4 @@
-const Entity = require("./Entity.js");
+const Entity = require("../Entity.js");
 
 class FallbackPortal extends Entity {
     getName() {

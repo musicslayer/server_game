@@ -1,8 +1,8 @@
-const Entity = require("./Entity.js");
-const Purse = require("./Purse.js");
-const Inventory = require("./Inventory.js");
-const Progress = require("../progress/Progress.js");
-const ServerTask = require("../server/ServerTask.js");
+const Entity = require("../Entity.js");
+const Purse = require("../Purse.js");
+const Inventory = require("../Inventory.js");
+const Progress = require("../../progress/Progress.js");
+const ServerTask = require("../../server/ServerTask.js");
 
 class Player extends Entity {
     client;

@@ -1,5 +1,5 @@
-const Entity = require("./Entity.js");
-const ServerTask = require("../server/ServerTask.js");
+const Entity = require("../Entity.js");
+const ServerTask = require("../../server/ServerTask.js");
 
 class HealthRegenPotion extends Entity {
     maxStackSize = 20;
