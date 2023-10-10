@@ -24,7 +24,7 @@ const HTML_UNZIP_STREAM = "html/UnzipStream.js";
 const HTML_SOCKETIO = "html/socket.io.min.js";
 const IMAGE_ZIP = "assets/image.zip";
 
-const HTTP_PORT = 80;
+const HTTP_PORT = 8080;
 const HTTPS_PORT = 443;
 
 class HTTPServer {

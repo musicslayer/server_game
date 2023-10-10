@@ -34,6 +34,7 @@ class TutorialWorld extends DynamicWorld {
         entity.doTeleport(entrance.screen, entrance.x, entrance.y);
     }
 
+    // TODO Rename this to remove "dynamic"?
     createDynamicMap(id) {
         let tutorialMap = GameMap.loadMapFromFolder(this, "TutorialMap", path.join(this.worldFolder, "_tutorial"))
         tutorialMap.name = this.getNamePrefix() + id;
