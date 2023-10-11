@@ -100,7 +100,8 @@ class Entity extends UID {
     }
 
     isVisible() {
-        return true;
+        // By default, entities can be seen unless they have the status of "invisible"
+        return !this.isStatus("invisible");
     }
 
     getServer() {

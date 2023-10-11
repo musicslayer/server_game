@@ -21,6 +21,7 @@ class MonsterSpawner extends Entity {
     }
 
     isVisible() {
+        // Monster spawners are never visible.
         return false;
     }
 

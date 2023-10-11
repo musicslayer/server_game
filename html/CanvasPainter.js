@@ -133,17 +133,19 @@ class CanvasPainter {
         while(entities.length > 0) {
             let entity = entities.shift();
 
-            let image;
-            if(entity.isVisible) {
-                image = this.imageCatalog.getImageByEntityName(entity.entityName, animationFrame);
-            }
-            else {
-                image = this.imageCatalog.getImage("base", "base", "transparent", 0);
-            }
-            
             let x = entity.x + entity.animationShiftX;
             let y = entity.y + entity.animationShiftY;
+            let image;
 
+            if(!entity.isVisible) {
+                // TODO Why even bother drawing this?
+                // TODO Most invisible entities should not be seen, but the player character should be visible somehow?
+                //image = this.imageCatalog.getImage("base", "base", "transparent", 0);
+                //this.drawScreenImageScaled(ctxBuffer, image, x, y);
+                return;
+            }
+
+            image = this.imageCatalog.getImageByEntityName(entity.entityName, animationFrame);
             this.drawScreenImageScaled(ctxBuffer, image, x, y);
             
             if(entity.stackSize !== 1) {
