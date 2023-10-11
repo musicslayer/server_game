@@ -90,10 +90,10 @@ class Monster extends Entity {
     }
 
     decreaseAggro() {
-        // If a player is no longer on the screen, decrease the aggro for that player.
+        // If a player is invisible or no longer on the screen, decrease the aggro for that player.
         for(let player_uid of this.aggroMap.keys()) {
             let player = Entity.getEntity(player_uid);
-            if(!this.screen.entities.includes(player)) {
+            if(!player.isVisible() || !this.screen.entities.includes(player)) {
                 let aggro = this.aggroMap.get(player.uid) ?? 0;
                 let newAggro = Math.max(aggro - this.aggroForgiveness, 0);
 
@@ -114,8 +114,8 @@ class Monster extends Entity {
         // First find max aggro.
         let max = 0;
         for(let entity of this.screen.entities) {
-            // Only players can have aggro, not other entities.
-            if(!entity.isPlayer) {
+            // Only visible players can have aggro.
+            if(!entity.isPlayer || !entity.isVisible()) {
                 continue;
             }
 
