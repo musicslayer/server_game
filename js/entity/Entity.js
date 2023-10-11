@@ -7,7 +7,6 @@ const UID = require("../uid/UID.js");
 class Entity extends UID {
     isSpawned = false; // Only true if this entity instance exists in the game world.
     isPlayer = false;
-    isAI = false;
 
     owner_uid; // e.g. The entity that spawned a projectile is the owner.
 
@@ -623,7 +622,6 @@ class Entity extends UID {
             .serialize("className", Util.getClassName(this))
             .serialize("isSpawned", this.isSpawned)
             .serialize("isPlayer", this.isPlayer)
-            .serialize("isAI", this.isAI)
             .serialize("owner_uid", this.owner_uid)
             .serialize("health", this.health)
             .serialize("maxHealth", this.maxHealth)
@@ -690,7 +688,6 @@ class Entity extends UID {
             entity = Reflection.createInstance(className, uid);
             entity.isSpawned = reader.deserialize("isSpawned", "Boolean");
             entity.isPlayer = reader.deserialize("isPlayer", "Boolean");
-            entity.isAI = reader.deserialize("isAI", "Boolean");
             entity.owner_uid = reader.deserialize("owner_uid", "Number");
             entity.health = reader.deserialize("health", "Number");
             entity.maxHealth = reader.deserialize("maxHealth", "Number");

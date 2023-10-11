@@ -4,7 +4,6 @@ const ServerTask = require("../../server/ServerTask.js");
 const Util = require("../../util/Util.js");
 
 class Monster extends Entity {
-    isAI = true;
     ai = new MonsterAI();
 
     health = 70;

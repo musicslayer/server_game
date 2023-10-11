@@ -2,8 +2,6 @@ const Entity = require("../Entity.js");
 const MonsterSpawnerAI = require("../../ai/MonsterSpawnerAI.js");
 
 class MonsterSpawner extends Entity {
-    // TODO Do we need isAI
-    isAI = true;
     ai = new MonsterSpawnerAI();
 
     spawnTime = 3; // Seconds to spawn a new monster after one dies.
