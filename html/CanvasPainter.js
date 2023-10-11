@@ -142,7 +142,7 @@ class CanvasPainter {
                 // TODO Most invisible entities should not be seen, but the player character should be visible somehow?
                 //image = this.imageCatalog.getImage("base", "base", "transparent", 0);
                 //this.drawScreenImageScaled(ctxBuffer, image, x, y);
-                return;
+                continue;
             }
 
             image = this.imageCatalog.getImageByEntityName(entity.entityName, animationFrame);

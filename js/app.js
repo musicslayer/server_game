@@ -10,8 +10,6 @@ const WorkerManager = require("./worker/WorkerManager.js");
 
 // TODO Do we need separate/duplicate world folders.
 
-// TODO Entity class should just have an array of statuses?
-
 async function init() {
     let appState = new AppState();
     let appAdmin = new AppAdmin(appState);

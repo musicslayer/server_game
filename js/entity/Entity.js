@@ -323,8 +323,8 @@ class Entity extends UID {
         this.health = 0;
         this.mana = 0;
 
-        this.addStatus("dead");
-        this.removeStatus("invincible");
+        // Add the "dead" status and remove all others.
+        this.statuses = ["dead"];
 
         // ??? If the player is in a dungeon, could we just teleport them to the entrance instead?
         this.doTeleportDeath();
