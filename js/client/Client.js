@@ -131,6 +131,9 @@ class Client {
         if(inputs.includes("invincible_on")) {
             this.scheduleActionTask(undefined, 0, "invincible_on", this.player, 10);
         }
+        if(inputs.includes("invisible_on")) {
+            this.scheduleActionTask(undefined, 0, "invisible_on", this.player, 10);
+        }
 
         // Move Position (only one will be executed)
         // Change player direction if needed, or take a step if we are already facing that way.

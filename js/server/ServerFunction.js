@@ -78,6 +78,14 @@ class ServerFunction {
             entity.doMakeInvincible(invincibleSeconds);
         });
 
+        map.set("invisible_off", (entity) => {
+            entity.removeStatus("invisible");
+        });
+
+        map.set("invisible_on", (entity, invisibleSeconds) => {
+            entity.doMakeInvisible(invisibleSeconds);
+        });
+
         map.set("kill", (entity) => {
             entity.doKill();
         });

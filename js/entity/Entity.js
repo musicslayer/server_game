@@ -153,6 +153,13 @@ class Entity extends UID {
         this.getServer().scheduleTask(serverTask);
     }
 
+    doMakeInvisible(invisibleSeconds) {
+        this.addStatus("invisible");
+
+        let serverTask = new ServerTask(undefined, invisibleSeconds, 1, "invisible_off", this);
+        this.getServer().scheduleTask(serverTask);
+    }
+
     doCheckCollision() {
         // Call this after any movement to see if this entity is overlapping another on the same screen.
         let overlappingEntities = this.screen.getOverlappingEntities(this);

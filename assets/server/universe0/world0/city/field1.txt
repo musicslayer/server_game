@@ -11,4 +11,6 @@
 0,9||ManaPotion,1
 0,10||ManaPotion,1
 0,11||ManaRegenPotion,1
+1,6||InvisiblePotion,1
+1,7||InvisiblePotion,1
 5,11||InvinciblePotion,3
