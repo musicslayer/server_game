@@ -30,7 +30,7 @@ class InvisiblePotion extends Entity {
     }
 
     doConsume(entity) {
-        entity.doMakeInvisible(this.invisibleSeconds);
+        entity.doMakeStatus("invisible", this.invisibleSeconds);
     }
 }
 

@@ -70,22 +70,6 @@ class ServerFunction {
             entity.doSwapInventorySlots(slot1, slot2);
         });
 
-        map.set("invincible_off", (entity) => {
-            entity.removeStatus("invincible");
-        });
-
-        map.set("invincible_on", (entity, invincibleSeconds) => {
-            entity.doMakeInvincible(invincibleSeconds);
-        });
-
-        map.set("invisible_off", (entity) => {
-            entity.removeStatus("invisible");
-        });
-
-        map.set("invisible_on", (entity, invisibleSeconds) => {
-            entity.doMakeInvisible(invisibleSeconds);
-        });
-
         map.set("kill", (entity) => {
             entity.doKill();
         });
@@ -134,6 +118,14 @@ class ServerFunction {
         map.set("spawn_monster", (entity) => {
             entity.doSpawnEntity(entity.createMonsterInstance());
             entity.onMonsterSpawn();
+        });
+
+        map.set("status_off", (entity, status) => {
+            entity.removeStatus(status);
+        });
+
+        map.set("status_on", (entity, status, time) => {
+            entity.doMakeStatus(status, time);
         });
 
         map.set("teleport", (entity, x, y) => {

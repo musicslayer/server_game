@@ -147,22 +147,14 @@ class Entity extends UID {
         }
     }
 
-    // TODO Merge these two status methods (and maybe even add in "dead")?
-    doMakeInvincible(invincibleSeconds) {
-        this.addStatus("invincible");
+    doMakeStatus(status, time) {
+        // Gives the entity a status and registers the server task to later remove it.
+        // This should not be used with the "dead" status.
+        this.addStatus(status);
 
-        let serverTask = new ServerTask(undefined, invincibleSeconds, 1, "invincible_off", this);
+        let serverTask = new ServerTask(undefined, time, 1, "status_off", this, status);
 
-        this.ownStatusServerTask("invincible", serverTask);
-        this.getServer().scheduleTask(serverTask);
-    }
-
-    doMakeInvisible(invisibleSeconds) {
-        this.addStatus("invisible");
-
-        let serverTask = new ServerTask(undefined, invisibleSeconds, 1, "invisible_off", this);
-
-        this.ownStatusServerTask("invisible", serverTask);
+        this.ownStatusServerTask(status, serverTask);
         this.getServer().scheduleTask(serverTask);
     }
 
