@@ -58,10 +58,10 @@ class Inventory {
         }
     }
 
-    removeFromInventorySlot(slot, number) {
+    removeFromInventorySlot(slot, stackSize) {
         let item = this.itemMap.get(slot);
         if(item) {
-            item.stackSize -= number;
+            item.stackSize -= stackSize;
             if(item.stackSize === 0) {
                 this.itemMap.set(slot, undefined);
             }

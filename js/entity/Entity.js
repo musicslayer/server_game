@@ -422,25 +422,25 @@ class Entity extends UID {
         }
     }
 
-    doDropFromInventory(slot, number) {
+    doDropFromInventory(slot, stackSize) {
         // Drop a number of items from a stack without consuming them.
         if(this.inventory) {
             let item = this.inventory.itemMap.get(slot);
             if(item) {
                 // A negative value or a value too large means to drop the entire stack.
-                if(number < 0 || number > item.stackSize) {
-                    number = item.stackSize;
+                if(stackSize < 0 || stackSize > item.stackSize) {
+                    stackSize = item.stackSize;
                 }
 
-                if(number > 0) {
-                    let itemDrop = Entity.createInstance(Util.getClassName(item), number);
+                if(stackSize > 0) {
+                    let itemDrop = Entity.createInstance(Util.getClassName(item), stackSize);
                     itemDrop.setScreen(this.screen);
                     itemDrop.x = this.x;
                     itemDrop.y = this.y;
 
                     itemDrop.doSpawnAsLoot();
 
-                    this.inventory.removeFromInventorySlot(slot, number);
+                    this.inventory.removeFromInventorySlot(slot, stackSize);
                 }
             }
         }
@@ -550,10 +550,9 @@ class Entity extends UID {
         return rootEntity;
     }
 
-    // TODO Change "number" to "stackSize"?
-    clone(number) {
+    clone(stackSize) {
         // By default, just create another instance with the same screen and the provided stack size.
-        let clone = Entity.createInstance(Util.getClassName(this), number);
+        let clone = Entity.createInstance(Util.getClassName(this), stackSize);
         clone.setScreen(this.screen);
         return clone;
     }

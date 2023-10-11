@@ -50,8 +50,8 @@ class ServerFunction {
             entity.doDespawn();
         });
 
-        map.set("drop_from_inventory", (entity, slot, number) => {
-            entity.doDropFromInventory(slot, number);
+        map.set("drop_from_inventory", (entity, slot, stackSize) => {
+            entity.doDropFromInventory(slot, stackSize);
         });
 
         map.set("drop_from_purse", (entity, goldAmount) => {

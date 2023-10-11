@@ -337,8 +337,12 @@ class Client {
         screenEntities.splice(index, 1);
         screenEntities.push(this.player);
 
-        // TODO If an entity is not visible, do we have to include it here?
         for(let entity of screenEntities) {
+            // Do not include invisible entities except for the player.
+            if(!entity.isVisible() && entity !== this.player) {
+                continue;
+            }
+
             entities.push({
                 entityName: entity.getEntityName(),
                 stackSize: entity.stackSize,
