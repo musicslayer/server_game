@@ -5,6 +5,10 @@ class Wall extends Entity {
         return "Wall";
     }
 
+    getEntityName() {
+        return "wall_wall";
+    }
+
     getInfo() {
         return "An obstacle to all movement.";
     }

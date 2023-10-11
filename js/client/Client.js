@@ -344,7 +344,7 @@ class Client {
             }
 
             entities.push({
-                className: Util.getClassName(entity),
+                entityName: entity.getEntityName(),
                 stackSize: entity.stackSize,
                 x: entity.x,
                 y: entity.y,
@@ -354,7 +354,8 @@ class Client {
                 manaFraction: entity.getManaFraction(),
                 experienceFraction: entity.getExperienceFraction(),
                 level: entity.getLevel(),
-                statuses: statuses
+                statuses: statuses,
+                isVisible: entity.isVisible()
             });
         }
 
@@ -366,7 +367,7 @@ class Client {
             let item = this.player.inventory.itemMap.get(index);
             if(item) {
                 inventory.items.push({
-                    className: Util.getClassName(item),
+                    entityName: item.getEntityName(),
                     stackSize: item.stackSize
                 });
             }
@@ -381,7 +382,7 @@ class Client {
 
         // Info
         let info = {};
-        info.className = Util.getClassName(this.player.getSelectedEntity());
+        info.entityName = this.player.getSelectedEntity()?.getEntityName();
         info.name = this.player.getSelectedEntity()?.getName();
         info.text = this.player.getSelectedEntity()?.getInfo();
 

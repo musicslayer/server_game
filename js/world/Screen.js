@@ -135,19 +135,19 @@ class Screen {
         return entitiesAt;
     }
 
-    getHighestEntity(x, y) {
-        let highestEntity;
+    getHighestVisibleEntity(x, y) {
+        let highestVisibleEntity;
 
-        // Iterate backwards to get the highest entity.
+        // Iterate backwards to get the highest visible entity.
         let entitiesReverse = this.entities.slice().reverse();
         for(let entity of entitiesReverse) {
-            if(entity.isAt(x, y)) {
-                highestEntity = entity;
+            if(entity.isVisible() && entity.isAt(x, y)) {
+                highestVisibleEntity = entity;
                 break;
             }
         }
 
-        return highestEntity;
+        return highestVisibleEntity;
     }
 
     getScreenInDirection(direction) {

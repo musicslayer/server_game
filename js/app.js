@@ -6,8 +6,6 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- Add in logging calls. This requires more storage space.
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
-// TODO ImageCatalog -> Do we need all the switch cases? 
-
 // TODO Inventory/Purse usage no longer works!
 
 // TODO Do we need separate/duplicate world folders.

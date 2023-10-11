@@ -32,6 +32,10 @@ class Monster extends Entity {
         return "Monster";
     }
 
+    getEntityName() {
+        return "creature_monster";
+    }
+
     getInfo() {
         return "A creature that you can kill for loot and experience.";
     }

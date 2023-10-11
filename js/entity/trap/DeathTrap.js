@@ -5,6 +5,10 @@ class DeathTrap extends Entity {
         return "Death Trap";
     }
 
+    getEntityName() {
+        return "trap_death";
+    }
+
     getInfo() {
         return "A device that inflicts certain death upon stepping on it.";
     }

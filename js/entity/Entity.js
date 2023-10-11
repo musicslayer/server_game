@@ -92,8 +92,17 @@ class Entity extends UID {
         return undefined;
     }
 
+    getEntityName() {
+        // Returns the name used to look up the image on the Client.
+        return undefined;
+    }
+
     getInfo() {
         return undefined;
+    }
+
+    isVisible() {
+        return true;
     }
 
     getServer() {
@@ -475,7 +484,7 @@ class Entity extends UID {
     }
 
     doSelectEntityScreen(x, y) {
-        this.setSelectedEntity(this.screen.getHighestEntity(x, y));
+        this.setSelectedEntity(this.screen.getHighestVisibleEntity(x, y));
     }
 
 

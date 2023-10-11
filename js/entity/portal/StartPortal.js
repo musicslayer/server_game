@@ -5,6 +5,10 @@ class StartPortal extends Entity {
         return "Start Portal";
     }
 
+    getEntityName() {
+        return "portal_teleporter";
+    }
+
     getInfo() {
         return "A portal to the start of the game.";
     }

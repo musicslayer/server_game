@@ -5,6 +5,10 @@ class Teleporter_City extends Entity {
         return "Teleporter";
     }
 
+    getEntityName() {
+        return "portal_teleporter";
+    }
+
     getInfo() {
         return "A portal to return to the city.";
     }

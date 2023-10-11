@@ -5,6 +5,10 @@ class RevivePortal extends Entity {
         return "Revive Portal";
     }
 
+    getEntityName() {
+        return "portal_teleporter";
+    }
+
     getInfo() {
         return "The only escape from the death plane.";
     }

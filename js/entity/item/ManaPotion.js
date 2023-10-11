@@ -10,6 +10,10 @@ class ManaPotion extends Entity {
         return "Mana Potion";
     }
 
+    getEntityName() {
+        return "item_manapotion";
+    }
+
     getInfo() {
         return "A potion that restores your mana.";
     }

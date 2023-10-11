@@ -5,6 +5,10 @@ class HomePortal extends Entity {
         return "Home Portal";
     }
 
+    getEntityName() {
+        return "portal_teleporter";
+    }
+
     getInfo() {
         return "A portal home.";
     }

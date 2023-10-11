@@ -8,6 +8,10 @@ class PVPToken extends Entity {
         return "PVP Token";
     }
 
+    getEntityName() {
+        return "item_pvptoken";
+    }
+
     getInfo() {
         return "A token rewarded for killing another player.";
     }

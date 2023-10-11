@@ -7,6 +7,10 @@ class FireTrap extends Entity {
         return "Fire Trap";
     }
 
+    getEntityName() {
+        return "trap_fire";
+    }
+
     getInfo() {
         return "A device that inflicts harm upon stepping on it.";
     }

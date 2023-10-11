@@ -9,6 +9,10 @@ class HealthPotion extends Entity {
         return "Health Potion";
     }
 
+    getEntityName() {
+        return "item_healthpotion";
+    }
+
     getInfo() {
         return "A potion that restores your health.";
     }

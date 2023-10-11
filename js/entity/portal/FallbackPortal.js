@@ -5,6 +5,10 @@ class FallbackPortal extends Entity {
         return "Fallback Portal";
     }
 
+    getEntityName() {
+        return "portal_teleporter";
+    }
+
     getInfo() {
         return "A portal back into the game.";
     }

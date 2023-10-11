@@ -7,6 +7,10 @@ class Gold extends Entity {
         return "Gold";
     }
 
+    getEntityName() {
+        return "item_gold";
+    }
+
     getInfo() {
         return "Currency that can be exchanged for goods and services.";
     }

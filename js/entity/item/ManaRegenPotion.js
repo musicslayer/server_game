@@ -13,6 +13,10 @@ class ManaRegenPotion extends Entity {
         return "Mana Regen Potion";
     }
 
+    getEntityName() {
+        return "item_manaregenpotion";
+    }
+
     getInfo() {
         return "A potion that restores your mana over time.";
     }

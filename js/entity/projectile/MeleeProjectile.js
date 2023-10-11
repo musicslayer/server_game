@@ -5,6 +5,10 @@ class MeleeProjectile extends Projectile {
         return "Melee Projectile";
     }
 
+    getEntityName() {
+        return "melee_orb";
+    }
+
     getInfo() {
         return "A melee attack.";
     }

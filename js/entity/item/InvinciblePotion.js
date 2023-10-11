@@ -10,6 +10,10 @@ class InvinciblePotion extends Entity {
         return "Invincible Potion";
     }
 
+    getEntityName() {
+        return "item_invinciblepotion";
+    }
+
     getInfo() {
         return "A potion that makes you invincible for a limited time.";
     }

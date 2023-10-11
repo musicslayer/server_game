@@ -5,6 +5,10 @@ class MagicProjectile extends Projectile {
         return "Magic Projectile";
     }
 
+    getEntityName() {
+        return "magic_orb";
+    }
+
     getInfo() {
         return "A blast of magical energy.";
     }
