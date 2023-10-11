@@ -93,6 +93,9 @@ class Player extends Entity {
         projectile.isMulti = false;
 
         this.doSpawnEntity(projectile);
+
+        // Performing an action will remove invisibility.
+        this.removeStatus("invisible");
     }
 }
 

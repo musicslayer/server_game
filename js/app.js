@@ -7,7 +7,6 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
 // TODO If player is invisible, what happens to monster aggro?
-// TODO When player does "doAction", turn off invisibility
 
 async function init() {
     let appState = new AppState();
