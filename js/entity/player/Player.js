@@ -57,29 +57,26 @@ class Player extends Entity {
     }
     
     doTakeDamage(entity, damage) {
-        // If a player attacks another player, only allow damage if we are in a pvp screen.
-        // Also, invincible/dead players cannot take damage.
-        let rootEntity = this.getRootEntity(entity);
+        if(!this.canTakeDamageFrom(entity) || !this.canBeDamaged()) {
+            return;
+        }
 
-        let canTakePVPDamage = !rootEntity.isPlayer || this.screen.pvpStatus === "pvp";
-        let canTakeNormalDamage = !this.isInvincible && !this.isDead;
-        if(canTakePVPDamage && canTakeNormalDamage) {
-            this.health = Math.max(this.health - damage, 0);
-            if(this.health === 0) {
-                // If another player did the final damage, spawn a PVP Token and drop some of your gold.
-                if(rootEntity.isPlayer) {
-                    let pvpToken = Entity.createInstance("PVPToken", 1);
-                    pvpToken.setScreen(this.screen);
-                    pvpToken.x = this.x;
-                    pvpToken.y = this.y;
+        this.health = Math.max(this.health - damage, 0);
+        if(this.health === 0) {
+            // If another player did the final damage, spawn a PVP Token and drop some of your gold.
+            let rootEntity = this.getRootEntity(entity);
+            if(rootEntity.isPlayer) {
+                let pvpToken = Entity.createInstance("PVPToken", 1);
+                pvpToken.setScreen(this.screen);
+                pvpToken.x = this.x;
+                pvpToken.y = this.y;
 
-                    pvpToken.doSpawnAsLoot();
+                pvpToken.doSpawnAsLoot();
 
-                    let goldAmount = Math.floor(this.purse.goldTotal * 0.2);
-                    this.dropFromPurse(goldAmount);
-                }
-                this.doKill();
+                let goldAmount = Math.floor(this.purse.goldTotal * 0.2);
+                this.dropFromPurse(goldAmount);
             }
+            this.doKill();
         }
     }
 

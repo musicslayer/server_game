@@ -522,6 +522,17 @@ class Entity extends UID {
         return true;
     }
 
+    canTakeDamageFrom(entity) {
+        // If this entity is a player and the root entity doing the damage is a player,
+        // only allow damage if we are in a pvp screen. Otherwise, damage is always allowed.
+        return this.screen.pvpStatus === "pvp" || !this.isPlayer || !this.getRootEntity(entity).isPlayer;
+    }
+
+    canBeDamaged() {
+        // Entities that are invincible or dead cannot take damage.
+        return !this.isInvincible && !this.isDead
+    }
+
     getRootEntity(entity) {
         let rootEntity = entity;
 
@@ -532,6 +543,7 @@ class Entity extends UID {
         return rootEntity;
     }
 
+    // TODO Change "number" to "stackSize"?
     clone(number) {
         // By default, just create another instance with the same screen and the provided stack size.
         let clone = Entity.createInstance(Util.getClassName(this), number);

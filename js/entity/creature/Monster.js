@@ -53,6 +53,10 @@ class Monster extends Entity {
     }
 
     doTakeDamage(entity, damage) {
+        if(!this.canTakeDamageFrom(entity) || !this.canBeDamaged()) {
+            return;
+        }
+        
         this.health = Math.max(this.health - damage, 0);
 
         let rootEntity = this.getRootEntity(entity);
