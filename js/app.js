@@ -9,6 +9,11 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // TODO ImageCatalog -> Do we need all the switch cases? 
 
 // TODO Inventory/Purse usage no longer works!
+
+// TODO Do we need separate/duplicate world folders.
+
+// TODO Entity class should just have an array of statuses?
+
 async function init() {
     let appState = new AppState();
     let appAdmin = new AppAdmin(appState);

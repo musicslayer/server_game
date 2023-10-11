@@ -163,10 +163,10 @@ class CanvasPainter {
                 let levelImage = this.getLevelImage(entity.level)
                 this.drawScreenImageScaled(ctxBuffer, levelImage, x, y);
             }
-            
-            if(entity.statuses.includes("dead") || entity.statuses.includes("invincible")) {
-                let haloImage = this.imageCatalog.getImageByStatusName("invincible", animationFrame);
-                this.drawScreenImageScaled(ctxBuffer, haloImage, x, y);
+
+            for(let status of entity.statuses) {
+                let statusImage = this.imageCatalog.getImageByStatusName(status, animationFrame);
+                this.drawScreenImageScaled(ctxBuffer, statusImage, x, y);
             }
         }
 
