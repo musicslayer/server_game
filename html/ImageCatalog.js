@@ -8,10 +8,11 @@ class ImageCatalog {
         
         for(let filePath of fileDataMap.keys()) {
             // Images are stored using both their folder name and file name.
-            // "filePath" will always have the format ".../[folder]/[file].png"
-            let fileParts = filePath.split("/").slice(-2);
-            let folder = fileParts[0];
-            let file = fileParts[1].slice(0, -4);
+            // "filePath" will always have the format ".../[category]/[folder]/[file].png"
+            let fileParts = filePath.split("/").slice(-3);
+            let category = fileParts[0];
+            let folder = fileParts[1];
+            let file = fileParts[2].slice(0, -4);
             
             // We load each image now and store it for future use.
             let fileData = fileDataMap.get(filePath);
@@ -20,7 +21,7 @@ class ImageCatalog {
             let image = new Image();
             await new Promise(r => image.onload = r, image.src = imageURL);
             
-            this.addImage(folder, file, image);
+            this.addImage(category, folder, file, image);
         };
     }
     
@@ -36,12 +37,12 @@ class ImageCatalog {
     }
     
 
-    addImage(folder, file, image) {
-        this.imageMap.set(folder + "#" + file, image);
+    addImage(category, folder, file, image) {
+        this.imageMap.set(category + "#" + folder + "#" + file, image);
     }
 
-    getImage(folder, file) {
-        return this.imageMap.get(folder + "#" + file) ?? this.imageMap.get("_base#unknown");
+    getImage(category, folder, file) {
+        return this.imageMap.get(category + "#" + folder + "#" + file) ?? this.imageMap.get("_base#_base#unknown");
     }
     
     getImageByEntityClassName(className, animationFrame) {
@@ -51,86 +52,87 @@ class ImageCatalog {
         
         switch(className) {
             case "DeathTrap":
-                image = this.getImage("trap", "death");
+                image = this.getImage("entity", "trap", "death");
                 break;
             case "FallbackPortal":
-                image = this.getImage("portal", "teleporter");
+                image = this.getImage("entity", "portal", "teleporter");
                 break;
             case "FireTrap":
-                image = this.getImage("trap", "fire");
+                image = this.getImage("entity", "trap", "fire");
                 break;
             case "Gold":
-                image = this.getImage("item", "gold");
+                image = this.getImage("entity", "item", "gold");
                 break;
             case "HealthPotion":
-                image = this.getImage("item", "health_potion_" + animationFrame);
+                image = this.getImage("entity", "item", "health_potion_" + animationFrame);
                 break;
             case "HealthRegenPotion":
-                image = this.getImage("item", "health_regen_potion");
+                image = this.getImage("entity", "item", "health_regen_potion");
                 break;
             case "HomePortal":
-                image = this.getImage("portal", "teleporter");
+                image = this.getImage("entity", "portal", "teleporter");
                 break;
             case "InfoSign":
-                image = this.getImage("info", "sign");
+                image = this.getImage("entity", "info", "sign");
                 break;
             case "InvinciblePotion":
-                image = this.getImage("item", "invincible_potion");
+                image = this.getImage("entity", "item", "invincible_potion");
                 break;
             case "MagicProjectile":
-                image = this.getImage("magic", "orb");
+                image = this.getImage("entity", "magic", "orb");
                 break;
             case "ManaPotion":
-                image = this.getImage("item", "mana_potion");
+                image = this.getImage("entity", "item", "mana_potion");
                 break;
             case "ManaRegenPotion":
-                image = this.getImage("item", "mana_regen_potion");
+                image = this.getImage("entity", "item", "mana_regen_potion");
                 break;
             case "MeleeProjectile":
-                image = this.getImage("melee", "orb");
+                image = this.getImage("entity", "melee", "orb");
                 break;
             case "Monster":
-                image = this.getImage("creature", "monster");
+                image = this.getImage("entity", "creature", "monster");
                 break;
             case "MonsterSpawner":
-                image = this.getImage("creature", "monster_spawner");
+                image = this.getImage("entity", "creature", "monster_spawner");
                 break;
             case "PlayerMage":
-                image = this.getImage("player", "mage");
+                image = this.getImage("entity", "player", "mage");
                 break;
             case "PlayerWarrior":
-                image = this.getImage("player", "warrior");
+                image = this.getImage("entity", "player", "warrior");
                 break;
             case "PVPToken":
-                image = this.getImage("item", "pvp_token");
+                image = this.getImage("entity", "item", "pvp_token");
                 break;
             case "RevivePortal":
-                image = this.getImage("portal", "teleporter");
+                image = this.getImage("entity", "portal", "teleporter");
                 break;
             case "StartPortal":
-                image = this.getImage("portal", "teleporter");
+                image = this.getImage("entity", "portal", "teleporter");
                 break;
             case "Teleporter":
-                image = this.getImage("portal", "teleporter");
+                image = this.getImage("entity", "portal", "teleporter");
                 break;
             case "Wall":
-                image = this.getImage("wall", "wall");
+                image = this.getImage("entity", "wall", "wall");
                 break;
             default:
-                image = this.getImage("_base", "unknown");
+                image = this.getImage("_base", "_base", "unknown");
         }
         
         return image;
     }
     
     getImageByTileName(tileName, animationFrame) {
-        let [tileFolder, tileFile] = normalizeTileName(tileName);
-        let image = this.getImage(tileFolder, tileFile);
+        // Tile names are always in the format "[folder]_[file]"
+        let [tileFolder, tileFile] = tileName.split("_");
+        let image = this.getImage("tile", tileFolder, tileFile);
         return image;
     }
     
     getImageByStatusName(statusName, animationFrame) {
-        let image = this.getImage("status", statusName);
+        let image = this.getImage("status", "status", statusName);
         return image;
     }
 }
@@ -147,11 +149,6 @@ function normalizeClassName(className) {
     }
 
     return newClassName;
-}
-
-function normalizeTileName(tileName) {
-    // Tile names are always in the format "[folder]_[file]"
-    return tileName.split("_");
 }
 
 export { ImageCatalog };
