@@ -4,6 +4,8 @@ const UID = require("../uid/UID.js");
 
 class ServerTask {
     owner;
+    status;
+    statusOwner;
 
     isCancelled = false;
 
@@ -40,6 +42,8 @@ class ServerTask {
         writer.beginObject()
             .serialize("!V!", 1)
             .reference("owner", this.owner)
+            .serialize("status", this.status)
+            .reference("statusOwner", this.statusOwner)
             .serialize("isCancelled", this.isCancelled)
             .serialize("animation", this.animation)
             .serialize("time", this.time)
@@ -72,6 +76,8 @@ class ServerTask {
         let version = reader.deserialize("!V!", "String");
         if(version === "1") {
             let owner = reader.dereference("owner", "Entity");
+            let status = reader.deserialize("status", "String");
+            let statusOwner = reader.dereference("statusOwner", "Entity");
             let isCancelled = reader.deserialize("isCancelled", "Boolean");
             let animation = reader.deserialize("animation", "Animation");
             let time = reader.deserialize("time", "Number");
@@ -101,6 +107,11 @@ class ServerTask {
             if(owner) {
                 serverTask.owner = owner;
                 owner.ownServerTask(serverTask);
+            }
+
+            if(statusOwner) {
+                serverTask.statusOwner = statusOwner;
+                statusOwner.ownStatusServerTask(status, serverTask);
             }
         }
         else {

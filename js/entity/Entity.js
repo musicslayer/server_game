@@ -70,6 +70,7 @@ class Entity extends UID {
     aggroMap = new Map();
 
     serverTasks = [];
+    statusServerTaskMap = new Map();
 
     static createInstance(className, stackSize, ...args) {
         // Use this factory method to create subclass instances.
@@ -146,10 +147,13 @@ class Entity extends UID {
         }
     }
 
+    // TODO Merge these two status methods (and maybe even add in "dead")?
     doMakeInvincible(invincibleSeconds) {
         this.addStatus("invincible");
 
         let serverTask = new ServerTask(undefined, invincibleSeconds, 1, "invincible_off", this);
+
+        this.ownStatusServerTask("invincible", serverTask);
         this.getServer().scheduleTask(serverTask);
     }
 
@@ -157,6 +161,8 @@ class Entity extends UID {
         this.addStatus("invisible");
 
         let serverTask = new ServerTask(undefined, invisibleSeconds, 1, "invisible_off", this);
+
+        this.ownStatusServerTask("invisible", serverTask);
         this.getServer().scheduleTask(serverTask);
     }
 
@@ -323,10 +329,14 @@ class Entity extends UID {
         this.health = 0;
         this.mana = 0;
 
-        // Add the "dead" status and remove all others.
-        this.statuses = ["dead"];
+        // Remove all statuses and add "dead".
+        let statuses = this.statuses.slice();
+        for(let status of statuses) {
+            this.removeStatus(status);
+        }
 
-        // ??? If the player is in a dungeon, could we just teleport them to the entrance instead?
+        // ??? If the player is in a dungeon, could we just teleport them to the entrance instead of making them "dead"?
+        this.addStatus("dead");
         this.doTeleportDeath();
     }
 
@@ -603,6 +613,23 @@ class Entity extends UID {
         }
     }
 
+    ownStatusServerTask(status, serverTask) {
+        // Store tasks for the same status in a map. These are handled separately from the regular server tasks.
+        let statusServerTaskArray = this.statusServerTaskMap.get(status) ?? [];
+        statusServerTaskArray.push(serverTask);
+        this.statusServerTaskMap.set(status, statusServerTaskArray);
+    }
+
+    cancelStatusServerTasks(status) {
+        let statusServerTaskArray = this.statusServerTaskMap.get(status) ?? [];
+        while(statusServerTaskArray.length > 0) {
+            let statusServerTask = statusServerTaskArray.shift();
+            statusServerTask.isCancelled = true;
+        }
+
+        this.statusServerTaskMap.delete(status);
+    }
+
     setScreen(screen) {
         this.screen = screen;
         this.mapName = screen.map.name;
@@ -621,6 +648,9 @@ class Entity extends UID {
         if(index !== -1) {
             this.statuses.splice(index, 1);
         }
+
+        // When a status is removed, all similar tasks must be cancelled.
+        this.cancelStatusServerTasks(status);
     }
 
     isStatus(status) {
