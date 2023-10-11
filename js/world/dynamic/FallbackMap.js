@@ -9,7 +9,7 @@ class FallbackMap extends DynamicMap {
     }
 
     createDynamicScreen(screenX, screenY) {
-        let fallbackScreen = Screen.loadScreenFromFile(this, "FallbackScreen", path.join(this.mapFolder, "fallback.txt"));
+        let fallbackScreen = Screen.loadScreenFromFile(this, "DynamicScreen", path.join(this.mapFolder, "fallback.txt"));
         fallbackScreen.name = this.getNamePrefix() + [screenX, screenY].join(",");
         fallbackScreen.x = screenX;
         fallbackScreen.y = screenY;

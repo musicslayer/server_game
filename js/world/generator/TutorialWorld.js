@@ -35,7 +35,7 @@ class TutorialWorld extends GeneratorWorld {
     }
 
     createMap(id) {
-        let tutorialMap = GameMap.loadMapFromFolder(this, "TutorialMap", path.join(this.worldFolder, "_tutorial"))
+        let tutorialMap = GameMap.loadMapFromFolder(this, "InstanceMap", path.join(this.worldFolder, "_tutorial"))
         tutorialMap.name = this.getNamePrefix() + id;
         tutorialMap.id = id;
 

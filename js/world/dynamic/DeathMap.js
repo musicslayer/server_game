@@ -9,7 +9,7 @@ class DeathMap extends DynamicMap {
     }
 
     createDynamicScreen(screenX, screenY) {
-        let deathScreen = Screen.loadScreenFromFile(this, "DeathScreen", path.join(this.mapFolder, "death.txt"));
+        let deathScreen = Screen.loadScreenFromFile(this, "DynamicScreen", path.join(this.mapFolder, "death.txt"));
         deathScreen.name = this.getNamePrefix() + [screenX, screenY].join(",");
         deathScreen.x = screenX;
         deathScreen.y = screenY;
