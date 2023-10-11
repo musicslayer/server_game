@@ -26,7 +26,7 @@ class InvinciblePotion extends Entity {
     }
 
     canConsume(entity) {
-        return !entity.isInvincible;
+        return !entity.isStatus("invincible");
     }
 
     doConsume(entity) {

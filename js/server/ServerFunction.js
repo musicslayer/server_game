@@ -71,7 +71,7 @@ class ServerFunction {
         });
 
         map.set("invincible_off", (entity) => {
-            entity.isInvincible = false;
+            entity.removeStatus("invincible");
         });
 
         map.set("invincible_on", (entity, invincibleSeconds) => {

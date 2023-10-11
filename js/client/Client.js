@@ -334,15 +334,8 @@ class Client {
         screenEntities.splice(index, 1);
         screenEntities.push(this.player);
 
+        // TODO If an entity is not visible, do we have to include it here?
         for(let entity of screenEntities) {
-            let statuses = [];
-            if(entity.isDead) {
-                statuses.push("dead");
-            }
-            if(entity.isInvincible) {
-                statuses.push("invincible");
-            }
-
             entities.push({
                 entityName: entity.getEntityName(),
                 stackSize: entity.stackSize,
@@ -354,7 +347,7 @@ class Client {
                 manaFraction: entity.getManaFraction(),
                 experienceFraction: entity.getExperienceFraction(),
                 level: entity.getLevel(),
-                statuses: statuses,
+                statuses: entity.statuses,
                 isVisible: entity.isVisible()
             });
         }

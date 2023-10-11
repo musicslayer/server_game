@@ -16,8 +16,7 @@ class Entity extends UID {
     mana = 0;
     maxMana = 0;
 
-    isDead = false;
-    isInvincible = false;
+    statuses = [];
 
     screen;
     mapName;
@@ -135,19 +134,19 @@ class Entity extends UID {
     */
 
     doAddHealth(health) {
-        if(!this.isDead) {
+        if(!this.isStatus("dead")) {
             this.health = Math.min(this.health + health, this.maxHealth);
         }
     }
 
     doAddMana(mana) {
-        if(!this.isDead) {
+        if(!this.isStatus("dead")) {
             this.mana = Math.min(this.mana + mana, this.maxMana);
         }
     }
 
     doMakeInvincible(invincibleSeconds) {
-        this.isInvincible = true;
+        this.addStatus("invincible");
 
         let serverTask = new ServerTask(undefined, invincibleSeconds, 1, "invincible_off", this);
         this.getServer().scheduleTask(serverTask);
@@ -316,8 +315,8 @@ class Entity extends UID {
         this.health = 0;
         this.mana = 0;
 
-        this.isDead = true;
-        this.isInvincible = false;
+        this.addStatus("dead");
+        this.removeStatus("invincible");
 
         // ??? If the player is in a dungeon, could we just teleport them to the entrance instead?
         this.doTeleportDeath();
@@ -328,7 +327,7 @@ class Entity extends UID {
         this.health = this.maxHealth;
         this.mana = this.maxMana;
 
-        this.isDead = false;
+        this.removeStatus("dead");
 
         this.doTeleportHome();
     }
@@ -530,7 +529,7 @@ class Entity extends UID {
 
     canBeDamaged() {
         // Entities that are invincible or dead cannot take damage.
-        return !this.isInvincible && !this.isDead
+        return !this.isStatus("invincible") && !this.isStatus("dead");
     }
 
     getRootEntity(entity) {
@@ -603,6 +602,24 @@ class Entity extends UID {
         this.screenName = screen.name;
     }
 
+    addStatus(status) {
+        // A status can only appear in the array once.
+        if(!this.statuses.includes(status)) {
+            this.statuses.push(status);
+        }
+    }
+
+    removeStatus(status) {
+        let index = this.statuses.indexOf(status);
+        if(index !== -1) {
+            this.statuses.splice(index, 1);
+        }
+    }
+
+    isStatus(status) {
+        return this.statuses.includes(status);
+    }
+
     getOwner() {
         return Entity.getEntity(this.owner_uid);
     }
@@ -639,8 +656,7 @@ class Entity extends UID {
             .serialize("maxHealth", this.maxHealth)
             .serialize("mana", this.mana)
             .serialize("maxMana", this.maxMana)
-            .serialize("isDead", this.isDead)
-            .serialize("isInvincible", this.isInvincible)
+            .serializeArray("statuses", this.statuses)
             .serialize("mapName", this.mapName)
             .serialize("screenName", this.screenName)
             .serialize("x", this.x)
@@ -705,8 +721,7 @@ class Entity extends UID {
             entity.maxHealth = reader.deserialize("maxHealth", "Number");
             entity.mana = reader.deserialize("mana", "Number");
             entity.maxMana = reader.deserialize("maxMana", "Number");
-            entity.isDead = reader.deserialize("isDead", "Boolean");
-            entity.isInvincible = reader.deserialize("isInvincible", "Boolean");
+            entity.statuses = reader.deserializeArray("statuses", "String");
             entity.mapName = reader.deserialize("mapName", "String");
             entity.screenName = reader.deserialize("screenName", "String");
             entity.x = reader.deserialize("x", "Number");

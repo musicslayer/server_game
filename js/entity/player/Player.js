@@ -51,7 +51,7 @@ class Player extends Entity {
 
     doTeleportHome() {
         // Teleport the player to their home location (in the current world) only if they are alive.
-        if(!this.isDead) {
+        if(!this.isStatus("dead")) {
             super.doTeleportHome();
         }
     }
