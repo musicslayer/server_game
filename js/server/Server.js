@@ -45,7 +45,7 @@ class Server {
             // Third part is the universe name
             let name = parts.shift();
 
-            let universe = Universe.loadUniverseFromFolder(server, className, path.join(serverFolder, name));
+            let universe = Universe.loadUniverse(server, className, path.join(serverFolder, name));
             universe.id = id;
             universe.name = name;
 

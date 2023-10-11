@@ -1,2 +1,0 @@
-0,0|Screen|field1|safe
-1,0|Screen|field2|pvp

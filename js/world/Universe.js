@@ -1,13 +1,9 @@
-const fs = require("fs");
 const path = require("path");
-const { EOL } = require("os");
 
+const Constants = require("../constants/Constants.js");
 const Reflection = require("../reflection/Reflection.js");
 const World = require("./World.js");
 const Util = require("../util/Util.js");
-
-const COMMA = ",";
-const PIPE = "|";
 
 class Universe {
     server;
@@ -18,37 +14,33 @@ class Universe {
     worldNameMap = new Map();
     worldIDMap = new Map();
 
-    static loadUniverseFromFolder(server, className, universeFolder) {
+    universeFolder;
+
+    static loadUniverse(server, className, universeFolder) {
         let universe = Reflection.createInstance(className);
         universe.server = server;
+        universe.universeFolder = universeFolder;
 
-        let universeFile = path.join(universeFolder, "_universe.txt");
-        let universeData = fs.readFileSync(universeFile, "ascii");
-        let lines = universeData ? universeData.split(EOL) : [];
+        // Add generator worlds.
+        universe.createWorld("_death", "death", "DeathWorld", "_death");
+        universe.createWorld("_fallback", "fallback", "FallbackWorld", "_fallback");
+        universe.createWorld("_tutorial", "tutorial", "TutorialWorld", "_tutorial");
+        universe.createWorld("_void", "void", "VoidWorld", "_void");
 
-        // Each line represents a world within this universe.
-        while(lines.length > 0) {
-            let line = lines.shift();
-            let parts = line.split(PIPE);
-
-            // First part is the world id
-            let idPart = parts.shift().split(COMMA);
-            let id = Util.getStringOrNumber(idPart.shift());
-
-            // Second part is the world class name
-            let className = parts.shift();
-
-            // Third part is the world name
-            let name = parts.shift();
-
-            let world = World.loadWorldFromFolder(universe, className, path.join(universeFolder, name));
-            world.id = id;
-            world.name = name;
-
-            universe.addWorld(world);
+        // Add regular worlds.
+        for(let i = 0; i < Constants.performance.MAX_WORLDS; i++) {
+            universe.createWorld("world", i, "World", "world" + i);
         }
 
         return universe;
+    }
+
+    createWorld(worldFolder, id, className, name) {
+        let world = World.loadWorldFromFolder(this, className, path.join(this.universeFolder, worldFolder));
+        world.id = id;
+        world.name = name;
+
+        this.addWorld(world);
     }
 
     addWorld(world) {

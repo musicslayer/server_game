@@ -1,3 +1,0 @@
-0,0|Screen|land1|safe
-1,0|Screen|land2|safe
-2,0|Screen|land3|safe

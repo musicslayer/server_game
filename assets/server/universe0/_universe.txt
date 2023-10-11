@@ -1,6 +1,0 @@
-0|World|world0
-1|World|world1
-death|DeathWorld|_death
-fallback|FallbackWorld|_fallback
-tutorial|TutorialWorld|_tutorial
-void|VoidWorld|_void
