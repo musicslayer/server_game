@@ -78,7 +78,7 @@ class Constants {
 
     static server = {
         MAX_CONNECTIONS_PER_IP: 10,
-        REQUEST_TIMEOUT: 30000, // milliseconds
+        REQUEST_TIMEOUT: 60000, // milliseconds
         URL_BASE: "https://localhost"
     };
 

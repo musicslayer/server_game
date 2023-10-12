@@ -93,7 +93,11 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, hash, email)) {
+				if(!validateStrings(username, email)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateHashString(hash)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -132,7 +136,11 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, hash, email)) {
+				if(!validateStrings(username, email)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateHashString(hash)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -186,7 +194,11 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, hash, characterName, characterClass)) {
+				if(!validateStrings(username, characterName, characterClass)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateHashString(hash)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -257,7 +269,11 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, hash, email, characterName)) {
+				if(!validateStrings(username, email, characterName)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateHashString(hash)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -320,7 +336,11 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, hash)) {
+				if(!validateStrings(username)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateHashString(hash)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -414,7 +434,11 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, hash, characterName, serverName, worldName)) {
+				if(!validateStrings(username, characterName, serverName, worldName)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateHashString(hash)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -586,7 +610,11 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, newHash, email)) {
+				if(!validateStrings(username, email)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateHashString(newHash)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -640,7 +668,11 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, hash, currentEmail, newEmail)) {
+				if(!validateStrings(username, currentEmail, newEmail)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateHashString(hash)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -702,7 +734,11 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, hash, email)) {
+				if(!validateStrings(username, email)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateHashString(hash)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -759,7 +795,11 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, hash, email)) {
+				if(!validateStrings(username, email)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateHashString(hash)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -813,7 +853,11 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, hash, email)) {
+				if(!validateStrings(username, email)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateHashString(hash)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -872,7 +916,11 @@ class SocketIOServer {
 					socket.disconnect(true);
 					return;
 				}
-				if(!validateStrings(username, hash)) {
+				if(!validateStrings(username)) {
+					socket.disconnect(true);
+					return;
+				}
+				if(!validateHashString(hash)) {
 					socket.disconnect(true);
 					return;
 				}
@@ -1151,7 +1199,11 @@ function validateMouseInputs(location, info) {
 }
 
 function validateStrings(...args) {
-	return isStringArray(args, 5);
+	return isStringArray(args, 5) && args.every((v) => v.length <= 40);
+}
+
+function validateHashString(value) {
+	return isString(value) && value.length === 128;
 }
 
 function isFunction(value) {
