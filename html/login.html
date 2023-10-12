@@ -134,6 +134,8 @@
                 for(let characterEntry of characterData) {
                     let characterName = characterEntry.name;
                     let characterClassName = characterEntry.className;
+                    let isLoggedIn = characterEntry.isLoggedIn;
+
                     let id = "ID_CHARACTER_" + characterName;
                 
                     let newRow = document.createElement("tr");
@@ -148,6 +150,11 @@
                     let newLabel = document.createElement("label");
                     newLabel.htmlFor = id;
                     newLabel.innerText = characterName + " (" + characterClassName + ")";
+
+                    if(isLoggedIn) {
+                        newLabel.innerText += " [Logged In]";
+                        newLabel.style.setProperty('text-decoration', 'line-through');
+                    }
                     
                     newRow.appendChild(newRadioButton);
                     newRow.appendChild(newLabel);
