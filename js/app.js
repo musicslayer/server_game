@@ -3,8 +3,13 @@ const AppState = require("./AppState.js");
 const WorkerManager = require("./worker/WorkerManager.js");
 
 // Future Items:
-// --- Add in logging calls. This requires more storage space.
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
+
+// TODO Each web page connects to server, so we get a lot of connect/disconnect log events...
+
+// TODO Log ratelimits without having excess logs?
+
+// TODO When users create accounts/characters, should name strings have a max length?
 
 async function init() {
     let appState = new AppState();

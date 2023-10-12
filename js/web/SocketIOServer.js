@@ -1,3 +1,4 @@
+const util = require("util");
 const IO = require("socket.io");
 
 const Account = require("../account/Account.js");
@@ -5,6 +6,7 @@ const Character = require("../account/Character.js");
 const Client = require("../client/Client.js");
 const Constants = require("../constants/Constants.js");
 const Entity = require("../entity/Entity.js");
+const Logger = require("../log/Logger.js");
 const RateLimit = require("../security/RateLimit.js");
 const Reflection = require("../reflection/Reflection.js");
 const ServerTask = require("../server/ServerTask.js");
@@ -18,6 +20,8 @@ class SocketIOServer {
 	
 	// Used to limit the amount of socket connections that an IP can form at once.
 	numSocketsMap = new Map();
+
+	logger = new Logger("server");
 
 	constructor(httpServer, accountManager, clientManager, serverManager) {
 		this.server = IO(httpServer.server, {
@@ -57,18 +61,24 @@ class SocketIOServer {
 						let numSockets = this.numSocketsMap.get(ip);
 						numSockets--;
 						this.numSocketsMap.set(ip, numSockets);
+
+						this.logServerEvent("disconnect", ip, reason);
 					}
 					catch(err) {
 						console.error(err);
 						socket.disconnect(true);
+						this.logServerError(err);
 					}
 				});
 		
 				this.attachAppListeners(socket);
+
+				this.logServerEvent("connect", ip);
 			}
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 	}
@@ -105,11 +115,13 @@ class SocketIOServer {
 				let newAccount = new Account(username, hash, email);
 				this.accountManager.addAccount(newAccount);
 
+				this.logServerEvent("create_account", ip, username, email); // Don't log hash
 				callback({"isSuccess": true});
 			}
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 
@@ -157,11 +169,13 @@ class SocketIOServer {
 				// Delete the account.
 				this.accountManager.removeAccount(account);
 
+				this.logServerEvent("delete_account", ip, username, email); // Don't log hash
 				callback({"isSuccess": true});
 			}
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 
@@ -226,11 +240,13 @@ class SocketIOServer {
 				let character = new Character(characterName, player);
 				account.addCharacter(character);
 
+				this.logServerEvent("create_character", ip, username, characterName, characterClass); // Don't log hash
 				callback({"isSuccess": true});
 			}
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 
@@ -287,11 +303,13 @@ class SocketIOServer {
 				// Delete the character.
 				account.removeCharacter(character);
 
+				this.logServerEvent("delete_character", ip, username, email, characterName); // Don't log hash
 				callback({"isSuccess": true});
 			}
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 
@@ -373,6 +391,8 @@ class SocketIOServer {
 					});
 				}
 
+				this.logServerEvent("login_account", ip, username); // Don't log hash
+
 				callback({
 					"isSuccess": true, 
 					"accountData": accountData,
@@ -383,6 +403,7 @@ class SocketIOServer {
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 
@@ -532,6 +553,8 @@ class SocketIOServer {
 						client.player.client = undefined;
 						client.player = undefined;
 					}
+
+					this.logServerEvent("logout_character", ip, username, characterName, serverName, worldName); // Don't log hash
 				});
 
 				this.attachClientListeners(socket, client);
@@ -546,11 +569,13 @@ class SocketIOServer {
 					world.playerCount++;
 				}
 
+				this.logServerEvent("login_character", ip, username, characterName, serverName, worldName); // Don't log hash
 				callback({"isSuccess": true});
 			}
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 
@@ -598,11 +623,13 @@ class SocketIOServer {
 				// Change the hash to the new one.
 				account.hash = newHash;
 
+				this.logServerEvent("change_password", ip, username, email); // Don't log hash
 				callback({"isSuccess": true});
 			}
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 
@@ -658,11 +685,13 @@ class SocketIOServer {
 				// Change the email to the new one.
 				account.email = newEmail;
 
+				this.logServerEvent("change_email", ip, username, currentEmail, newEmail); // Don't log hash
 				callback({"isSuccess": true});
 			}
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 
@@ -713,11 +742,13 @@ class SocketIOServer {
 					client?.socket.disconnect(true);
 				}
 
+				this.logServerEvent("logout_account", ip, username, email); // Don't log hash
 				callback({"isSuccess": true});
 			}
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 
@@ -765,11 +796,13 @@ class SocketIOServer {
 				// Enable the account.
 				account.isEnabled = true;
 
+				this.logServerEvent("enable_account", ip, username, email); // Don't log hash
 				callback({"isSuccess": true});
 			}
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 
@@ -822,11 +855,13 @@ class SocketIOServer {
 					client?.socket.disconnect(true);
 				}
 
+				this.logServerEvent("disable_account", ip, username, email); // Don't log hash
 				callback({"isSuccess": true});
 			}
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 
@@ -879,6 +914,7 @@ class SocketIOServer {
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 	}
@@ -904,6 +940,7 @@ class SocketIOServer {
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 
@@ -935,6 +972,7 @@ class SocketIOServer {
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 
@@ -961,6 +999,7 @@ class SocketIOServer {
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 
@@ -987,6 +1026,7 @@ class SocketIOServer {
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 
@@ -1013,6 +1053,7 @@ class SocketIOServer {
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 
@@ -1034,6 +1075,7 @@ class SocketIOServer {
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
 
@@ -1055,8 +1097,18 @@ class SocketIOServer {
 			catch(err) {
 				console.error(err);
 				socket.disconnect(true);
+				this.logServerError(err);
 			}
 		});
+	}
+
+	logServerEvent(eventName, ...infoArgs) {
+		this.logger.logInfo("ServerEvent", eventName, ...infoArgs);
+	}
+
+	logServerError(err) {
+		let errString = util.format("%s", err);
+		this.logger.logError("ServerError", "error", errString);
 	}
 }
 
