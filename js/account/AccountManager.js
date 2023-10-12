@@ -57,7 +57,7 @@ class AccountManager {
 
         let devAccount1 = new Account("dev", createHash("dev", "dev"), "dev@dev.com");
         devAccount1.isDevAccount = true;
-        devAccount1.addCharacter(new Character("mage", devPlayer1Mage));
+        devAccount1.addCharacter(new Character("mage", "PlayerMage", devPlayer1Mage));
 
         let player1Mage = Entity.createInstance("PlayerMage", 1);
         let player1Warrior = Entity.createInstance("PlayerWarrior", 1);
@@ -65,12 +65,12 @@ class AccountManager {
         let player2Warrior = Entity.createInstance("PlayerWarrior", 1);
         
         let account1 = new Account("smith", createHash("smith", "password123"), "a@a.com");
-        account1.addCharacter(new Character("mage", player1Mage));
-        account1.addCharacter(new Character("warrior", player1Warrior));
+        account1.addCharacter(new Character("mage", "PlayerMage", player1Mage));
+        account1.addCharacter(new Character("warrior", "PlayerWarrior", player1Warrior));
 
         let account2 = new Account("maria", createHash("maria", "secret"), "b@b.com");
-        account2.addCharacter(new Character("mage", player2Mage));
-        account2.addCharacter(new Character("warrior", player2Warrior));
+        account2.addCharacter(new Character("mage", "PlayerMage", player2Mage));
+        account2.addCharacter(new Character("warrior", "PlayerWarrior", player2Warrior));
 
         let accountManager = new AccountManager();
         accountManager.addAccount(devAccount1);

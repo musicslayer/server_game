@@ -245,7 +245,7 @@ class SocketIOServer {
 				}
 
 				let player = Entity.createInstance(characterClass, 1);
-				let character = new Character(characterName, player);
+				let character = new Character(characterName, characterClass, player);
 				account.addCharacter(character);
 
 				this.logServerEvent("create_character", ip, username, characterName, characterClass); // Don't log hash
@@ -373,7 +373,7 @@ class SocketIOServer {
 				// Return to the client:
 				// - Information from when the account was last logged in.
 				// - All available servers and their worlds, not including generator worlds.
-				// - A list of character names and whether they are already logged in.
+				// - A list of character names and classes and whether they are already logged in.
 				let accountData = {
 					lastServerName: account.lastServerName,
 					lastWorldName: account.lastWorldName,
@@ -401,8 +401,10 @@ class SocketIOServer {
 
 				let characterData = [];
 				for(let characterName of account.characterMap.keys()) {
+					let character = account.getCharacter(characterName);
 					characterData.push({
 						name: characterName,
+						className: character.className,
 						isLoggedIn: this.clientManager.getClient(username, characterName) !== undefined
 					});
 				}

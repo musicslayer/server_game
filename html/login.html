@@ -133,6 +133,7 @@
                 
                 for(let characterEntry of characterData) {
                     let characterName = characterEntry.name;
+                    let characterClassName = characterEntry.className;
                     let id = "ID_CHARACTER_" + characterName;
                 
                     let newRow = document.createElement("tr");
@@ -146,7 +147,7 @@
                     
                     let newLabel = document.createElement("label");
                     newLabel.htmlFor = id;
-                    newLabel.innerText = characterName;
+                    newLabel.innerText = characterName + " (" + characterClassName + ")";
                     
                     newRow.appendChild(newRadioButton);
                     newRow.appendChild(newLabel);
