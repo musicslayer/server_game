@@ -61,8 +61,6 @@ class SocketIOServer {
 						let numSockets = this.numSocketsMap.get(ip);
 						numSockets--;
 						this.numSocketsMap.set(ip, numSockets);
-
-						this.logServerEvent("disconnect", ip, reason);
 					}
 					catch(err) {
 						console.error(err);
@@ -72,8 +70,6 @@ class SocketIOServer {
 				});
 		
 				this.attachAppListeners(socket);
-
-				this.logServerEvent("connect", ip);
 			}
 			catch(err) {
 				console.error(err);
