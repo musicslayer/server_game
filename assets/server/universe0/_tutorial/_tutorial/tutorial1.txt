@@ -16,3 +16,5 @@
 3,3||InfoSign_Tutorial1,1
 4,3||InfoSign_Tutorial2,1
 5,3||InfoSign_Tutorial3,1
+6,3||InfoSign_Tutorial4,1
+7,3||InfoSign_Tutorial5,1

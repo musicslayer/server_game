@@ -11,7 +11,7 @@ class InfoSign_Tutorial1 extends Entity {
 
     getInfo() {
         // The info is a message meant for the player to read, not a description of an info sign itself.
-        return "Tutorial: WASD to move, Spacebar to shoot.";
+        return "Click on anything to learn more about it.";
     }
 }
 
