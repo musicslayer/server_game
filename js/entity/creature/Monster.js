@@ -52,6 +52,13 @@ class Monster extends Entity {
         this.ai.generateNextActivity(this);
     }
 
+    doDespawn() {
+        super.doDespawn();
+
+        // TODO The entity class should take care of this so that any Entity can be spawned/despawned correctly.
+        this.getOwner()?.onEntityDespawn();
+    }
+
     doTakeDamage(entity, damage) {
         if(!this.canTakeDamageFrom(entity) || !this.canBeDamaged()) {
             return;
@@ -81,7 +88,6 @@ class Monster extends Entity {
             gold.doSpawnAsLoot();
 
             this.doDespawn();
-            this.getOwner()?.onMonsterDespawn();
 
             if(rootEntity.isPlayer) {
                 rootEntity.doAddExperience(this.experienceReward);

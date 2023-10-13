@@ -111,13 +111,13 @@ class ServerFunction {
             entity.doSpawn();
         });
 
-        map.set("spawn_entity", (entity, otherEntity) => {
-            entity.doSpawnEntity(otherEntity);
+        map.set("spawn_entity", (entity) => {
+            entity.doSpawnEntity(entity.createEntityInstance());
+            entity.onEntitySpawn();
         });
 
-        map.set("spawn_monster", (entity) => {
-            entity.doSpawnEntity(entity.createMonsterInstance());
-            entity.onMonsterSpawn();
+        map.set("spawn_other_entity", (entity, otherEntity) => {
+            entity.doSpawnEntity(otherEntity);
         });
 
         map.set("status_off", (entity, status) => {

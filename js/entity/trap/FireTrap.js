@@ -15,6 +15,13 @@ class FireTrap extends Entity {
         return "A device that inflicts harm upon stepping on it.";
     }
 
+    doDespawn() {
+        super.doDespawn();
+
+        // TODO The entity class should take care of this so that any Entity can be spawned/despawned correctly.
+        this.getOwner()?.onEntityDespawn();
+    }
+
     doInteract(entity) {
         // Do some damage to the other entity, and then this entity will despawn.
         if(entity.isTangible) {

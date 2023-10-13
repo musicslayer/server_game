@@ -697,8 +697,8 @@ class Entity extends UID {
             .serialize("damage", this.damage)
             .serialize("isMulti", this.isMulti)
             .serialize("spawnTime", this.spawnTime)
-            .serialize("monsterCount", this.monsterCount)
-            .serialize("maxMonsterCount", this.maxMonsterCount)
+            .serialize("entityCount", this.entityCount)
+            .serialize("maxEntityCount", this.maxEntityCount)
             .serializeMap("aggroMap", this.aggroMap)
             .serialize("maxAggro", this.maxAggro)
             .serialize("aggroGain", this.aggroGain)
@@ -762,8 +762,8 @@ class Entity extends UID {
             entity.damage = reader.deserialize("damage", "Number");
             entity.isMulti = reader.deserialize("isMulti", "Boolean");
             entity.spawnTime = reader.deserialize("spawnTime", "Number");
-            entity.monsterCount = reader.deserialize("monsterCount", "Number");
-            entity.maxMonsterCount = reader.deserialize("maxMonsterCount", "Number");
+            entity.entityCount = reader.deserialize("entityCount", "Number");
+            entity.maxEntityCount = reader.deserialize("maxEntityCount", "Number");
             entity.aggroMap = reader.deserializeMap("aggroMap", "Number", "Number");
             entity.maxAggro = reader.deserialize("maxAggro", "Number");
             entity.aggroGain = reader.deserialize("aggroGain", "Number");
