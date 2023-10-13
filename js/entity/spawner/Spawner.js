@@ -21,12 +21,12 @@ class Spawner extends Entity {
         this.ai.generateNextActivity(this);
     }
 
-    onEntityDespawn() {
-        this.entityCount--;
-    }
-
     onEntitySpawn() {
         this.entityCount++;
+    }
+
+    onEntityDespawn() {
+        this.entityCount--;
     }
 
     createEntityInstance() {

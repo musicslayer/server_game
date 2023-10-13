@@ -131,6 +131,14 @@ class Entity extends UID {
         return this.progress?.level;
     }
 
+    onEntitySpawn() {
+        // By default, do nothing.
+    }
+
+    onEntityDespawn() {
+        // By default, do nothing.
+    }
+
     /*
         These "doX" methods can change the state of the server and thus should always be scheduled.
     */
@@ -186,6 +194,8 @@ class Entity extends UID {
         else {
             this.remove();
         }
+
+        this.getOwner()?.onEntityDespawn();
     }
 
     doInteract(entity) {
@@ -195,6 +205,7 @@ class Entity extends UID {
     doSpawnEntity(entity) {
         entity.setOwner(this);
         entity.doSpawn();
+        this.onEntitySpawn();
     }
 
     doSpawn() {

@@ -125,8 +125,8 @@ class Client {
             gold.setScreen(this.player.screen);
             gold.x = this.player.getMovementX();
             gold.y = this.player.getMovementY();
-
-            this.scheduleCreateTask(undefined, 0, "spawn_other_entity", this.player, gold);
+            
+            this.scheduleCreateTask(undefined, 0, "spawn", gold);
         }
         if(inputs.includes("invincible_on")) {
             this.scheduleActionTask(undefined, 0, "status_on", this.player, "invincible", 10);

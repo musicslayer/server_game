@@ -113,11 +113,6 @@ class ServerFunction {
 
         map.set("spawn_entity", (entity) => {
             entity.doSpawnEntity(entity.createEntityInstance());
-            entity.onEntitySpawn();
-        });
-
-        map.set("spawn_other_entity", (entity, otherEntity) => {
-            entity.doSpawnEntity(otherEntity);
         });
 
         map.set("status_off", (entity, status) => {

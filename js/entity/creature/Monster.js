@@ -52,13 +52,6 @@ class Monster extends Entity {
         this.ai.generateNextActivity(this);
     }
 
-    doDespawn() {
-        super.doDespawn();
-
-        // TODO The entity class should take care of this so that any Entity can be spawned/despawned correctly.
-        this.getOwner()?.onEntityDespawn();
-    }
-
     doTakeDamage(entity, damage) {
         if(!this.canTakeDamageFrom(entity) || !this.canBeDamaged()) {
             return;

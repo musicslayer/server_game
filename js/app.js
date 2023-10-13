@@ -5,7 +5,6 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // Future Items:
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
-// TODO Create general "Spawner" class
 // TODO Item screen needs sign saying to enjoy items.
 // TODO More signs in general.
 
