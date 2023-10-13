@@ -98,13 +98,6 @@ class CanvasPainter {
         
         let ctxBuffer = canvasBuffer.getContext("2d");
         
-        if(SHOW_SCREEN_GRID) {
-            this.drawScreenGrid(ctxBuffer);
-        }
-        if(SHOW_INVENTORY_GRID) {
-            this.drawInventoryGrid(ctxBuffer);
-        }
-        
         let animationFrame = Math.floor(ANIMATION_FRAMES * time / (1000 * ANIMATION_TIME)) % ANIMATION_FRAMES;
         this.drawScreen(ctxBuffer, animationFrame, clientData.tiles, clientData.entities, clientData.inventory, clientData.purse, clientData.screenInfo, clientData.info);
         
@@ -122,6 +115,14 @@ class CanvasPainter {
             let tile = tiles.shift();
             let image = this.imageCatalog.getImageByTileName(tile.name, animationFrame);
             this.drawScreenImageScaled(ctxBuffer, image, tile.x, tile.y);
+        }
+
+        // Draw grid over the tiles but under everything else.
+        if(SHOW_SCREEN_GRID) {
+            this.drawScreenGrid(ctxBuffer);
+        }
+        if(SHOW_INVENTORY_GRID) {
+            this.drawInventoryGrid(ctxBuffer);
         }
         
         // Entities
