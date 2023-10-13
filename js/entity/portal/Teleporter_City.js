@@ -16,7 +16,7 @@ class Teleporter_City extends Entity {
     doInteract(entity) {
         // Teleport a player only.
         if(entity.isPlayer) {
-            entity.doTeleportLocation("city", "field1", 7, 7);
+            entity.doTeleportLocation("city", "start_field", 1, 0);
         }
     }
 }

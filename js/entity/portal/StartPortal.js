@@ -16,7 +16,12 @@ class StartPortal extends Entity {
     doInteract(entity) {
         // Set the player's home location to the game's start location and then teleport them there.
         if(entity.isPlayer) {
-            entity.doTeleportStartLocation();
+            entity.homeMapName = Constants.start.START_LOCATION_MAP_NAME;
+            entity.homeScreenName = Constants.start.START_LOCATION_SCREEN_NAME;
+            entity.homeX = Constants.start.START_LOCATION_X;
+            entity.homeY = Constants.start.START_LOCATION_Y;
+
+            entity.doTeleportHome();
         }
     }
 }

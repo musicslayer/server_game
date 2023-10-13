@@ -233,6 +233,36 @@ class Entity extends UID {
         // By default, do nothing.
     }
 
+    
+
+    doTeleportDeath() {
+        // Teleport the entity to the death plane.
+        let deathWorld = this.screen.map.world.universe.getWorldByID("death");
+        deathWorld.teleportToEntrance(this);
+    }
+
+    doTeleportFallback() {
+        // Teleport the entity to the fallback map.
+        let fallbackWorld = this.screen.map.world.universe.getWorldByID("fallback");
+        fallbackWorld.teleportToEntrance(this);
+    }
+
+    doTeleportHome() {
+        this.doTeleportLocation(this.homeMapName, this.homeScreenName, this.homeX, this.homeY);
+    }
+
+    doTeleportLocation(mapName, screenName, x, y) {
+        let map = this.screen.map.world.getMapByName(mapName);
+        let screen = map?.getScreenByName(screenName);
+        
+        if(screen) {
+            this.doTeleport(screen, x, y);
+        }
+        else {
+            this.doTeleportFallback();
+        }
+    }
+
     doTeleport(screen, x, y) {
         // Move to an arbitrary point in the world. Do not check collision or call spawn/respawn.
         if(screen.hasXY(x, y)) {
@@ -252,67 +282,6 @@ class Entity extends UID {
                     oldScreen.notifyPlayerRemoval();
                 }
             }
-        }
-    }
-
-    doTeleportDeath() {
-        // Teleport the entity to the death plane.
-        let deathWorld = this.screen.map.world.universe.getWorldByID("death");
-        deathWorld.teleportToEntrance(this);
-    }
-
-    doTeleportFallback() {
-        // Teleport the entity to the fallback map.
-        let fallbackWorld = this.screen.map.world.universe.getWorldByID("fallback");
-        fallbackWorld.teleportToEntrance(this);
-    }
-
-    doTeleportFallbackLocation() {
-        // Teleport the entity to the fallback location.
-        // This location is hardcoded to somewhere that exists and is safe.
-        let fallbackLocationMap = this.screen.map.world.getMapByName(Constants.fallback.FALLBACK_LOCATION_MAP_NAME);
-        let fallbackLocationScreen = fallbackLocationMap?.getScreenByName(Constants.fallback.FALLBACK_LOCATION_SCREEN_NAME);
-        let fallbackLocationX = Constants.fallback.FALLBACK_LOCATION_X;
-        let fallbackLocationY = Constants.fallback.FALLBACK_LOCATION_Y;
-
-        // If the fallback target location cannot be found, then do nothing.
-        // Players will remain trapped on the fallback map until this is fixed.
-        if(fallbackLocationScreen) {
-            this.doTeleport(fallbackLocationScreen, fallbackLocationX, fallbackLocationY);
-        }
-    }
-
-    doTeleportStartLocation() {
-        // Set the entity's home location to the game's start location and then teleport them there.
-        this.homeMapName = Constants.start.START_LOCATION_MAP_NAME;
-        this.homeScreenName = Constants.start.START_LOCATION_SCREEN_NAME;
-        this.homeX = Constants.start.START_LOCATION_X;
-        this.homeY = Constants.start.START_LOCATION_Y;
-
-        this.doTeleportHome();
-    }
-
-    doTeleportHome() {
-        let homeMap = this.screen.map.world.getMapByName(this.homeMapName);
-        let homeScreen = homeMap?.getScreenByName(this.homeScreenName);
-
-        if(homeScreen) {
-            this.doTeleport(homeScreen, this.homeX, this.homeY);
-        }
-        else {
-            this.doTeleportFallback();
-        }
-    }
-
-    doTeleportLocation(mapName, screenName, x, y) {
-        let map = this.screen.map.world.getMapByName(mapName);
-        let screen = map?.getScreenByName(screenName);
-        
-        if(screen) {
-            this.doTeleport(screen, x, y);
-        }
-        else {
-            this.doTeleportFallback();
         }
     }
 

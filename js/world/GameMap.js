@@ -106,7 +106,7 @@ class GameMap {
         // It's possible that the screen is still undefined. This occurs if the screen name used to exist but was later removed.
         if(!screen) {
             let voidWorld = this.world.universe.getWorldByID("void");
-            let voidMap = voidWorld.getMapByID("void");
+            let voidMap = voidWorld.getMapByID(0); // The ID doesn't matter.
 
             screen = voidMap.getScreenByName(name);
             if(screen) {

@@ -13,7 +13,7 @@ class Constants {
     // These variables must point to a valid location on every currently existing world across all servers.
     static fallback = {
         FALLBACK_LOCATION_MAP_NAME: "city",
-        FALLBACK_LOCATION_SCREEN_NAME: "field1",
+        FALLBACK_LOCATION_SCREEN_NAME: "start_field",
         FALLBACK_LOCATION_X: 0,
         FALLBACK_LOCATION_Y: 0
     };
@@ -85,7 +85,7 @@ class Constants {
     // These variables point to the game's start location.
     static start = {
         START_LOCATION_MAP_NAME: "city",
-        START_LOCATION_SCREEN_NAME: "field1",
+        START_LOCATION_SCREEN_NAME: "start_field",
         START_LOCATION_X: 0,
         START_LOCATION_Y: 0
     };
