@@ -1,0 +1,5 @@
+2,2||InfoSign_DangerField1,1
+9,9||MonsterSpawner,1
+9,10||MonsterSpawner,1
+10,9||MonsterSpawner,1
+10,10||MonsterSpawner,1

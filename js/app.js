@@ -5,6 +5,9 @@ const WorkerManager = require("./worker/WorkerManager.js");
 // Future Items:
 // --- Use confirmation emails for any account changes. This requires a non-residential ISP that doesn't block port 25.
 
+// TODO Inventory/Purse tutorial?
+// TODO FireTrap should come back?
+
 async function init() {
     let appState = new AppState();
     let appAdmin = new AppAdmin(appState);

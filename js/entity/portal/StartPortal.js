@@ -1,3 +1,4 @@
+const Constants = require("../../constants/Constants.js");
 const Entity = require("../Entity.js");
 
 class StartPortal extends Entity {

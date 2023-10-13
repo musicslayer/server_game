@@ -247,6 +247,12 @@ class Entity extends UID {
         fallbackWorld.teleportToEntrance(this);
     }
 
+    doTeleportTutorial() {
+        // Teleport the entity to the tutorial map.
+        let tutorialWorld = this.screen.map.world.universe.getWorldByID("tutorial");
+        tutorialWorld.teleportToEntrance(this);
+    }
+
     doTeleportHome() {
         this.doTeleportLocation(this.homeMapName, this.homeScreenName, this.homeX, this.homeY);
     }

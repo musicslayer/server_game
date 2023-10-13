@@ -1,3 +1,6 @@
 -1,0|Screen|item_field|terrain_grassgreen|safe
 0,0|Screen|start_field|terrain_grassgreen|safe
+0,-1|Screen|tutorial_field|terrain_grassgreen|safe
+0,1|Screen|danger_field1|terrain_grassgreen|safe
+0,2|Screen|danger_field2|terrain_grassgreen|safe
 1,0|Screen|field2|terrain_grassgreen|pvp
