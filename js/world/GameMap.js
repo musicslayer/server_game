@@ -45,7 +45,10 @@ class GameMap {
             // Third part is the screen name
             let name = parts.shift();
 
-            // Fourth part is whether the screen is safe or pvp
+            // Fourth part is the background tile name
+            let backgroundTileName = parts.shift();
+
+            // Fifth part is whether the screen is safe or pvp
             let pvpStatus = parts.shift();
 
             let screen = Screen.loadScreenFromFile(map, className, path.join(mapFolder, name + ".txt"));
@@ -53,6 +56,7 @@ class GameMap {
             screen.x = x;
             screen.y = y;
             screen.pvpStatus = pvpStatus;
+            screen.addBackgroundTile(backgroundTileName);
 
             map.addScreen(screen);
         }

@@ -1,2 +1,2 @@
-0,0|Screen|field1|safe
-1,0|Screen|field2|pvp
+0,0|Screen|field1|terrain_grassgreen|safe
+1,0|Screen|field2|terrain_grassgreen|pvp

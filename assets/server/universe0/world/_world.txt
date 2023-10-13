@@ -1,2 +1,1 @@
 0|GameMap|city
-1|GameMap|town

@@ -315,7 +315,7 @@ class Client {
             tiles.push({
                 x: tile.x,
                 y: tile.y,
-                names: tile.names
+                name: tile.name
             });
         }
 
@@ -324,7 +324,7 @@ class Client {
             tiles.push({
                 x: this.player.homeX,
                 y: this.player.homeY,
-                names: ["marker_home"]
+                name: "marker_home"
             });
         }
 

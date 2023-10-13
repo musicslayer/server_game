@@ -1,19 +1,14 @@
 class Tile {
+    name;
     x;
     y;
-
-    names;
-
-    constructor(names) {
-        this.names = names;
-    }
 
     serialize(writer) {
         writer.beginObject()
             .serialize("!V!", 1)
+            .serialize("name", this.name)
             .serialize("x", this.x)
             .serialize("y", this.y)
-            .serializeArray("names", this.names)
         .endObject();
     }
 
@@ -24,9 +19,9 @@ class Tile {
         let version = reader.deserialize("!V!", "String");
         if(version === "1") {
             tile = new Tile()
+            tile.name = reader.deserialize("name", "String");
             tile.x = reader.deserialize("x", "Number");
             tile.y = reader.deserialize("y", "Number");
-            tile.names = reader.deserializeArray("names", "String");
         }
         else {
             throw(new Error("Unknown version number: " + version));

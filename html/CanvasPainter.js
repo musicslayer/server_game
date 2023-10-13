@@ -120,13 +120,8 @@ class CanvasPainter {
         // Tiles
         while(tiles.length > 0) {
             let tile = tiles.shift();
-            
-            while(tile.names.length > 0) {
-                let name = tile.names.shift();
-                let image = this.imageCatalog.getImageByTileName(name, animationFrame);
-                
-                this.drawScreenImageScaled(ctxBuffer, image, tile.x, tile.y);
-            }
+            let image = this.imageCatalog.getImageByTileName(tile.name, animationFrame);
+            this.drawScreenImageScaled(ctxBuffer, image, tile.x, tile.y);
         }
         
         // Entities

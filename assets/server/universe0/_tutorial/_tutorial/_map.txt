@@ -1,2 +1,2 @@
-0,0|Screen|tutorial1|safe
-1,0|Screen|tutorial2|safe
+0,0|Screen|tutorial1|terrain_grasspurple|safe
+1,0|Screen|tutorial2|terrain_grasspurple|safe

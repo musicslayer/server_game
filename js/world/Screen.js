@@ -45,17 +45,14 @@ class Screen {
             // Second part is the tiles
             let tilePart = parts.shift().split(COMMA);
             if(tilePart[0]) {
-                let names = [];
-
                 while(tilePart.length > 0) {
-                    names.push(tilePart.shift());
-                }
+                    let tile = new Tile();
+                    tile.name = tilePart.shift();
+                    tile.x = x;
+                    tile.y = y;
 
-                let tile = new Tile(names);
-                tile.x = x;
-                tile.y = y;
-        
-                screen.addTile(tile);
+                    screen.addTile(tile);
+                }
             }
 
             // Third part is the entities
@@ -78,6 +75,21 @@ class Screen {
         }
 
         return screen;
+    }
+
+    addBackgroundTile(tileName) {
+        // Add this tile to every square on this screen.
+        for(let x = 0; x < this.numTilesX; x++) {
+            for(let y = 0; y < this.numTilesY; y++) {
+                let tile = new Tile();
+                tile.name = tileName;
+                tile.x = x;
+                tile.y = y;
+
+                // Make sure these are placed in the array before any other existing tiles.
+                this.tiles.unshift(tile);
+            }
+        }
     }
 
     addTile(tile) {
