@@ -1,3 +1,0 @@
-2,2|floor_red|
-5,5||MonsterSpawner,1
-7,7||Teleporter_City,1

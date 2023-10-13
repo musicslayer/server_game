@@ -1,6 +1,6 @@
 const Entity = require("../Entity.js");
 
-class InfoSign_DangerField1 extends Entity {
+class InfoSign_TutorialField1 extends Entity {
     getName() {
         return "Info Sign";
     }
@@ -11,8 +11,8 @@ class InfoSign_DangerField1 extends Entity {
 
     getInfo() {
         // The info is a message meant for the player to read, not a description of an info sign itself.
-        return "Kill monsters to earn gold and experience.";
+        return "Did you forget how to play? Use this portal to return to the tutorial.";
     }
 }
 
-module.exports = InfoSign_DangerField1;
+module.exports = InfoSign_TutorialField1;

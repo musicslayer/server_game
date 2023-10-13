@@ -28,3 +28,4 @@
 2,10||InvinciblePotion,3
 3,10||InvinciblePotion,2
 4,10||InvinciblePotion,1
+7,5||InfoSign_ItemField1,1
