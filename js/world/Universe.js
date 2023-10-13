@@ -29,16 +29,17 @@ class Universe {
 
         // Add regular worlds.
         for(let i = 0; i < Constants.performance.MAX_WORLDS; i++) {
-            universe.createWorld("world", i, "World", "world" + i);
+            universe.createWorld("world", i, "World", "world" + i, "World " + i);
         }
 
         return universe;
     }
 
-    createWorld(worldFolder, id, className, name) {
+    createWorld(worldFolder, id, className, name, displayName) {
         let world = World.loadWorldFromFolder(this, className, path.join(this.universeFolder, worldFolder));
         world.id = id;
         world.name = name;
+        world.displayName = displayName;
 
         this.addWorld(world);
     }

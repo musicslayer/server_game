@@ -37,6 +37,7 @@ class FallbackWorld extends GeneratorWorld {
     createMap(id) {
         let fallbackMap = GameMap.loadMapFromFolder(this, "FallbackMap", path.join(this.worldFolder, "_fallback"))
         fallbackMap.name = this.getNamePrefix() + id;
+        fallbackMap.displayName = "Fallback Map";
         fallbackMap.id = id;
 
         this.addMap(fallbackMap);

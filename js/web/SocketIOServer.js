@@ -387,6 +387,7 @@ class SocketIOServer {
 						if(!world.isGeneratorWorld) {
 							worldData.push({
 								name: world.name,
+								displayName: world.displayName,
 								playerCount: world.playerCount,
 								maxPlayerCount: world.maxPlayerCount
 							});

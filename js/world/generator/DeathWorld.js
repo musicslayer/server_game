@@ -37,6 +37,7 @@ class DeathWorld extends GeneratorWorld {
     createMap(id) {
         let deathMap = GameMap.loadMapFromFolder(this, "DeathMap", path.join(this.worldFolder, "_death"))
         deathMap.name = this.getNamePrefix() + id;
+        deathMap.displayName = "Death Map";
         deathMap.id = id;
 
         this.addMap(deathMap);

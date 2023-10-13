@@ -93,6 +93,7 @@
                     
                     for(let worldEntry of serverEntry.worldData) {
                         let worldName = worldEntry.name;
+                        let worldDisplayName = worldEntry.displayName;
                         let worldPlayerCount = worldEntry.playerCount;
                         let worldMaxPlayerCount = worldEntry.maxPlayerCount;
                         let id = "ID_WORLD_" + worldName;
@@ -108,7 +109,7 @@
                         
                         let newLabel = document.createElement("label");
                         newLabel.htmlFor = id;
-                        newLabel.innerText = worldName + " (" + worldPlayerCount + "/" + worldMaxPlayerCount + ")";
+                        newLabel.innerText = worldDisplayName + " (" + worldPlayerCount + "/" + worldMaxPlayerCount + ")";
                         
                         newRow.appendChild(newRadioButton);
                         newRow.appendChild(newLabel);

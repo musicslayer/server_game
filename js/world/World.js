@@ -14,6 +14,7 @@ class World {
     universe;
     id;
     name;
+    displayName;
 
     maps = [];
     mapNameMap = new Map();
@@ -48,9 +49,13 @@ class World {
             // Third part is the map name
             let name = parts.shift();
 
+            // Fourth part is the map display name
+            let displayName = parts.shift();
+
             let map = GameMap.loadMapFromFolder(world, className, path.join(worldFolder, name));
             map.id = id;
             map.name = name;
+            map.displayName = displayName;
 
             world.addMap(map);
         }
@@ -140,6 +145,7 @@ class World {
             .serialize("className", Util.getClassName(this))
             .serialize("id", this.id)
             .serialize("name", this.name)
+            .serialize("displayName", this.displayName)
             .serializeArray("maps", this.maps)
             .serialize("worldFolder", this.worldFolder)
             .serialize("playerCount", this.playerCount)
@@ -158,6 +164,7 @@ class World {
             
             world.id = Util.getStringOrNumber(reader.deserialize("id", "String"));
             world.name = reader.deserialize("name", "String");
+            world.displayName = reader.deserialize("displayName", "String");
             let maps = reader.deserializeArray("maps", "GameMap");
             world.worldFolder = reader.deserialize("worldFolder", "String");
             world.playerCount = reader.deserialize("playerCount", "Number");

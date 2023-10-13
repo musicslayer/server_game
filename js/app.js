@@ -7,8 +7,6 @@ const WorkerManager = require("./worker/WorkerManager.js");
 
 // TODO Have info/teleporter data in the screen files?
 
-// TODO Display name of map and SAFE/PVP
-
 async function init() {
     let appState = new AppState();
     let appAdmin = new AppAdmin(appState);

@@ -11,6 +11,7 @@ class VoidMap extends DynamicMap {
     createDynamicScreen(screenX, screenY) {
         let voidScreen = Screen.loadScreenFromFile(this, "DynamicScreen", path.join(this.mapFolder, "void.txt"));
         voidScreen.name = this.getNamePrefix() + [screenX, screenY].join(",");
+        voidScreen.displayName = "Void Screen";
         voidScreen.x = screenX;
         voidScreen.y = screenY;
         voidScreen.pvpStatus = "safe";

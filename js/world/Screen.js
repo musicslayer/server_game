@@ -13,6 +13,7 @@ const PIPE = "|";
 class Screen {
     map;
     name;
+    displayName;
     x;
     y;
 
@@ -199,6 +200,7 @@ class Screen {
             .serialize("!V!", 1)
             .serialize("className", Util.getClassName(this))
             .serialize("name", this.name)
+            .serialize("displayName", this.displayName)
             .serialize("x", this.x)
             .serialize("y", this.y)
             .serialize("numTilesX", this.numTilesX)
@@ -219,6 +221,7 @@ class Screen {
             screen = Reflection.createInstance(className);
 
             screen.name = reader.deserialize("name", "String");
+            screen.displayName = reader.deserialize("displayName", "String");
             screen.x = reader.deserialize("x", "Number");
             screen.y = reader.deserialize("y", "Number");
             screen.numTilesX = reader.deserialize("numTilesX", "Number");

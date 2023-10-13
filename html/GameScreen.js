@@ -10,15 +10,25 @@ class GameScreen {
     inventoryTilesX = 9; // This matches the number of slots across.
     inventoryTilesY = 5; // This matches the number of slots down.
 
+    mapInfoOriginX = 17;
+    mapInfoOriginY = 0;
+    mapInfoTilesX = 1;
+    mapInfoTilesY = 1;
+
+    screenInfoOriginX = 17;
+    screenInfoOriginY = 1;
+    screenInfoTilesX = 1;
+    screenInfoTilesY = 1;
+
     purseOriginX = 17;
-    purseOriginY = 0;
+    purseOriginY = 2;
     purseTilesX = 1;
     purseTilesY = 1;
 
-    infoOriginX = 17;
-    infoOriginY = 1;
-    infoTilesX = 1;
-    infoTilesY = 1;
+    entityInfoOriginX = 17;
+    entityInfoOriginY = 3;
+    entityInfoTilesX = 1;
+    entityInfoTilesY = 1;
 
     canvas;
     canvasBorderPixelsX;

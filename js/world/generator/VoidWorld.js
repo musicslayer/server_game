@@ -16,6 +16,7 @@ class VoidWorld extends GeneratorWorld {
     createMap(id) {
         let voidMap = GameMap.loadMapFromFolder(this, "VoidMap", path.join(this.worldFolder, "_void"))
         voidMap.name = this.getNamePrefix() + id;
+        voidMap.displayName = "Void Map";
         voidMap.id = id;
 
         this.addMap(voidMap);

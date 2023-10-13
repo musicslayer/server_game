@@ -13,6 +13,7 @@ class GameMap {
     world;
     id;
     name;
+    displayName;
 
     screens = [];
     screenNameMap = new Map();
@@ -45,14 +46,18 @@ class GameMap {
             // Third part is the screen name
             let name = parts.shift();
 
-            // Fourth part is the background tile name
+            // Fourth part is the screen display name
+            let displayName = parts.shift();
+
+            // Fifth part is the background tile name
             let backgroundTileName = parts.shift();
 
-            // Fifth part is whether the screen is safe or pvp
+            // Sixth part is whether the screen is safe or pvp
             let pvpStatus = parts.shift();
 
             let screen = Screen.loadScreenFromFile(map, className, path.join(mapFolder, name + ".txt"));
             screen.name = name;
+            screen.displayName = displayName;
             screen.x = x;
             screen.y = y;
             screen.pvpStatus = pvpStatus;
@@ -161,6 +166,7 @@ class GameMap {
             .serialize("className", Util.getClassName(this))
             .serialize("id", this.id)
             .serialize("name", this.name)
+            .serialize("displayName", this.displayName)
             .serializeArray("screens", this.screens)
             .serialize("mapFolder", this.mapFolder)
         .endObject();
@@ -177,6 +183,7 @@ class GameMap {
 
             map.id = Util.getStringOrNumber(reader.deserialize("id", "String"));
             map.name = reader.deserialize("name", "String");
+            map.displayName = reader.deserialize("displayName", "String");
             let screens = reader.deserializeArray("screens", "Screen");
             map.mapFolder = reader.deserialize("mapFolder", "String");
 

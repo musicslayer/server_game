@@ -11,6 +11,7 @@ class FallbackMap extends DynamicMap {
     createDynamicScreen(screenX, screenY) {
         let fallbackScreen = Screen.loadScreenFromFile(this, "DynamicScreen", path.join(this.mapFolder, "fallback.txt"));
         fallbackScreen.name = this.getNamePrefix() + [screenX, screenY].join(",");
+        fallbackScreen.displayName = "Fallback Screen";
         fallbackScreen.x = screenX;
         fallbackScreen.y = screenY;
         fallbackScreen.pvpStatus = "safe";

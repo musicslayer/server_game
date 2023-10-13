@@ -387,11 +387,17 @@ class Client {
         screenInfo.isLeft = this.player.screen.isScreenInDirection("left");
         screenInfo.isRight = this.player.screen.isScreenInDirection("right");
 
-        // Info
-        let info = {};
-        info.entityName = this.player.getSelectedEntity()?.getEntityName();
-        info.name = this.player.getSelectedEntity()?.getName();
-        info.text = this.player.getSelectedEntity()?.getInfo();
+        // Location Info
+        let locationInfo = {};
+        locationInfo.mapDisplayName = this.player.screen.map.displayName;
+        locationInfo.screenDisplayName = this.player.screen.displayName;
+        locationInfo.pvpStatus = this.player.screen.pvpStatus;
+
+        // Entity Info
+        let entityInfo = {};
+        entityInfo.entityName = this.player.getSelectedEntity()?.getEntityName();
+        entityInfo.name = this.player.getSelectedEntity()?.getName();
+        entityInfo.text = this.player.getSelectedEntity()?.getInfo();
 
         return {
             tiles: tiles,
@@ -399,7 +405,8 @@ class Client {
             inventory: inventory,
             purse: purse,
             screenInfo: screenInfo,
-            info: info
+            locationInfo: locationInfo,
+            entityInfo: entityInfo
         };
     }
 

@@ -11,6 +11,7 @@ class DeathMap extends DynamicMap {
     createDynamicScreen(screenX, screenY) {
         let deathScreen = Screen.loadScreenFromFile(this, "DynamicScreen", path.join(this.mapFolder, "death.txt"));
         deathScreen.name = this.getNamePrefix() + [screenX, screenY].join(",");
+        deathScreen.displayName = "Death Screen";
         deathScreen.x = screenX;
         deathScreen.y = screenY;
         deathScreen.pvpStatus = "safe";
