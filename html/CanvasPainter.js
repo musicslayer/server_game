@@ -32,14 +32,9 @@ class CanvasPainter {
         ctxBuffer.drawImage(image, (this.gameScreen.inventoryOriginX + x) * this.gameScreen.imageScaleFactor, (this.gameScreen.inventoryOriginY + y) * this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor, this.gameScreen.imageScaleFactor);
     }
 
-    drawMapInfoImageScaled(ctxBuffer, image, x, y, width, height) {
+    drawLocationInfoImageScaled(ctxBuffer, image, x, y, width, height) {
         // Draws the image on the map info area but scales it based on the GameScreen.
-        ctxBuffer.drawImage(image, (this.gameScreen.mapInfoOriginX + x) * this.gameScreen.imageScaleFactor, (this.gameScreen.mapInfoOriginY + y) * this.gameScreen.imageScaleFactor, width * this.gameScreen.imageScaleFactor, height * this.gameScreen.imageScaleFactor);
-    }
-
-    drawScreenInfoImageScaled(ctxBuffer, image, x, y, width, height) {
-        // Draws the image on the screen info area but scales it based on the GameScreen.
-        ctxBuffer.drawImage(image, (this.gameScreen.screenInfoOriginX + x) * this.gameScreen.imageScaleFactor, (this.gameScreen.screenInfoOriginY + y) * this.gameScreen.imageScaleFactor, width * this.gameScreen.imageScaleFactor, height * this.gameScreen.imageScaleFactor);
+        ctxBuffer.drawImage(image, (this.gameScreen.locationInfoOriginX + x) * this.gameScreen.imageScaleFactor, (this.gameScreen.locationInfoOriginY + y) * this.gameScreen.imageScaleFactor, width * this.gameScreen.imageScaleFactor, height * this.gameScreen.imageScaleFactor);
     }
 
     drawPurseImageScaled(ctxBuffer, image, x, y) {
@@ -202,13 +197,11 @@ class CanvasPainter {
             this.drawInventoryCursor(ctxBuffer, inventory.currentSlot);
         }
 
-        // Map Info
+        // Location Info
         let mapInfoTextImage = this.getMapInfoTextImage(locationInfo.mapDisplayName);
-        this.drawMapInfoImageScaled(ctxBuffer, mapInfoTextImage, 0, 0, 6, 1);
-
-        // Screen Info
         let screenInfoTextImage = this.getScreenInfoTextImage(locationInfo.screenDisplayName, locationInfo.pvpStatus);
-        this.drawScreenInfoImageScaled(ctxBuffer, screenInfoTextImage, 0, 0, 6, 1);
+        this.drawLocationInfoImageScaled(ctxBuffer, mapInfoTextImage, 0, 0, 6, 1);
+        this.drawLocationInfoImageScaled(ctxBuffer, screenInfoTextImage, 0, 0, 6, 1);
         
         // Purse
         let purseImage = this.imageCatalog.getImageByEntityName("item_gold", animationFrame);
@@ -219,14 +212,13 @@ class CanvasPainter {
         // Entity Info
         if(entityInfo.entityName !== undefined && entityInfo.name !== undefined && entityInfo.text !== undefined) {
             let entityInfoWidth = 6;
-            let entityInfoHeight = 3;
             let entityInfoImage = this.imageCatalog.getImageByEntityName(entityInfo.entityName, animationFrame);
             let entityInfoNameImage = this.getEntityInfoNameImage(entityInfo.name);
             let entityInfoTextImage = this.getEntityInfoTextImage(entityInfo.text);
 
             this.drawEntityInfoImageScaled(ctxBuffer, entityInfoImage, 0, 0, 1, 1);
             this.drawEntityInfoImageScaled(ctxBuffer, entityInfoNameImage, 1, 0, entityInfoWidth, 1);
-            this.drawEntityInfoImageScaled(ctxBuffer, entityInfoTextImage, 1, 0, entityInfoWidth, entityInfoHeight);
+            this.drawEntityInfoImageScaled(ctxBuffer, entityInfoTextImage, 1, 0, entityInfoWidth, 1);
         }
         
         ctxBuffer.stroke();
@@ -320,16 +312,16 @@ class CanvasPainter {
         return this.getTextImage("Gold: " + goldTotal, 0, 0.55, 1, 1, "#000000");
     }
 
+    getMapInfoTextImage(mapDisplayName) {
+        return this.getTextImage(mapDisplayName, 0, 0.4, 6, 1, "#000000");
+    }
+
     getScreenInfoTextImage(screenDisplayName, pvpStatus) {
         let black = "#000000";
         let red = "#FF0000";
         let color = pvpStatus === "pvp" ? red : black;
         let text = screenDisplayName + " [" + pvpStatus + "]";
-        return this.getTextImage(text, 0, 0.50, 6, 1, color);
-    }
-
-    getMapInfoTextImage(mapDisplayName) {
-        return this.getTextImage(mapDisplayName, 0, 0.50, 6, 1, "#000000");
+        return this.getTextImage(text, 0, 0.7, 6, 1, color);
     }
     
     getEntityInfoNameImage(entityInfoName) {
@@ -337,7 +329,7 @@ class CanvasPainter {
     }
     
     getEntityInfoTextImage(entityInfoText) {
-        return this.getTextImage(text, 0, 0.70, 6, 1, "#000000");
+        return this.getTextImage(entityInfoText, 0, 0.7, 6, 1, "#000000");
     }
 
     getInventoryImages(items, animationFrame) {
