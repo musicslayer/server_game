@@ -14,6 +14,7 @@ class VoidMap extends DynamicMap {
         voidScreen.x = screenX;
         voidScreen.y = screenY;
         voidScreen.pvpStatus = "safe";
+        voidScreen.addBackgroundTile("terrain_grasspurple");
 
         this.addScreen(voidScreen);
         

@@ -14,6 +14,7 @@ class DeathMap extends DynamicMap {
         deathScreen.x = screenX;
         deathScreen.y = screenY;
         deathScreen.pvpStatus = "safe";
+        deathScreen.addBackgroundTile("terrain_grasspurple");
 
         this.addScreen(deathScreen);
         

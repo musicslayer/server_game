@@ -106,14 +106,14 @@ class CanvasPainter {
         }
         
         let animationFrame = Math.floor(ANIMATION_FRAMES * time / (1000 * ANIMATION_TIME)) % ANIMATION_FRAMES;
-        this.drawScreen(ctxBuffer, animationFrame, clientData.tiles, clientData.entities, clientData.inventory, clientData.purse, clientData.info);
+        this.drawScreen(ctxBuffer, animationFrame, clientData.tiles, clientData.entities, clientData.inventory, clientData.purse, clientData.screenInfo, clientData.info);
         
         // Clear current screen and draw new screen quickly to prevent flickering.
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.drawImage(canvasBuffer, 0, 0);
     }
 
-    drawScreen(ctxBuffer, animationFrame, tiles, entities, inventory, purse, info) {
+    drawScreen(ctxBuffer, animationFrame, tiles, entities, inventory, purse, screenInfo, info) {
         // Only draw the screen where the player is located at.
         ctxBuffer.beginPath();
 
@@ -175,6 +175,9 @@ class CanvasPainter {
         // Screen Dividers
         this.fillRectScaled(ctxBuffer, this.gameScreen.screenTilesX, 0, 1, this.gameScreen.screenTilesY);
         this.fillRectScaled(ctxBuffer, this.gameScreen.screenTilesX + 1, 6, 9, 1);
+
+        // Screen Border
+        this.drawScreenBorder(ctxBuffer, screenInfo);
         
         // Inventory
         let inventoryImages = this.getInventoryImages(inventory.items, animationFrame);
@@ -207,6 +210,26 @@ class CanvasPainter {
         }
         
         ctxBuffer.stroke();
+    }
+
+    drawScreenBorder(ctxBuffer, screenInfo) {
+        // For each edge, green means there is an accessible screen in that direction and red means there is not.
+        ctxBuffer.beginPath();
+
+        let green = "#00FF00";
+        let red = "#FF0000";
+
+        ctxBuffer.fillStyle = screenInfo.isUp ? green: red;
+        this.fillRectScaled(ctxBuffer, 0, 0, this.gameScreen.screenTilesX, 0.05);
+        
+        ctxBuffer.fillStyle = screenInfo.isDown ? green: red;
+        this.fillRectScaled(ctxBuffer, 0, this.gameScreen.screenTilesY, this.gameScreen.screenTilesX, -0.05);
+
+        ctxBuffer.fillStyle = screenInfo.isLeft ? green: red;
+        this.fillRectScaled(ctxBuffer, 0, 0, 0.05, this.gameScreen.screenTilesY);
+
+        ctxBuffer.fillStyle = screenInfo.isRight ? green: red;
+        this.fillRectScaled(ctxBuffer, this.gameScreen.screenTilesX, 0, -0.05, this.gameScreen.screenTilesY);
     }
     
     drawScreenGrid(ctxBuffer) {

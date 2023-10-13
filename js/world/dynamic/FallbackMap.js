@@ -14,6 +14,7 @@ class FallbackMap extends DynamicMap {
         fallbackScreen.x = screenX;
         fallbackScreen.y = screenY;
         fallbackScreen.pvpStatus = "safe";
+        fallbackScreen.addBackgroundTile("terrain_grasspurple");
 
         this.addScreen(fallbackScreen);
         

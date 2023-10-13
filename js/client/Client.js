@@ -380,6 +380,13 @@ class Client {
         let purse = {};
         purse.goldTotal = this.player.purse.goldTotal;
 
+        // Screen Info
+        let screenInfo = {};
+        screenInfo.isUp = this.player.screen.isScreenInDirection("up");
+        screenInfo.isDown = this.player.screen.isScreenInDirection("down");
+        screenInfo.isLeft = this.player.screen.isScreenInDirection("left");
+        screenInfo.isRight = this.player.screen.isScreenInDirection("right");
+
         // Info
         let info = {};
         info.entityName = this.player.getSelectedEntity()?.getEntityName();
@@ -391,6 +398,7 @@ class Client {
             entities: entities,
             inventory: inventory,
             purse: purse,
+            screenInfo: screenInfo,
             info: info
         };
     }
