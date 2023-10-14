@@ -198,30 +198,30 @@ class UnzipStream {
     _readShort() {
         let bytes = this._readBytes(2);
         return getShortValue(bytes);
-    };
+    }
 
     _readLong() {
         let bytes = this._readBytes(4);
         return getLongValue(bytes);
-    };
+    }
 
     _readString(strLength) {
         let bytes = this._readBytes(strLength);
         return getStringValue(bytes);
-    };
+    }
 
     _readBytes(n) {
         // Return and consume n bytes from zipFileContent.
         let bytes = this._peekBytes(n);
         this.zipFileContent = this.zipFileContent.subarray(n);
         return bytes;
-    };
+    }
 
     _peekBytes(n) {
         // Return n bytes from zipFileContent.
         let bytes = this.zipFileContent.subarray(0, n);
         return bytes;
-    };
+    }
 }
 
 function getZip64ExtraRecord(extra) {
@@ -242,16 +242,16 @@ function getZip64ExtraRecord(extra) {
         let bytes = extra.subarray(0, n);
         extra = extra.subarray(n);
         return bytes;
-    };
-};
+    }
+}
 
 function getShortValue(bytes) {
     return bytes[0] | (bytes[1] << 8);
-};
+}
 
 function getLongValue(bytes) {
     return bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
-};
+}
 
 function getEightValue(bytes) {
     return BigInt(bytes[0]) | 
@@ -262,11 +262,11 @@ function getEightValue(bytes) {
     (BigInt(bytes[5]) << 40n) |
     (BigInt(bytes[6]) << 48n) |
     (BigInt(bytes[7]) << 56n);
-};
+}
 
 function getStringValue(bytes) {
     return new TextDecoder().decode(bytes);
-};
+}
 
 function concatUint8Array(x, y) {
     let c = new Uint8Array(x.length + y.length)

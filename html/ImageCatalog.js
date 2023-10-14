@@ -22,7 +22,7 @@ class ImageCatalog {
             await new Promise(r => image.onload = r, image.src = imageURL);
             
             this.addImage(category, folder, file, image);
-        };
+        }
     }
     
     async fetchZipDataMap() {

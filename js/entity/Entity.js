@@ -176,7 +176,7 @@ class Entity extends UID {
     }
 
     
-
+    // eslint-disable-next-line no-unused-vars
     doConsume(entity) {
         // By default, do nothing.
     }
@@ -198,6 +198,7 @@ class Entity extends UID {
         this.getOwner()?.onEntityDespawn();
     }
 
+    // eslint-disable-next-line no-unused-vars
     doInteract(entity) {
         // By default, do nothing.
     }
@@ -221,6 +222,7 @@ class Entity extends UID {
         this.getServer().scheduleTask(serverTask);
     }
 
+    // eslint-disable-next-line no-unused-vars
     doTakeDamage(entity, damage) {
         // By default, do nothing.
     }
@@ -512,6 +514,7 @@ class Entity extends UID {
         return true;
     }
 
+    // eslint-disable-next-line no-unused-vars
     canConsume(entity) {
         // By default, any entity can consume any item.
         return true;

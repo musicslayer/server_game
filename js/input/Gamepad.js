@@ -22,6 +22,7 @@ class Gamepad {
 
     inputMap = new Map();
 
+    // eslint-disable-next-line no-unused-vars
     constructor(isDevMode) {
         this.inputMap.set(this._y, "inventory_previous");
         this.inputMap.set(this._b, "inventory_next");

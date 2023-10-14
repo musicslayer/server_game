@@ -23,6 +23,7 @@ class PVPToken extends Entity {
         }
     }
 
+    // eslint-disable-next-line no-unused-vars
     canConsume(entity) {
         // These can only be traded, not consumed.
         return false;

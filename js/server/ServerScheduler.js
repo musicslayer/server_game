@@ -39,13 +39,15 @@ class ServerScheduler {
                 intervalTime: 1000000000 / Constants.performance.TICK_RATE // In nanoseconds
             }
         });
+        // eslint-disable-next-line no-unused-vars
         this.worker.on("exit", (exitCode) => {
             this.isCancelled = true;
         });
+        // eslint-disable-next-line no-unused-vars
         this.worker.on("error", (err) => {
             this.isCancelled = true;
         });
-    };
+    }
 
     endServerTick() {
         // We need to manually end worker threads when a server is no longer in use.

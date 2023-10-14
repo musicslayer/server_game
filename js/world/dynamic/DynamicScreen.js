@@ -2,6 +2,7 @@ const InstanceScreen = require("../instance/InstanceScreen.js");
 
 class DynamicScreen extends InstanceScreen {
     // A dynamic screen is an instance screen where there is always another screen available in any direction.
+    // eslint-disable-next-line no-unused-vars
     isScreenInDirection(direction) {
         return true;
     }

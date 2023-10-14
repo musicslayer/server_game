@@ -267,7 +267,7 @@ class DataReader {
                 }
                 else {
                     switch(theCharValue) {
-                        case ":":
+                        case ":": {
                             let returnPhrase = this.lastPhrase;
                             this.lastPhrase = "";
                             this.s = storage + this.s;
@@ -277,7 +277,7 @@ class DataReader {
                             }
 
                             return [NAME, returnPhrase];
-
+                        }
                         case ",":
                             if(this.lastPhrase !== "") {
                                 let returnPhrase = this.lastPhrase;

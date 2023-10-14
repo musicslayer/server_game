@@ -98,6 +98,7 @@ class GameScreen {
         return [rx, ry];
     }
 
+    // eslint-disable-next-line no-unused-vars
     getPurseNumber(rx, ry) {
         // For now, there is only one purse.
         return 0;

@@ -18,11 +18,13 @@ class InputManager {
         this.gameScreen = gameScreen;
     }
 
+    // eslint-disable-next-line no-unused-vars
     onBlur(event) {
         this.inputsEnabled = false;
         this.isKeyPressed = {};
     }
 
+    // eslint-disable-next-line no-unused-vars
     onFocus(event) {
         this.inputsEnabled = true;
     }
@@ -37,6 +39,7 @@ class InputManager {
         }
     }
     
+    // eslint-disable-next-line no-unused-vars
     onMouseMove(event) {
         if(this.downButton !== undefined) {
             this.deltaSpace++;
@@ -94,7 +97,7 @@ class InputManager {
 
         for(let i = 0; i < gamepad.buttons.length; i++) {
             let button = gamepad.buttons[i];
-            let isPressed = typeof button === "object" ? b.pressed : b === 1.0;
+            let isPressed = typeof button === "object" ? button.pressed : button === 1.0;
             if(isPressed) {
                 buttons.push(i);
             }

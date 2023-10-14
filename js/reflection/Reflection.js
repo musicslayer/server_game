@@ -72,7 +72,7 @@ class Reflection {
         // Returns whether classNameA is a subclass of classNameB.
         let classDataA = Reflection.getClassData(classNameA);
         let classDataB = Reflection.getClassData(classNameB);
-        return classDataA && classDataB && classDataB.isPrototypeOf(classDataA);
+        return classDataA && classDataB && Object.prototype.isPrototypeOf.call(classDataB, classDataA);
     }
 
     static getSubclasses(classNameB) {

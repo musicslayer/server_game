@@ -291,7 +291,7 @@ class ZipStream {
       
         // total number of disks (just use 1)
         this.writeData(getLongBytes(1));
-    };
+    }
 
     _writeCentralDirectoryEnd(records, size, offset) {
         // signature
@@ -317,7 +317,7 @@ class ZipStream {
 
 function isFileZip64(size, csize, fileOffset) {
     return size > ZIP64_MAGIC || csize > ZIP64_MAGIC || fileOffset > ZIP64_MAGIC;
-};
+}
 
 function isArchiveZip64(records, centralLength, centralOffset) {
     return records > ZIP64_MAGIC_SHORT || centralLength > ZIP64_MAGIC || centralOffset > ZIP64_MAGIC;
@@ -368,25 +368,25 @@ function dateToDos(d, forceLocalTime) {
     | (val.hours << 11)
     | (val.minutes << 5)
     | (val.seconds / 2);
-};
+}
 
 function getShortBytes(v) {
     var buf = Buffer.alloc(2);
     buf.writeUInt16LE(v);
     return buf;
-};
+}
 
 function getLongBytes(v) {
     var buf = Buffer.alloc(4);
     buf.writeUInt32LE(v);
     return buf;
-};
+}
 
 function getEightBytes(v) {
     var buf = Buffer.alloc(8);
     buf.writeBigUint64LE(v);
     return buf;
-};
+}
 
 const CRC_TABLE = new Int32Array([
     0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419,

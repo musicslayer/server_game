@@ -4,7 +4,6 @@ const Gamepad = require("../input/Gamepad.js");
 const Entity = require("../entity/Entity.js");
 const MoveAnimation = require("../animation/MoveAnimation.js");
 const ServerTask = require("../server/ServerTask.js");
-const Util = require("../util/Util.js");
 
 class Client {
     socket;

@@ -23,9 +23,11 @@ class RateLimit {
                 intervalTime: 1000000000 // 1 second, in nanoseconds
             }
         });
+        // eslint-disable-next-line no-unused-vars
         RateLimit.worker.on("exit", (exitCode) => {
             RateLimit.isCancelled = true;
         });
+        // eslint-disable-next-line no-unused-vars
         RateLimit.worker.on("error", (err) => {
             RateLimit.isCancelled = true;
         });

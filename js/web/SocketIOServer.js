@@ -56,6 +56,7 @@ class SocketIOServer {
 				numSockets++;
 				this.numSocketsMap.set(ip, numSockets);
 		
+				// eslint-disable-next-line no-unused-vars
 				socket.on("disconnect", (reason) => {
 					try {
 						let numSockets = this.numSocketsMap.get(ip);
@@ -559,6 +560,7 @@ class SocketIOServer {
 
 				player.client = client;
 
+				// eslint-disable-next-line no-unused-vars
 				socket.on("disconnect", (reason) => {
 					let client = this.clientManager.getClient(username, characterName); 
 					this.clientManager.removeClient(client);
