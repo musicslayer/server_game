@@ -6,8 +6,6 @@ const SECRET_JSON_FILE = path.resolve(path.join("secrets", "secrets.json"));
 const SECRET_SSL_KEY_FILE = path.resolve(path.join("secrets", "ssl", "_.musicslayer.com.key"));
 const SECRET_SSL_CERT_FILE = path.resolve(path.join("secrets", "ssl", "_.musicslayer.com.crt"));
 const SECRET_SSL_CA_FILE = path.resolve(path.join("secrets", "ssl", "_.musicslayer.com.issuer.crt"));
-const SECRET_DKIM_PRIVATE_KEY_FILE = path.resolve(path.join("secrets", "dkim", "musicslayer.key"));
-const SECRET_DKIM_SELECTOR_FILE = path.resolve(path.join("secrets", "dkim", "musicslayer.selector"));
 
 class Secret {
     static secretMap;

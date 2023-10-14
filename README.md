@@ -2,11 +2,20 @@
  Demonstration of a 2D MMO Server Game
 
 ## Launch Instructions
-On the server (i.e. a computer): run app.js
+### Step 1
+Download source code and additionally install the latest version of "socket.io" (i.e. npm install socket.io).
 
-On the client (i.e. a web browser running on the same computer): Navigate to https://localhost/ or http://localhost/
+### Step 2
+Optionally create subfolder "secrets/ssl/" and place SSL credentials inside.
+If provided, there should be a .key, .crt, and .issuer.crt file.
 
-(Depending on whether the SSL credentials are present, the app will automatically decide whether to use http or https.)
+### Step 3
+run app.js
+Depending on whether the SSL credentials are present, the app will automatically decide whether to use http or https.
+
+### Step 4
+On a web browser running on the same computer that app.js is running:
+Navigate to https://localhost/ or http://localhost/
 
 ## Features
 ### Overall
