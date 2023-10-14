@@ -47,7 +47,7 @@ class Constants {
 
     static ratelimit = {
         // Each entry is the number of allowed operations per IP address per second.
-        operationMap: new Map(Object.entries({
+        OPERATION_MAP: new Map(Object.entries({
             "html": 1000,
             "create_account": 1000,
             "delete_account": 1000,
@@ -73,8 +73,7 @@ class Constants {
 
     static server = {
         MAX_CONNECTIONS_PER_IP: 10,
-        REQUEST_TIMEOUT: 60000, // milliseconds
-        URL_BASE: "https://localhost"
+        REQUEST_TIMEOUT: 60000 // milliseconds
     };
 
     // These variables point to the game's start location.

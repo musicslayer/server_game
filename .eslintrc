@@ -11,7 +11,10 @@
     },
     "extends": [
         "eslint:recommended"
-    ]
+    ],
+    "rules": {
+        "quotes": ["error", "double"]
+    }
 }
 
 // Run with: npx eslint ./**/*.js

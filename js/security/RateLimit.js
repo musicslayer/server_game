@@ -43,7 +43,7 @@ class RateLimit {
     }
 
     static reset() {
-        for(let operation of Constants.ratelimit.operationMap.keys()) {
+        for(let operation of Constants.ratelimit.OPERATION_MAP.keys()) {
             RateLimit.operationIPMap.set(operation, new Map());
         }
     }
@@ -52,7 +52,7 @@ class RateLimit {
         // Returns whether the task is over the allowed rate limit for the specified IP address.
         let isRateLimited;
 
-        let allowedOperations = Constants.ratelimit.operationMap.get(taskName);
+        let allowedOperations = Constants.ratelimit.OPERATION_MAP.get(taskName);
         let ipMap = RateLimit.operationIPMap.get(taskName);
         let numOperations = ipMap?.get(ip) ?? 0;
 

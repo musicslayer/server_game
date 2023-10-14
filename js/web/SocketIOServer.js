@@ -49,7 +49,7 @@ class SocketIOServer {
 			try {
 				let ip = socket.handshake.address;
 				let numSockets = this.numSocketsMap.get(ip) ?? 0;
-				if(numSockets >= Constants.server.numAllowedSockets) {
+				if(numSockets >= Constants.server.MAX_CONNECTIONS_PER_IP) {
 					return;
 				}
 		
