@@ -2,9 +2,11 @@
  Demonstration of a 2D MMO Server Game
 
 ## Launch Instructions
-On the server: run app.js
+On the server (i.e. a computer): run app.js
 
-On the client (i.e. a web browser): Navigate to https://localhost/
+On the client (i.e. a web browser running on the same computer): Navigate to https://localhost/ or http://localhost/
+
+(Depending on whether the SSL credentials are present, the app will automatically decide whether to use http or https.)
 
 ## Features
 ### Overall
