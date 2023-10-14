@@ -7,7 +7,7 @@ class MonsterSpawner extends Spawner {
         return "Monster Spawner";
     }
 
-    getEntityName() {
+    getImageName() {
         return "spawner_monsterspawner";
     }
 

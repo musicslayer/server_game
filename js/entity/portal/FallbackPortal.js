@@ -6,7 +6,7 @@ class FallbackPortal extends Entity {
         return "Fallback Portal";
     }
 
-    getEntityName() {
+    getImageName() {
         return "portal_teleporter";
     }
 

@@ -5,7 +5,7 @@ class DeathTrap extends Entity {
         return "Death Trap";
     }
 
-    getEntityName() {
+    getImageName() {
         return "trap_death";
     }
 

@@ -8,7 +8,7 @@ class FireTrapSpawner extends Spawner {
         return "Fire Trap Spawner";
     }
 
-    getEntityName() {
+    getImageName() {
         return "spawner_firetrapspawner";
     }
 

@@ -7,7 +7,7 @@ class Gold extends Entity {
         return "Gold";
     }
 
-    getEntityName() {
+    getImageName() {
         return "item_gold";
     }
 

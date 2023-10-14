@@ -5,7 +5,7 @@ class MagicProjectile extends Projectile {
         return "Magic Projectile";
     }
 
-    getEntityName() {
+    getImageName() {
         return "magic_orb";
     }
 

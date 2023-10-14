@@ -31,7 +31,7 @@ class Monster extends Entity {
         return "Monster";
     }
 
-    getEntityName() {
+    getImageName() {
         return "creature_monster";
     }
 

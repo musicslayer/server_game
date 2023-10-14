@@ -7,7 +7,7 @@ class FireTrap extends Entity {
         return "Fire Trap";
     }
 
-    getEntityName() {
+    getImageName() {
         return "trap_fire";
     }
 

@@ -5,7 +5,7 @@ class Wall extends Entity {
         return "Wall";
     }
 
-    getEntityName() {
+    getImageName() {
         return "wall_wall";
     }
 

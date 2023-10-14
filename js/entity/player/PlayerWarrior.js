@@ -1,7 +1,7 @@
 const Player = require("./Player");
 
 class PlayerWarrior extends Player {
-    getEntityName() {
+    getImageName() {
         return "player_warrior";
     }
 }

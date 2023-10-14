@@ -5,7 +5,7 @@ class HomePortal extends Entity {
         return "Home Portal";
     }
 
-    getEntityName() {
+    getImageName() {
         return "portal_teleporter";
     }
 

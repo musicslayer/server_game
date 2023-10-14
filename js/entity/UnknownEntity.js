@@ -1,7 +1,7 @@
 const Entity = require("./Entity.js");
 
 class UnknownEntity extends Entity {
-    getEntityName() {
+    getImageName() {
         return "?_?";
     }
 }

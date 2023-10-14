@@ -5,7 +5,7 @@ class RevivePortal extends Entity {
         return "Revive Portal";
     }
 
-    getEntityName() {
+    getImageName() {
         return "portal_teleporter";
     }
 

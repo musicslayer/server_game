@@ -10,7 +10,7 @@ class InvinciblePotion extends Entity {
         return "Invincible Potion";
     }
 
-    getEntityName() {
+    getImageName() {
         return "item_invinciblepotion";
     }
 

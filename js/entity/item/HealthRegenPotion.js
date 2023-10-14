@@ -13,7 +13,7 @@ class HealthRegenPotion extends Entity {
         return "Health Regen Potion";
     }
 
-    getEntityName() {
+    getImageName() {
         return "item_healthregenpotion";
     }
 

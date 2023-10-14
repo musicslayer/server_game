@@ -5,7 +5,7 @@ class TutorialPortal extends Entity {
         return "Tutorial Portal";
     }
 
-    getEntityName() {
+    getImageName() {
         return "portal_teleporter";
     }
 

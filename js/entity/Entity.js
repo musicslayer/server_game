@@ -91,8 +91,7 @@ class Entity extends UID {
         return undefined;
     }
 
-    // TODO Call this get Image name?
-    getEntityName() {
+    getImageName() {
         // Returns the name used to look up the image on the Client.
         return undefined;
     }

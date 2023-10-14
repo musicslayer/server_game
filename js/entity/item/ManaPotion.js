@@ -10,7 +10,7 @@ class ManaPotion extends Entity {
         return "Mana Potion";
     }
 
-    getEntityName() {
+    getImageName() {
         return "item_manapotion";
     }
 

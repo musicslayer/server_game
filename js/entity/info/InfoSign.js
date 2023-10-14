@@ -7,7 +7,7 @@ class InfoSign extends Entity {
         return "Info Sign";
     }
 
-    getEntityName() {
+    getImageName() {
         return "info_sign";
     }
 

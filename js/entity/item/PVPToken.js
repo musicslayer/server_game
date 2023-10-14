@@ -8,7 +8,7 @@ class PVPToken extends Entity {
         return "PVP Token";
     }
 
-    getEntityName() {
+    getImageName() {
         return "item_pvptoken";
     }
 

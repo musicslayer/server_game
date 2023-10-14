@@ -6,7 +6,7 @@ class StartPortal extends Entity {
         return "Start Portal";
     }
 
-    getEntityName() {
+    getImageName() {
         return "portal_teleporter";
     }
 

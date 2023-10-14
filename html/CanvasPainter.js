@@ -143,7 +143,7 @@ class CanvasPainter {
 
             let x = entity.x + entity.animationShiftX;
             let y = entity.y + entity.animationShiftY;
-            let image = this.imageCatalog.getImageByEntityName(entity.entityName, animationFrame);
+            let image = this.imageCatalog.getImageByEntityImageName(entity.imageName, animationFrame);
             this.drawScreenImageScaled(ctxBuffer, image, x, y);
             
             if(entity.stackSize !== 1) {
@@ -208,16 +208,16 @@ class CanvasPainter {
         // Purse
         let purseWidth = this.gameScreen.purseTilesX - 1;
         let purseHeight = this.gameScreen.purseTilesY;
-        let purseImage = this.imageCatalog.getImageByEntityName("item_gold", animationFrame);
+        let purseImage = this.imageCatalog.getImageByEntityImageName("item_gold", animationFrame);
         let goldTotalImage = this.getGoldTotalImage(purse.goldTotal, purseWidth, purseHeight);
         this.drawPurseImageScaled(ctxBuffer, purseImage, 0, 0, 1, 1);
         this.drawPurseImageScaled(ctxBuffer, goldTotalImage, 1, 0, purseWidth, purseHeight);
         
         // Entity Info
-        if(entityInfo.entityName !== undefined && entityInfo.name !== undefined && entityInfo.text !== undefined) {
+        if(entityInfo.imageName !== undefined && entityInfo.name !== undefined && entityInfo.text !== undefined) {
             let entityInfoWidth = this.gameScreen.entityInfoTilesX - 1;
             let entityInfoHeight = this.gameScreen.entityInfoTilesY;
-            let entityInfoImage = this.imageCatalog.getImageByEntityName(entityInfo.entityName, animationFrame);
+            let entityInfoImage = this.imageCatalog.getImageByEntityImageName(entityInfo.imageName, animationFrame);
             let entityInfoNameImage = this.getEntityInfoNameImage(entityInfo.name, entityInfoWidth, entityInfoHeight);
             let entityInfoTextImage = this.getEntityInfoTextImage(entityInfo.text, entityInfoWidth, entityInfoHeight);
 
@@ -345,7 +345,7 @@ class CanvasPainter {
             for(let x = 0; x < this.gameScreen.inventoryTilesX; x++) {
                 let item = items.shift();
                 if(item) {
-                    let itemImage = this.imageCatalog.getImageByEntityName(item.entityName, animationFrame);
+                    let itemImage = this.imageCatalog.getImageByEntityImageName(item.imageName, animationFrame);
                     images.push({
                         x: x,
                         y: y,

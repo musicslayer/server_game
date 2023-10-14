@@ -10,7 +10,7 @@ class Teleporter extends Entity {
         return "Teleporter";
     }
 
-    getEntityName() {
+    getImageName() {
         return "portal_teleporter";
     }
 

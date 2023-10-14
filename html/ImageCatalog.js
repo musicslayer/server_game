@@ -46,9 +46,9 @@ class ImageCatalog {
         ?? this.imageMap.get("base#base#unknown");
     }
     
-    getImageByEntityName(entityName, animationFrame) {
-        // Entity names are always in the format "[folder]_[file]"
-        let [entityFolder, entityFile] = entityName.split("_");
+    getImageByEntityImageName(imageName, animationFrame) {
+        // Entity image names are always in the format "[folder]_[file]"
+        let [entityFolder, entityFile] = imageName.split("_");
         let image = this.getImage("entity", entityFolder, entityFile, animationFrame);
         return image;
     }

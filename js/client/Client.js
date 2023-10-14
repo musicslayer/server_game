@@ -344,7 +344,7 @@ class Client {
             }
 
             entities.push({
-                entityName: entity.getEntityName(),
+                imageName: entity.getImageName(),
                 stackSize: entity.stackSize,
                 x: entity.x,
                 y: entity.y,
@@ -367,7 +367,7 @@ class Client {
             let item = this.player.inventory.itemMap.get(index);
             if(item) {
                 inventory.items.push({
-                    entityName: item.getEntityName(),
+                    imageName: item.getImageName(),
                     stackSize: item.stackSize
                 });
             }
@@ -395,7 +395,7 @@ class Client {
 
         // Entity Info
         let entityInfo = {};
-        entityInfo.entityName = this.player.getSelectedEntity()?.getEntityName();
+        entityInfo.imageName = this.player.getSelectedEntity()?.getImageName();
         entityInfo.name = this.player.getSelectedEntity()?.getName();
         entityInfo.text = this.player.getSelectedEntity()?.getInfo();
 

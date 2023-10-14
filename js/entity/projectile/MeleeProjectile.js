@@ -5,7 +5,7 @@ class MeleeProjectile extends Projectile {
         return "Melee Projectile";
     }
 
-    getEntityName() {
+    getImageName() {
         return "melee_orb";
     }
 
