@@ -1,5 +1,5 @@
 # map_maker
- Demonstration of a 2D MMO Server Game
+Demonstration of a 2D MMO Server Game
 
 ## Launch Instructions
 ### Step 1
@@ -7,10 +7,12 @@ Download source code and additionally install the latest version of "socket.io" 
 
 ### Step 2
 Optionally create subfolder "secrets/ssl/" and place SSL credentials inside.
+
 If provided, there should be a .key, .crt, and .issuer.crt file.
 
 ### Step 3
 run app.js
+
 Depending on whether the SSL credentials are present, the app will automatically decide whether to use http or https.
 
 ### Step 4
