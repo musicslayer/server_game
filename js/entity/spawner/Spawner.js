@@ -28,15 +28,6 @@ class Spawner extends Entity {
     onEntityDespawn() {
         this.entityCount--;
     }
-
-    createEntityInstance() {
-        let entity = Entity.createInstance(this.getSpawnEntityName(), 1);
-        entity.setScreen(this.screen);
-        entity.x = this.x;
-        entity.y = this.y;
-        
-        return entity;
-    }
 }
 
 module.exports = Spawner;

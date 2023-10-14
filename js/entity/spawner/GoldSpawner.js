@@ -1,24 +1,24 @@
 const Entity = require("../Entity.js");
 const Spawner = require("./Spawner.js");
 
-class FireTrapSpawner extends Spawner {
-    spawnTime = 0.1;
+class GoldSpawner extends Spawner {
+    spawnTime = 60;
     maxEntityCount = 1;
 
     getName() {
-        return "Fire Trap Spawner";
+        return "Gold Spawner";
     }
 
     getImageName() {
-        return "spawner_firetrapspawner";
+        return "spawner_goldspawner";
     }
 
     getInfo() {
-        return "A place where fire traps spawn from.";
+        return "A place where gold spawns from.";
     }
 
     createEntityInstance() {
-        let entity = Entity.createInstance("FireTrap", 1);
+        let entity = Entity.createInstance("Gold", 1000);
         entity.setScreen(this.screen);
         entity.x = this.x;
         entity.y = this.y;
@@ -27,4 +27,4 @@ class FireTrapSpawner extends Spawner {
     }
 }
 
-module.exports = FireTrapSpawner;
+module.exports = GoldSpawner;

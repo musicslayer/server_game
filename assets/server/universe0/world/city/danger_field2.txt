@@ -25,4 +25,4 @@
 7,9||FireTrapSpawner,1||
 9,9||FireTrapSpawner,1||
 10,9||FireTrapSpawner,1||
-8,11||Gold,10000||
+8,11||GoldSpawner,1||

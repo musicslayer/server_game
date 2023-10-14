@@ -1,3 +1,4 @@
+const Entity = require("../Entity.js");
 const Spawner = require("./Spawner.js");
 
 class MonsterSpawner extends Spawner {
@@ -15,8 +16,13 @@ class MonsterSpawner extends Spawner {
         return "A place where monsters spawn from.";
     }
 
-    getSpawnEntityName() {
-        return "Monster";
+    createEntityInstance() {
+        let entity = Entity.createInstance("Monster", 1);
+        entity.setScreen(this.screen);
+        entity.x = this.x;
+        entity.y = this.y;
+        
+        return entity;
     }
 }
 
