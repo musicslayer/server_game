@@ -1,1 +1,2 @@
-1,1||InfoSign_StartField1,1
+1,1||||Welcome! Walk around and explore the city.
+7,3|||city,item_field,9,5||

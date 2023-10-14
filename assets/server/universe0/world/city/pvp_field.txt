@@ -1,1 +1,1 @@
-1,1||InfoSign_PVPField1,1
+1,1||||Watch out! Players can kill each other on this map.

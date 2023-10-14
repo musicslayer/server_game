@@ -717,6 +717,11 @@ class Entity extends UID {
             .serialize("aggroForgiveness", this.aggroForgiveness)
             .serialize("aggroForgivenessTime", this.aggroForgivenessTime)
             .serialize("lastPlayer_uid", this.lastPlayer_uid)
+            .serialize("destinationMapName", this.destinationMapName)
+            .serialize("destinationScreenName", this.destinationScreenName)
+            .serialize("destinationX", this.destinationX)
+            .serialize("destinationY", this.destinationY)
+            .serialize("infoText", this.infoText)
         .endObject();
     }
 
@@ -782,6 +787,11 @@ class Entity extends UID {
             entity.aggroForgiveness = reader.deserialize("aggroForgiveness", "Number");
             entity.aggroForgivenessTime = reader.deserialize("aggroForgivenessTime", "Number");
             entity.lastPlayer_uid = reader.deserialize("lastPlayer_uid", "Number");
+            entity.destinationMapName = reader.deserialize("destinationMapName", "String");
+            entity.destinationScreenName = reader.deserialize("destinationScreenName", "String");
+            entity.destinationX = reader.deserialize("destinationX", "Number");
+            entity.destinationY = reader.deserialize("destinationY", "Number");
+            entity.infoText = reader.deserialize("infoText", "String");
         }
         else {
             throw(new Error("Unknown version number: " + version));

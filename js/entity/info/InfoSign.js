@@ -1,6 +1,8 @@
 const Entity = require("../Entity.js");
 
-class InfoSign_Tutorial4 extends Entity {
+class InfoSign extends Entity {
+    infoText;
+
     getName() {
         return "Info Sign";
     }
@@ -11,8 +13,8 @@ class InfoSign_Tutorial4 extends Entity {
 
     getInfo() {
         // The info is a message meant for the player to read, not a description of an info sign itself.
-        return "Inventory: Right click to use an item, left click drag to move items or drop them onto the screen.";
+        return this.infoText;
     }
 }
 
-module.exports = InfoSign_Tutorial4;
+module.exports = InfoSign;

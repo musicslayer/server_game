@@ -73,6 +73,46 @@ class Screen {
                     entity.getServer().scheduleTask(serverTask);
                 }
             }
+
+            // Fourth part is a teleporter destination
+            let teleporterPart = parts.shift().split(COMMA);
+            if(teleporterPart[0]) {
+                while(teleporterPart.length > 0) {
+                    let destinationMapName = teleporterPart.shift();
+                    let destinationScreenName = teleporterPart.shift();
+                    let destinationX = Number(teleporterPart.shift());
+                    let destinationY = Number(teleporterPart.shift());
+
+                    let teleporter = Entity.createInstance("Teleporter", 1);
+                    teleporter.setScreen(screen);
+                    teleporter.x = x;
+                    teleporter.y = y;
+                    teleporter.destinationMapName = destinationMapName;
+                    teleporter.destinationScreenName = destinationScreenName;
+                    teleporter.destinationX = destinationX;
+                    teleporter.destinationY = destinationY;
+
+                    // Schedule each teleporter to be spawned.
+                    let serverTask = new ServerTask(undefined, 0, 1, "spawn", teleporter);
+                    teleporter.getServer().scheduleTask(serverTask);
+                }
+            }
+
+            // Fifth part is info text (don't split any further)
+            let infoPart = parts.shift();
+            if(infoPart !== "") {
+                let infoText = infoPart;
+
+                let infoSign = Entity.createInstance("InfoSign", 1);
+                infoSign.setScreen(screen);
+                infoSign.x = x;
+                infoSign.y = y;
+                infoSign.infoText = infoText;
+
+                // Schedule each info sign to be spawned.
+                let serverTask = new ServerTask(undefined, 0, 1, "spawn", infoSign);
+                infoSign.getServer().scheduleTask(serverTask);
+            }
         }
 
         return screen;

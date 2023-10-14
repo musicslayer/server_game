@@ -12,17 +12,17 @@ class GameScreen {
 
     locationInfoOriginX = 17;
     locationInfoOriginY = 0;
-    locationInfoTilesX = 1;
+    locationInfoTilesX = 9;
     locationInfoTilesY = 1;
 
     purseOriginX = 17;
     purseOriginY = 1;
-    purseTilesX = 1;
+    purseTilesX = 9;
     purseTilesY = 1;
 
     entityInfoOriginX = 17;
     entityInfoOriginY = 2;
-    entityInfoTilesX = 1;
+    entityInfoTilesX = 9;
     entityInfoTilesY = 1;
 
     canvas;

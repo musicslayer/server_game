@@ -1,20 +1,20 @@
-4,0|letter_upperT|
-5,0|letter_upperU|
-6,0|letter_upperT|
-7,0|letter_upperO|
-8,0|letter_upperR|
-9,0|letter_upperI|
-10,0|letter_upperA|
-11,0|letter_upperL|
-15,2|letter_upperT|
-15,3|letter_upperH|
-15,4|letter_upperI|
-15,5|letter_upperS|
-15,7|letter_upperW|
-15,8|letter_upperA|
-15,9|letter_upperY|
-3,3||InfoSign_Tutorial1,1
-4,3||InfoSign_Tutorial2,1
-5,3||InfoSign_Tutorial3,1
-6,3||InfoSign_Tutorial4,1
-7,3||InfoSign_Tutorial5,1
+4,0|letter_upperT|||
+5,0|letter_upperU|||
+6,0|letter_upperT|||
+7,0|letter_upperO|||
+8,0|letter_upperR|||
+9,0|letter_upperI|||
+10,0|letter_upperA|||
+11,0|letter_upperL|||
+15,2|letter_upperT|||
+15,3|letter_upperH|||
+15,4|letter_upperI|||
+15,5|letter_upperS|||
+15,7|letter_upperW|||
+15,8|letter_upperA|||
+15,9|letter_upperY|||
+3,3||||Click on anything to learn more about it.
+4,3||||WASD to move, Spacebar to shoot.
+5,3||||0 to teleport to home location.
+6,3||||Inventory: Right click to use an item, left click drag to move items or drop them onto the screen.
+7,3||||Purse: Right click "Gold" icon to drop gold.
