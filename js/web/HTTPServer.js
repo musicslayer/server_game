@@ -57,77 +57,78 @@ class HTTPServer {
                 let pathname = url.parse(req.url, true).pathname;
     
                 switch(pathname) {
-                    case "/":
+                    case "/": {
                         serveFile(res, "text/html", HTML_HOME);
                         break;
-
-                    case "/login":
+                    }
+                    case "/login": {
                         serveFile(res, "text/html", HTML_LOGIN);
                         break;
-
-                    case "/create_account":
+                    }
+                    case "/create_account": {
                         serveFile(res, "text/html", HTML_CREATE_ACCOUNT);
                         break;
-
-                    case "/create_character":
+                    }
+                    case "/create_character": {
                         serveFile(res, "text/html", HTML_CREATE_CHARACTER);
                         break;
-
-                    case "/change_password":
+                    }
+                    case "/change_password": {
                         serveFile(res, "text/html", HTML_CHANGE_PASSWORD);
                         break;
-
-                    case "/change_email":
+                    }
+                    case "/change_email": {
                         serveFile(res, "text/html", HTML_CHANGE_EMAIL);
                         break;
-
-                    case "/advanced_account_options":
+                    }
+                    case "/advanced_account_options": {
                         serveFile(res, "text/html", HTML_ADVANCED_ACCOUNT_OPTIONS);
                         break;
-
-                    case "/game":
+                    }
+                    case "/game": {
                         serveFile(res, "text/html", HTML_GAME);
                         break;
-
-                    case "/favicon.ico":
+                    }
+                    case "/favicon.ico": {
                         serveFile(res, "image/x-icon", FAVICON_FILE);
                         break;
-
-                    case "/GameClient.js":
+                    }
+                    case "/GameClient.js": {
                         serveFile(res, "application/javascript", HTML_GAME_CLIENT);
                         break;
-
-                    case "/ImageCatalog.js":
+                    }
+                    case "/ImageCatalog.js": {
                         serveFile(res, "application/javascript", HTML_IMAGE_CATALOG);
                         break;
-
-                    case "/GameScreen.js":
+                    }
+                    case "/GameScreen.js": {
                         serveFile(res, "application/javascript", HTML_GAME_SCREEN);
                         break;
-
-                    case "/CanvasPainter.js":
+                    }
+                    case "/CanvasPainter.js": {
                         serveFile(res, "application/javascript", HTML_CANVAS_PAINTER);
                         break;
-
-                    case "/InputManager.js":
+                    }
+                    case "/InputManager.js": {
                         serveFile(res, "application/javascript", HTML_INPUT_MANAGER);
                         break;
-
-                    case "/UnzipStream.js":
+                    }
+                    case "/UnzipStream.js": {
                         serveFile(res, "application/javascript", HTML_UNZIP_STREAM);
                         break;
-
-                    case "/socket.io.min.js":
+                    }
+                    case "/socket.io.min.js": {
                         serveFile(res, "application/javascript", HTML_SOCKETIO);
                         break;
-
-                    case "/images":
+                    }
+                    case "/images": {
                         serveFile(res, "application/zip", IMAGE_ZIP);
                         break;
-
-                    default:
+                    }
+                    default: {
                         serveError(res, 404, "Error 404: Page not found.\n" + pathname);
                         break;
+                    }
                 }
             }
             catch(err) {

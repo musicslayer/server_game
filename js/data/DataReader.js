@@ -278,7 +278,7 @@ class DataReader {
 
                             return [NAME, returnPhrase];
                         }
-                        case ",":
+                        case ",": {
                             if(this.lastPhrase !== "") {
                                 let returnPhrase = this.lastPhrase;
                                 this.lastPhrase = "";
@@ -292,30 +292,30 @@ class DataReader {
                             }
 
                             break;
-
-                        case "n":
+                        }
+                        case "n": {
                             // Add the "n" to the phase
                             [this.inProgressPhrase, this.lastPhrase, numCharsReadPhrase] = findNullPhrase(iterator, this.lastPhrase, "n");
                             numCharsRead += numCharsReadPhrase;
 
                             break;
-
-                        case "\"":
+                        }
+                        case "\"": {
                             // Throw away the opening quote.
                             [this.inProgressPhrase, this.lastPhrase, numCharsReadPhrase] = findQuotePhrase(iterator, this.lastPhrase, "");
                             numCharsRead += numCharsReadPhrase;
 
                             break;
-
-                        case "{":
+                        }
+                        case "{": {
                             this.s = storage + this.s;
                             if(shouldConsume) {
                                 this.s = this.s.slice(numCharsRead);
                             }
 
                             return [BEGIN_OBJECT];
-
-                        case "}":
+                        }
+                        case "}": {
                             if(this.lastPhrase !== "") {
                                 let returnPhrase = this.lastPhrase;
                                 this.lastPhrase = "";
@@ -335,8 +335,8 @@ class DataReader {
                             }
 
                             return [END_OBJECT];
-
-                        case "[":
+                        }
+                        case "[": {
                             this.s = storage + this.s;
 
                             if(shouldConsume) {
@@ -344,8 +344,8 @@ class DataReader {
                             }
 
                             return [BEGIN_ARRAY];
-
-                        case "]":
+                        }
+                        case "]": {
                             if(this.lastPhrase !== "") {
                                 let returnPhrase = this.lastPhrase;
                                 this.lastPhrase = "";
@@ -365,9 +365,10 @@ class DataReader {
                             }
 
                             return [END_ARRAY];
-
-                        default:
+                        }
+                        default: {
                             throw(new Error("Invalid character: " + theCharValue));
+                        }
                     }
                 }
             }
