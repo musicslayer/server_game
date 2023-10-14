@@ -17,6 +17,7 @@ Depending on whether the SSL credentials are present, the app will automatically
 
 ### Step 4
 On a web browser running on the same computer that app.js is running:
+
 Navigate to https://localhost/ or http://localhost/
 
 ## Features
