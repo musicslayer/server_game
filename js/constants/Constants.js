@@ -5,11 +5,6 @@ class Constants {
         MAX_BYTES_READ: 65536
     };
 
-    static email = {
-        EMAIL_FROM: "no-reply@musicslayer.com",
-        EMAIL_SUPPORT: "support@musicslayer.com"
-    };
-
     // These variables must point to a valid location on every currently existing world across all servers.
     static fallback = {
         FALLBACK_LOCATION_MAP_NAME: "city",

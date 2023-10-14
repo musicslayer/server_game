@@ -27,8 +27,14 @@ class AppState {
     lastSaveFolder;
     
     async init() {
-        // Validate up front that certain files and folders already exist and we have sufficient access to them.
-        this.validateFilesAndFolders();
+        // If these folders do not exist, create them now.
+        if(!fs.existsSync(Constants.path.LOG_FOLDER)) {
+            fs.mkdirSync(Constants.path.LOG_FOLDER);
+        }
+
+        if(!fs.existsSync(Constants.path.SAVE_STATE_FOLDER)) {
+            fs.mkdirSync(Constants.path.SAVE_STATE_FOLDER);
+        }
 
         // Recreate image zip file.
         await Zip.createZipFileFromFolder(Constants.path.ZIP_FILE, Constants.path.ZIP_SOURCE_FOLDER, 9);
@@ -61,32 +67,6 @@ class AppState {
     terminate() {
         this.httpServer?.terminate();
         this.socketIOServer?.terminate();
-    }
-
-    validateFilesAndFolders() {
-        // Note that the zip file may or may not exist at this point, but its parent folder should.
-        let zipParentFolder = path.dirname(Constants.path.ZIP_FILE);
-
-        if(!fs.existsSync(Constants.path.LOG_FOLDER)) {
-            throw(new Error("LOG_FOLDER does not exist: " + Constants.path.LOG_FOLDER));
-        }
-
-        if(!fs.existsSync(Constants.path.SAVE_STATE_FOLDER)) {
-            throw(new Error("SAVE_STATE_FOLDER does not exist: " + Constants.path.SAVE_STATE_FOLDER));
-        }
-
-        if(!fs.existsSync(zipParentFolder)) {
-            throw(new Error("ZIP_FILE parent folder does not exist: " + zipParentFolder));
-        }
-
-        if(!fs.existsSync(Constants.path.ZIP_SOURCE_FOLDER)) {
-            throw(new Error("ZIP_SOURCE_FOLDER does not exist: " + Constants.path.ZIP_SOURCE_FOLDER));
-        }
-
-        fs.accessSync(Constants.path.LOG_FOLDER, fs.constants.R_OK | fs.constants.W_OK);
-        fs.accessSync(Constants.path.SAVE_STATE_FOLDER, fs.constants.R_OK | fs.constants.W_OK);
-        fs.accessSync(Constants.path.ZIP_SOURCE_FOLDER, fs.constants.R_OK);
-        fs.accessSync(zipParentFolder, fs.constants.R_OK | fs.constants.W_OK);
     }
 
     save() {

@@ -2,15 +2,20 @@ const fs = require("fs");
 const path = require("path");
 
 // Do not store any of this information in "Constants.js".
-const SECRET_JSON_FILE = path.resolve(path.join("secrets", "secrets.json"));
-const SECRET_SSL_KEY_FILE = path.resolve(path.join("secrets", "ssl", "_.musicslayer.com.key"));
-const SECRET_SSL_CERT_FILE = path.resolve(path.join("secrets", "ssl", "_.musicslayer.com.crt"));
-const SECRET_SSL_CA_FILE = path.resolve(path.join("secrets", "ssl", "_.musicslayer.com.issuer.crt"));
+const SECRET_ROOT_FOLDER = path.resolve("secrets");
+const SECRET_JSON_FILE = path.resolve(path.join(SECRET_ROOT_FOLDER, "secrets.json"));
+const SECRET_SSL_KEY_FILE = path.resolve(path.join(SECRET_ROOT_FOLDER, "ssl", "_.musicslayer.com.key"));
+const SECRET_SSL_CERT_FILE = path.resolve(path.join(SECRET_ROOT_FOLDER, "ssl", "_.musicslayer.com.crt"));
+const SECRET_SSL_CA_FILE = path.resolve(path.join(SECRET_ROOT_FOLDER, "ssl", "_.musicslayer.com.issuer.crt"));
 
 class Secret {
     static secretMap;
 
     static init() {
+        if(!fs.existsSync(SECRET_ROOT_FOLDER)) {
+            fs.mkdirSync(SECRET_ROOT_FOLDER);
+        }
+
         Secret.secretMap = new Map();
 
         let secretsJSON = readFileSyncIfExists(SECRET_JSON_FILE);

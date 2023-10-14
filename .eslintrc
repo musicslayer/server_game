@@ -1,0 +1,8 @@
+{
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+    }
+}
+
+// Run with: npx eslint ./**/*.js
