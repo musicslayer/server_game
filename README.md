@@ -22,7 +22,7 @@ Navigate to https://localhost/ or http://localhost/
 
 ## Features
 ### Overall
-The code's only external dependency is on socket.io, which can be found here: https://socket.io/
+The code's only external dependency (not developed by me) is on socket.io, which can be found here: https://socket.io/
 
 ### Admin
 The server terminal allows for admin commands. Currently the following commands are supported:
