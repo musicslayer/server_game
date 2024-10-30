@@ -3,5 +3,3 @@
 /node_modules
 /save_states
 /secrets
-certificate.pem
-private-key.pem
