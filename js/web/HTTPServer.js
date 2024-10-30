@@ -32,7 +32,7 @@ class HTTPServer {
     isHTTPS;
 
     constructor(certificateData) {
-        this.isHTTPS = certificateData !== undefined;
+        this.isHTTPS = certificateData.cert !== undefined && certificateData.key !== undefined;
 
         let serverFcn = this.isHTTPS ? https.createServer : http.createServer;
         let serverArgs = this.isHTTPS ? [certificateData] : [];
