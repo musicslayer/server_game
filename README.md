@@ -8,7 +8,7 @@ Download source code and additionally install the latest version of "socket.io" 
 ### Step 2
 Optionally create subfolder "secrets/ssl/" and place SSL credentials inside.
 
-If provided, there should be a .key, .crt, and .issuer.crt file.
+If provided, there should be two files present: "certificate.pem" and "private-key.pem"
 
 ### Step 3
 run app.js
