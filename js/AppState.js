@@ -51,10 +51,16 @@ class AppState {
         this.clientManager = ClientManager.createInitialClientManager();
         this.serverManager = ServerManager.createInitialServerManager();
 
+        /*
         let certificateData = {
             cert: Secret.getSecret("ssl_cert"),
-            key: Secret.getSecret("ssl_key"),
-            ca: Secret.getSecret("ssl_ca")
+            key: Secret.getSecret("ssl_key")
+        };
+        */
+
+        let certificateData = {
+            cert: fs.readFileSync("./certificate.pem").toString(),
+            key: fs.readFileSync("./private-key.pem").toString(),
         };
 
         // Create servers to serve the web pages and communicate between front and back ends.

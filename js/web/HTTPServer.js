@@ -32,7 +32,7 @@ class HTTPServer {
     isHTTPS;
 
     constructor(certificateData) {
-        this.isHTTPS = isCertificateDataValid(certificateData);
+        this.isHTTPS = certificateData !== undefined;
 
         let serverFcn = this.isHTTPS ? https.createServer : http.createServer;
         let serverArgs = this.isHTTPS ? [certificateData] : [];
@@ -154,13 +154,6 @@ class HTTPServer {
     terminate() {
         this.server.close();
     }
-}
-
-function isCertificateDataValid(certificateData) {
-    return certificateData !== undefined
-    && certificateData.cert !== undefined
-    && certificateData.key !== undefined
-    && certificateData.ca !== undefined;
 }
 
 function serveFile(res, contentType, file) {
