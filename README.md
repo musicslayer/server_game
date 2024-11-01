@@ -10,6 +10,9 @@ Optionally create subfolder "secrets/ssl/" and place SSL credentials inside.
 
 If provided, there should be two files present: "certificate.pem" and "private-key.pem"
 
+> [!TIP]
+> Check out [Easy SSL](https://github.com/musicslayer/easy_ssl) if you want to quickly generate SSL certificates signed by Let's Encrypt.
+
 ### Step 3
 run app.js
 
